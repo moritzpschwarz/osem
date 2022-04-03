@@ -1,0 +1,178 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+\renewcommand{\[}{\begin{equation}}
+\renewcommand{\]}{\end{equation}}
+
+
+```{r, warning=FALSE, message=FALSE}
+library(conflicted)
+library(eurostat)
+library(gets)
+library(tidyverse)
+library(janitor)
+library(kableExtra)
+library(plotly)
+library(here)
+library(lubridate)
+library(fastDummies)
+
+
+conflict_prefer("filter", "dplyr")
+conflict_prefer("lag", "dplyr")
+conflict_prefer("as.zoo.data.frame", "zoo")
+conflict_prefer("select", "dplyr")
+options(bitmapType = 'cairo') # for ggplotly
+```
+
+
+# Input
+
+```{r}
+overall <- read_csv(here("data/raw/eurostat_download.csv"))
+unit_choice <- "Current prices, million euro" #CHECKAGAIN
+s_adj_choice <- "Unadjusted data (i.e. neither seasonally adjusted nor calendar adjusted data)" #CHECKAGAIN
+```
+
+
+# Attempting to Model Private Consumption
+
+```{r}
+overall %>% 
+  filter(na_item %in% c(
+    "Household and NPISH final consumption expenditure",
+    "Disposable income, gross",
+    #"Adjusted disposable income, gross"
+    NULL
+  )) %>% 
+  filter(unit == unit_choice) %>% 
+  filter(s_adj == s_adj_choice) %>% 
+  filter(is.na(sector) | sector == "Households; non-profit institutions serving households") %>% #CHECKAGAIN
+  filter(is.na(direct) | direct == "Paid") %>% 
+  
+  janitor::remove_empty(which = "cols") %>% 
+  distinct -> cp_data
+```
+
+
+```{r}
+max.lag <- 4
+saturation.tpval <- 0.01
+```
+
+
+```{r}
+cp_data %>% 
+  select(na_item, time,values) %>%
+  pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>% 
+  clean_names() %>% 
+  arrange(time) %>% 
+  mutate(across(-time,list(L = log),.names = "{.fn}.{.col}"),
+         across(starts_with("L."),list(D = ~c(NA,diff(., ))), .names = "{.fn}{.col}"),
+         
+         # ECM
+         across(starts_with("L."),list(L = lag),.names = "{.fn}1.{.col}"),
+         index = 1:n()) %>% 
+  relocate(index) %>% 
+  mutate(q = quarter(time, with_year = FALSE)) %>% 
+  dummy_cols(select_columns = "q", remove_first_dummy = TRUE, remove_selected_columns = TRUE) -> cp_data_clean
+```
+
+
+## Export of Services
+
+```{r}
+isat_list <- tibble(ar = 0:4,
+                    BIC = 0,
+                    isat_object = list(NA_complex_))
+for(i in 0:4){
+  intermed.model <- isat(
+    cp_data_clean$DL.household_and_npish_final_consumption_expenditure,
+    mxreg = cp_data_clean %>% 
+      select(DL.disposable_income_gross, 
+             L1.L.disposable_income_gross,
+             L1.L.household_and_npish_final_consumption_expenditure,
+             q_2,q_3,q_4), 
+    ar = if (i != 0) {1:i} else{NULL},
+    plot = FALSE,
+    print.searchinfo = FALSE,
+    iis = TRUE,
+    sis = TRUE,
+    t.pval = saturation.tpval
+  )
+  
+  isat_list[i + 1,"BIC"] <- BIC(intermed.model)
+  isat_list[i + 1,"isat_object"] <- tibble(isat_object = list(intermed.model))
+  
+}
+```
+
+
+```{r}
+isat_list %>% 
+  filter(BIC == min(BIC)) %>% 
+  pull(isat_object) %>% first -> cp.model
+
+plot(cp.model)
+```
+
+
+# Putting them back together
+
+```{r, eval = FALSE}
+add_to_original_data <- function(){
+  
+  
+  
+  
+}
+```
+
+
+
+
+```{r}
+# cp_data_clean$cp.fitted <- NA
+# cp_data_clean$cp.fitted[cp.model$aux$y.index] <- as.numeric(cp.model$mean.fit)
+# 
+# 
+
+cp_data_clean %>% 
+  
+  full_join(tibble(index = cp.model$aux$y.index, 
+                   cp.fitted = as.numeric(cp.model$mean.fit)), by = "index") %>% 
+
+mutate(cp.fitted.cumsum = case_when(is.na(cp.fitted) & is.na(lead(cp.fitted))~0,
+                                       is.na(cp.fitted) & !is.na(lead(cp.fitted))~L.household_and_npish_final_consumption_expenditure,
+                                       !is.na(cp.fitted) ~ cp.fitted),
+       cp.fitted.cumsum = cumsum(cp.fitted.cumsum),
+       cp.fitted.cumsum = ifelse(is.na(cp.fitted),NA,cp.fitted.cumsum)) %>% 
+  
+  
+  mutate(cp.fitted.level = exp(cp.fitted.cumsum)) -> df_done
+```
+
+
+```{r}
+df_done %>% 
+  ggplot(aes(x = time)) + 
+  geom_line(aes(y = household_and_npish_final_consumption_expenditure), col = "blue") + 
+  
+  
+  geom_line(aes(y = cp.fitted.level), col = "red", linetype = 2) + 
+  
+  theme_minimal()
+
+```
+
+```{r}
+write_csv(df_done %>% select(index, time, household_and_npish_final_consumption_expenditure, cp.fitted.level), here("data/temp/cp.csv"))
+```
+

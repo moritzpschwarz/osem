@@ -1,0 +1,218 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+editor_options:
+  chunk_output_type: console
+---
+
+\renewcommand{\[}{\begin{equation}}
+\renewcommand{\]}{\end{equation}}
+
+
+```{r, warning=FALSE, message=FALSE}
+library(conflicted)
+library(eurostat)
+library(gets)
+library(tidyverse)
+library(janitor)
+library(kableExtra)
+library(plotly)
+library(here)
+library(lubridate)
+library(fastDummies)
+
+
+conflict_prefer("filter", "dplyr")
+conflict_prefer("lag", "dplyr")
+conflict_prefer("as.zoo.data.frame", "zoo")
+conflict_prefer("select", "dplyr")
+options(bitmapType = 'cairo') # for ggplotly
+```
+
+
+# Input
+
+```{r}
+overall <- read_csv(here("data/raw/eurostat_download.csv"))
+
+unit_choice <- "Current prices, million euro"
+```
+
+
+# Attempting to Model Exports
+
+```{r}
+overall %>% 
+  filter(s_adj == s_adj_choice) %>% 
+  filter(unit == unit_choice) %>% 
+  filter(#grepl("export",na_item, ignore.case = TRUE)
+    na_item %in% c(
+      #"Final consumption expenditure of general government",
+      "Exports of services",
+      "Exports of goods")) %>% 
+  #"Household and NPISH final consumption expenditure",
+  #"Gross domestic product at market prices",
+  #"Gross capital formation",
+  #"Exports of goods and services", "Imports of goods and services",
+  ##"Statistical discrepancy (production approach)", 
+  ##"Statistical discrepancy (income approach)",
+  #"Statistical discrepancy (expenditure approach)")) %>% 
+  
+  janitor::remove_empty(which = "cols") %>% 
+  distinct -> export_data
+```
+
+
+```{r}
+max.lag <- 4
+saturation.tpval <- 0.05
+```
+
+
+```{r}
+export_data %>% 
+  #filter(na_item == "Exports of services") %>% 
+  select(na_item, time,values) %>%
+  pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>% 
+  clean_names() %>% 
+  arrange(time) %>% 
+  mutate(q = quarter(time, with_year = FALSE)) %>% 
+  dummy_cols(select_columns = "q", remove_first_dummy = TRUE, remove_selected_columns = TRUE) %>% 
+  mutate(index = 1:n(),
+         across(c(exports_of_goods, exports_of_services),list(L = log),.names = "{.fn}.{.col}"),
+         across(starts_with("L."),list(D = ~c(NA,diff(.))), .names = "{.fn}{.col}")) -> export_data_clean
+```
+
+
+## Export of Services
+
+
+```{r}
+isat_list <- tibble(ar = 0:4,
+                    BIC = 0,
+                    isat_object = list(NA_complex_))
+for(i in 0:4){
+  intermed.model <- isat(
+    export_data_clean$DL.exports_of_services,
+    mxreg = export_data_clean %>% select(q_2,q_3,q_4), 
+    ar = if (i != 0) {1:i} else{NULL},
+    plot = FALSE,
+    print.searchinfo = FALSE,
+    iis = TRUE,
+    sis = TRUE,
+    t.pval = saturation.tpval
+  )
+  
+  isat_list[i + 1,"BIC"] <- BIC(intermed.model)
+  isat_list[i + 1,"isat_object"] <- tibble(isat_object = list(intermed.model))
+  
+}
+```
+
+
+
+```{r}
+isat_list %>% 
+  filter(BIC == min(BIC)) %>% 
+  pull(isat_object) %>% first -> export_services.model
+
+plot(export_services.model)
+```
+
+## Export of Goods
+
+
+```{r}
+isat_list <- tibble(ar = 0:4,
+                    BIC = 0,
+                    isat_object = list(NA_complex_))
+for(i in 0:4){
+  intermed.model <- isat(
+    export_data_clean$DL.exports_of_goods,
+    mxreg = export_data_clean %>% select(q_2,q_3,q_4), 
+    ar = if (i != 0) {1:i} else{NULL},
+    plot = FALSE,
+    print.searchinfo = FALSE,
+    iis = TRUE,
+    sis = TRUE,
+    t.pval = saturation.tpval
+  )
+  
+  isat_list[i + 1,"BIC"] <- BIC(intermed.model)
+  isat_list[i + 1,"isat_object"] <- tibble(isat_object = list(intermed.model))
+  
+}
+```
+
+
+
+```{r}
+isat_list %>% 
+  filter(BIC == min(BIC)) %>% 
+  pull(isat_object) %>% first -> export_goods.model
+
+plot(export_goods.model)
+```
+
+
+# Putting them back together
+
+```{r, eval = FALSE}
+add_to_original_data <- function(){
+  
+  
+  
+  
+}
+```
+
+
+
+
+```{r}
+export_data_clean$goods.fitted <- NA
+export_data_clean$goods.fitted[export_goods.model$aux$y.index] <- as.numeric(export_goods.model$mean.fit)
+
+export_data_clean$services.fitted <- NA
+export_data_clean$services.fitted[export_services.model$aux$y.index] <- as.numeric(export_services.model$mean.fit)
+
+
+export_data_clean %>% 
+  
+  mutate(goods.fitted.cumsum = case_when(is.na(goods.fitted) & is.na(lead(goods.fitted))~0,
+                                         is.na(goods.fitted) & !is.na(lead(goods.fitted))~L.exports_of_goods,
+                                         !is.na(goods.fitted) ~ goods.fitted),
+         goods.fitted.cumsum = cumsum(goods.fitted.cumsum),
+         goods.fitted.cumsum = ifelse(is.na(goods.fitted),NA,goods.fitted.cumsum)) %>% 
+  
+  mutate(services.fitted.cumsum = case_when(is.na(services.fitted) & is.na(lead(services.fitted))~0,
+                                            is.na(services.fitted) & !is.na(lead(services.fitted))~L.exports_of_services,
+                                            !is.na(services.fitted) ~ services.fitted),
+         services.fitted.cumsum = cumsum(services.fitted.cumsum),
+         services.fitted.cumsum = ifelse(is.na(services.fitted),NA,services.fitted.cumsum)) %>% 
+  
+  mutate(goods.fitted.level = exp(goods.fitted.cumsum),
+         services.fitted.level = exp(services.fitted.cumsum)) -> df_done
+```
+
+
+```{r}
+df_done %>% 
+  ggplot(aes(x = time)) + 
+  geom_line(aes(y = exports_of_goods), col = "blue") + 
+  geom_line(aes(y = exports_of_services), col = "red") + 
+  
+  geom_line(aes(y = goods.fitted.level), col = "blue", linetype = 2) + 
+  geom_line(aes(y = services.fitted.level), col = "red", linetype = 2) + 
+  theme_minimal()
+```
+
+
+```{r}
+write_csv(df_done, here("data/temp/exports.csv"))
+```
+
+
