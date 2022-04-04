@@ -1,15 +1,35 @@
 ---
 title: "R Notebook"
-output:
-  html_document:
+output: 
+  bookdown::html_document2: 
+    theme: "lumen"
+    code_download: true
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    number_sections: true
     df_print: paged
-  html_notebook: default
+knit: (function(inputFile, encoding) { 
+  rmarkdown::render(inputFile, 
+  encoding = encoding, 
+  output_format = "html_document", 
+  output_dir = here::here("output")) 
+  })
 editor_options:
   chunk_output_type: console
 ---
 
-\renewcommand{\[}{\begin{equation}}
-\renewcommand{\]}{\end{equation}}
+<!-- For equations: \begin{equation} \end{equation} and then add (\#eq:XXX) just before the end -->
+
+
+# Set-up
+  
+```{r, echo=FALSE}
+knitr::opts_chunk$set(comment = NA, echo = TRUE, eval = TRUE, 
+                      warning = FALSE, message = FALSE, 
+                      fig.width = 6, fig.height = 4)
+```
+
 
 
 ```{r, warning=FALSE, message=FALSE}
@@ -37,8 +57,9 @@ options(bitmapType = 'cairo') # for ggplotly
 
 ```{r}
 overall <- read_csv(here("data/raw/eurostat_download.csv"))
-
-unit_choice <- "Current prices, million euro"
+unit_choice <- "Current prices, million euro" #CHECKAGAIN
+s_adj_choice <- "Unadjusted data (i.e. neither seasonally adjusted nor calendar adjusted data)" #CHECKAGAIN
+source(here("code/modelling_functions.R"))
 ```
 
 

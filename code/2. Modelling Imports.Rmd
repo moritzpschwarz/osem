@@ -1,17 +1,35 @@
 ---
 title: "R Notebook"
-output:
-  html_document:
+output: 
+  bookdown::html_document2: 
+    theme: "lumen"
+    code_download: true
+    toc: true
+    toc_float: true
+    toc_depth: 2
+    number_sections: true
     df_print: paged
-  html_notebook: default
-knit: (function(inputFile, encoding) {
-  rmarkdown::render(inputFile, encoding = encoding, output_dir = here::here("output")) })
+knit: (function(inputFile, encoding) { 
+  rmarkdown::render(inputFile, 
+  encoding = encoding, 
+  output_format = "html_document", 
+  output_dir = here::here("output")) 
+  })
 editor_options:
   chunk_output_type: console
 ---
 
-\renewcommand{\[}{\begin{equation}}
-\renewcommand{\]}{\end{equation}}
+<!-- For equations: \begin{equation} \end{equation} and then add (\#eq:XXX) just before the end -->
+
+
+# Set-up
+  
+```{r, echo=FALSE}
+knitr::opts_chunk$set(comment = NA, echo = TRUE, eval = TRUE, 
+                      warning = FALSE, message = FALSE, 
+                      fig.width = 6, fig.height = 4)
+```
+
 
 
 ```{r, warning=FALSE, message=FALSE}
@@ -46,6 +64,8 @@ source(here("code/modelling_functions.R"))
 
 ardl_ecm_opts <- "ardl"
 saturation.tpval <- 0.01
+max.lag <- 4
+
 cp_estimated <- read_csv(here("data/temp/cp.csv"))
 ```
 
@@ -76,10 +96,6 @@ overall %>%
 
 
 
-```{r}
-max.lag <- 4
-saturation.tpval <- 0.01
-```
 
 
 ```{r}
