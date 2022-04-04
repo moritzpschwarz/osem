@@ -4,6 +4,8 @@ output:
   html_document:
     df_print: paged
   html_notebook: default
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = here::here("output")) })
 editor_options:
   chunk_output_type: console
 ---
@@ -40,12 +42,14 @@ overall <- read_csv(here("data/raw/eurostat_download.csv"))
 unit_choice <- "Current prices, million euro" #CHECKAGAIN
 s_adj_choice <- "Unadjusted data (i.e. neither seasonally adjusted nor calendar adjusted data)" #CHECKAGAIN
 
-ardl_ecm_opts <- "ardl"
+source(here("code/modelling_functions.R"))
 
+ardl_ecm_opts <- "ardl"
+saturation.tpval <- 0.01
 cp_estimated <- read_csv(here("data/temp/cp.csv"))
 ```
 
-$$Gross capital formation $$
+
 
 
 
@@ -107,13 +111,15 @@ imports_data %>%
 
 
 ## Imports
-s
+
 ```{r}
 done_isat_modelling <- isat_modelling(clean_data = imports_data_clean, 
                                       dep_var_basename = "imports_of_goods_and_services",
+                                      ardl_or_ecm = "ecm")
+
+done_isat_modelling2 <- isat_modelling(clean_data = imports_data_clean, 
+                                      dep_var_basename = "imports_of_goods_and_services",
                                       ardl_or_ecm = "ardl")
-
-
 
 # for(i in 0:4){
 #   intermed.model <- isat(
@@ -189,12 +195,8 @@ for(i in 0:4){
 ```
 
 
-```{r}
-isat_list %>% 
-  filter(BIC == min(BIC)) %>% 
-  pull(isat_object) %>% first -> imports.model
-
-plot(imports.model)
+```{r, eval = TRUE}
+plot(done_isat_modelling$best_model)
 ```
 
 
@@ -203,7 +205,7 @@ plot(imports.model)
 
 ```{r}
 df_done <- add_to_original_data(clean_data = imports_data_clean,
-                                isat_object = imports.model, 
+                                isat_object = done_isat_modelling$best_model, 
                                 dep_var_name = "imports",
                                 ardl_or_ecm = ardl_ecm_opts)
 ```
@@ -257,14 +259,11 @@ df_done %>%
   ggplot(aes(x = time)) + 
   geom_line(aes(y = imports_of_goods_and_services), col = "blue") + 
   
-  
-  geom_line(aes(y = imports.fitted.level), col = "red", linetype = 2) + 
-  
+  geom_line(aes(y = imports.level), col = "red", linetype = 2, size = 1) + 
   theme_minimal()
-
 ```
 
-```{r}
+```{r, eval = FALSE}
 write_csv(df_done %>% select(index, time, household_and_npish_final_consumption_expenditure, imports.fitted.level), here("data/temp/imports.csv"))
 ```
 

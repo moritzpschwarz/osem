@@ -4,7 +4,8 @@ isat_modelling <- function(clean_data,
                                                "household_and_npish_final_consumption_expenditure"),
                            use_logs = c("both","y","x"),
                            ardl_or_ecm = "ardl",
-                           max.lag = 4){
+                           max.lag = 4,
+                           saturation.tpval = 0.01){
   
   log_opts <- match.arg(use_logs)
   
@@ -28,7 +29,7 @@ isat_modelling <- function(clean_data,
       
       xvars <- clean_data %>% 
         select(all_of(paste0(ifelse(log_opts %in% c("both","x"),"ln.",""),x_vars_basename)),
-               if(i != 0) {all_of(xvars_names[1:i])} else {NULL}, 
+               if(i != 0) {all_of(xvars_names[grepl(paste0(1:i,collapse = "|"),xvars_names)])} else {NULL}, 
                q_2,q_3,q_4)
     }
     if(ardl_or_ecm == "ecm"){
@@ -40,7 +41,9 @@ isat_modelling <- function(clean_data,
                           grep(paste0(x_vars_basename,collapse = "|"),names(clean_data), value = TRUE), value = TRUE)
       
       xvars <- clean_data %>% 
-        select(all_of(paste0(ifelse(log_opts %in% c("both","x"),"D.ln.","D."),x_vars_basename)),
+        select(all_of(paste0(ifelse(log_opts %in% c("both","y"),"L1.ln.","L1."),dep_var_basename)),
+               all_of(paste0(ifelse(log_opts %in% c("both","x"),"L1.ln.","L1."),x_vars_basename)),
+               all_of(paste0(ifelse(log_opts %in% c("both","x"),"D.ln.","D."),x_vars_basename)),
                if(i != 0) {all_of(xvars_names[grepl(paste0(1:i,collapse = "|"),xvars_names)])} else {NULL}, 
                q_2,q_3,q_4)
     }
