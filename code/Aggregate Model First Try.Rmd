@@ -89,13 +89,15 @@ q_GDP <- c("namq_10_gdp", # Hauptkomponenten
            "naidq_10_gdp",
            "naidq_10_a10",
            "naidq_10_pe",
-           "naidsq_10_nf_tr"
+           "naidsq_10_nf_tr",
+
+           "env_ac_aigg_q"
 )
 ```
 
 ```{r}
 geo_subset = "AT"
-re_download <- FALSE
+re_download <- TRUE
 ```
 
 
