@@ -23,7 +23,7 @@ editor_options:
 
 
 # Set-up
-  
+
 ```{r, echo=FALSE}
 knitr::opts_chunk$set(comment = NA, echo = TRUE, eval = TRUE, 
                       warning = FALSE, message = FALSE, 
@@ -95,10 +95,67 @@ overall %>%
 ```
 
 
+```{r}
+clean_data(imports_data, preestimated_xvars = cp_estimated, max.lag = 4)
+```
+
+
+
+```{r,eval = FALSE}
+imports_data %>% 
+  select(na_item, time,values) %>%
+  pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>% 
+  clean_names() %>% 
+  
+  # Add previously estimated data
+  full_join(cp_estimated %>% select(-index), by = "time") %>% 
+  
+  arrange(time) %>% 
+  mutate(across(-time,list(ln = log),.names = "{.fn}.{.col}"),
+         across(starts_with("ln."),list(D = ~c(NA,diff(., ))), .names = "{.fn}.{.col}"),
+         
+         # ECM
+         across(c(starts_with("D."),starts_with("ln.")),list(L = lag),.names = "{.fn}1.{.col}"),
+         across(c(starts_with("D."),starts_with("ln.")),list(L = ~lag(.,2)),.names = "{.fn}2.{.col}"),
+         across(c(starts_with("D."),starts_with("ln.")),list(L = ~lag(.,3)),.names = "{.fn}3.{.col}"),
+         across(c(starts_with("D."),starts_with("ln.")),list(L = ~lag(.,4)),.names = "{.fn}4.{.col}"),
+         index = 1:n()) %>% 
+  relocate(index) %>% 
+  mutate(q = quarter(time, with_year = FALSE)) %>% 
+  dummy_cols(select_columns = "q", remove_first_dummy = TRUE, remove_selected_columns = TRUE) -> imports_data_clean
+```
 
 
 
 ```{r}
+function(raw_data, 
+         additional_xvars){
+  
+  raw_data %>% 
+    select(na_item, time,values) %>%
+    pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>% 
+    clean_names() %>% 
+    
+    # Add previously estimated data
+    full_join(additional_xvars, by = "time") %>% 
+    
+    arrange(time) %>% 
+    mutate(across(-time,list(ln = log),.names = "{.fn}.{.col}"),
+           across(starts_with("ln."),list(D = ~c(NA,diff(., ))), .names = "{.fn}.{.col}"),
+           
+           # ECM
+           across(c(starts_with("D."),starts_with("ln.")),list(L = lag),.names = "{.fn}1.{.col}"),
+           across(c(starts_with("D."),starts_with("ln.")),list(L = ~lag(.,2)),.names = "{.fn}2.{.col}"),
+           across(c(starts_with("D."),starts_with("ln.")),list(L = ~lag(.,3)),.names = "{.fn}3.{.col}"),
+           across(c(starts_with("D."),starts_with("ln.")),list(L = ~lag(.,4)),.names = "{.fn}4.{.col}"),
+           index = 1:n()) %>% 
+    relocate(index) %>% 
+    mutate(q = quarter(time, with_year = FALSE)) %>% 
+    dummy_cols(select_columns = "q", remove_first_dummy = TRUE, remove_selected_columns = TRUE) -> imports_data_clean
+  
+  
+}
+
 imports_data %>% 
   select(na_item, time,values) %>%
   pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>% 
@@ -129,11 +186,11 @@ imports_data %>%
 ## Imports
 
 ```{r}
-done_isat_modelling <- isat_modelling(clean_data = imports_data_clean, 
-                                      dep_var_basename = "imports_of_goods_and_services",
-                                      ardl_or_ecm = "ecm")
+# done_isat_modelling <- isat_modelling(clean_data = imports_data_clean, 
+#                                       dep_var_basename = "imports_of_goods_and_services",
+#                                       ardl_or_ecm = "ecm")
 
-done_isat_modelling2 <- isat_modelling(clean_data = imports_data_clean, 
+done_isat_modelling <- isat_modelling(clean_data = imports_data_clean, 
                                       dep_var_basename = "imports_of_goods_and_services",
                                       ardl_or_ecm = "ardl")
 

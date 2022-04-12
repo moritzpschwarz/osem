@@ -14,7 +14,7 @@
 clean_data <- function(raw_data, 
                        #use_logs = c("both","y","x"),
                        preestimated_xvars = NULL, 
-                       max.lag = 1:4){
+                       max.lag = 4){
   
   raw_data %>% 
     select(na_item, time,values) %>%
@@ -22,7 +22,7 @@ clean_data <- function(raw_data,
     clean_names() %>% 
     
     # Add previously estimated data
-    {if(!is.null(preestimated_xvars)){full_join(.,preestimated_xvars, by = "time")} else {.}} %>%
+    {if(!is.null(preestimated_xvars)){full_join(.,preestimated_xvars %>% select(-any_of("index")), by = "time")} else {.}} %>%
     
     arrange(.,time) %>% 
     mutate(across(-time,list(ln = log),.names = "{.fn}.{.col}"),
