@@ -26,13 +26,14 @@ ships_q %>%
   filter(year < 2015) %>% 
   slice(1:138) -> ships_q_ready
 
+ships_q -> ships_q_ready
 
 ships_q_ready %>% 
   mutate(DLOG_ASKIP = diff(c(NA,log(ex_ships_oilp))), 
          LOG_ASKIP_1 = log(lag(ex_ships_oilp)),
          c1 = ifelse(quarter == 1,0.75,-0.25),
          c2 = ifelse(quarter == 2,0.75,-0.25),
-         c3 = ifelse(quarter == 3,0.75,-0.25)) %>% 
+         c3 = ifelse(quarter == 3,0.75,-0.25)) %>% #summarise(mean(DLOG_ASKIP, na.rm = TRUE))
   
   lm(DLOG_ASKIP ~ LOG_ASKIP_1 + c1 + c2 + c3, data = ., ) %>% summary
 
