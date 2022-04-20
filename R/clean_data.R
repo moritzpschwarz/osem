@@ -2,12 +2,15 @@
 #'
 #' @param raw_data A tibble or data.frame with the y variable and the x variables. Needs to have a column called "time", which is off class = date. Variable names need to be in 'na_item', values in 'values'.
 #' @param preestimated_xvars A data.frame or tibble with the x variables that have been pre-estimated by another equation in levels. Needs to have a column called "time", which is off class = date.
+#' @param max.lag The maximum number of lags to use for both the AR terms as well as for the independent variables.
 #'
 #' @return A tibble with the cleaned data.
 #' @export
 #'
 #' @examples
-#' sample_data <- tibble(time = rep(seq.Date(from = as.Date("2000-01-01"), to = as.Date("2000-12-31"),by = 1),each = 2), na_item = rep(c("yvar","xvar"),366), values = rnorm(366*2,mean = 100))
+#' sample_data <- tibble(time = rep(seq.Date(from = as.Date("2000-01-01"),
+#' to = as.Date("2000-12-31"),by = 1),each = 2),
+#' na_item = rep(c("yvar","xvar"),366), values = rnorm(366*2,mean = 100))
 #' clean_data(sample_data, max.lag = 4)
 #'
 
