@@ -9,7 +9,7 @@
 #' @param saturation Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.
 #' @param saturation.tpval The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.
 #'
-#' @return
+#' @return A list containing all estimated models, with the model with the smallest BIC under 'best_model'.
 #' @export
 #'
 #' @examples

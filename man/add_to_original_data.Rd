@@ -21,7 +21,7 @@ add_to_original_data(
 \item{ardl_or_ecm}{Either 'ardl' or 'ecm' to determine whether to estimate the model as an Autoregressive Distributed Lag Function (ardl) or as an Equilibrium Correction Model (ecm).}
 }
 \value{
-
+A tibble with the fitted values as one column.
 }
 \description{
 Add the estimated fitted values back to the original

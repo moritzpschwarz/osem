@@ -5,7 +5,7 @@
 #' @param dep_var_name A character string of the name of the dependent variable as contained in clean_data() in a level form (i.e. no ln or D in front of the name).
 #' @param ardl_or_ecm Either 'ardl' or 'ecm' to determine whether to estimate the model as an Autoregressive Distributed Lag Function (ardl) or as an Equilibrium Correction Model (ecm).
 #'
-#' @return
+#' @return A tibble with the fitted values as one column.
 #' @export
 #'
 #' @examples

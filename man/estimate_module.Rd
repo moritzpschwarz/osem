@@ -34,7 +34,7 @@ estimate_module(
 \item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
 }
 \value{
-
+A list containing all estimated models, with the model with the smallest BIC under 'best_model'.
 }
 \description{
 Estimate the specific module using indicator saturation
