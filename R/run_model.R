@@ -12,8 +12,7 @@
 #
 # specification <- config_table_small
 
-run_model <- function(specification, inputdata_directory = paste0(getwd(),"/data/raw")){
-
+run_model <- function(specification, inputdata_directory = paste0(getwd(), "/data/raw")) {
   module_order <- check_config_table(specification)
 
   module_order_eurostatvars <- translate_variables(module_order)
@@ -23,15 +22,17 @@ run_model <- function(specification, inputdata_directory = paste0(getwd(),"/data
   module_order_eurostatvars %>%
     mutate(module_estimate = list(NA_complex_)) -> module_collection
 
-  for(i in 1:module_order$order){
-    cat(paste0("Estimating ",module_collection$dependent[i], " = ", module_collection$independent[i]))
-    module_estimate <- run_module(specification = module_collection_eurostatvars[,module_collection_eurostatvars$order == i],
-                                  data = loaded_data)
+  for (i in 1:module_order$order) {
+    cat(paste0("Estimating ", module_collection$dependent[i], " = ", module_collection$independent[i]))
+    module_estimate <- run_module(
+      specification = module_collection_eurostatvars[, module_collection_eurostatvars$order == i],
+      data = loaded_data
+    )
 
     module_collection[module_collection$order == i, "module_estimate"] <- tibble(module_estimate = list(module_estimate))
   }
 
-  if(present){
+  if (present) {
     present_model(module_collection)
   }
 
@@ -43,5 +44,4 @@ run_model <- function(specification, inputdata_directory = paste0(getwd(),"/data
   out$module_collection <- module_collection
 
   return(out)
-
 }

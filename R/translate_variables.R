@@ -1,4 +1,4 @@
-translate_variables <- function(specification){
+translate_variables <- function(specification) {
 
   # take in variables either from NAM or elsewhere
 

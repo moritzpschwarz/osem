@@ -48,14 +48,14 @@
 #' @export
 #'
 #' @examples
-#' config_table_small <- tibble(dependent = c("JL","TOTS","B"),
-#' independent = c("TOTS - CP - CO - J - A","YF + B","CP + J"))
+#' config_table_small <- tibble(
+#'   dependent = c("JL", "TOTS", "B"),
+#'   independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J")
+#' )
 #' check_config_table(config_table_small)
-
-check_config_table <- function(config_table){
-
-
-  strsplits <- function(x, splits, ...){
+#'
+check_config_table <- function(config_table) {
+  strsplits <- function(x, splits, ...) {
     for (split in splits)
     {
       x <- unlist(strsplit(x, split, ...))
@@ -66,21 +66,25 @@ check_config_table <- function(config_table){
 
   # check that there is no endogeneity
   config_table %>%
-    mutate(independent = gsub(" ","",independent)) %>%
+    mutate(independent = gsub(" ", "", independent)) %>%
     rowwise() %>%
-    mutate(splitvars = list(strsplits(independent,
-                                      c("\\-","\\+")))) %>%
+    mutate(splitvars = list(strsplits(
+      independent,
+      c("\\-", "\\+")
+    ))) %>%
     ungroup() %>%
     unnest(splitvars) %>%
-
-    #group_by(dependent) %>%
-    #rowwise() %>%
+    # group_by(dependent) %>%
+    # rowwise() %>%
     mutate(direct_endog = dependent == splitvars) -> direct_endog
 
-  if(any(direct_endog$direct_endog)){stop(
-    "A direct endogeneity was detected in this configuration table.
+  if (any(direct_endog$direct_endog)) {
+    stop(
+      "A direct endogeneity was detected in this configuration table.
     You seem to have included a variable on the LHS as well as the RHS.
-    Modify the config_table")}
+    Modify the config_table"
+    )
+  }
 
   direct_endog %>%
     rowwise() %>%
@@ -90,36 +94,42 @@ check_config_table <- function(config_table){
     pull(pairs) -> indirect_endog
 
 
-  if(!identical(indirect_endog,list())){
+  if (!identical(indirect_endog, list())) {
     overall <- vector()
-    for(i in 1:length(indirect_endog)){
-      intermed <- paste0(indirect_endog[[i]],collapse = " and ")
-      overall <- c(overall,intermed)
+    for (i in 1:length(indirect_endog)) {
+      intermed <- paste0(indirect_endog[[i]], collapse = " and ")
+      overall <- c(overall, intermed)
     }
     stop(
-      paste0("An endogeneity was detected.\nCheck the relationship between ",
-             paste0(overall,collapse = "; "),
-             "\nIn the aggregate model a variable can only depend on another variable if that variable does not depend on the other."))}
+      paste0(
+        "An endogeneity was detected.\nCheck the relationship between ",
+        paste0(overall, collapse = "; "),
+        "\nIn the aggregate model a variable can only depend on another variable if that variable does not depend on the other."
+      )
+    )
+  }
 
   # create the right order for estimation
 
   config_table %>%
-    mutate(index = 1:n(),.before = 1,
-           independent = gsub(" ","",independent)) %>%
+    mutate(
+      index = 1:n(), .before = 1,
+      independent = gsub(" ", "", independent)
+    ) %>%
     rowwise() %>%
-    mutate(splitvars = list(strsplits(independent,
-                                      c("\\-","\\+")))) %>%
+    mutate(splitvars = list(strsplits(
+      independent,
+      c("\\-", "\\+")
+    ))) %>%
     ungroup() %>%
     unnest(splitvars) %>%
-
-    mutate(endog = ifelse(splitvars %in% dependent,TRUE,FALSE)) -> config_table_endog_exog
+    mutate(endog = ifelse(splitvars %in% dependent, TRUE, FALSE)) -> config_table_endog_exog
 
   config_table_endog_exog %>%
     group_by(dependent, independent) %>%
     mutate(all_exog = !any(endog)) %>%
     ungroup() %>%
-
-    distinct(index, dependent,independent,all_exog) %>%
+    distinct(index, dependent, independent, all_exog) %>%
     filter(all_exog) %>%
     select(-all_exog) %>%
     mutate(order = 1:n()) -> order_exog
@@ -131,17 +141,25 @@ check_config_table <- function(config_table){
     filter(!all_exog) -> not_exog
 
 
-  while(nrow(not_exog) != 0){
+  while (nrow(not_exog) != 0) {
     not_exog %>%
-      mutate(already_estimated = case_when(endog & (splitvars %in% order_exog$dependent)~TRUE,
-                                           TRUE ~ FALSE),
-             endog = case_when(endog & already_estimated ~ FALSE,
-                               TRUE ~ endog)) %>%
+      mutate(
+        already_estimated = case_when(
+          endog & (splitvars %in% order_exog$dependent) ~ TRUE,
+          TRUE ~ FALSE
+        ),
+        endog = case_when(
+          endog & already_estimated ~ FALSE,
+          TRUE ~ endog
+        )
+      ) %>%
       group_by(index) %>%
       filter(!any(endog)) %>%
       distinct(index, dependent, independent) %>%
-      mutate(order = 1:n(),
-             order = order + max(order_exog$order)) %>%
+      mutate(
+        order = 1:n(),
+        order = order + max(order_exog$order)
+      ) %>%
       ungroup() -> remove_from_not_exog
 
     bind_rows(remove_from_not_exog, order_exog) -> order_exog
@@ -170,8 +188,10 @@ check_config_table <- function(config_table){
 
   order_exog %>%
     arrange(order) %>%
-    mutate(independent = gsub("\\+"," + ",independent),
-           independent = gsub("\\-"," - ",independent)) %>%
+    mutate(
+      independent = gsub("\\+", " + ", independent),
+      independent = gsub("\\-", " - ", independent)
+    ) %>%
     return()
 }
 

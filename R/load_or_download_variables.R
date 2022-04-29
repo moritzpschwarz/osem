@@ -1,4 +1,4 @@
-load_or_download_variables <- function(module_order, inputdata_directory, save_to_disk = FALSE){
+load_or_download_variables <- function(module_order, inputdata_directory, save_to_disk = FALSE) {
 
   # check the inputdata_directory for any files
 
@@ -8,8 +8,8 @@ load_or_download_variables <- function(module_order, inputdata_directory, save_t
 
   # return finalised data
 
-  if(save_to_disk){
-    write_csv(return_df, file = paste0(inputdata_directory,"/eurostat_download.csv"))
+  if (save_to_disk) {
+    write_csv(return_df, file = paste0(inputdata_directory, "/eurostat_download.csv"))
   }
 
   return(return_df)
