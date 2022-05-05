@@ -40,9 +40,14 @@ A list containing all estimated models, with the model with the smallest BIC und
 Estimate the specific module using indicator saturation
 }
 \examples{
-sample_data <- tibble(time = rep(seq.Date(from = as.Date("2000-01-01"),
-to = as.Date("2000-12-31"),by = 1),each = 2),
-na_item = rep(c("yvar","xvar"),366), values = rnorm(366*2,mean = 100))
+sample_data <- tibble(
+  time = rep(seq.Date(
+    from = as.Date("2000-01-01"),
+    to = as.Date("2000-12-31"), by = 1
+  ), each = 2),
+  na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
+)
 sample_data_clean <- clean_data(sample_data, max.lag = 4)
-estimate_module(sample_data_clean, "yvar","xvar")
+estimate_module(sample_data_clean, "yvar", "xvar")
+
 }
