@@ -101,7 +101,7 @@ estimate_module <- function(clean_data,
     if (!is.null(saturation)) {
       # debug_list <- list(yvar = yvar, xvars = xvars,i = i,saturation.tpval = saturation.tpval)
       # save(debug_list, file = "debug_list.RData")
-      intermed.model <- isat(
+      intermed.model <- gets::isat(
         y = yvar,
         mxreg = xvars,
         ar = if (i != 0) {
@@ -116,7 +116,7 @@ estimate_module <- function(clean_data,
         t.pval = saturation.tpval
       )
     } else {
-      intermed.model <- arx(
+      intermed.model <- gets::arx(
         y = yvar,
         mxreg = xvars,
         ar = if (i != 0) {
