@@ -129,7 +129,7 @@ check_config_table <- function(config_table) {
     group_by(dependent, independent) %>%
     mutate(all_exog = !any(endog)) %>%
     ungroup() %>%
-    distinct(index, dependent, independent, all_exog) %>%
+    distinct(index, type, dependent, independent, all_exog) %>%
     filter(all_exog) %>%
     select(-all_exog) %>%
     mutate(order = 1:n()) -> order_exog
@@ -153,7 +153,7 @@ check_config_table <- function(config_table) {
           TRUE ~ endog
         )
       ) %>%
-      group_by(index) %>%
+      group_by(index, type) %>%
       filter(!any(endog)) %>%
       distinct(index, dependent, independent) %>%
       mutate(
