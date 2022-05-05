@@ -1,10 +1,21 @@
 #' Prepare the clean dataframe for modelling
 #'
-#' @param raw_data A tibble or data.frame with the y variable and the x variables. Needs to have a column called "time", which is off class = date. Variable names need to be in 'na_item', values in 'values'.
-#' @param preestimated_xvars A data.frame or tibble with the x variables that have been pre-estimated by another equation in levels. Needs to have a column called "time", which is off class = date.
-#' @param max.lag The maximum number of lags to use for both the AR terms as well as for the independent variables.
+#' @param raw_data A tibble or data.frame with the y variable and the x
+#'   variables. Needs to have a column called 'time', which is of class
+#'   \code{\link[base:Dates]{Date}}. Variable names need to be in column
+#'   'na_item', and values in column 'values'.
+#' @param preestimated_xvars A tibble or data.frame with the x variables that
+#'   have been pre-estimated by another equation in levels. Needs to have a
+#'   column called 'time', which is of class \code{\link[base:Dates]{Date}}.
+#' @param max.lag The maximum number of lags to use for both the AR terms as
+#'   well as for the independent variables.
+#'
+#' @note Jonas: I suggest we do not use the argument 'preestimated_xvars' and
+#'   instead include any fitted values via the argument #' 'raw_data' (clearly
+#'   indicated by variable ending .hat).
 #'
 #' @return A tibble with the cleaned data.
+#'
 #' @export
 #'
 #' @examples
@@ -16,9 +27,8 @@
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
 #' clean_data(sample_data, max.lag = 4)
-#'
+
 clean_data <- function(raw_data,
-                       # use_logs = c("both","y","x"),
                        preestimated_xvars = NULL,
                        max.lag = 4) {
   raw_data %>%
@@ -59,4 +69,5 @@ clean_data <- function(raw_data,
     ) -> cleaned_data
 
   return(cleaned_data)
+
 }
