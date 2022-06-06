@@ -7,18 +7,24 @@
 add_to_original_data(
   clean_data,
   isat_object,
-  dep_var_name = "imports_of_goods_and_services",
+  dep_var_basename = "imports_of_goods_and_services",
   ardl_or_ecm = "ardl"
 )
 }
 \arguments{
-\item{clean_data}{An input data.frame or tibble. Must be the output of clean_data() to fit all requirements.}
+\item{clean_data}{An input data.frame or tibble. Must be the output of
+clean_data() to fit all requirements.}
 
-\item{isat_object}{An object of class 'isat'. Most likely should be the 'best_model' element that is returned by the 'estimate_module()' function.}
+\item{isat_object}{An object of class 'isat'. Most likely should be the
+'best_model' element that is returned by the 'estimate_module()' function.}
 
-\item{dep_var_name}{A character string of the name of the dependent variable as contained in clean_data() in a level form (i.e. no ln or D in front of the name).}
+\item{dep_var_basename}{A character string of the name of the dependent
+variable as contained in clean_data() in a level form (i.e. no ln or D in
+front of the name).}
 
-\item{ardl_or_ecm}{Either 'ardl' or 'ecm' to determine whether to estimate the model as an Autoregressive Distributed Lag Function (ardl) or as an Equilibrium Correction Model (ecm).}
+\item{ardl_or_ecm}{Either 'ardl' or 'ecm' to determine whether to estimate
+the model as an Autoregressive Distributed Lag Function (ardl) or as an
+Equilibrium Correction Model (ecm).}
 }
 \value{
 A tibble with the fitted values as one column.
@@ -27,10 +33,14 @@ A tibble with the fitted values as one column.
 Add the estimated fitted values back to the original
 }
 \examples{
-sample_data <- tibble(time = rep(seq.Date(from = as.Date("2000-01-01"),
-to = as.Date("2000-12-31"),by = 1),each = 2),
-na_item = rep(c("yvar","xvar"),366), values = rnorm(366*2,mean = 100))
+sample_data <- tibble(
+  time = rep(seq.Date(
+    from = as.Date("2000-01-01"),
+    to = as.Date("2000-12-31"), by = 1
+  ), each = 2),
+  na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
+)
 sample_data_clean <- clean_data(sample_data, max.lag = 4)
-estimation <- estimate_module(sample_data_clean, "yvar","xvar")
-add_to_original_data(estimation$best_model, dep_var_name = "yvar")
+estimation <- estimate_module(sample_data_clean, "yvar", "xvar")
+add_to_original_data(sample_data_clean, estimation$best_model, dep_var_basename = "yvar")
 }

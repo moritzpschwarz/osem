@@ -10,11 +10,11 @@ output:
     number_sections: true
     df_print: paged
 knit: (function(inputFile, encoding) { 
-  rmarkdown::render(inputFile, 
   encoding = encoding, 
   output_format = "html_document", 
-  output_dir = here::here("output")) 
   })
+  rmarkdown::render(inputFile, 
+  output_dir = here::here("output")) 
 editor_options:
   chunk_output_type: console
 ---
@@ -229,7 +229,7 @@ overall %>%
                         "Household and NPISH final consumption expenditure")) %>%
   #filter(grepl("expenditure",na_item, ignore.case = TRUE), !grepl("gross", na_item, ignore.case = TRUE)) %>% 
   select(na_item, time, values) %>% 
-  pivot_wider(time, na_item, values_from = values) %>%
+  pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>%
   clean_names() %>% 
   
   mutate(test = household_and_npish_final_consumption_expenditure + final_consumption_expenditure_of_general_government,
@@ -275,9 +275,20 @@ analysis_data_raw %>%
 
 
 ```{r}
+# analysis_data_raw does not contain unique geo, time, na_item combination
+# Imports of goods and services, 1997-07-01 appears twice
+
+# analysis_data_raw %>%
+#   filter(time == as.Date("1997-07-01") & na_item == "Imports of goods and services") %>% View()
+# very similar (.9 vs .8), simply take avg
+analysis_data_raw %>%
+  group_by(geo, unit, s_adj, time, na_item) %>%
+  summarise(values = mean(values)) -> analysis_data_raw
+  
+
 analysis_data_raw %>% 
   select(-unit, -s_adj) %>% 
-  pivot_wider(c(geo, time), names_from = na_item, values_from = values) %>% 
+  pivot_wider(id_cols = all_of(c("geo", "time")), names_from = na_item, values_from = values) %>% 
   clean_names() %>% 
   mutate(tots = gross_domestic_product_at_market_prices + imports_of_goods_and_services,
          totd = final_consumption_expenditure_of_general_government + 

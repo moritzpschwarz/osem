@@ -16,7 +16,10 @@ A tibble that gives the order of the modules to be run.
 Check the configuration of the model contained in the config table
 }
 \examples{
-config_table_small <- tibble(dependent = c("JL","TOTS","B"),
-independent = c("TOTS - CP - CO - J - A","YF + B","CP + J"))
+config_table_small <- tibble(
+  dependent = c("JL", "TOTS", "B"),
+  independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J")
+)
 check_config_table(config_table_small)
+
 }
