@@ -4,7 +4,7 @@
 \alias{run_shiny}
 \title{Creates and runs the Shiny App "shinyaggmodel"}
 \usage{
-run_shiny()
+run_shiny(model = NULL)
 }
 \description{
 Opens a window for the user to interact with the app. The user can upload
