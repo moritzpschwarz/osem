@@ -1,20 +1,23 @@
+
+
 ui <- fluidPage(
 
   tabsetPanel(
     tabPanel("Input", fluid = TRUE,
              mainPanel(
-               fileInput("upload", NULL, buttonLabel = "Upload...", multiple = FALSE, accept = ".Rds"),
+               fileInput("upload", NULL, buttonLabel = "Upload Stored Model from Disk...", multiple = FALSE, accept = ".Rds"),
                tableOutput("files"),
                tags$hr(),
                h1("Specification"),
-               tableOutput("spec")
+               tableOutput("spec"),
+               tableOutput(outputId = "test")
              )
-             ),
+    ),
     tabPanel("Graphs", fluid = TRUE,
              mainPanel(
                plotOutput("plots")
              )
-             ),
+    ),
     tabPanel("Equations", fluid = TRUE,
              mainPanel(
                verbatimTextOutput("equations")
@@ -25,13 +28,23 @@ ui <- fluidPage(
 
 server <- function(input, output) {
 
-  data <- reactive({
-    req(input$upload)
-  })
+  # data <- reactive({
+  #   req(input$upload)
+  # })
+
+  # input$upload <- observe({
+  #   if (is.null(input$upload)){
+  #     input$upload <- getShinyOption("object", model)
+  #   }
+  # })
+
 
   aggmod <- reactive({
-    req(input$upload)
-    readRDS(file = input$upload$datapath)
+    if (is.null(input$upload)) {
+      getShinyOption("aggmodel_direct")
+    } else {
+      readRDS(file = input$upload$datapath)
+    }
   })
 
   wide <- reactive({
@@ -59,6 +72,23 @@ server <- function(input, output) {
     }
     return(wholeprint)
   })
+
+  # get_file_or_default <- reactive({
+  #   if (is.null(input$upload)) {
+  #     getShinyOption("aggmodel_direct ")
+  #   } else {
+  #     readRDS(file = input$upload$datapath)
+  #   }
+  # })
+  #
+  # output$test <- renderTable({
+  #   #if(is.null(input$upload)){
+  #    # tibble("test")
+  #   #} else {
+  #     get_file_or_default()$args$specification
+  #     #object$args$specification
+  #   #}
+  # })
 
   output$files <- renderTable(input$upload)
   output$spec <- renderTable(head(aggmod()$module_order_eurostatvars))

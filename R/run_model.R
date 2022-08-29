@@ -147,11 +147,6 @@ run_model <- function(specification,
 
   }
 
-  # optionally, present aggregate model output
-  if (present) {
-    present_model(module_collection)
-  }
-
   # prepare output of aggregate model
   out <- list()
   out$args <- list(specification = specification, dictionary = dictionary,
@@ -163,6 +158,12 @@ run_model <- function(specification,
   out$full_data <- tmp_data
 
   out <- new_aggmod(out)
+
+  # optionally, present aggregate model output
+  if (present) {
+    present_model(out)
+  }
+
 
   return(out)
 

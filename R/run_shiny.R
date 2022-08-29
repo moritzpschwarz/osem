@@ -6,14 +6,22 @@
 #'
 #' @export
 
-run_shiny <- function() {
+run_shiny <- function(model = NULL) {
 
   appDir <- system.file("shiny-output", "shinyaggmodel", package = "aggregate.model")
 
   if (appDir == "") {
-    stop("Could not find example directory. Try re-installing `mypackage`.", call. = FALSE)
+    stop("Could not find example directory. Try re-installing `aggregate.model`.", call. = FALSE)
   }
 
-  shiny::shinyAppDir(appDir)
+  # if(!is.null(model)){
+  #   shiny::shinyAppDir(appDir, options = list(object = model))
+  # } else {
+  #   shiny::shinyAppDir(appDir)
+  # }
+
+
+  shinyOptions(aggmodel_direct = model)
+  source(system.file("shiny-output", "shinyaggmodel/app.R", package = "aggregate.model"))$value
 
 }
