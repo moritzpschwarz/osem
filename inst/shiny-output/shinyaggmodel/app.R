@@ -9,11 +9,13 @@ ui <- fluidPage(
                tableOutput("files"),
                tags$hr(),
                h1("Specification"),
-               tableOutput("spec"),
-               tableOutput(outputId = "test")
+               tableOutput("spec")#,
+               #tableOutput(outputId = "test")
              )
     ),
     tabPanel("Graphs", fluid = TRUE,
+                dateRangeInput(inputId = "range_plot", label = "Date Range for Plots",
+                               start = as.Date("1960-01-01"), end = Sys.Date()),
              mainPanel(
                plotOutput("plots")
              )
@@ -90,10 +92,14 @@ server <- function(input, output) {
   #   #}
   # })
 
+  output$test <- renderText(input$range_plot)
+
   output$files <- renderTable(input$upload)
   output$spec <- renderTable(head(aggmod()$module_order_eurostatvars))
   output$plots <- renderPlot({
-    ggplot(data = sel(), aes(x = time, y = value, color = type)) +
+    sel() %>%
+      filter(time >= as.Date(input$range_plot[1]) & time <= as.Date(input$range_plot[2])) %>%
+    ggplot(aes(x = time, y = value, color = type)) +
       geom_line() +
       facet_wrap(facets = "variable", scales = "free", nrow = length(unique(sel()$variable)))
   })
