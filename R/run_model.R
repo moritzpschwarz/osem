@@ -27,6 +27,7 @@
 #' @param quiet Logical with default = FALSE. Should messages be displayed?
 #' These messages are intended to give more information about the estimation
 #' and data retrieval process.
+#' @param ... further arguments to be passed to \code{estimate_module}.
 #'
 #' @return An object of class \link[=new_aggmod]{aggmod}, which is a named list
 #'   with four elements:
@@ -89,7 +90,8 @@ run_model <- function(specification,
                       download = FALSE,
                       save_to_disk = NULL,
                       present = FALSE,
-                      quiet = FALSE) {
+                      quiet = FALSE,
+                      ...) {
 
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
@@ -124,6 +126,7 @@ run_model <- function(specification,
 
     # print progress update
     if(!quiet){
+      if(i == 1){cat("\n--- Estimation begins ---\n")}
       cat(paste0("Estimating ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")
     }
 
@@ -131,7 +134,8 @@ run_model <- function(specification,
     module_estimate <- run_module(
       module = module_order_eurostatvars[module_order_eurostatvars$order == i, ],
       data = tmp_data,
-      classification = classification
+      classification = classification,
+      ...
     )
 
     # store module estimates dataset, including fitted values

@@ -11,7 +11,9 @@ run_model(
   filter_list = NULL,
   download = FALSE,
   save_to_disk = NULL,
-  present = FALSE
+  present = FALSE,
+  quiet = FALSE,
+  ...
 )
 }
 \arguments{
@@ -43,6 +45,12 @@ saved, including the file name and ending. Not saved when \code{NULL}.}
 
 \item{present}{A logical value whether the final aggregate model output
 should be presented or not. NOTE: not implemented yet.}
+
+\item{quiet}{Logical with default = FALSE. Should messages be displayed?
+These messages are intended to give more information about the estimation
+and data retrieval process.}
+
+\item{...}{further arguments to be passed to \code{estimate_module}.}
 }
 \value{
 An object of class \link[=new_aggmod]{aggmod}, which is a named list

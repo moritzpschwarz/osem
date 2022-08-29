@@ -20,6 +20,9 @@
 #'   stored. Can be \code{NULL} if \code{download == TRUE}.
 #' @param save_to_disk A path to a directory where the final dataset will be
 #'   saved, including file name and ending. Not saved when \code{NULL}.
+#' @param quiet Logical with default = FALSE. Should messages be displayed?
+#' These messages are intended to give more information about the estimation
+#' and data retrieval process.
 #'
 #' @note Currently does not support mixed inputs, i.e. downloading some data and
 #'   reading the rest from files.
@@ -39,7 +42,8 @@ load_or_download_variables <- function(specification,
                                        download = TRUE,
                                        dictionary = NULL,
                                        inputdata_directory = NULL,
-                                       save_to_disk = NULL) {
+                                       save_to_disk = NULL,
+                                       quiet = FALSE) {
 
   # input check
   if (is.null(dictionary)) {
@@ -89,7 +93,22 @@ load_or_download_variables <- function(specification,
 
   } else { # not download but local directory
 
-    files <- list.files(path = inputdata_directory, pattern = "\\.(Rds|RDS|rds)$")
+    if(file.exists(inputdata_directory) & !dir.exists(inputdata_directory)){
+      stop("The variable 'inputdata_directory' must be a character path to a directory, not to a file.")}
+
+    files <- list.files(path = inputdata_directory, pattern = "\\.(Rds|RDS|rds|csv|xlsx|xls)$")
+
+    if(!quiet){
+      cat("Local files are used.\n")
+      cat("The following files are opened and scanned for relevant data for the model.\n")
+      cat(paste0(files, collapse = " "))
+      cat("\n")
+      cat("Note: If these include non-data files (with a likely different structure and hence likely errors), it is recommended to move all data files to a dedicated directory or to save the there using the 'save_to_disk' argument in the first place:\n")
+      cat("\n")
+      cat("You can quiet this message with quiet = FALSE.")
+      cat("\n")
+    }
+
 
     codes.find <- determine_eurocodes(specification = specification, dictionary = dictionary)$var.ids
     codes.remain <- codes.find
@@ -98,7 +117,16 @@ load_or_download_variables <- function(specification,
     # loop through required datasets
     for (i in 1:length(files)) {
       pth <- file.path(inputdata_directory, files[i])
-      tmp <- readRDS(file = pth)
+
+      if(grepl("\\.(Rds|RDS|rds)$",pth)){
+        tmp <- readRDS(file = pth)
+      } else if (grepl("\\.(csv)$",pth)){
+        tmp <- read.csv(pth)
+      } else if (grepl("\\.(xls|xlsx)$",pth)){
+        tmp <- readxl::read_excel(path = pth)
+        #stop("Loading from xls or xlsx file not yet implemented.)
+      }
+
       codes.found <- codes.find[which(codes.find %in% unique(tmp$na_item))]
       codes.remain <- setdiff(codes.remain, codes.found)
       for (j in 1:length(codes.found)) {
@@ -139,18 +167,24 @@ load_or_download_variables <- function(specification,
   # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
 
   if (!is.null(save_to_disk)) {
+    if(!is.character(save_to_disk)){stop("'save_to_disk' must be a character file path.")}
+
+    if(!dir.exists(gsub("/[^/]*$","",save_to_disk))){
+      dir.create(gsub("/[^/]*$","",save_to_disk))
+
+    }
 
     # which file ending was chosen
     ending <- str_extract(string = save_to_disk, pattern = "\\.[:alpha:]+$")
 
     if (ending %in% c(".RDS", ".rds", ".Rds")) {
       saveRDS(object = full, file = save_to_disk)
-    }
-    if (ending == ".csv") {
+    } else if (ending == ".csv") {
       write_csv(x = full, file = save_to_disk)
-    }
-    if (ending %in% c(".xls", ".xlsx")) {
-      write_excel_csv(x = full, file = save_to_disk)
+    } else if (ending %in% c(".xls", ".xlsx")) {
+      writexl::write_xlsx(x = full, path = save_to_disk)
+    } else {
+      warning(paste0("File ending currently chosen in 'save_to_disk' is ",ending,", which is not yet implemented. Please choose one of RDS, rds, Rds, csv, xls, xlsx."))
     }
 
   }

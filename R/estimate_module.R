@@ -47,17 +47,25 @@ estimate_module <- function(clean_data,
   )
   for (i in 0:max.lag) {
     if (ardl_or_ecm == "ardl") {
-      if (log_opts %in% c("both", "x")) {
-        xvars_names <- grep("L[0-9]\\.ln",
-          grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
-          value = TRUE
-        )
+
+      # first check whether there is an x variable that is relevant (or whether it is an AR only model)
+      if(!identical(x_vars_basename, character(0))){
+        if (log_opts %in% c("both", "x")) {
+          xvars_names <- grep("L[0-9]\\.ln",
+                              grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
+                              value = TRUE
+          )
+        } else {
+          xvars_names <- grep("L[0-9]\\.",
+                              grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
+                              value = TRUE
+          )
+        }
       } else {
-        xvars_names <- grep("L[0-9]\\.",
-          grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
-          value = TRUE
-        )
+        # if it is an AR only model
+        xvars_names <- NULL
       }
+
 
       yvar <- clean_data %>%
         select(all_of(paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename))) %>%
@@ -65,7 +73,7 @@ estimate_module <- function(clean_data,
 
       xvars <- clean_data %>%
         select(
-          all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_basename)),
+          if(!identical(x_vars_basename,character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_basename))}else{NULL},
           if (i != 0) {
             all_of(xvars_names[grepl(paste0(1:i, collapse = "|"), xvars_names)])
           } else {
@@ -79,16 +87,22 @@ estimate_module <- function(clean_data,
         select(all_of(paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename))) %>%
         pull()
 
-      xvars_names <- grep("L[0-9]\\.D.",
-        grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
-        value = TRUE
-      )
+
+      # TO DO: Check log specification and check when model is AR only
+      if(!identical(x_vars_basename, character(0))){
+        xvars_names <- grep("L[0-9]\\.D.",
+                            grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
+                            value = TRUE
+        )
+      } else {
+        xvars_names <- NULL
+      }
 
       xvars <- clean_data %>%
         select(
           all_of(paste0(ifelse(log_opts %in% c("both", "y"), "L1.ln.", "L1."), dep_var_basename)),
-          all_of(paste0(ifelse(log_opts %in% c("both", "x"), "L1.ln.", "L1."), x_vars_basename)),
-          all_of(paste0(ifelse(log_opts %in% c("both", "x"), "D.ln.", "D."), x_vars_basename)),
+          if(!identical(x_vars_basename, character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "L1.ln.", "L1."), x_vars_basename))}else{NULL},
+          if(!identical(x_vars_basename, character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "D.ln.", "D."), x_vars_basename))}else{NULL},
           if (i != 0) {
             all_of(xvars_names[grepl(paste0(1:i, collapse = "|"), xvars_names)])
           } else {
