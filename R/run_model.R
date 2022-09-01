@@ -141,6 +141,7 @@ run_model <- function(specification,
     # store module estimates dataset, including fitted values
     module_collection[module_collection$order == i, "dataset"] <- tibble(dataset = list(module_estimate$data))
     module_collection[module_collection$order == i, "model"] <- tibble(dataset = list(module_estimate$model))
+    module_collection[module_collection$order == i, "model.args"] <- tibble(dataset = list(module_estimate$args))
 
     # update dataset for next module by adding fitted values
     tmp_data <- update_data(orig_data = tmp_data, new_data = module_estimate$data)

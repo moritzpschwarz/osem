@@ -31,7 +31,7 @@ run_module <- function(module, data, classification, ...) {
                                   data = raw_data,
                                   classification = classification)
 
-    out <- list(model = NULL, data = moduledata)
+    out <- list(model = NULL, data = moduledata, args = NULL)
 
   } else if(module$type == "n") {
 
@@ -54,7 +54,9 @@ run_module <- function(module, data, classification, ...) {
                                        dep_var_basename = dep,
                                        ardl_or_ecm = estimated_module$args[[5]])
 
-    out <- list(model = estimated_module$best_model, data = moduledata)
+    out <- list(model = estimated_module$best_model,
+                data = moduledata,
+                args = estimated_module$args)
 
   } # end "n"
 

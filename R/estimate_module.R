@@ -75,7 +75,7 @@ estimate_module <- function(clean_data,
         select(
           if(!identical(x_vars_basename,character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_basename))}else{NULL},
           if (i != 0) {
-            all_of(xvars_names[grepl(paste0(1:i, collapse = "|"), xvars_names)])
+            all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
           } else {
             NULL
           },
@@ -104,7 +104,7 @@ estimate_module <- function(clean_data,
           if(!identical(x_vars_basename, character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "L1.ln.", "L1."), x_vars_basename))}else{NULL},
           if(!identical(x_vars_basename, character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "D.ln.", "D."), x_vars_basename))}else{NULL},
           if (i != 0) {
-            all_of(xvars_names[grepl(paste0(1:i, collapse = "|"), xvars_names)])
+            all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
           } else {
             NULL
           },
@@ -153,7 +153,12 @@ estimate_module <- function(clean_data,
     filter(BIC == min(BIC)) %>%
     pull(isat_object) %>%
     first()
-  out$args <- list(clean_data, dep_var_basename, x_vars_basename, use_logs, ardl_or_ecm, max.lag)
+  out$args <- list(clean_data = clean_data,
+                   dep_var_basename = dep_var_basename,
+                   x_vars_basename = x_vars_basename,
+                   use_logs = match.arg(use_logs),
+                   ardl_or_ecm = ardl_or_ecm,
+                   max.lag = ardl_or_ecm)
 
   return(out)
 }
