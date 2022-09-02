@@ -1,4 +1,15 @@
-forecast_model <- function(model, exog_predictions = NULL, n.ahead = 4){
+#' Forecast Aggregate model
+#'
+#' @param model An aggregate model of class 'aggmod'
+#' @param exog_predictions A data.frame or tibble with values for the exogenous values. The number of rows of this data must be equal to n.ahead.
+#' @param n.ahead Periods to forecast ahead
+#' @param plot Logical. Should the result be plotted? Default is TRUE.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot = TRUE){
 
   if(class(model) != "aggmod"){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
 
@@ -51,7 +62,10 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 4){
       mutate(independent = gsub(" ", "", independent)) %>%
       rowwise() %>%
       mutate(ind_vars = list(strsplits(independent,c("\\-", "\\+")))) %>%
+      # following line added to deal with AR models wehn ind_vars is a list of NULL
+      bind_rows(tibble(ind_vars = list(""))) %>%
       unnest(ind_vars, keep_empty = TRUE) %>%
+      drop_na(index) %>%
       select(index, dependent_eu, independent_eu)
 
     # Build the prediction df
@@ -69,6 +83,11 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 4){
       model$module_collection %>%
         filter(order == i) %>%
         pull(dataset) %>% .[[1]] -> data_obj
+
+      isat_obj$aux$mX %>% nrow
+      data_obj %>% nrow
+      colnames(isat_obj$aux$mX)
+      names(data_obj)
 
       # determine ARDL or ECM
       is_ardl <- is.null(model$args$ardl_or_ecm) | identical(model$args$ardl_or_ecm,"ARDL")
@@ -138,11 +157,7 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 4){
         x_names_vec <- c(x_names_vec,paste0(paste0(ifelse(ar == 0,"",paste0("L",ar,"."))),ifelse(ylog,"ln.",""),x_vars_basename))
       }
 
-
-      data_obj %>%
-        select(time, all_of(y_names_vec), all_of(x_names_vec))
-
-
+      x_names_vec_nolag <- paste0(ifelse(ylog,"ln.",""),x_vars_basename)
 
 
       # get iis dummies
@@ -174,65 +189,204 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 4){
         # drop not used quarterly dummies
         select(-any_of(q_pred)) %>%
 
-        {if(!identical(pred_ar_needed, character(0))){
-          bind_cols(.,pred_ar)
-          } else {.}} %>%
-
-        {if(mconst){
-          bind_cols(.,tibble(mconst = 1))
-        } else { . }} %>%
-
+        # {if(!identical(pred_ar_needed, character(0))){
+        #   bind_cols(.,pred_ar)
+        # } else {.}} %>%
+        #
+        # {if(mconst){
+        #   bind_cols(.,tibble(mconst = 1))
+        # } else { . }} %>%
+        #
         {if(!is.null(gets::isatdates(isat_obj)$iis)){
           bind_cols(.,iis_pred)
         } else { . }} %>%
 
         {if(!is.null(gets::isatdates(isat_obj)$sis)){
           bind_cols(.,sis_pred)
-        } else { . }}  -> current_pred_raw
+        } else { . }} %>%
 
 
+        {if(xlog){
+          mutate(.,
+                 across(.cols = all_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
+                 #across(starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
+          )
+        } else {.}} -> current_pred_raw
 
-      current_pred_raw %>%
-        select(all_of(x_vars_basename)) %>%
-        {if(xlog){mutate(.,across(.fns = log, .names = "ln.{.col}"))}else{.}} %>%
-        select()
 
       data_obj %>%
-        mutate(type = "hist") %>%
-        bind_rows(.,) %>% View
+        select(time, all_of(x_names_vec_nolag)) %>%
+        bind_rows(current_pred_raw %>%
+                    select(time, all_of(x_names_vec_nolag))) -> intermed
 
-
-      current_pred_raw %>%
-        mutate(type = "pred") %>%
-        bind_rows(isat_obj$aux$mX %>%
-                    as_tibble %>%
-                    select(any_of(names(current_pred_raw))) %>%
-                    mutate(type = "hist"),.) %>% View
-
-
-      model$module_collection$dataset[[i]]
-
-      predict(isat_obj, newmxreg = current_pred_raw, n.ahead = 4)
-
-      # transform variables in the right form
-
-
-
-      if(is.null(model$args$ardl_or_ecm) | identical(model$args$ardl_or_ecm,"ARDL")){
-
-
-
-
-
+      to_be_added <- tibble(.rows = nrow(intermed))
+      for (i in 1:max(ar_vec)) {
+        intermed %>%
+          mutate(across(c(#starts_with("D."),
+            starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
+          select(c(#starts_with("D."),
+            starts_with("ln."))) %>%
+          rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
+          bind_cols(to_be_added, .) -> to_be_added
       }
 
+      bind_cols(intermed, to_be_added) %>%
+        left_join(current_pred_raw %>%
+                    select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
+        drop_na %>%
+        select(-time) -> pred_df
 
-      exog_df_ready %>%
-        select(-time) %>%
-        #select(all_of())
-        as.matrix
+      predict(isat_obj, newmxreg = pred_df, n.ahead = n_ahead, plot = plot)
 
-      predict(isat_obj, newmxreg = , n.ahead = 4)
+
+
+      #
+      #
+      # data_obj %>%
+      #   bind_rows(current_pred_raw) %>%
+      #   mutate(
+      #     across(.cols = all_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
+      #     across(starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
+      #   ) -> intermed
+      #
+      # to_be_added <- tibble(.rows = nrow(intermed))
+      # for (i in 1:max(ar_vec)) {
+      #   intermed %>%
+      #     mutate(across(c(starts_with("D."), starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
+      #     select(c(starts_with("D."), starts_with("ln."))) %>%
+      #     rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
+      #     bind_cols(to_be_added, .) -> to_be_added
+      # }
+      #
+      #
+      #
+      # # make sure the x vars are in the right transformation
+      # current_pred_raw %>%
+      #   select(all_of(x_vars_basename)) %>%
+      #   mutate(
+      #     across(.fns = list(ln = log), .names = "{.fn}.{.col}"),
+      #     across(starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
+      #   ) -> intermed
+      #
+      # to_be_added <- tibble(.rows = nrow(intermed))
+      # for (i in 1:max(ar_vec)) {
+      #   intermed %>%
+      #     mutate(across(c(starts_with("D."), starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
+      #     select(c(starts_with("D."), starts_with("ln."))) %>%
+      #     rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
+      #     bind_cols(to_be_added, .) -> to_be_added
+      # }
+      #
+      #
+      #
+      #
+      #
+      # for(pred_time in 1:n_ahead){
+      #
+      #   if(pred_time == 1){
+      #     pred_ar_needed
+      #   } else {
+      #
+      #
+      #   }
+      #
+      #
+      # }
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      #
+      # current_pred_raw %>%
+      #   select(all_of(x_vars_basename)) %>%
+      #   mutate(
+      #     across(.fns = list(ln = log), .names = "{.fn}.{.col}"),
+      #     across(starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
+      #   ) -> intermed
+      #
+      # to_be_added <- tibble(.rows = nrow(intermed))
+      # for (i in 1:max(ar_vec)) {
+      #   intermed %>%
+      #     mutate(across(c(starts_with("D."), starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
+      #     select(c(starts_with("D."), starts_with("ln."))) %>%
+      #     rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
+      #     bind_cols(to_be_added, .) -> to_be_added
+      # }
+      #
+      #
+      # current_pred_raw %>%
+      #   select(all_of(y_vars_basename)) %>%
+      #   mutate(
+      #     across(.fns = list(ln = log), .names = "{.fn}.{.col}"),
+      #     across(starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
+      #   ) -> intermed
+      #
+      # to_be_added <- tibble(.rows = nrow(intermed))
+      # for (i in 1:max(ar_vec)) {
+      #   intermed %>%
+      #     mutate(across(c(starts_with("D."), starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
+      #     select(c(starts_with("D."), starts_with("ln."))) %>%
+      #     rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
+      #     bind_cols(to_be_added, .) -> to_be_added
+      # }
+      #
+      #
+      #
+      # intermed %>%
+      #   bind_cols(to_be_added) %>%
+      #   mutate(type = "pred")
+      #
+      #
+      # data_obj %>%
+      #   select(time, all_of(y_names_vec), all_of(x_names_vec)) %>%
+      #   bind_rows()
+      #
+      #
+      # data_obj %>%
+      #   mutate(type = "hist") %>%
+      #   bind_rows(.,) %>% View
+      #
+      #
+      # current_pred_raw %>%
+      #   mutate(type = "pred") %>%
+      #   bind_rows(isat_obj$aux$mX %>%
+      #               as_tibble %>%
+      #               select(any_of(names(current_pred_raw))) %>%
+      #               mutate(type = "hist"),.) %>% View
+      #
+      #
+      # model$module_collection$dataset[[i]]
+      #
+      # predict(isat_obj, newmxreg = as.matrix(pred_df), n.ahead = 4)
+      #
+      # # transform variables in the right form
+      #
+
+      #
+      #
+      #       exog_df_ready %>%
+      #         select(-time) %>%
+      #         #select(all_of())
+      #         as.matrix
+      #
+      #       predict(isat_obj, newmxreg = , n.ahead = 4)
 
 
 
