@@ -3,7 +3,7 @@
 
 dict <- tibble::tribble(
   ~`eurostat_code`, ~`model_varname`, ~`full_name`, ~`dataset_id`,
-  NA, "TOTS", "Total Supply", NA,
+  "TOTS", "TOTS", "Total Supply", NA,
   "B1GQ", "Y", "Gross domestic product at market prices", "namq_10_gdp",
   "B1G", "YF", "Value added, gross", "namq_10_gdp",
   "P6", "A", "Exports of goods and services", "namq_10_gdp",

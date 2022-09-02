@@ -117,7 +117,7 @@ estimate_module <- function(clean_data,
       # save(debug_list, file = "debug_list.RData")
       intermed.model <- gets::isat(
         y = yvar,
-        mxreg = xvars,
+        mxreg = as.matrix(xvars),
         ar = if (i != 0) {
           1:i
         } else {
@@ -132,7 +132,7 @@ estimate_module <- function(clean_data,
     } else {
       intermed.model <- gets::arx(
         y = yvar,
-        mxreg = xvars,
+        mxreg = as.matrix(xvars),
         ar = if (i != 0) {
           1:i
         } else {
