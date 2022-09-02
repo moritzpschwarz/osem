@@ -28,7 +28,7 @@ determine_datacodes <- function(specification, dictionary = NULL) {
 
   codes.avail <- dictionary$eurostat_code
   # delete irrelevant values, such as TOTS
-  codes.avail <- codes.avail[!is.na(codes.avail)]
+  codes.avail <- codes.avail[!is.na(dictionary$dataset_id)]
 
   # extract the codes used in the model
   dep.set <- specification$dependent_eu
