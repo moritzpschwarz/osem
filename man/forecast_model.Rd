@@ -4,7 +4,13 @@
 \alias{forecast_model}
 \title{Forecast Aggregate model}
 \usage{
-forecast_model(model, exog_predictions = NULL, n.ahead = 10, plot = TRUE)
+forecast_model(
+  model,
+  exog_predictions = NULL,
+  n.ahead = 10,
+  exog_fill_method = "last",
+  plot.forecast = TRUE
+)
 }
 \arguments{
 \item{model}{An aggregate model of class 'aggmod'}
@@ -13,7 +19,7 @@ forecast_model(model, exog_predictions = NULL, n.ahead = 10, plot = TRUE)
 
 \item{n.ahead}{Periods to forecast ahead}
 
-\item{plot}{Logical. Should the result be plotted? Default is TRUE.}
+\item{plot.forecast}{Logical. Should the result be plotted? Default is TRUE.}
 }
 \value{
 

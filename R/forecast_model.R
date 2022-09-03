@@ -105,7 +105,8 @@ forecast_model <- function(model,
     index = model$module_order_eurostatvars$index,
     order = model$module_order_eurostatvars$order,
     predict.isat_object = list(NA_complex_),
-    data = list(NA_complex_)
+    data = list(NA_complex_),
+    central.estimate = list(NA_complex_)
   )
 
   for(i in seq(model$module_order_eurostatvars$order)){
@@ -327,8 +328,24 @@ forecast_model <- function(model,
                           n.ahead = n.ahead, plot = plot.forecast,
                           ci.levels = c(0.66,0.95,0.99))
 
+      outvarname <- paste0(if(model$module_collection %>%
+                              filter(order == i) %>%
+                              with(model.args) %>%
+                              .[[1]] %>%
+                              .$use_logs %in% c("both","y")){"ln."} else {""},
+                           current_spec %>% pull(dependent_eu) %>% tolower)
+
+      tibble(time = current_pred_raw %>% pull(time),
+             value = as.numeric(pred_obj[,1])) %>%
+        setNames(c("time",outvarname)) -> central_estimate
+
+
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(as_tibble(pred_obj)))
-      prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(pred_df))
+      prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(bind_cols(intermed, to_be_added) %>%
+                                                                                  left_join(current_pred_raw %>%
+                                                                                              select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
+                                                                                  drop_na))
+      prediction_list[prediction_list$order == i, "central.estimate"] <- tibble(predict.isat_object = list(central_estimate))
     } else {
       identity_pred <- tibble()
       identity_pred <- exog_df_ready %>%
@@ -357,7 +374,7 @@ forecast_model <- function(model,
           .[[1]] %>%
           .$use_logs
 
-        identity_logs <- c(identity_logs, ifelse(mvar_logs %in% c("both","x"), TRUE, FALSE))
+        identity_logs <- c(identity_logs, ifelse(mvar_logs %in% c("both","x") || is.null(mvar_logs), TRUE, FALSE))
 
         mvar_euname <- model$module_collection %>%
           filter(index == mvar_model_index) %>%
@@ -400,9 +417,19 @@ forecast_model <- function(model,
         } else {stop("Error in calculating Identity.")}
 
       }
+
+      outvarname <- paste0(if(any(identity_logs) && !all(identity_logs)){"ln."} else {""},
+                           current_spec %>% pull(dependent_eu) %>% tolower)
+
+      tibble(time = current_pred_raw %>% pull(time),
+             value = as.numeric(identity_pred_final[,1])) %>%
+        setNames(c("time",outvarname)) -> central_estimate
+
+
       names(identity_pred_final) <- unique(current_spec$dependent_eu)
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(tibble(yhat = identity_pred_final[,1])))
       prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(bind_cols(identity_pred_final, identity_pred)))
+      prediction_list[prediction_list$order == i, "central.estimate"] <- tibble(data = list(central_estimate))
     }
   }
 
@@ -412,8 +439,11 @@ forecast_model <- function(model,
   #   plot(rnorm(10))
   # }
 
+  out <- list()
+  out$forecast <- prediction_list
+  out$orig_model <- model
 
-
-  return(prediction_list)
+  class(out) <- "aggmod.forecast"
+  return(out)
 
 }
