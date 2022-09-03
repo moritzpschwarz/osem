@@ -9,7 +9,11 @@
 #' @export
 #'
 #' @examples
-forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot.forecast = TRUE){
+forecast_model <- function(model,
+                           exog_predictions = NULL,
+                           n.ahead = 10,
+                           exog_fill_method = "last",
+                           plot.forecast = TRUE){
 
   if(class(model) != "aggmod"){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
 
@@ -23,8 +27,7 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot.fo
     filter(class == "x") %>%
     pull(var) -> exog_vars
 
-
-  if(is.null(exog_predictions)){
+  if(is.null(exog_predictions) & exog_fill_method == "last"){
     message("No exogenous values provided. Model will use the last available value.")
     exog_df <- model$full_data %>%
       filter(na_item %in% exog_vars) %>%
@@ -35,21 +38,66 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot.fo
     if(!all(exog_df$time == exog_df$time[1])){
       warning("Latest Exogenous Data is not available for all variables. For those where most recent data is not available, the period before that is used.")
     }
+
+    exog_df %>%
+      group_by(na_item) %>%
+      rowwise() %>%
+      mutate(time = list(seq(time, length = n.ahead+1, by = "3 months")[1:n.ahead+1])) %>%
+      unnest(time) %>%
+      ungroup %>%
+      mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
+      pivot_wider(names_from = "na_item",values_from = "values", id_cols = c(time,q)) %>%
+
+      fastDummies::dummy_cols(
+        select_columns = "q", remove_first_dummy = FALSE,
+        remove_selected_columns = TRUE) -> exog_df_ready
   }
 
+  if(is.null(exog_predictions) & exog_fill_method == "AR"){
+    message("No exogenous values provided. Model will forecast the exogenous values with an AR1 process.")
 
-  exog_df %>%
-    group_by(na_item) %>%
-    rowwise() %>%
-    mutate(time = list(seq(time, length = n.ahead+1, by = "3 months")[1:n.ahead+1])) %>%
-    unnest(time) %>%
-    ungroup %>%
-    mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
-    pivot_wider(names_from = "na_item",values_from = "values", id_cols = c(time,q)) %>%
+    exog_df_intermed <- model$full_data %>%
+      filter(na_item %in% exog_vars) %>%
+      group_by(na_item) %>%
+      pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>%
+      janitor::clean_names()
 
-    fastDummies::dummy_cols(
-      select_columns = "q", remove_first_dummy = FALSE,
-      remove_selected_columns = TRUE) -> exog_df_ready
+    exog_df_forecast <- model$full_data %>%
+      filter(time == max(time)) %>%
+      distinct(time) %>%
+      rowwise() %>%
+      mutate(time = list(seq(time, length = n.ahead+1, by = "3 months")[1:n.ahead+1])) %>%
+      unnest(time) %>%
+      ungroup
+
+    orig_mc_warning <- getOption("mc.warning")
+    options(mc.warning = FALSE)
+    for(col_to_forecast in seq_along(exog_df_intermed)){
+      # col_to_forecast <- 2
+
+      # skip the time column
+      if(col_to_forecast == 1){next}
+
+      exog_df_intermed %>%
+        pull(col_to_forecast) %>%
+        arx(y = ., ar = 1, plot = TRUE) %>%
+        predict(object = ., n.ahead = n.ahead) %>%
+        as.vector -> pred_values
+
+      tibble(data = pred_values) %>%
+        setNames(names(exog_df_intermed)[col_to_forecast]) %>%
+        bind_cols(exog_df_forecast,.) -> exog_df_forecast
+
+    }
+    options(mc.warning = orig_mc_warning)
+
+    exog_df_forecast %>%
+      mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
+
+      fastDummies::dummy_cols(
+        select_columns = "q", remove_first_dummy = FALSE,
+        remove_selected_columns = TRUE) -> exog_df_ready
+  }
 
 
   # 2. Forecasting step by step according to model order ------------------------------------------------
@@ -93,11 +141,6 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot.fo
       model$module_collection %>%
         filter(order == i) %>%
         pull(dataset) %>% .[[1]] -> data_obj
-
-      # isat_obj$aux$mX %>% nrow
-      # data_obj %>% nrow
-      # colnames(isat_obj$aux$mX)
-      # names(data_obj)
 
       # determine ARDL or ECM
       is_ardl <- is.null(model$args$ardl_or_ecm) | identical(model$args$ardl_or_ecm,"ARDL")
