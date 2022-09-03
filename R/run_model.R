@@ -93,6 +93,10 @@ run_model <- function(specification,
                       quiet = FALSE,
                       ...) {
 
+  if(!(is.data.frame(specification) | is.matrix(specification))){
+    stop("'specification' must be a data.frame, tibble or matrix object. Check the documentation how a specification object must look like.")
+  }
+
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
 

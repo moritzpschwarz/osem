@@ -3,13 +3,13 @@
 #' @param model An aggregate model of class 'aggmod'
 #' @param exog_predictions A data.frame or tibble with values for the exogenous values. The number of rows of this data must be equal to n.ahead.
 #' @param n.ahead Periods to forecast ahead
-#' @param plot Logical. Should the result be plotted? Default is TRUE.
+#' @param plot.forecast Logical. Should the result be plotted? Default is TRUE.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot = TRUE){
+forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot.forecast = TRUE){
 
   if(class(model) != "aggmod"){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
 
@@ -247,7 +247,7 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot = 
 
           mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), tolower(mvar_euname))
 
-          mvar_tibble <- tibble(data = as.numeric(mvar_model_obj)) %>%
+          mvar_tibble <- tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
             setNames(mvar_name)
 
           current_pred_raw <- bind_cols(current_pred_raw,mvar_tibble)
@@ -278,12 +278,13 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot = 
         drop_na %>%
         select(-time) -> pred_df
 
-
       # Predict
       isat_obj$call$ar <- isat_obj$aux$args$ar
-      pred_obj <- predict(isat_obj, newmxreg = as.matrix(pred_df), n.ahead = n.ahead, plot = TRUE)
+      pred_obj <- predict(isat_obj, newmxreg = as.matrix(pred_df),
+                          n.ahead = n.ahead, plot = plot.forecast,
+                          ci.levels = c(0.66,0.95,0.99))
 
-      prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(pred_obj))
+      prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(as_tibble(pred_obj)))
       prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(pred_df))
     } else {
       identity_pred <- tibble()
@@ -321,7 +322,7 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot = 
 
         mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), tolower(mvar_euname))
 
-        mvar_tibble <- tibble(data = as.numeric(mvar_model_obj)) %>%
+        mvar_tibble <- tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
           setNames(mvar_name)
 
         if(ncol(identity_pred)==0){
@@ -357,7 +358,7 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot = 
 
       }
       names(identity_pred_final) <- unique(current_spec$dependent_eu)
-      prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(identity_pred_final[,1]))
+      prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(tibble(yhat = identity_pred_final[,1])))
       prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(bind_cols(identity_pred_final, identity_pred)))
     }
   }
@@ -367,6 +368,7 @@ forecast_model <- function(model, exog_predictions = NULL, n.ahead = 10, plot = 
   # if(plot){
   #   plot(rnorm(10))
   # }
+
 
 
   return(prediction_list)
