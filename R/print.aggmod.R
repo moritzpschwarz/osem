@@ -2,7 +2,6 @@
 #'
 #' @param model An object of type 'aggmod'
 #'
-#' @return
 #' @export
 #'
 

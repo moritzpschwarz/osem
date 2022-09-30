@@ -9,9 +9,6 @@
 \arguments{
 \item{model}{An object of type 'aggmod'}
 }
-\value{
-
-}
 \description{
 Print output of an Aggregate Model
 }

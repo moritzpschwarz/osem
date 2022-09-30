@@ -13,7 +13,9 @@ estimate_module(
   ardl_or_ecm = "ardl",
   max.lag = 4,
   saturation = c("IIS", "SIS"),
-  saturation.tpval = 0.01
+  saturation.tpval = 0.01,
+  selection.tpval = 0.01,
+  gets_selection = TRUE
 )
 }
 \arguments{
