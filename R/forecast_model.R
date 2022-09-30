@@ -5,10 +5,37 @@
 #' @param n.ahead Periods to forecast ahead
 #' @param plot.forecast Logical. Should the result be plotted? Default is TRUE.
 #'
-#' @return
+#' @return An object of class aggmod.forecast
 #' @export
 #'
 #' @examples
+#' spec <- tibble(
+#' type = c(
+#'   "d",
+#'   "d",
+#'   "n"
+#' ),
+#' dependent = c(
+#'   "JL",
+#'   "TOTS",
+#'   "B"
+#' ),
+#' independent = c(
+#'   "TOTS - CP - CO - J - A",
+#'   "YF + B",
+#'   "CP + J"
+#' )
+#' )
+#'
+#' fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
+#' fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
+#' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
+#' \dontrun{
+#' a <- run_model(specification = spec, dictionary = NULL, inputdata_directory = NULL, filter_list = filter_list, download = TRUE, save_to_disk = NULL, present = FALSE)
+#' }
+#' forecast(a)
+
+
 forecast_model <- function(model,
                            exog_predictions = NULL,
                            n.ahead = 10,
@@ -16,7 +43,6 @@ forecast_model <- function(model,
                            plot.forecast = TRUE){
 
   if(class(model) != "aggmod"){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
-
 
   # 1. Determine Exogenous Variables and wrangle future values ---------------
 
@@ -109,27 +135,25 @@ forecast_model <- function(model,
     central.estimate = list(NA_complex_)
   )
 
+  # cycling through each module
   for(i in seq(model$module_order_eurostatvars$order)){
     # i = 1
     current_spec <- model$module_order_eurostatvars %>%
       filter(order == i) %>%
+
+      # make sure each independent variable has a separate row
       mutate(independent = gsub(" ", "", independent),
              independent_eu = gsub(" ", "", independent_eu),) %>%
       rowwise() %>%
-      mutate(#ind_vars = list(strsplits(independent,c("\\-", "\\+"))),
-        ind_vars_eu = list(strsplits(independent_eu,c("\\-", "\\+")))) %>%
-      # following line added to deal with AR models wehn ind_vars is a list of NULL
-      bind_rows(tibble(#ind_vars = list(""),
-        ind_vars_eu = list(""))) %>%
-      #unnest(ind_vars, keep_empty = TRUE) %>%
+      mutate(ind_vars_eu = list(strsplits(independent_eu,c("\\-", "\\+")))) %>%
+
+      # following line added to deal with AR models when ind_vars is a list of NULL
+      bind_rows(tibble(ind_vars_eu = list(""))) %>%
+
       unnest(ind_vars_eu, keep_empty = TRUE) %>%
       drop_na(index) %>%
-      select(index, dependent_eu, independent_eu,
-             #ind_vars,
-             ind_vars_eu) %>%
-      mutate(independent_eu = tolower(independent_eu),
-             #ind_vars = tolower(ind_vars),
-             ind_vars_eu = tolower(ind_vars_eu))
+      select(index, dependent_eu, independent_eu,ind_vars_eu) %>%
+      mutate(independent_eu = tolower(independent_eu),ind_vars_eu = tolower(ind_vars_eu))
 
     if(model$module_order_eurostatvars$type[model$module_order_eurostatvars$order == i] != "d"){
       # set up
@@ -239,14 +263,6 @@ forecast_model <- function(model,
         # drop not used quarterly dummies
         select(-any_of(q_pred_todrop)) %>%
 
-        # {if(!identical(pred_ar_needed, character(0))){
-        #   bind_cols(.,pred_ar)
-        # } else {.}} %>%
-        #
-        # {if(mconst){
-        #   bind_cols(.,tibble(mconst = 1))
-        # } else { . }} %>%
-        #
         {if(!is.null(gets::isatdates(isat_obj)$iis)){
           bind_cols(.,iis_pred)
         } else { . }} %>%
@@ -263,7 +279,7 @@ forecast_model <- function(model,
         } else {.}} -> current_pred_raw
 
       # Deal with current_spec not being fully exogenous
-      if(!all(current_spec$ind_vars_eu %in% names(exog_df_ready)) && !is.na(current_spec$ind_vars_eu)){
+      if(!all(current_spec$ind_vars_eu %in% names(exog_df_ready)) && !all(is.na(current_spec$ind_vars_eu))){
 
         missing_vars <- current_spec$ind_vars_eu[!current_spec$ind_vars_eu %in% names(exog_df_ready)]
 
@@ -316,15 +332,27 @@ forecast_model <- function(model,
           bind_cols(to_be_added, .) -> to_be_added
       }
 
+
       bind_cols(intermed, to_be_added) %>%
         left_join(current_pred_raw %>%
                     select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
         drop_na %>%
-        select(-time) -> pred_df
+        select(-time) %>%
+        select(any_of(row.names(isat_obj$mean.results))) %>%
+        return() -> pred_df
+
+      #print(pred_df)
 
       # Predict
       isat_obj$call$ar <- isat_obj$aux$args$ar
-      pred_obj <- predict(isat_obj, newmxreg = as.matrix(pred_df),
+      isat_obj$call$mc <- isat_obj$aux$args$mc
+
+      # backup <- pred_df$L1.ln.p31_s14_s15
+      # pred_df$L1.ln.p31_s14_s15 <- 0
+      # pred_df$test <- 10
+      # pred_df$L1.ln.p31_s14_s15 <- backup
+
+      pred_obj <- predict(isat_obj, newmxreg = as.matrix(tail(pred_df, n.ahead)),
                           n.ahead = n.ahead, plot = plot.forecast,
                           ci.levels = c(0.66,0.95,0.99))
 
@@ -346,15 +374,19 @@ forecast_model <- function(model,
                                                                                               select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
                                                                                   drop_na))
       prediction_list[prediction_list$order == i, "central.estimate"] <- tibble(predict.isat_object = list(central_estimate))
+
+
     } else {
+      # Loop goes to this part if the type of the module is not "d"
+
       identity_pred <- tibble()
       identity_pred <- exog_df_ready %>%
         select(all_of(current_spec$ind_vars_eu[current_spec$ind_vars_eu %in% names(exog_df_ready)]))
 
       identity_logs <- c(rep(FALSE,length(current_spec$ind_vars_eu[current_spec$ind_vars_eu %in% names(exog_df_ready)])))
 
+      # check which x variables are needed in this module, but are not fully exogenous
       missing_vars <- current_spec$ind_vars_eu[!current_spec$ind_vars_eu %in% names(exog_df_ready)]
-
 
       for(mvar in missing_vars){
         # mvar = "yf"
@@ -408,18 +440,28 @@ forecast_model <- function(model,
 
       if(length(cols_to_cycle) != (length(operators)+1)){warning("Identity might be falsely calculated. Check operators.")}
 
-      identity_pred_final <- identity_pred[,1]
+      # get the first column of the identity
+      identity_pred_final <- if(grepl("^ln\\.",names(identity_pred[,1, drop = FALSE]))){
+        # an identity is never logged - therefore exponentiate the first column if that is logged
+        exp(identity_pred[,1, drop = FALSE])
+      } else{
+        identity_pred[,1, drop = FALSE]}
+
       for(col_cycle in 2:ncol(identity_pred)){
+        cur_col_cycle <- identity_pred[,col_cycle, drop = FALSE]
+        # an identity is never logged - therefore exponentiate the first column if that is logged
+        if(grepl("^ln\\.",names(cur_col_cycle))){cur_col_cycle <- exp(cur_col_cycle)}
+
         if(operators[col_cycle-1] == "+"){
-          identity_pred_final <- identity_pred_final + identity_pred[,col_cycle]
+          identity_pred_final <- identity_pred_final + cur_col_cycle
         } else if(operators[col_cycle-1] == "-"){
-          identity_pred_final <- identity_pred_final - identity_pred[,col_cycle]
+          identity_pred_final <- identity_pred_final - cur_col_cycle
         } else {stop("Error in calculating Identity.")}
 
       }
 
-      outvarname <- paste0(if(any(identity_logs) && !all(identity_logs)){"ln."} else {""},
-                           current_spec %>% pull(dependent_eu) %>% tolower)
+      outvarname <- paste0(#if(any(identity_logs) && !all(identity_logs)){"ln."} else {""},
+        current_spec %>% pull(dependent_eu) %>% tolower)
 
       tibble(time = current_pred_raw %>% pull(time),
              value = as.numeric(identity_pred_final[,1])) %>%
@@ -433,17 +475,16 @@ forecast_model <- function(model,
     }
   }
 
-
-
-  # if(plot){
-  #   plot(rnorm(10))
-  # }
-
   out <- list()
   out$forecast <- prediction_list
   out$orig_model <- model
 
   class(out) <- "aggmod.forecast"
+
+  if(plot.forecast){
+    plot.aggmod.forecast(out)
+  }
+
   return(out)
 
 }

@@ -33,7 +33,9 @@ estimate_module <- function(clean_data,
                             ardl_or_ecm = "ardl",
                             max.lag = 4,
                             saturation = c("IIS", "SIS"),
-                            saturation.tpval = 0.01) {
+                            saturation.tpval = 0.01,
+                            selection.tpval = 0.01,
+                            gets_selection = TRUE) {
   log_opts <- match.arg(use_logs)
 
   if (!ardl_or_ecm %in% c("ardl", "ecm")) {
@@ -147,12 +149,41 @@ estimate_module <- function(clean_data,
     isat_list[i + 1, "isat_object"] <- tibble(isat_object = list(intermed.model))
   }
 
-  out <- list()
-  out$isat_list <- isat_list
-  out$best_model <- isat_list %>%
+
+  best_isat_model <- isat_list %>%
     filter(BIC == min(BIC)) %>%
     pull(isat_object) %>%
     first()
+
+  ## gets selection on the best model ------------
+  best_isat_model.selected <- gets::gets(best_isat_model,
+                                         print.searchinfo = FALSE,
+                                         t.pval = selection.tpval)
+
+  retained.coefs <- row.names(best_isat_model.selected$mean.results)
+  retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
+  retained.xvars <- as.matrix(xvars[,retained.coefs])
+
+  retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
+
+  best_isat_model.selected.isat <- isat(y = yvar,
+                                        ar = best_isat_model$aux$args$ar,
+                                        mc = best_isat_model$aux$args$mc,
+                                        mxreg = retained.xvars,
+                                        plot = FALSE,
+                                        print.searchinfo = FALSE,
+                                        iis = TRUE,
+                                        sis = TRUE,
+                                        t.pval = saturation.tpval)
+
+
+  out <- list()
+  out$isat_list <- isat_list
+  #out$best_model <- isat_list %>%
+  #  filter(BIC == min(BIC)) %>%
+  #  pull(isat_object) %>%
+  #  first()
+  out$best_model <- best_isat_model.selected.isat
   out$args <- list(clean_data = clean_data,
                    dep_var_basename = dep_var_basename,
                    x_vars_basename = x_vars_basename,
