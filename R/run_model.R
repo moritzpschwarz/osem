@@ -47,21 +47,21 @@
 #'
 #' @examples
 #' spec <- tibble(
-#' type = c(
-#'   "d",
-#'   "d",
-#'   "n"
-#' ),
-#' dependent = c(
-#'   "JL",
-#'   "TOTS",
-#'   "B"
-#' ),
-#' independent = c(
-#'   "TOTS - CP - CO - J - A",
-#'   "YF + B",
-#'   "CP + J"
-#' )
+#'   type = c(
+#'     "d",
+#'     "d",
+#'     "n"
+#'   ),
+#'   dependent = c(
+#'     "StatDiscrep",
+#'     "TOTS",
+#'     "Import"
+#'   ),
+#'   independent = c(
+#'     "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+#'     "GValueAdd + Import",
+#'     "FinConsExpHH + GCapitalForm"
+#'   )
 #' )
 #'
 #' fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
@@ -71,14 +71,13 @@
 #' a <- run_model(specification = spec, dictionary = NULL, inputdata_directory = NULL, filter_list = filter_list, download = TRUE, save_to_disk = NULL, present = FALSE)
 #' }
 
-
 # config_table_small <- tibble(
-#   dependent = c("JL",
+#   dependent = c("StatDiscrep",
 #                 "TOTS",
-#                 "B"),
-#   independent = c("TOTS - CP - CO - J - A",
-#                   "YF + B",
-#                   "CP + J"))
+#                 "Import"),
+#   independent = c("TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+#                   "GValueAdd + Import",
+#                   "FinConsExpHH + GCapitalForm"))
 #
 #
 # specification <- config_table_small
