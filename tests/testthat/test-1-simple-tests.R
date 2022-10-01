@@ -7,14 +7,14 @@ test_that("no errors when running very simple model", {
       "n"
     ),
     dependent = c(
-      "JL",
+      "StatDiscrep",
       "TOTS",
-      "B"
+      "Import"
     ),
     independent = c(
-      "TOTS - CP - CO - J - A",
-      "YF + B",
-      "CP + J"
+      "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+      "GValueAdd + Import",
+      "FinConsExpHH + GCapitalForm"
     )
   )
 
@@ -50,27 +50,34 @@ test_that("no errors when running a slightly more complicated model", {
       "d",
       "n",
       "n",
+      "n",
+      "n",
       "n"
     ),
     dependent = c(
-      "JL",
+      "StatDiscrep",
       "TOTS",
-      "B",
-      "CP",
-      "J"
+      "Import",
+      "FinConsExpHH",
+      "GCapitalForm",
+      "Emissions",
+      "GDP"
     ),
     independent = c(
-      "TOTS - CP - CO - J - A",
-      "YF + B",
-      "CP + J",
+      "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+      "GValueAdd + Import",
+      "FinConsExpHH + GCapitalForm",
       "",
-      "CO"
+      "FinConsExpGov",
+      "GDP",
+      ""
     )
   )
 
-  fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
-  fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-  filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
+  fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR", varcolumn = "na_item")
+  fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR", varcolumn = "na_item")
+  fc <- list(geo = "AT", unit = "THS_T", nace_r2 = "TOTAL_HH", varcolumn = "airpol")
+  filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa, "GHG" = fc, "B1GQ" = fa)
 
   # Execute the first time to get the data
   # b <- run_model(
@@ -132,3 +139,70 @@ test_that("no errors when running a slightly more complicated model", {
 
 
 })
+
+
+test_that("Incorporate Emissions", {
+
+  spec <- tibble(
+    type = c(
+      "d",
+      "d",
+      "n",
+      "n",
+      "n",
+      "n",
+      "n"
+    ),
+    dependent = c(
+      "StatDiscrep",
+      "TOTS",
+      "Import",
+      "FinConsExpHH",
+      "GCapitalForm",
+      "Emissions",
+      "GDP"
+    ),
+    independent = c(
+      "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+      "GValueAdd + Import",
+      "FinConsExpHH + GCapitalForm",
+      "",
+      "FinConsExpGov",
+      "GDP",
+      ""
+    )
+  )
+
+  fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
+  fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
+  fc <- list(geo = "AT", unit = "THS_T", nace_r2 = "TOTAL_HH")
+  filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa, "GHG" = fc, "B1GQ" = fa)
+
+  # Execute the first time to get the data
+  # b <- run_model(
+  #   specification = spec,
+  #   dictionary = NULL,
+  #   inputdata_directory = NULL,
+  #   filter_list = filter_list,
+  #   download = TRUE,
+  #   save_to_disk = here::here("input_data/"),
+  #   present = FALSE
+  # )
+
+  expect_message(b <- run_model(
+    specification = spec,
+    dictionary = NULL,
+    inputdata_directory = NULL,
+    filter_list = filter_list,
+    download = TRUE,
+    save_to_disk = NULL,
+    present = FALSE
+  ))
+
+  expect_output(print(b))
+
+
+
+})
+
+
