@@ -65,6 +65,9 @@ load_or_download_variables <- function(specification,
     # so for now, need to download whole dataset and only then select subset
 
     # initialise variables
+    dictionary %>%
+      distinct(dataset_id, var_col) -> var_col_list
+
     ids <- determine_datacodes(specification = specification, dictionary = dictionary)
     codes.download <- ids$var.ids
     codes.remain <- codes.download
@@ -72,17 +75,27 @@ load_or_download_variables <- function(specification,
 
     # loop through required datasets
     for (i in 1:length(ids$data.ids)) {
+      varcolname <- var_col_list %>% filter(dataset_id == ids$data.ids[i]) %>% pull(var_col)
       tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
-      codes.found <- codes.download[which(codes.download %in% unique(tmp$na_item))]
+
+      codes.in.tmp <- tmp %>% pull(varcolname) %>% unique
+      codes.found <- codes.download[which(codes.download %in% codes.in.tmp)]
       codes.remain <- setdiff(codes.remain, codes.found)
+
       for (j in 1:length(codes.found)) {
         # which filter should be applied for that variable
         filter <- filter_list[[codes.found[j]]]
         # choose subset according to filter
         sub <- tmp %>%
-          filter(na_item == codes.found[j] & geo == filter$geo & s_adj == filter$s_adj & unit == filter$unit)
+          filter(if_all(varcolname, ~ . == codes.found[j])) %>%
+          #filter(na_item == codes.found[j] & geo == filter$geo & s_adj == filter$s_adj & unit == filter$unit)
+          filter(geo == filter$geo & unit == filter$unit) %>%
+          {if(select(., any_of("s_adj")) %>% ncol == 1){filter(.,s_adj == filter$s_adj)} else {.}} %>%
+          {if(select(., any_of("nace_r2")) %>% ncol == 1){select(.,-nace_r2)} else {.}} %>%
+          rename_with(.cols = varcolname, .fn = ~paste0("na_item"))
+
         # add subset to full, final dataset
-        full <- rbind(full, sub)
+        full <- bind_rows(full, sub)
       }
     }
 
