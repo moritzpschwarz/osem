@@ -39,11 +39,14 @@
 forecast_model <- function(model,
                            exog_predictions = NULL,
                            n.ahead = 10,
+                           ci.levels = c(0.5,0.66,0.95),
                            exog_fill_method = "AR",
                            ar.fill.max = 4,
                            plot.forecast = TRUE){
 
   if(class(model) != "aggmod"){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
+  if(!is.null(exog_fill_method) & !exog_fill_method %in% c("AR","last")){stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR' or 'last'.")}
+  if(!is.null(ar.fill.max) & (!is.integer(as.integer(ar.fill.max)) | ar.fill.max < 1)){stop("The option 'ar.fill.max' can either be NULL or must be an integer that is larger than 0.")}
 
   # 1. Determine Exogenous Variables and wrangle future values ---------------
 
@@ -54,7 +57,7 @@ forecast_model <- function(model,
     filter(class == "x") %>%
     pull(var) -> exog_vars
 
-  if(is.null(exog_predictions) & exog_fill_method == "last"){
+  if (is.null(exog_predictions) & exog_fill_method == "last") {
     message("No exogenous values provided. Model will use the last available value.\nAlternative is exog_fill_method = 'AR'.")
     exog_df <- model$full_data %>%
       filter(na_item %in% exog_vars) %>%
@@ -105,7 +108,7 @@ forecast_model <- function(model,
       exog_df_intermed %>%
         mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
         fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = TRUE,remove_selected_columns = TRUE) %>%
-      arrange(time) -> to_ar_predict
+        arrange(time) -> to_ar_predict
 
       to_ar_predict %>%
         pull(col_to_forecast) -> y_ar_predict
@@ -115,7 +118,7 @@ forecast_model <- function(model,
 
       isat_ar_predict <- isat(y = y_ar_predict, mxreg = x_ar_predict,
                               mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
-           print.searchinfo = FALSE, sis = TRUE, iis = TRUE)
+                              print.searchinfo = FALSE, sis = TRUE, iis = TRUE)
 
 
       # get iis dummies
@@ -181,7 +184,8 @@ forecast_model <- function(model,
     order = model$module_order_eurostatvars$order,
     predict.isat_object = list(NA_complex_),
     data = list(NA_complex_),
-    central.estimate = list(NA_complex_)
+    central.estimate = list(NA_complex_) #,
+    #all.estimates = list(NA_complex_)
   )
 
   # cycling through each module
@@ -250,7 +254,7 @@ forecast_model <- function(model,
       q_pred_todrop <- c("q_1","q_2","q_3","q_4")[!c("q_1","q_2","q_3","q_4") %in% colnames(isat_obj$aux$mX)]
 
       # check if mconst is used
-      if("mconst" %in% colnames(isat_obj$aux$mX)){
+      if ("mconst" %in% colnames(isat_obj$aux$mX)) {
         mconst <- TRUE
       } else {
         mconst <- FALSE
@@ -259,10 +263,10 @@ forecast_model <- function(model,
       # get ar
       pred_ar_needed <- colnames(isat_obj$aux$mX)[grepl("ar[0-9]+",colnames(isat_obj$aux$mX))]
 
-      if(!is.null(pred_ar_needed)){
+      if (!is.null(pred_ar_needed)) {
         ar_vec <- 0:max(as.numeric(gsub("ar","",pred_ar_needed)))
         y_names_vec <- c()
-        for(ar in ar_vec){
+        for (ar in ar_vec) {
           # ar = 0
           y_names_vec <- c(y_names_vec,paste0(paste0(ifelse(ar == 0,"",paste0("L",ar,"."))),ifelse(ylog,"ln.",""),y_vars_basename))
         }
@@ -270,9 +274,9 @@ forecast_model <- function(model,
         y_names_vec <- paste0(ifelse(ylog,"ln.",""),y_vars_basename)
       }
 
-      if(!identical(character(0),x_vars_basename)){
+      if (!identical(character(0),x_vars_basename)) {
         x_names_vec <- c()
-        for(ar in ar_vec){
+        for (ar in ar_vec) {
           # ar = 0
           x_names_vec <- c(x_names_vec,paste0(paste0(ifelse(ar == 0,"",paste0("L",ar,"."))),ifelse(ylog,"ln.",""),x_vars_basename))
         }
@@ -284,7 +288,7 @@ forecast_model <- function(model,
       }
 
       # get iis dummies
-      if(!is.null(gets::isatdates(isat_obj)$iis)){
+      if (!is.null(gets::isatdates(isat_obj)$iis)) {
         iis_pred <- matrix(0,
                            nrow = nrow(exog_df_ready),
                            ncol = nrow(gets::isatdates(isat_obj)$iis),
@@ -294,7 +298,7 @@ forecast_model <- function(model,
       }
 
       # get sis dummies
-      if(!is.null(gets::isatdates(isat_obj)$sis)){
+      if (!is.null(gets::isatdates(isat_obj)$sis)) {
         sis_pred <- matrix(1,
                            nrow = nrow(exog_df_ready),
                            ncol = nrow(gets::isatdates(isat_obj)$sis),
@@ -312,15 +316,15 @@ forecast_model <- function(model,
         # drop not used quarterly dummies
         select(-any_of(q_pred_todrop)) %>%
 
-        {if(!is.null(gets::isatdates(isat_obj)$iis)){
+        {if (!is.null(gets::isatdates(isat_obj)$iis)) {
           bind_cols(.,iis_pred)
         } else { . }} %>%
 
-        {if(!is.null(gets::isatdates(isat_obj)$sis)){
+        {if (!is.null(gets::isatdates(isat_obj)$sis)) {
           bind_cols(.,sis_pred)
         } else { . }} %>%
 
-        {if(xlog){
+        {if (xlog) {
           mutate(.,
                  across(.cols = any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
                  #across(starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
@@ -328,11 +332,11 @@ forecast_model <- function(model,
         } else {.}} -> current_pred_raw
 
       # Deal with current_spec not being fully exogenous
-      if(!all(current_spec$ind_vars_eu %in% names(exog_df_ready)) && !all(is.na(current_spec$ind_vars_eu))){
+      if (!all(current_spec$ind_vars_eu %in% names(exog_df_ready)) && !all(is.na(current_spec$ind_vars_eu))) {
 
         missing_vars <- current_spec$ind_vars_eu[!current_spec$ind_vars_eu %in% names(exog_df_ready)]
 
-        for(mvar in missing_vars){
+        for (mvar in missing_vars) {
           # mvar = "p5g"
 
           model$module_order_eurostatvars %>%
@@ -356,6 +360,8 @@ forecast_model <- function(model,
 
           mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), tolower(mvar_euname))
 
+          # TODO: Here we can implement the forecast plume
+          # currently we are using 'yhat' below - but the mvar_model_obj has all values of the ci.levels
           mvar_tibble <- tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
             setNames(mvar_name)
 
@@ -403,18 +409,23 @@ forecast_model <- function(model,
 
       pred_obj <- predict(isat_obj, newmxreg = as.matrix(tail(pred_df, n.ahead)),
                           n.ahead = n.ahead, plot = plot.forecast,
-                          ci.levels = c(0.66,0.95,0.99))
+                          ci.levels = ci.levels)
 
-      outvarname <- paste0(if(model$module_collection %>%
-                              filter(order == i) %>%
-                              with(model.args) %>%
-                              .[[1]] %>%
-                              .$use_logs %in% c("both","y")){"ln."} else {""},
+      outvarname <- paste0(if (model$module_collection %>%
+                               filter(order == i) %>%
+                               with(model.args) %>%
+                               .[[1]] %>%
+                               .$use_logs %in% c("both","y")) {"ln."} else {""},
                            current_spec %>% pull(dependent_eu) %>% tolower)
 
       tibble(time = current_pred_raw %>% pull(time),
              value = as.numeric(pred_obj[,1])) %>%
         setNames(c("time",outvarname)) -> central_estimate
+
+      # tibble(time = current_pred_raw %>% pull(time)) %>%
+      #   bind_cols(pred_obj[,-1]) %>%
+      #   setNames(c("time",paste0(outvarname,".", gsub("^y","",names(pred_obj[,-1]))))) -> all_estimates
+
 
 
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(as_tibble(pred_obj)))
@@ -422,8 +433,8 @@ forecast_model <- function(model,
                                                                                   left_join(current_pred_raw %>%
                                                                                               select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
                                                                                   drop_na))
-      prediction_list[prediction_list$order == i, "central.estimate"] <- tibble(predict.isat_object = list(central_estimate))
-
+      prediction_list[prediction_list$order == i, "central.estimate"] <- tibble(central_estimate = list(central_estimate))
+      #prediction_list[prediction_list$order == i, "all.estimates"] <- tibble(all_estimates = list(all_estimates))
 
     } else {
       # Loop goes to this part if the type of the module is not "d"
