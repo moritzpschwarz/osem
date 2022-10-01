@@ -147,7 +147,6 @@ check_config_table <- function(config_table) {
     ungroup() %>%
     filter(!all_exog) -> not_exog
 
-
   while (nrow(not_exog) != 0) {
     not_exog %>%
       mutate(
@@ -163,11 +162,11 @@ check_config_table <- function(config_table) {
       group_by(index, type) %>%
       filter(!any(endog)) %>%
       distinct(index, dependent, independent) %>%
+      ungroup() %>%
       mutate(
         order = 1:n(),
         order = order + max(order_exog$order)
-      ) %>%
-      ungroup() -> remove_from_not_exog
+      ) -> remove_from_not_exog
 
     bind_rows(remove_from_not_exog, order_exog) -> order_exog
 
