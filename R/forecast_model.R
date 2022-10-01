@@ -152,13 +152,13 @@ forecast_model <- function(model,
         mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
         fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = TRUE, remove_selected_columns = TRUE) %>%
 
-        bind_cols(.,iis_pred) %>%
-        bind_cols(.,sis_pred) %>%
+        {if (exists("iis_pred")) {bind_cols(.,iis_pred)} else {.}} %>%
+        {if (exists("sis_pred")) {bind_cols(.,sis_pred)} else {.}} %>%
 
         select(-time) -> x_ar_predict_pred_df
 
-      rm(iis_pred)
-      rm(sis_pred)
+      if (exists("iis_pred")) {rm(iis_pred)}
+      if (exists("sis_pred")) {rm(sis_pred)}
 
       predict(object = isat_ar_predict, n.ahead = n.ahead, newmxreg = x_ar_predict_pred_df) %>%
         as.vector -> pred_values
