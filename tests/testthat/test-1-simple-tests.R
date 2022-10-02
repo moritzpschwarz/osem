@@ -206,3 +206,78 @@ test_that("Incorporate Emissions", {
 })
 
 
+
+test_that("Extensive Model", {
+
+
+  spec <- tibble(
+    type = c(
+      "d",
+      "d",
+      "n",
+      "n",
+      "n",
+      "n",
+      "n",
+      "n",
+      "n",
+      "i",
+      "n",
+      "n"
+    ),
+    dependent = c(
+      "StatDiscrep",
+      "TOTS",
+      "Import",
+      "FinConsExpHH",
+      "GCapitalForm",
+      "Emissions",
+      "GDP",
+      "GValueAddGov", # as in NAM, technical relationship
+      "GValueAddManuf", # more complicated in NAM, see 2.3.3 and 6.3.1
+      "Demand", # as in NAM
+      "GValueAddConstr" ,
+      "GValueAddService"
+    ),
+    independent = c(
+      "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+      "GValueAdd + Import",
+      "FinConsExpHH + GCapitalForm",
+      "",
+      "FinConsExpGov",
+      "GDP",
+      "GValueAddGov + GValueAddConstr + GValueAddService + GValueAddManuf",
+      "FinConsExpGov", # as in NAM, technical relationship
+      "Demand + Export + LabCostManuf", # NAM uses 'export market indicator' not exports - unclear what this is, NAM uses unit labour cost in NOR manufacturing relative to the foreign price level - here is just total labour cost
+      "FinConsExpHH + FinConsExpGov + GCapitalForm",
+      "Demand + LabCostConstr + BuildingPermits", # in NAM some form of YFP2J = 0.3JBOL + 0.2JF P N + 0.3JO + 0.3JOIL. Unclear what this is. Using Building Permits instead
+      "Demand + Export + LabCostService"
+    )
+  )
+
+  fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
+  fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
+  fc <- list(geo = "AT", unit = "THS_T")
+  fd <- list(geo = "AT", s_adj = "SCA")
+  fe <- list(geo = "AT", s_adj = "SCA", unit = "I15")
+
+  filter_list <- list(
+    "P7" = fa,
+    "YA0" = fb,
+    "P31_S14_S15" = fa,
+    "P5G" = fa,
+    "B1G" = fa,
+    "P3_S13" = fa,
+    "P6" = fa,
+    "GHG" = fc,
+    "B1GQ" = fa,
+    "PNUM" = fe
+  )
+
+
+
+
+
+})
+
+
