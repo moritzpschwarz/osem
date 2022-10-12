@@ -15,7 +15,7 @@ You can install the development version of aggregate.model from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("moritzpschwarz/aggregate_model")
+devtools::install_github("moritzpschwarz/aggregate.model")
 ```
 
 ## Example
