@@ -10,7 +10,8 @@ load_or_download_variables(
   download = TRUE,
   dictionary = NULL,
   inputdata_directory = NULL,
-  save_to_disk = NULL
+  save_to_disk = NULL,
+  quiet = FALSE
 )
 }
 \arguments{
@@ -35,6 +36,10 @@ stored. Can be \code{NULL} if \code{download == TRUE}.}
 
 \item{save_to_disk}{A path to a directory where the final dataset will be
 saved, including file name and ending. Not saved when \code{NULL}.}
+
+\item{quiet}{Logical with default = FALSE. Should messages be displayed?
+These messages are intended to give more information about the estimation
+and data retrieval process.}
 }
 \description{
 Either downloads the necessary data for all modules from Eurostat using

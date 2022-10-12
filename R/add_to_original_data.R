@@ -46,7 +46,8 @@ add_to_original_data <- function(clean_data,
         mutate(.,
           fitted.cumsum = case_when(
             is.na(fitted) & is.na(lead(fitted)) ~ 0,
-            is.na(fitted) & !is.na(lead(fitted)) ~ get(paste0("L.", dep_var_basename)), # L.imports_of_goods_and_services,
+            # ATTENTION TO DO: here change by Moritz: used to be paste0("L.",dep_var_basename)
+            is.na(fitted) & !is.na(lead(fitted)) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
             !is.na(fitted) ~ fitted
           ),
           fitted.cumsum = cumsum(fitted.cumsum),
@@ -66,9 +67,13 @@ add_to_original_data <- function(clean_data,
       }
     } -> intermed
 
-  # the code below gives me an error, including for the little example in the documentation
+  # intermed %>% ggplot(aes(x = as.Date(time))) + geom_line(aes(y = fitted.level), col = "blue") + geom_line(aes(y = p5g))
+
+  # Jonas: the code below gives me an error, including for the little example in the documentation
   # the reason is that the renaming then does not yield unique column names ("fitted" becomes dep_var_basename but it exists already)
-  # replace by following suggestion:
+  # replace by following suggestion: TO DO
+  # Update Moritz 29/08/2022: does not give me an error - also the example in the documentation works
+
   intermed %>%
     rename_with(.cols = any_of(c("fitted", "fitted.level", "fitted.cumsum")), .fn = ~ paste0(gsub("fitted", dep_var_basename, .), ".hat")) %>%
     return()

@@ -50,6 +50,7 @@ translate_variables <- function(specification, dictionary = NULL) {
       indep[i],
       c("\\-", "\\+"))
 
+
     # go through elements of formula and replace variable names by Eurostat code
     for (j in seq_along(vars)) {
       ind <- which(dictionary$model_varname %in% vars[j])
@@ -69,6 +70,8 @@ translate_variables <- function(specification, dictionary = NULL) {
 
     res <- gsub("\\+", " + ", res)
     res <- gsub("\\-", " - ", res)
+
+    if(identical(res,character(0))){res <- ""}
 
     # replace result
     indep[i] <- res

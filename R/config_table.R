@@ -55,6 +55,7 @@
 #' check_config_table(config_table_small)
 #'
 check_config_table <- function(config_table) {
+
   strsplits <- function(x, splits, ...) {
     for (split in splits)
     {
@@ -73,10 +74,12 @@ check_config_table <- function(config_table) {
       c("\\-", "\\+")
     ))) %>%
     ungroup() %>%
-    unnest(splitvars) %>%
+    unnest(splitvars, keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
     # group_by(dependent) %>%
     # rowwise() %>%
-    mutate(direct_endog = dependent == splitvars) -> direct_endog
+    mutate(direct_endog = case_when(dependent == splitvars~TRUE,
+                                    is.na(splitvars)~FALSE,
+                                    TRUE ~ FALSE)) -> direct_endog
 
   if (any(direct_endog$direct_endog)) {
     stop(
@@ -122,24 +125,27 @@ check_config_table <- function(config_table) {
       c("\\-", "\\+")
     ))) %>%
     ungroup() %>%
-    unnest(splitvars) %>%
+    unnest(splitvars, keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
     mutate(endog = ifelse(splitvars %in% dependent, TRUE, FALSE)) -> config_table_endog_exog
 
   config_table_endog_exog %>%
     group_by(dependent, independent) %>%
-    mutate(all_exog = !any(endog)) %>%
+    mutate(all_exog = case_when(is.na(splitvars)~FALSE,
+                                !any(endog)~TRUE,
+                                TRUE ~ FALSE)) %>%
     ungroup() %>%
     distinct(index, type, dependent, independent, all_exog) %>%
     filter(all_exog) %>%
     select(-all_exog) %>%
-    mutate(order = 1:n()) -> order_exog
+    mutate(order = ifelse(n()>0,1:n(),NA_integer_)) -> order_exog
 
   config_table_endog_exog %>%
     group_by(dependent, independent) %>%
-    mutate(all_exog = !any(endog)) %>%
+    mutate(all_exog = case_when(is.na(splitvars)~FALSE,
+                                !any(endog)~TRUE,
+                                TRUE ~ FALSE)) %>%
     ungroup() %>%
     filter(!all_exog) -> not_exog
-
 
   while (nrow(not_exog) != 0) {
     not_exog %>%
@@ -156,11 +162,11 @@ check_config_table <- function(config_table) {
       group_by(index, type) %>%
       filter(!any(endog)) %>%
       distinct(index, dependent, independent) %>%
+      ungroup() %>%
       mutate(
         order = 1:n(),
         order = order + max(order_exog$order)
-      ) %>%
-      ungroup() -> remove_from_not_exog
+      ) -> remove_from_not_exog
 
     bind_rows(remove_from_not_exog, order_exog) -> order_exog
 
