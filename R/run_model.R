@@ -67,7 +67,7 @@
 #' fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
 #' fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
 #' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
-#' \dontrun{
+#' \donttest{
 #' a <- run_model(specification = spec, dictionary = NULL, inputdata_directory = NULL, filter_list = filter_list, download = TRUE, save_to_disk = NULL, present = FALSE)
 #' }
 
@@ -93,12 +93,20 @@ run_model <- function(specification,
                       ...) {
 
   if(!(is.data.frame(specification) | is.matrix(specification))){
-    stop("'specification' must be a data.frame, tibble or matrix object. Check the documentation how a specification object must look like.")
+    stop("'specification' must be a data.frame, tibble, or matrix object. Check the documentation how a specification object must look like.")
   }
+
+  if(missing(dictionary) | is.null(dictionary)){dictionary <- aggregate.model::dict}
+
+  if(!all(c("eurostat_code", "model_varname", "full_name", "dataset_id","var_col", "nace_r2") %in% colnames(dictionary))){
+    stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'eurostat_code', 'model_varname', 'full_name', 'dataset_id', 'var_col', 'nace_r2'.")
+  }
+
+  if(any(duplicated(dictionary$model_varname))){stop("Dictionary cannot contain duplicated values for 'model_varname'.")}
 
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
-
+browser()
   # add columns that translate dependent and independent variables into Eurostat codes
   module_order_eurostatvars <- translate_variables(specification = module_order,
                                                    dictionary = dictionary)
