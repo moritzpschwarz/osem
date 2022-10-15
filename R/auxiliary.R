@@ -74,9 +74,14 @@ update_data <- function(orig_data, new_data) {
 
   # change name to make consistent with identify_module_data()
   cnames <- colnames(add)
-  cnames[cnames != "time"] <- toupper(cnames[cnames != "time"])
-  cnames <- gsub("\\.LEVEL", "", cnames)
-  cnames <- gsub("HAT", "hat", cnames)
+  cur_name <- gsub("\\.level\\.hat","",cnames[cnames != "time"])
+  orig_name_index <- grep(tolower(cur_name),orig_data %>% distinct(na_item) %>% pull %>% tolower, fixed = TRUE)
+  orig_data_names <- orig_data %>% distinct(na_item) %>% pull
+  orig_name <- orig_data_names[orig_name_index]
+
+  cnames[cnames != "time"] <- gsub(cur_name, orig_name,cnames[cnames != "time"])
+  cnames <- gsub("\\.level", "", cnames)
+  #cnames <- gsub("HAT", "hat", cnames)
   colnames(add) <- cnames
 
   # bring original data into wide format

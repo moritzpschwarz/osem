@@ -84,29 +84,32 @@ load_or_download_variables <- function(specification,
     # loop through required datasets
     for (i in 1:length(ids$data.ids)) {
       tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
-
+      if(is.null(tmp)) {stop("Issue with automatic EUROSTAT download. Likely cause is a lack of internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")}
       varcolname <- codes.download %>% filter(dataset_id == ids$data.ids[i]) %>% distinct(var_col) %>% pull(var_col)
       codes.in.tmp <- tmp %>% pull(varcolname) %>% unique
       codes.found <- codes.download %>% filter(dataset_id == ids$data.ids[i], var %in% codes.in.tmp)
       codes.remain <- setdiff(codes.remain, codes.found$var.ids)
 
-      browser() # still an error here - TODO
       for (j in 1:nrow(codes.found)) {
         # which filter should be applied for that variable
         filter <- filter_list[[codes.found$var[j]]]
+
+        if (is.null(filter)) {stop(paste0("For variable '",codes.found$var[j],"' no entry in filter list found. Check filter list."))}
+
         # choose subset according to filter
         sub <- tmp %>%
           filter(if_all(varcolname, ~ . == codes.found$var[j])) %>%
           filter(geo == filter$geo & unit == filter$unit) %>%
-          {if(select(., any_of("s_adj")) %>% ncol == 1){filter(.,s_adj == filter$s_adj)} else {.}} %>% distinct(nace_r2)
+          {if(select(., any_of("s_adj")) %>% ncol == 1){filter(.,s_adj == filter$s_adj)} else {.}} %>%
           {if(select(., any_of("nace_r2")) %>% ncol == 1){filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
-          rename_with(.cols = varcolname, .fn = ~paste0("na_item"))
+          rename_with(.cols = varcolname, .fn = ~paste0("na_item")) %>%
+          mutate(na_item = codes.found$var.ids[j])
 
         # add subset to full, final dataset
         full <- bind_rows(full, sub)
       }
     }
-browser()
+    browser()
     # check whether all Eurostat codes were found
     if (!identical(length(codes.remain), 0L)) {
       stop("Not all Eurostat codes were found in the provided dataset ids.")
@@ -150,15 +153,22 @@ browser()
 
       codes.found <- codes.find[which(codes.find %in% unique(tmp$na_item))]
       codes.remain <- setdiff(codes.remain, codes.found)
-      for (j in 1:length(codes.found)) {
-        # which filter should be applied for that variable
-        filter <- filter_list[[codes.found[j]]]
-        # choose subset according to filter
-        sub <- tmp %>%
-          filter(na_item == codes.found[j] & geo == filter$geo & s_adj == filter$s_adj & unit == filter$unit)
-        # add subset to full, final dataset
-        full <- rbind(full, sub)
-      }
+
+      # Commented out by Moritz because all of these will be applied when first downloading
+      #   for (j in 1:length(codes.found)) {
+      #     # which filter should be applied for that variable
+      #     curfilter <- filter_list[[codes.found[j]]]
+      #     # choose subset according to filter
+      #     sub <- tmp %>%
+      #       filter(if_all(na_item, ~ . == codes.found[j])) %>%
+      #       filter(geo == curfilter$geo & unit == curfilter$unit) %>%
+      #       {if(select(., any_of("s_adj")) %>% ncol == 1){filter(.,s_adj == curfilter$s_adj)} else {.}} %>%
+      #       {if(select(., any_of("nace_r2")) %>% ncol == 1){filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
+      #       mutate(na_item = codes.found$var.ids[j])
+      #
+      #     # add subset to full, final dataset
+      full <- rbind(full, tmp)
+      #   }
     }
 
     # check whether all Eurostat codes were found

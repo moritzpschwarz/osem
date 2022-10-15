@@ -18,22 +18,31 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
 
   # identity must be given as a module (i.e. must be a dependent variable)
   identities <- specification %>%
-    filter(type == "d" & !(dependent_eu %in% dictionary$eurostat_code))
+    filter(type == "d")
 
   # not sure whether can solve without dropping these vars
   # could add back later but not necessary?
-  data <- data %>% select(-unit, -geo, -s_adj)
+  dat <- data %>% select(-unit, -geo, -s_adj)
 
   for (i in 1:NROW(identities)) {
     identity <- identities[i, ]
     dep <- identity$dependent_eu
     indep <- identity$independent_eu
-    data <- data %>%
-      pivot_wider(names_from = na_item, values_from = values) %>%
-      mutate(!!dep := eval(parse(text = indep))) %>%
-      pivot_longer(cols = !time, names_to = "na_item", values_to = "values")
+    dat %>%
+      pivot_wider(id_cols = time, names_from = na_item, values_from = values) -> dat_tmp
+
+    dat_tmp_names <- names(dat_tmp)
+    # make sure the column names are not using * as denominator for NACE codes
+    # when parsing this, it would appear that we would need to multiply the values
+    # therefore changing the denominator from * to _ only for here
+    dat_tmp %>%
+      rename_with(.fn = ~gsub("\\*","_",.)) %>%
+      mutate(!!dep := eval(parse(text = gsub("\\*","_",indep)))) %>%
+      setNames(c(dat_tmp_names, dep)) %>%
+      select(-any_of("nace_r2")) %>%
+      pivot_longer(cols = !time, names_to = "na_item", values_to = "values") -> dat
   }
 
-  return(data)
+  return(dat)
 
 }

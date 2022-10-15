@@ -139,7 +139,13 @@ determine_eurocodes <- function(specification, dictionary = NULL) {
     dictionary <- aggregate.model::dict
   }
 
-  codes.avail <- dictionary$eurostat_code
+  #codes.avail <- dictionary$eurostat_code
+  codes.avail <- dictionary %>%
+    drop_na(dataset_id) %>%
+    rowwise() %>%
+    mutate(codes.avail = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
+                                   TRUE ~eurostat_code)) %>%
+    pull(codes.avail)
 
   # extract the codes used in the model
   dep.set <- specification$dependent_eu

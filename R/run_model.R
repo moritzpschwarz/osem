@@ -96,6 +96,10 @@ run_model <- function(specification,
     stop("'specification' must be a data.frame, tibble, or matrix object. Check the documentation how a specification object must look like.")
   }
 
+  if(!all(specification$type %in% c("n","d"))){
+    stop("The type column in the Specification can only either be 'n' (for Definition i.e. modelled) or 'd' (for identity).")
+  }
+
   if(missing(dictionary) | is.null(dictionary)){dictionary <- aggregate.model::dict}
 
   if(!all(c("eurostat_code", "model_varname", "full_name", "dataset_id","var_col", "nace_r2") %in% colnames(dictionary))){
@@ -106,7 +110,7 @@ run_model <- function(specification,
 
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
-browser()
+
   # add columns that translate dependent and independent variables into Eurostat codes
   module_order_eurostatvars <- translate_variables(specification = module_order,
                                                    dictionary = dictionary)
@@ -121,7 +125,7 @@ browser()
                                             quiet = quiet)
 
   # add data that is not directly available but can be calculated from identities
-  full_data <- calculate_identities(specification = module_order_eurostatvars, data = loaded_data, dictionary = NULL)
+  full_data <- calculate_identities(specification = module_order_eurostatvars, data = loaded_data, dictionary = dictionary)
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order_eurostatvars)
@@ -130,7 +134,7 @@ browser()
   module_collection <- module_order_eurostatvars %>%
     mutate(dataset = list(NA_complex_),
            model = list(NA_complex_))
-
+browser()
   tmp_data <- full_data
   # loop through all modules
   for (i in module_order_eurostatvars$order) {

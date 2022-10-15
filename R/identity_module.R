@@ -32,9 +32,15 @@ identity_module <- function(module, data, classification) {
   }
 
   # calculate fitted values
-  fitted <- data %>%
-    pivot_wider(names_from = na_item, values_from = values) %>%
-    mutate(!!dep.fitted := eval(parse(text = rhs)))
+  data %>%
+    pivot_wider(id_cols = time, names_from = na_item, values_from = values) -> dat_tmp
+
+  dat_tmp_names <- names(dat_tmp)
+
+  dat_tmp %>%
+    rename_with(.fn = ~gsub("\\*","_",.)) %>%
+    mutate(!!dep.fitted := eval(parse(text = gsub("\\*","_",rhs)))) %>%
+    setNames(c(dat_tmp_names, dep.fitted)) -> fitted
 
   return(fitted)
 
