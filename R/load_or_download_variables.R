@@ -99,7 +99,7 @@ load_or_download_variables <- function(specification,
         if (is.null(filter)) {stop(paste0("For variable '",codes.found$var[j],"' no entry in filter list found. Check filter list."))}
 
         # choose subset according to filter
-        #if(ids$data.ids[i] == "sts_cobp_q"){browser()}
+        #if(ids$data.ids[i] == "ei_lmlc_q"){browser()}
         sub <- tmp %>%
           filter(if_all(varcolname, ~ . == codes.found$var[j])) %>%
           filter(geo == filter$geo & unit == filter$unit) %>%
@@ -150,7 +150,7 @@ load_or_download_variables <- function(specification,
       } else if (grepl("\\.(csv)$",pth)){
         tmp <- read.csv(pth)
       } else if (grepl("\\.(xls|xlsx)$",pth)){
-        tmp <- readxl::read_excel(path = pth)
+        tmp <- readxl::read_excel(path = pth, guess_max = 1000000)
         #stop("Loading from xls or xlsx file not yet implemented.)
       }
 

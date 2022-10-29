@@ -47,13 +47,13 @@ determine_datacodes <- function(specification, dictionary = NULL) {
     # each element of character vector may contain formula, e.g. "A + B", must split
     vars <- strsplits(
       indep[i],
-      c("\\-", "\\+"))
+      c(" \\- ", " \\+ "))
     indep.set <- union(indep.set, vars)
 
   }
   indep.set <- gsub(" ", "", indep.set)
   codes.used <- union(dep.set, indep.set)
-browser()
+
   # the codes that cannot be found in codes.avail must be aggregate level vars (e.g. TOTS)
   # don't need to download them
   codes.eurostat <- codes.used[which(codes.used %in% codes.avail)]

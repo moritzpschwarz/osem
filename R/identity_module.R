@@ -14,11 +14,11 @@ identity_module <- function(module, data, classification) {
 
   # original specification (identity/definition)
   rhs <- module$independent
-  indep <- strsplits(module$independent, splits = c("\\+", "\\-"))
+  indep <- strsplits(module$independent, splits = c(" \\+ ", " \\- "))
   indep <- gsub(" ", "", indep)
 
   # new fitted value name
-  dep <- module$dependent_eu
+  dep <- module$dependent
   dep.fitted <- paste0(dep, ".level.hat")
 
   # check state of all that appear and translate to hat where necessary

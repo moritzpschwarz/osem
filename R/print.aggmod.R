@@ -12,7 +12,7 @@ print.aggmod <- function(model){
   cat("-----------------------\n")
 
   cat(paste0("\nEstimation Options:"))
-  cat(paste0("\nSample:"))
+  cat(paste0("\nSample: ", min(model$full_data$time)," to ",max(model$full_data$time)))
   cat(paste0("\nMax Lags Considered:"), ifelse(is.null(model$args$max.lag), 4, model$args$max.lag))
   cat(paste0("\nEstimation Option:"), ifelse(is.null(model$args$ardl_or_ecm), "ARDL", model$args$ardl_or_ecm))
   cat("\n")

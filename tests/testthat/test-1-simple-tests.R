@@ -271,7 +271,7 @@ test_that("Extensive Model", {
       "n",
       "n",
       "n",
-      "n",
+      "d",
       "n",
       "n",
       "d",
@@ -313,6 +313,7 @@ test_that("Extensive Model", {
   fc <- list(geo = "AT", unit = "THS_T")
   fd <- list(geo = "AT", s_adj = "SCA")
   fe <- list(geo = "AT", s_adj = "SCA", unit = "I15")
+  ff <- list(geo = "AT", s_adj = "SCA", unit = "I16")
 
   filter_list <- list(
     "P7" = fa,
@@ -324,7 +325,8 @@ test_that("Extensive Model", {
     "P6" = fa,
     "GHG" = fc,
     "B1GQ" = fa,
-    "PSQM" = fe
+    "PSQM" = fe,
+    "LM-LCI-TOT" = ff
   )
 
 

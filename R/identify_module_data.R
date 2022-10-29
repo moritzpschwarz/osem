@@ -18,8 +18,7 @@
 #' @export
 
 identify_module_data <- function(module, classification, data) {
-  #browser()
-  if(module$order == 7){browser()}
+
   # extract variable names
   dep <- module$dependent
   indep <- module$independent

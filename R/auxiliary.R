@@ -53,7 +53,7 @@ classify_variables <- function(specification) {
                              var %in% vars.n ~ "n",
                              var %in% vars.d ~ "d",
                              TRUE ~ NA_character_)
-  )
+    )
 
   return(classification)
 
