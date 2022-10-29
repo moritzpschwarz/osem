@@ -70,12 +70,14 @@ load_or_download_variables <- function(specification,
 
     ids <- determine_datacodes(specification = specification, dictionary = dictionary)
 
-    id_to_dataset <- dictionary %>% rowwise %>%
+    id_to_dataset <- dictionary %>%
+      rowwise %>%
       mutate(var.ids = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
                                  TRUE ~eurostat_code)) %>%
-      select(var.ids, dataset_id, var_col)
+      select(var.ids, dataset_id, var_col, model_varname, cpa2_1)
 
-    codes.download <- tibble(var.ids = ids$var.ids) %>%
+    codes.download <- tibble(var.ids = ids$var.ids,
+                             model.ids = ids$model.ids) %>%
       left_join(id_to_dataset, by = "var.ids") %>%
       separate(var.ids, into = c("var","nace_r2"), sep = "\\*", fill = "right", remove = FALSE)
     codes.remain <- codes.download$var.ids
@@ -97,19 +99,21 @@ load_or_download_variables <- function(specification,
         if (is.null(filter)) {stop(paste0("For variable '",codes.found$var[j],"' no entry in filter list found. Check filter list."))}
 
         # choose subset according to filter
+        #if(ids$data.ids[i] == "sts_cobp_q"){browser()}
         sub <- tmp %>%
           filter(if_all(varcolname, ~ . == codes.found$var[j])) %>%
           filter(geo == filter$geo & unit == filter$unit) %>%
           {if(select(., any_of("s_adj")) %>% ncol == 1){filter(.,s_adj == filter$s_adj)} else {.}} %>%
           {if(select(., any_of("nace_r2")) %>% ncol == 1){filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
+          {if(select(., any_of("cpa2_1")) %>% ncol == 1){filter(.,cpa2_1 == codes.found$cpa2_1[j])} else {.}} %>%
           rename_with(.cols = varcolname, .fn = ~paste0("na_item")) %>%
-          mutate(na_item = codes.found$var.ids[j])
+          mutate(na_item = codes.found$model_varname[j])
 
         # add subset to full, final dataset
         full <- bind_rows(full, sub)
       }
     }
-    browser()
+
     # check whether all Eurostat codes were found
     if (!identical(length(codes.remain), 0L)) {
       stop("Not all Eurostat codes were found in the provided dataset ids.")
@@ -133,8 +137,7 @@ load_or_download_variables <- function(specification,
       cat("\n")
     }
 
-
-    codes.find <- determine_eurocodes(specification = specification, dictionary = dictionary)$var.ids
+    codes.find <- determine_eurocodes(specification = specification, dictionary = dictionary)$model_varname
     codes.remain <- codes.find
     full <- data.frame()
 

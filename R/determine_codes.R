@@ -31,6 +31,9 @@ determine_datacodes <- function(specification, dictionary = NULL) {
                                    TRUE ~eurostat_code)) %>%
     pull(codes.avail) -> codes.avail
 
+  dictionary %>%
+    pull(model_varname) -> model.ids
+
   # delete irrelevant values, such as TOTS
   codes.avail <- codes.avail[!is.na(dictionary$dataset_id)]
 
@@ -50,7 +53,7 @@ determine_datacodes <- function(specification, dictionary = NULL) {
   }
   indep.set <- gsub(" ", "", indep.set)
   codes.used <- union(dep.set, indep.set)
-
+browser()
   # the codes that cannot be found in codes.avail must be aggregate level vars (e.g. TOTS)
   # don't need to download them
   codes.eurostat <- codes.used[which(codes.used %in% codes.avail)]
@@ -167,8 +170,17 @@ determine_eurocodes <- function(specification, dictionary = NULL) {
   # don't need to download them
   codes.eurostat <- codes.used[which(codes.used %in% codes.avail)]
 
+  dictionary %>%
+    drop_na(dataset_id) %>%
+    rowwise() %>%
+    mutate(codes.avail = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
+                                   TRUE ~eurostat_code)) %>%
+    ungroup() %>%
+    filter(codes.avail %in% codes.used) %>%
+    pull(model_varname) -> codes.varname
+
   # output list
-  out <- list(var.ids = codes.eurostat)
+  out <- list(var.ids = codes.eurostat, model_varname = codes.varname)
   return(out)
 
 }

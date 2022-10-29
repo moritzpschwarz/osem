@@ -274,7 +274,7 @@ test_that("Extensive Model", {
       "n",
       "n",
       "n",
-      "i",
+      "d",
       "n",
       "n"
     ),
@@ -324,7 +324,27 @@ test_that("Extensive Model", {
     "P6" = fa,
     "GHG" = fc,
     "B1GQ" = fa,
-    "PNUM" = fe
+    "PSQM" = fe
+  )
+
+
+
+  # ab <- run_model(
+  #   specification = spec,
+  #   dictionary = dict.devel,
+  #   filter_list = filter_list,
+  #   save_to_disk = "data/use/Test3.xlsx",
+  #   download = TRUE,
+  #   present = FALSE
+  # )
+
+  ab <- run_model(
+    specification = spec,
+    dictionary = dict.devel,
+    inputdata_directory = "data/use",
+    filter_list = filter_list,
+    download = FALSE,
+    present = FALSE
   )
 
 

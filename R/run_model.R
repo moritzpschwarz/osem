@@ -108,6 +108,8 @@ run_model <- function(specification,
 
   if(any(duplicated(dictionary$model_varname))){stop("Dictionary cannot contain duplicated values for 'model_varname'.")}
 
+  if(any(grepl("\\-|\\+|\\*|\\/|\\^",dictionary$model_varname))){stop("The 'model_varname' column in the Dictionary cannot contain any of the following characters: + - / * ^")}
+
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
 
@@ -134,7 +136,7 @@ run_model <- function(specification,
   module_collection <- module_order_eurostatvars %>%
     mutate(dataset = list(NA_complex_),
            model = list(NA_complex_))
-browser()
+
   tmp_data <- full_data
   # loop through all modules
   for (i in module_order_eurostatvars$order) {

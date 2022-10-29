@@ -18,10 +18,11 @@
 #' @export
 
 identify_module_data <- function(module, classification, data) {
+  #browser()
   if(module$order == 7){browser()}
   # extract variable names
-  dep <- module$dependent_eu
-  indep <- module$independent_eu
+  dep <- module$dependent
+  indep <- module$independent
   indep <- unlist(strsplits(indep, split = c("\\+", "\\-")))
   indep <- gsub(" ", "", indep)
 

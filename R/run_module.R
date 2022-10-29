@@ -39,9 +39,9 @@ run_module <- function(module, data, classification, ...) {
     clean_df <- clean_data(raw_data)
 
     # extract base variable names (and convert to lower case because janitor::clean_names() does so)
-    dep <- module$dependent_eu
+    dep <- module$dependent
     dep <- tolower(dep)
-    indep <- strsplits(module$independent_eu, splits = c("\\+", "\\-"))
+    indep <- strsplits(module$independent, splits = c("\\+", "\\-"))
     indep <- tolower(gsub(" ", "", indep))
 
     # run estimation

@@ -24,8 +24,8 @@ strsplits <- function(x, splits, ...) {
 
 classify_variables <- function(specification) {
 
-  dep <- specification$dependent_eu
-  indep <- specification$independent_eu
+  dep <- specification$dependent
+  indep <- specification$independent
 
   indep <- strsplits(indep, splits = c("\\+", "\\-"))
   indep <- gsub(" ", "", indep)
@@ -36,10 +36,10 @@ classify_variables <- function(specification) {
   vars.x <- setdiff(vars.all, dep)
 
   # n are all variables that are in dep and have type == "n" in classification
-  vars.n <- specification[specification$type == "n", ] %>% pull(dependent_eu)
+  vars.n <- specification[specification$type == "n", ] %>% pull(dependent)
 
   # d are all variables that are in dep and have type == "d" in classification
-  vars.d <- specification[specification$type == "d", ] %>% pull(dependent_eu)
+  vars.d <- specification[specification$type == "d", ] %>% pull(dependent)
 
   # sanity check: all elements member of at least one set, no overlap between them -> partition
   stopifnot(setequal(vars.all, union(union(vars.x, vars.n), vars.d)))
