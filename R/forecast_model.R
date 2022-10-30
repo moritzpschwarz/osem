@@ -62,8 +62,8 @@ forecast_model <- function(model,
     exog_df <- model$full_data %>%
       filter(na_item %in% exog_vars) %>%
       group_by(na_item) %>%
-      filter(time == max(time)) %>%
-      mutate(na_item = janitor::make_clean_names(na_item))
+      filter(time == max(time)) #%>%
+    #mutate(na_item = janitor::make_clean_names(na_item))
 
     if(!all(exog_df$time == exog_df$time[1])){
       warning("Latest Exogenous Data is not available for all variables. For those where most recent data is not available, the period before that is used.")
@@ -89,8 +89,7 @@ forecast_model <- function(model,
     exog_df_intermed <- model$full_data %>%
       filter(na_item %in% exog_vars) %>%
       group_by(na_item) %>%
-      pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>%
-      janitor::clean_names()
+      pivot_wider(id_cols = time, names_from = na_item, values_from = values)
 
     exog_df_forecast <- model$full_data %>%
       filter(time == max(time)) %>%
@@ -191,22 +190,33 @@ forecast_model <- function(model,
   # cycling through each module
   for(i in seq(model$module_order_eurostatvars$order)){
     # i = 1
+
     current_spec <- model$module_order_eurostatvars %>%
       filter(order == i) %>%
 
+      # save original form of independent col
+      mutate(independent_orig = independent) %>%
+
       # make sure each independent variable has a separate row
-      mutate(independent = gsub(" ", "", independent),
-             independent_eu = gsub(" ", "", independent_eu),) %>%
+      mutate(independent = gsub(" ", "", independent)) %>%
+      #independent_eu = gsub(" ", "", independent_eu),) %>%
       rowwise() %>%
-      mutate(ind_vars_eu = list(strsplits(independent_eu,c("\\-", "\\+")))) %>%
+      mutate(#ind_vars_eu = list(strsplits(independent_eu,c("\\-", "\\+"))),
+        independent = list(strsplits(independent,c("\\-", "\\+")))) %>%
 
       # following line added to deal with AR models when ind_vars is a list of NULL
-      bind_rows(tibble(ind_vars_eu = list(""))) %>%
+      #bind_rows(tibble(ind_vars_eu = list(""))) %>%
+      bind_rows(tibble(independent = list(""))) %>%
 
-      unnest(ind_vars_eu, keep_empty = TRUE) %>%
+      #nnest(ind_vars_eu, keep_empty = TRUE) %>%
+      unnest(independent, keep_empty = TRUE) %>%
       drop_na(index) %>%
-      select(index, dependent_eu, independent_eu,ind_vars_eu) %>%
-      mutate(independent_eu = tolower(independent_eu),ind_vars_eu = tolower(ind_vars_eu))
+      select(index,
+             #dependent_eu, independent_eu,ind_vars_eu,
+             dependent,
+             independent,
+             independent_orig) #%>%
+    #mutate(independent_eu = tolower(independent_eu),ind_vars_eu = tolower(ind_vars_eu))
 
     if(model$module_order_eurostatvars$type[model$module_order_eurostatvars$order == i] != "d"){
       # set up
@@ -332,15 +342,14 @@ forecast_model <- function(model,
         } else {.}} -> current_pred_raw
 
       # Deal with current_spec not being fully exogenous
-      if (!all(current_spec$ind_vars_eu %in% names(exog_df_ready)) && !all(is.na(current_spec$ind_vars_eu))) {
+      if (!all(current_spec$independent %in% names(exog_df_ready)) && !all(is.na(current_spec$independent))) {
 
-        missing_vars <- current_spec$ind_vars_eu[!current_spec$ind_vars_eu %in% names(exog_df_ready)]
+        missing_vars <- current_spec$independent[!current_spec$independent %in% names(exog_df_ready)]
 
         for (mvar in missing_vars) {
           # mvar = "p5g"
-
           model$module_order_eurostatvars %>%
-            filter(tolower(dependent_eu) == mvar) %>%
+            filter(dependent == mvar) %>%
             pull(index) -> mvar_model_index
 
           prediction_list %>%
@@ -356,20 +365,29 @@ forecast_model <- function(model,
 
           mvar_euname <- model$module_collection %>%
             filter(index == mvar_model_index) %>%
-            pull(dependent_eu)
+            pull(dependent)
 
-          mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), tolower(mvar_euname))
+          mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
 
           # TODO: Here we can implement the forecast plume
           # currently we are using 'yhat' below - but the mvar_model_obj has all values of the ci.levels
           mvar_tibble <- tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
             setNames(mvar_name)
 
+          if (!mvar_name %in% x_names_vec_nolag) {
+            if (paste0("ln.",mvar_name) %in% x_names_vec_nolag) {
+              mvar_tibble %>%
+                mutate(across(all_of(mvar_euname), log, .names = "ln.{.col}")) %>%
+                select(all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
+            } else {
+              stop("Error occurred in adding missing/lower estimated variables (likely identities) to a subsequent/higher model. This is likely being caused by either log specification or lag specifiction. Check code.")
+            }
+          }
+
           current_pred_raw <- bind_cols(current_pred_raw,mvar_tibble)
 
         }
       }
-
 
       data_obj %>%
         select(time, all_of(x_names_vec_nolag)) %>%
@@ -416,7 +434,7 @@ forecast_model <- function(model,
                                with(model.args) %>%
                                .[[1]] %>%
                                .$use_logs %in% c("both","y")) {"ln."} else {""},
-                           current_spec %>% pull(dependent_eu) %>% tolower)
+                           current_spec %>% pull(dependent))
 
       tibble(time = current_pred_raw %>% pull(time),
              value = as.numeric(pred_obj[,1])) %>%
@@ -438,21 +456,20 @@ forecast_model <- function(model,
 
     } else {
       # Loop goes to this part if the type of the module is not "d"
-
       identity_pred <- tibble()
       identity_pred <- exog_df_ready %>%
-        select(all_of(current_spec$ind_vars_eu[current_spec$ind_vars_eu %in% names(exog_df_ready)]))
+        select(all_of(current_spec$independent[current_spec$independent %in% names(exog_df_ready)]))
 
-      identity_logs <- c(rep(FALSE,length(current_spec$ind_vars_eu[current_spec$ind_vars_eu %in% names(exog_df_ready)])))
+      identity_logs <- c(rep(FALSE,length(current_spec$independent[current_spec$independent %in% names(exog_df_ready)])))
 
       # check which x variables are needed in this module, but are not fully exogenous
-      missing_vars <- current_spec$ind_vars_eu[!current_spec$ind_vars_eu %in% names(exog_df_ready)]
+      missing_vars <- current_spec$independent[!current_spec$independent %in% names(exog_df_ready)]
 
       for(mvar in missing_vars){
         # mvar = "yf"
 
         model$module_order_eurostatvars %>%
-          filter(tolower(dependent_eu) == mvar) %>%
+          filter(dependent == mvar) %>%
           pull(index) -> mvar_model_index
 
         prediction_list %>%
@@ -470,9 +487,9 @@ forecast_model <- function(model,
 
         mvar_euname <- model$module_collection %>%
           filter(index == mvar_model_index) %>%
-          pull(dependent_eu)
+          pull(dependent)
 
-        mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), tolower(mvar_euname))
+        mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
 
         mvar_tibble <- tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
           setNames(mvar_name)
@@ -495,8 +512,8 @@ forecast_model <- function(model,
       }
 
       # sum the identities
-      cols_to_cycle <-strsplits(unique(current_spec$independent_eu), c("\\+", "\\-"))
-      operators <- str_extract_all(string = unique(current_spec$independent_eu), pattern = "\\+|\\-")[[1]]
+      cols_to_cycle <- gsub(" ","",strsplits(unique(current_spec$independent_orig), c("\\+", "\\-")))
+      operators <- str_extract_all(string = unique(current_spec$independent_orig), pattern = "\\+|\\-")[[1]]
 
       if(length(cols_to_cycle) != (length(operators)+1)){warning("Identity might be falsely calculated. Check operators.")}
 
@@ -521,14 +538,14 @@ forecast_model <- function(model,
       }
 
       outvarname <- paste0(#if(any(identity_logs) && !all(identity_logs)){"ln."} else {""},
-        current_spec %>% pull(dependent_eu) %>% tolower)
+        current_spec %>% pull(dependent) %>% unique) #%>% tolower)
 
       tibble(time = current_pred_raw %>% pull(time),
              value = as.numeric(identity_pred_final[,1])) %>%
         setNames(c("time",outvarname)) -> central_estimate
 
 
-      names(identity_pred_final) <- unique(current_spec$dependent_eu)
+      names(identity_pred_final) <- unique(current_spec$dependent)
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(tibble(yhat = identity_pred_final[,1])))
       prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(bind_cols(identity_pred_final, identity_pred)))
       prediction_list[prediction_list$order == i, "central.estimate"] <- tibble(data = list(central_estimate))
@@ -538,6 +555,7 @@ forecast_model <- function(model,
   out <- list()
   out$forecast <- prediction_list
   out$orig_model <- model
+  out$dictionary <- model$dictionary
 
   class(out) <- "aggmod.forecast"
 

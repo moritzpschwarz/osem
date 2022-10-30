@@ -144,7 +144,8 @@ run_model <- function(specification,
     # print progress update
     if(!quiet){
       if(i == 1){cat("\n--- Estimation begins ---\n")}
-      cat(paste0("Estimating ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")
+      if(module_order_eurostatvars$type[i] == "n") {cat(paste0("Estimating ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")}
+      if(module_order_eurostatvars$type[i] == "d") {cat(paste0("Constructing ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")}
     }
 
     # estimate current module, using most up-to-date dataset including predicted values
@@ -159,6 +160,8 @@ run_model <- function(specification,
     module_collection[module_collection$order == i, "dataset"] <- tibble(dataset = list(module_estimate$data))
     module_collection[module_collection$order == i, "model"] <- tibble(dataset = list(module_estimate$model))
     module_collection[module_collection$order == i, "model.args"] <- tibble(dataset = list(module_estimate$args))
+    module_collection[module_collection$order == i, "indep"] <- tibble(dataset = list(module_estimate$indep))
+    module_collection[module_collection$order == i, "dep"] <- tibble(dataset = list(module_estimate$dep))
 
     # update dataset for next module by adding fitted values
     tmp_data <- update_data(orig_data = tmp_data, new_data = module_estimate$data)
@@ -174,6 +177,7 @@ run_model <- function(specification,
   out$module_order_eurostatvars <- module_order_eurostatvars
   out$module_collection <- module_collection
   out$full_data <- tmp_data
+  out$dictionary <- dictionary
 
   out <- new_aggmod(out)
 

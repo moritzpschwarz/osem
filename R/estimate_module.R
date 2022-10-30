@@ -68,7 +68,6 @@ estimate_module <- function(clean_data,
         xvars_names <- NULL
       }
 
-
       yvar <- clean_data %>%
         select(all_of(paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename))) %>%
         pull()

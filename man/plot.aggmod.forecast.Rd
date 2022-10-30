@@ -4,10 +4,14 @@
 \alias{plot.aggmod.forecast}
 \title{Plot a Forecast Object of the Aggregate Model}
 \usage{
-\method{plot}{aggmod.forecast}(object)
+\method{plot}{aggmod.forecast}(object, exclude.exogenous = TRUE, order.as.run = FALSE)
 }
 \arguments{
 \item{object}{An object of class aggmod.forecast, which is the output from the forecast_model function.}
+
+\item{exclude.exogenous}{Logical. Should exogenous values be plotted? Default is FALSE.}
+
+\item{order.as.run}{Logical. Should the plots be arranged in the way that the model was run? Default FALSE.}
 }
 \description{
 Plot a Forecast Object of the Aggregate Model

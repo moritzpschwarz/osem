@@ -6,7 +6,9 @@
 #' @param module A row of the specification table.
 #' @param data A tibble or data.frame containing the full data for the aggregate
 #'   model.
+#' @param use_logs Character vector. Either "both", "x", or "y" to decide whether to use logs.
 #' @inheritParams identify_module_data
+#'
 #'
 #' @return Returns a list with two named elements.
 #' \describe{
@@ -20,7 +22,7 @@
 #'
 #' @export
 
-run_module <- function(module, data, classification, ...) {
+run_module <- function(module, data, classification, use_logs = c("both","y","x"), ...) {
 
   raw_data <- identify_module_data(module, classification, data)
 
@@ -31,7 +33,10 @@ run_module <- function(module, data, classification, ...) {
                                   data = raw_data,
                                   classification = classification)
 
-    out <- list(model = NULL, data = moduledata, args = NULL)
+    out <- list(model = NULL,
+                data = moduledata,
+                args = NULL)#
+                  #list(use_logs = match.arg(use_logs)))
 
   } else if(module$type == "n") {
 
@@ -40,14 +45,17 @@ run_module <- function(module, data, classification, ...) {
 
     # extract base variable names (and convert to lower case because janitor::clean_names() does so)
     dep <- module$dependent
-    dep <- tolower(dep)
+    #dep <- tolower(dep)
     indep <- strsplits(module$independent, splits = c("\\+", "\\-"))
-    indep <- tolower(gsub(" ", "", indep))
+    indep <- gsub(" ", "", indep)
+    #indep <- tolower(gsub(" ", "", indep))
 
     # run estimation
     estimated_module <- estimate_module(clean_data = clean_df,
                                         dep_var_basename = dep,
-                                        x_vars_basename = indep, ...)
+                                        x_vars_basename = indep,
+                                        use_logs = use_logs,
+                                        ...)
 
     moduledata <- add_to_original_data(clean_data = clean_df,
                                        isat_object = estimated_module$best_model,
@@ -56,7 +64,9 @@ run_module <- function(module, data, classification, ...) {
 
     out <- list(model = estimated_module$best_model,
                 data = moduledata,
-                args = estimated_module$args)
+                args = estimated_module$args,
+                indep = gsub(" ", "", strsplits(module$independent, splits = c("\\+", "\\-"))),
+                dep = module$dependent)
 
   } # end "n"
 

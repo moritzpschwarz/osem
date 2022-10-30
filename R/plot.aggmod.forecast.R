@@ -1,6 +1,8 @@
 #' Plot a Forecast Object of the Aggregate Model
 #'
 #' @param object An object of class aggmod.forecast, which is the output from the forecast_model function.
+#' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.
+#' @param order.as.run Logical. Should the plots be arranged in the way that the model was run? Default FALSE.
 #'
 #' @export
 #'
@@ -31,7 +33,7 @@
 #' }
 #' plot(forecast(a))
 #'
-plot.aggmod.forecast <- function(object){
+plot.aggmod.forecast <- function(object, exclude.exogenous = TRUE, order.as.run = FALSE){
 
   if(class(object) != "aggmod.forecast"){
     stop("Input object not of type aggmod.forecast. Run 'forecast_model' again and use the output of that function.")
@@ -40,17 +42,32 @@ plot.aggmod.forecast <- function(object){
   object$orig_model$full_data %>%
     mutate(var = na_item,
            na_item = gsub("\\.hat","",na_item),
-           fit = as.character(str_detect(var, ".hat"))) %>%
+           fit = as.character(str_detect(var, ".hat"))) -> plot_df
 
-    left_join(dict %>%
-                rename(na_item = eurostat_code) %>%
-                select(na_item, model_varname), by = "na_item") -> plot_df
+  plot_df %>%
+    distinct(na_item, fit) %>%
+    mutate(fit = as.logical(fit)) %>%
+    filter(fit) %>%
+    pull(na_item) -> when_excluding_exog
+
+
+  if(exclude.exogenous){
+    plot_df %>%
+      filter(na_item %in% when_excluding_exog) -> plot_df
+    }
+
+
+    if(order.as.run & !exclude.exogenous){cat("As 'order.as.run' is TRUE, exogenous values will not be shown.\n")}
+
+    # left_join(object$dictionary %>%
+    #             rename(na_item = model_varnma) %>%
+    #             select(na_item, model_varname), by = "na_item")
 
   plot_df %>%
     ggplot(aes(x = time, y = values, color = fit, group = var, fit = var)) +
-    geom_line(size = 1) +
+    geom_line(size = 1, na.rm = TRUE) +
 
-    facet_wrap(~model_varname, scales = "free") +
+    facet_wrap(~na_item, scales = "free") +
 
     labs(x = NULL, y = NULL) +
 
@@ -81,19 +98,21 @@ plot.aggmod.forecast <- function(object){
 
     pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
     full_join(object$orig_model$module_order_eurostatvars %>%
-                select(dependent, dependent_eu) %>%
-                mutate(dependent_eu = tolower(dependent_eu)) %>%
-                rename(na_item = dependent_eu,
-                       model_varname = dependent), by = "na_item") %>%
+                select(dependent) %>%
+                rename(na_item = dependent), by = "na_item") %>%
 
     mutate(fit = "forecast") %>%
     bind_rows(plot_df) %>%
 
+    {if(order.as.run){
+      mutate(.,na_item = factor(na_item, levels = object$orig_model$module_order_eurostatvars$dependent)) %>%
+        drop_na(na_item) %>%
+        arrange(time, na_item)} else {.}} %>%
 
     ggplot(aes(x = time, y = values, color = fit)) +
     geom_line(size = 1) +
 
-    facet_wrap(~model_varname, scales = "free") +
+    facet_wrap(~na_item, scales = "free") +
 
     labs(x = NULL, y = NULL) +
 

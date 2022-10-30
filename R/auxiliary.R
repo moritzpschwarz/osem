@@ -75,7 +75,7 @@ update_data <- function(orig_data, new_data) {
   # change name to make consistent with identify_module_data()
   cnames <- colnames(add)
   cur_name <- gsub("\\.level\\.hat","",cnames[cnames != "time"])
-  orig_name_index <- grep(tolower(cur_name),orig_data %>% distinct(na_item) %>% pull %>% tolower, fixed = TRUE)
+  orig_name_index <- grep(cur_name,orig_data %>% distinct(na_item) %>% pull, fixed = TRUE)
   orig_data_names <- orig_data %>% distinct(na_item) %>% pull
   orig_name <- orig_data_names[orig_name_index]
 
