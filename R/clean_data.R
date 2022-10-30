@@ -34,7 +34,8 @@ clean_data <- function(raw_data,
   raw_data %>%
     select(na_item, time, values) %>%
     pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>%
-    janitor::clean_names() %>%
+    #janitor::clean_names() %>%
+    #rename_with(.fn = tolower) %>%
     # Add previously estimated data
     {
       if (!is.null(preestimated_xvars)) {

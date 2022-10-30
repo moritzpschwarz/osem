@@ -69,30 +69,45 @@ load_or_download_variables <- function(specification,
       distinct(dataset_id, var_col) -> var_col_list
 
     ids <- determine_datacodes(specification = specification, dictionary = dictionary)
-    codes.download <- ids$var.ids
-    codes.remain <- codes.download
+
+    id_to_dataset <- dictionary %>%
+      rowwise %>%
+      mutate(var.ids = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
+                                 TRUE ~eurostat_code)) %>%
+      select(var.ids, dataset_id, var_col, model_varname, cpa2_1)
+
+    codes.download <- tibble(var.ids = ids$var.ids,
+                             model.ids = ids$model.ids) %>%
+      left_join(id_to_dataset, by = "var.ids") %>%
+      separate(var.ids, into = c("var","nace_r2"), sep = "\\*", fill = "right", remove = FALSE)
+    codes.remain <- codes.download$var.ids
     full <- data.frame()
 
     # loop through required datasets
     for (i in 1:length(ids$data.ids)) {
-      varcolname <- var_col_list %>% filter(dataset_id == ids$data.ids[i]) %>% pull(var_col)
       tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
-
+      if(is.null(tmp)) {stop("Issue with automatic EUROSTAT download. Likely cause is a lack of internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")}
+      varcolname <- codes.download %>% filter(dataset_id == ids$data.ids[i]) %>% distinct(var_col) %>% pull(var_col)
       codes.in.tmp <- tmp %>% pull(varcolname) %>% unique
-      codes.found <- codes.download[which(codes.download %in% codes.in.tmp)]
-      codes.remain <- setdiff(codes.remain, codes.found)
+      codes.found <- codes.download %>% filter(dataset_id == ids$data.ids[i], var %in% codes.in.tmp)
+      codes.remain <- setdiff(codes.remain, codes.found$var.ids)
 
-      for (j in 1:length(codes.found)) {
+      for (j in 1:nrow(codes.found)) {
         # which filter should be applied for that variable
-        filter <- filter_list[[codes.found[j]]]
+        filter <- filter_list[[codes.found$var[j]]]
+
+        if (is.null(filter)) {stop(paste0("For variable '",codes.found$var[j],"' no entry in filter list found. Check filter list."))}
+
         # choose subset according to filter
+        #if(ids$data.ids[i] == "ei_lmlc_q"){browser()}
         sub <- tmp %>%
-          filter(if_all(varcolname, ~ . == codes.found[j])) %>%
-          #filter(na_item == codes.found[j] & geo == filter$geo & s_adj == filter$s_adj & unit == filter$unit)
+          filter(if_all(varcolname, ~ . == codes.found$var[j])) %>%
           filter(geo == filter$geo & unit == filter$unit) %>%
           {if(select(., any_of("s_adj")) %>% ncol == 1){filter(.,s_adj == filter$s_adj)} else {.}} %>%
-          {if(select(., any_of("nace_r2")) %>% ncol == 1){select(.,-nace_r2)} else {.}} %>%
-          rename_with(.cols = varcolname, .fn = ~paste0("na_item"))
+          {if(select(., any_of("nace_r2")) %>% ncol == 1){filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
+          {if(select(., any_of("cpa2_1")) %>% ncol == 1){filter(.,cpa2_1 == codes.found$cpa2_1[j])} else {.}} %>%
+          rename_with(.cols = varcolname, .fn = ~paste0("na_item")) %>%
+          mutate(na_item = codes.found$model_varname[j])
 
         # add subset to full, final dataset
         full <- bind_rows(full, sub)
@@ -122,8 +137,7 @@ load_or_download_variables <- function(specification,
       cat("\n")
     }
 
-
-    codes.find <- determine_eurocodes(specification = specification, dictionary = dictionary)$var.ids
+    codes.find <- determine_eurocodes(specification = specification, dictionary = dictionary)$model_varname
     codes.remain <- codes.find
     full <- data.frame()
 
@@ -136,21 +150,28 @@ load_or_download_variables <- function(specification,
       } else if (grepl("\\.(csv)$",pth)){
         tmp <- read.csv(pth)
       } else if (grepl("\\.(xls|xlsx)$",pth)){
-        tmp <- readxl::read_excel(path = pth)
+        tmp <- readxl::read_excel(path = pth, guess_max = 1000000)
         #stop("Loading from xls or xlsx file not yet implemented.)
       }
 
       codes.found <- codes.find[which(codes.find %in% unique(tmp$na_item))]
       codes.remain <- setdiff(codes.remain, codes.found)
-      for (j in 1:length(codes.found)) {
-        # which filter should be applied for that variable
-        filter <- filter_list[[codes.found[j]]]
-        # choose subset according to filter
-        sub <- tmp %>%
-          filter(na_item == codes.found[j] & geo == filter$geo & s_adj == filter$s_adj & unit == filter$unit)
-        # add subset to full, final dataset
-        full <- rbind(full, sub)
-      }
+
+      # Commented out by Moritz because all of these will be applied when first downloading
+      #   for (j in 1:length(codes.found)) {
+      #     # which filter should be applied for that variable
+      #     curfilter <- filter_list[[codes.found[j]]]
+      #     # choose subset according to filter
+      #     sub <- tmp %>%
+      #       filter(if_all(na_item, ~ . == codes.found[j])) %>%
+      #       filter(geo == curfilter$geo & unit == curfilter$unit) %>%
+      #       {if(select(., any_of("s_adj")) %>% ncol == 1){filter(.,s_adj == curfilter$s_adj)} else {.}} %>%
+      #       {if(select(., any_of("nace_r2")) %>% ncol == 1){filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
+      #       mutate(na_item = codes.found$var.ids[j])
+      #
+      #     # add subset to full, final dataset
+      full <- rbind(full, tmp)
+      #   }
     }
 
     # check whether all Eurostat codes were found

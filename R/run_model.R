@@ -67,7 +67,7 @@
 #' fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
 #' fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
 #' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
-#' \dontrun{
+#' \donttest{
 #' a <- run_model(specification = spec, dictionary = NULL, inputdata_directory = NULL, filter_list = filter_list, download = TRUE, save_to_disk = NULL, present = FALSE)
 #' }
 
@@ -93,8 +93,22 @@ run_model <- function(specification,
                       ...) {
 
   if(!(is.data.frame(specification) | is.matrix(specification))){
-    stop("'specification' must be a data.frame, tibble or matrix object. Check the documentation how a specification object must look like.")
+    stop("'specification' must be a data.frame, tibble, or matrix object. Check the documentation how a specification object must look like.")
   }
+
+  if(!all(specification$type %in% c("n","d"))){
+    stop("The type column in the Specification can only either be 'n' (for Definition i.e. modelled) or 'd' (for identity).")
+  }
+
+  if(missing(dictionary) | is.null(dictionary)){dictionary <- aggregate.model::dict}
+
+  if(!all(c("eurostat_code", "model_varname", "full_name", "dataset_id","var_col", "nace_r2") %in% colnames(dictionary))){
+    stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'eurostat_code', 'model_varname', 'full_name', 'dataset_id', 'var_col', 'nace_r2'.")
+  }
+
+  if(any(duplicated(dictionary$model_varname))){stop("Dictionary cannot contain duplicated values for 'model_varname'.")}
+
+  if(any(grepl("\\-|\\+|\\*|\\/|\\^",dictionary$model_varname))){stop("The 'model_varname' column in the Dictionary cannot contain any of the following characters: + - / * ^")}
 
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
@@ -113,7 +127,7 @@ run_model <- function(specification,
                                             quiet = quiet)
 
   # add data that is not directly available but can be calculated from identities
-  full_data <- calculate_identities(specification = module_order_eurostatvars, data = loaded_data, dictionary = NULL)
+  full_data <- calculate_identities(specification = module_order_eurostatvars, data = loaded_data, dictionary = dictionary)
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order_eurostatvars)
@@ -130,7 +144,8 @@ run_model <- function(specification,
     # print progress update
     if(!quiet){
       if(i == 1){cat("\n--- Estimation begins ---\n")}
-      cat(paste0("Estimating ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")
+      if(module_order_eurostatvars$type[i] == "n") {cat(paste0("Estimating ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")}
+      if(module_order_eurostatvars$type[i] == "d") {cat(paste0("Constructing ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")}
     }
 
     # estimate current module, using most up-to-date dataset including predicted values
@@ -145,6 +160,8 @@ run_model <- function(specification,
     module_collection[module_collection$order == i, "dataset"] <- tibble(dataset = list(module_estimate$data))
     module_collection[module_collection$order == i, "model"] <- tibble(dataset = list(module_estimate$model))
     module_collection[module_collection$order == i, "model.args"] <- tibble(dataset = list(module_estimate$args))
+    module_collection[module_collection$order == i, "indep"] <- tibble(dataset = list(module_estimate$indep))
+    module_collection[module_collection$order == i, "dep"] <- tibble(dataset = list(module_estimate$dep))
 
     # update dataset for next module by adding fitted values
     tmp_data <- update_data(orig_data = tmp_data, new_data = module_estimate$data)
@@ -160,6 +177,7 @@ run_model <- function(specification,
   out$module_order_eurostatvars <- module_order_eurostatvars
   out$module_collection <- module_collection
   out$full_data <- tmp_data
+  out$dictionary <- dictionary
 
   out <- new_aggmod(out)
 

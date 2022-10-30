@@ -64,7 +64,6 @@ check_config_table <- function(config_table) {
     return(x[!x == ""]) # Remove empty values
   }
 
-
   # check that there is no endogeneity
   config_table %>%
     mutate(independent = gsub(" ", "", independent)) %>%
@@ -113,7 +112,6 @@ check_config_table <- function(config_table) {
   }
 
   # create the right order for estimation
-
   config_table %>%
     mutate(
       index = 1:n(), .before = 1,
@@ -137,7 +135,8 @@ check_config_table <- function(config_table) {
     distinct(index, type, dependent, independent, all_exog) %>%
     filter(all_exog) %>%
     select(-all_exog) %>%
-    mutate(order = ifelse(n()>0,1:n(),NA_integer_)) -> order_exog
+    #mutate(order = if_else(condition = (n()>0),true = (1:n()),false = NA_integer_)) -> order_exog
+    {if (nrow(.) > 0) {mutate(.,order = 1:n())} else {mutate(., order = NA_integer_)}} -> order_exog
 
   config_table_endog_exog %>%
     group_by(dependent, independent) %>%

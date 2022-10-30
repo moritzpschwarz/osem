@@ -22,11 +22,18 @@
 
 determine_datacodes <- function(specification, dictionary = NULL) {
 
-  if (is.null(dictionary)) {
-    dictionary <- aggregate.model::dict
-  }
+  # new <- TRUE
+  #
+  # if(new){
+  dictionary %>%
+    rowwise() %>%
+    mutate(codes.avail = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
+                                   TRUE ~eurostat_code)) %>%
+    pull(codes.avail) -> codes.avail
 
-  codes.avail <- dictionary$eurostat_code
+  dictionary %>%
+    pull(model_varname) -> model.ids
+
   # delete irrelevant values, such as TOTS
   codes.avail <- codes.avail[!is.na(dictionary$dataset_id)]
 
@@ -34,12 +41,13 @@ determine_datacodes <- function(specification, dictionary = NULL) {
   dep.set <- specification$dependent_eu
   indep <- specification$independent_eu
   indep.set <- NULL
+
   for (i in seq_along(indep)) {
 
     # each element of character vector may contain formula, e.g. "A + B", must split
     vars <- strsplits(
       indep[i],
-      c("\\-", "\\+"))
+      c(" \\- ", " \\+ "))
     indep.set <- union(indep.set, vars)
 
   }
@@ -52,10 +60,56 @@ determine_datacodes <- function(specification, dictionary = NULL) {
 
   # match the Eurostat variable codes to the Eurostat dataset id
   codes <- data.frame(eurostat_code = codes.eurostat)
-  codes <- left_join(x = codes, y = dictionary %>% select(eurostat_code, dataset_id), by = "eurostat_code")
+  codes <- left_join(x = codes, y = dictionary %>%
+                       select(eurostat_code, nace_r2, dataset_id) %>%
+                       rowwise() %>%
+                       mutate(eurostat_code = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
+                                                        TRUE ~eurostat_code)), by = "eurostat_code")
 
   # which datasets need to be downloaded?
   dataset.ids <- unique(codes$dataset_id)
+
+
+
+  # } else if(old){
+  #   if (is.null(dictionary)) {
+  #     dictionary <- aggregate.model::dict
+  #   }
+  #
+  #   codes.avail <- dictionary$eurostat_code
+  #   # delete irrelevant values, such as TOTS
+  #   codes.avail <- codes.avail[!is.na(dictionary$dataset_id)]
+  #
+  #   # extract the codes used in the model
+  #   dep.set <- specification$dependent_eu
+  #   indep <- specification$independent_eu
+  #   indep.set <- NULL
+  #   for (i in seq_along(indep)) {
+  #
+  #     # each element of character vector may contain formula, e.g. "A + B", must split
+  #     vars <- strsplits(
+  #       indep[i],
+  #       c("\\-", "\\+"))
+  #     indep.set <- union(indep.set, vars)
+  #
+  #   }
+  #   indep.set <- gsub(" ", "", indep.set)
+  #   codes.used <- union(dep.set, indep.set)
+  #
+  #   # the codes that cannot be found in codes.avail must be aggregate level vars (e.g. TOTS)
+  #   # don't need to download them
+  #   codes.eurostat <- codes.used[which(!codes.used %in% dictionary$model_varname[is.na(dictionary$dataset_id)])]
+  #
+  #
+  #
+  #   # match the Eurostat variable codes to the Eurostat dataset id
+  #   codes <- data.frame(eurostat_code = codes.eurostat)
+  #   codes <- left_join(x = codes, y = dictionary %>% select(eurostat_code, dataset_id), by = "eurostat_code")
+  #
+  #   # which datasets need to be downloaded?
+  #   dataset.ids <- unique(codes$dataset_id)
+  # }
+
 
   # output list
   out <- list(var.ids = codes.eurostat, data.ids = dataset.ids)
@@ -88,7 +142,13 @@ determine_eurocodes <- function(specification, dictionary = NULL) {
     dictionary <- aggregate.model::dict
   }
 
-  codes.avail <- dictionary$eurostat_code
+  #codes.avail <- dictionary$eurostat_code
+  codes.avail <- dictionary %>%
+    drop_na(dataset_id) %>%
+    rowwise() %>%
+    mutate(codes.avail = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
+                                   TRUE ~eurostat_code)) %>%
+    pull(codes.avail)
 
   # extract the codes used in the model
   dep.set <- specification$dependent_eu
@@ -110,8 +170,17 @@ determine_eurocodes <- function(specification, dictionary = NULL) {
   # don't need to download them
   codes.eurostat <- codes.used[which(codes.used %in% codes.avail)]
 
+  dictionary %>%
+    drop_na(dataset_id) %>%
+    rowwise() %>%
+    mutate(codes.avail = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
+                                   TRUE ~eurostat_code)) %>%
+    ungroup() %>%
+    filter(codes.avail %in% codes.used) %>%
+    pull(model_varname) -> codes.varname
+
   # output list
-  out <- list(var.ids = codes.eurostat)
+  out <- list(var.ids = codes.eurostat, model_varname = codes.varname)
   return(out)
 
 }

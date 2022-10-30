@@ -68,7 +68,6 @@ estimate_module <- function(clean_data,
         xvars_names <- NULL
       }
 
-
       yvar <- clean_data %>%
         select(all_of(paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename))) %>%
         pull()
@@ -117,6 +116,16 @@ estimate_module <- function(clean_data,
     if (!is.null(saturation)) {
       # debug_list <- list(yvar = yvar, xvars = xvars,i = i,saturation.tpval = saturation.tpval)
       # save(debug_list, file = "debug_list.RData")
+
+      if((ncol(xvars) + 30) > nrow(xvars)){
+        max.block.size <- round((nrow(xvars) - ncol(xvars))/3)
+      } else {max.block.size <- 30}
+
+      if(max.block.size < 1){
+        warning(paste0("Specification not valid - the sample for estiamting the module with the dependent variable ",dep_var_basename," is not extensive enough to be estimated with lag ",i,".\n Specification skipped."))
+        next
+      }
+
       intermed.model <- gets::isat(
         y = yvar,
         mxreg = as.matrix(xvars),
@@ -129,7 +138,8 @@ estimate_module <- function(clean_data,
         print.searchinfo = FALSE,
         iis = TRUE,
         sis = TRUE,
-        t.pval = saturation.tpval
+        t.pval = saturation.tpval,
+        max.block.size = max.block.size
       )
     } else {
       intermed.model <- gets::arx(

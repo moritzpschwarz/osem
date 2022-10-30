@@ -36,13 +36,14 @@ validate_aggmod <- function(x) {
 
   val <- unclass(x)
 
-  stopifnot(length(val) == 4L)
-  stopifnot(length(names(val)) == 4L)
-  stopifnot(identical(names(val), c("args", "module_order_eurostatvars", "module_collection", "full_data")))
+  stopifnot(length(val) == 5L)
+  stopifnot(length(names(val)) == 5L)
+  stopifnot(identical(names(val), c("args", "module_order_eurostatvars", "module_collection", "full_data", "dictionary")))
   stopifnot(identical(class(val$args), "list"))
   stopifnot(any(class(val$module_order_eurostatvars) %in% c("tbl_df", "tbl", "data.frame")))
   stopifnot(any(class(val$module_collection) %in% c("tbl_df", "tbl", "data.frame")))
   stopifnot(any(class(val$full_data) %in% c("tbl_df", "tbl", "data.frame")))
+  stopifnot(any(class(val$dictionary) %in% c("tbl_df", "tbl", "data.frame")))
 
   # could & should add many more checks: number of columns in module_order_eurostatvars etc.
   # but since is likely to change in the future, don't implement all of them

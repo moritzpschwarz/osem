@@ -24,8 +24,8 @@ strsplits <- function(x, splits, ...) {
 
 classify_variables <- function(specification) {
 
-  dep <- specification$dependent_eu
-  indep <- specification$independent_eu
+  dep <- specification$dependent
+  indep <- specification$independent
 
   indep <- strsplits(indep, splits = c("\\+", "\\-"))
   indep <- gsub(" ", "", indep)
@@ -36,10 +36,10 @@ classify_variables <- function(specification) {
   vars.x <- setdiff(vars.all, dep)
 
   # n are all variables that are in dep and have type == "n" in classification
-  vars.n <- specification[specification$type == "n", ] %>% pull(dependent_eu)
+  vars.n <- specification[specification$type == "n", ] %>% pull(dependent)
 
   # d are all variables that are in dep and have type == "d" in classification
-  vars.d <- specification[specification$type == "d", ] %>% pull(dependent_eu)
+  vars.d <- specification[specification$type == "d", ] %>% pull(dependent)
 
   # sanity check: all elements member of at least one set, no overlap between them -> partition
   stopifnot(setequal(vars.all, union(union(vars.x, vars.n), vars.d)))
@@ -53,7 +53,7 @@ classify_variables <- function(specification) {
                              var %in% vars.n ~ "n",
                              var %in% vars.d ~ "d",
                              TRUE ~ NA_character_)
-  )
+    )
 
   return(classification)
 
@@ -74,9 +74,14 @@ update_data <- function(orig_data, new_data) {
 
   # change name to make consistent with identify_module_data()
   cnames <- colnames(add)
-  cnames[cnames != "time"] <- toupper(cnames[cnames != "time"])
-  cnames <- gsub("\\.LEVEL", "", cnames)
-  cnames <- gsub("HAT", "hat", cnames)
+  cur_name <- gsub("\\.level\\.hat","",cnames[cnames != "time"])
+  orig_name_index <- grep(cur_name,orig_data %>% distinct(na_item) %>% pull, fixed = TRUE)
+  orig_data_names <- orig_data %>% distinct(na_item) %>% pull
+  orig_name <- orig_data_names[orig_name_index]
+
+  cnames[cnames != "time"] <- gsub(cur_name, orig_name,cnames[cnames != "time"])
+  cnames <- gsub("\\.level", "", cnames)
+  #cnames <- gsub("HAT", "hat", cnames)
   colnames(add) <- cnames
 
   # bring original data into wide format

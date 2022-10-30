@@ -8,7 +8,9 @@ forecast_model(
   model,
   exog_predictions = NULL,
   n.ahead = 10,
-  exog_fill_method = "last",
+  ci.levels = c(0.5, 0.66, 0.95),
+  exog_fill_method = "AR",
+  ar.fill.max = 4,
   plot.forecast = TRUE
 )
 }
@@ -29,21 +31,21 @@ Forecast Aggregate model
 }
 \examples{
 spec <- tibble(
-type = c(
-  "d",
-  "d",
-  "n"
-),
-dependent = c(
-  "JL",
-  "TOTS",
-  "B"
-),
-independent = c(
-  "TOTS - CP - CO - J - A",
-  "YF + B",
-  "CP + J"
-)
+  type = c(
+    "d",
+    "d",
+    "n"
+  ),
+  dependent = c(
+    "StatDiscrep",
+    "TOTS",
+    "Import"
+  ),
+  independent = c(
+    "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+    "GValueAdd + Import",
+    "FinConsExpHH + GCapitalForm"
+  )
 )
 
 fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
@@ -51,6 +53,6 @@ fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
 filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
 \dontrun{
 a <- run_model(specification = spec, dictionary = NULL, inputdata_directory = NULL, filter_list = filter_list, download = TRUE, save_to_disk = NULL, present = FALSE)
-}
 forecast(a)
+}
 }

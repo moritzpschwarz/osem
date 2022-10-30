@@ -4,7 +4,7 @@
 \alias{run_module}
 \title{Runs a module}
 \usage{
-run_module(module, data, classification, ...)
+run_module(module, data, classification, use_logs = c("both", "y", "x"), ...)
 }
 \arguments{
 \item{module}{A row of the specification table.}
@@ -17,6 +17,8 @@ Eurostat variable code and 'class' the classification code (one of
 \code{"n"}, \code{"d"}, or \code{"x"}) reflecting whether the variable is
 endogenous by modelling, endogenous by identity/definition, or exogenous.
 As returned by \link{classify_variables}.}
+
+\item{use_logs}{Character vector. Either "both", "x", or "y" to decide whether to use logs.}
 }
 \value{
 Returns a list with two named elements.

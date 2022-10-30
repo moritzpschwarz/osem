@@ -36,15 +36,18 @@ translate_variables <- function(specification, dictionary = NULL) {
 
   # replace dependent variable names by Eurostat code
   for (i in seq_along(dep)) {
-    ind <- which(dictionary$model_varname == dep[i])
+    if(all(!dictionary$model_varname %in% dep[i])){stop(paste0("Model Variable Name '",dep[i],"' not found in dictionary. Check both dictionary and specification."))}
+    ind <- which(dictionary$model_varname == dep[i]) # gets the row of the dictionary
     if (length(ind) == 1L) {
       dep[i] <- dictionary$eurostat_code[ind]
+      # add the NACE Sector to the eurostat code
+      if (!is.na(dictionary$nace_r2[ind])) {dep[i] <- paste0(dep[i],"*",dictionary$nace_r2[ind])}
     }
   }
 
   # replace independent variable names
   for (i in seq_along(indep)) {
-
+    #if(i == 8){browser()}
     # each element of character vector may contain formula, e.g. "A + B", must split
     vars <- strsplits(
       indep[i],
@@ -53,9 +56,12 @@ translate_variables <- function(specification, dictionary = NULL) {
 
     # go through elements of formula and replace variable names by Eurostat code
     for (j in seq_along(vars)) {
+      if(all(!dictionary$model_varname %in% vars[j])){stop(paste0("Model Variable Name '",vars[j],"' not found in dictionary. Check both dictionary and specification."))}
       ind <- which(dictionary$model_varname %in% vars[j])
       if (length(ind) == 1L) {
         vars[j] <- dictionary$eurostat_code[ind]
+        # add the NACE Sector to the eurostat code
+        if (!is.na(dictionary$nace_r2[ind])) {vars[j] <- paste0(vars[j],"*",dictionary$nace_r2[ind])}
       }
     }
 
@@ -64,12 +70,12 @@ translate_variables <- function(specification, dictionary = NULL) {
     for (k in seq_along(vars)) {
       res <- paste(res, vars[k], sep = "")
       if (k <= length(seps[[i]])) {
-        res <- paste(res, seps[[i]][k], sep = "")
+        res <- paste(res, " ", seps[[i]][k], " ", sep = "")
       }
     }
 
-    res <- gsub("\\+", " + ", res)
-    res <- gsub("\\-", " - ", res)
+    # res <- gsub("\\+", " + ", res)
+    # res <- gsub("\\-", " - ", res)
 
     if(identical(res,character(0))){res <- ""}
 
