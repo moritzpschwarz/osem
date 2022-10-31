@@ -273,7 +273,7 @@ forecast_model <- function(model,
       # get ar
       pred_ar_needed <- colnames(isat_obj$aux$mX)[grepl("ar[0-9]+",colnames(isat_obj$aux$mX))]
 
-      if (!is.null(pred_ar_needed)) {
+      if (!is.null(pred_ar_needed) & !identical(character(0),pred_ar_needed)) {
         ar_vec <- 0:max(as.numeric(gsub("ar","",pred_ar_needed)))
         y_names_vec <- c()
         for (ar in ar_vec) {

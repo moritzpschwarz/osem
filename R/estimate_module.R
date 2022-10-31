@@ -30,6 +30,7 @@ estimate_module <- function(clean_data,
                               "household_and_npish_final_consumption_expenditure"
                             ),
                             use_logs = c("both", "y", "x"),
+                            trend = TRUE,
                             ardl_or_ecm = "ardl",
                             max.lag = 4,
                             saturation = c("IIS", "SIS"),
@@ -68,11 +69,13 @@ estimate_module <- function(clean_data,
         xvars_names <- NULL
       }
 
+
       yvar <- clean_data %>%
         select(all_of(paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename))) %>%
         pull()
 
       xvars <- clean_data %>%
+        mutate(trend = rev(as.numeric(as.factor(time))),.after = time) %>%
         select(
           if(!identical(x_vars_basename,character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_basename))}else{NULL},
           if (i != 0) {
@@ -80,6 +83,7 @@ estimate_module <- function(clean_data,
           } else {
             NULL
           },
+          if(trend){all_of("trend")}else{NULL},
           q_2, q_3, q_4
         )
     }
