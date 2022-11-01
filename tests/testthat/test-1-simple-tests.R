@@ -265,7 +265,7 @@ test_that("Extensive Model", {
 
   spec <- tibble(
     type = c(
-      "d",
+      #"d",
       "d",
       "n",
       "n",
@@ -279,7 +279,7 @@ test_that("Extensive Model", {
       "n"
     ),
     dependent = c(
-      "StatDiscrep",
+      #"StatDiscrep",
       "TOTS",
       "Import",
       "FinConsExpHH",
@@ -293,11 +293,11 @@ test_that("Extensive Model", {
       "GValueAddWholesaletrade"
     ),
     independent = c(
-      "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+      #"TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
       "GValueAdd + Import",
       "FinConsExpHH + GCapitalForm",
       "",
-      "FinConsExpGov",
+      "FinConsExpHH",
       "GDP",
       "GValueAddGov + GValueAddAgri + GValueAddIndus + GValueAddConstr + GValueAddWholesaletrade + GValueAddInfocom + GValueAddFinance + GValueAddRealest + GValueAddResearch + GValueAddArts",
       "FinConsExpGov", # as in NAM, technical relationship
@@ -348,6 +348,11 @@ test_that("Extensive Model", {
     download = FALSE,
     present = FALSE
   )
+
+
+  abf <- forecast_model(ab)
+  plot(abf, order.as.run = TRUE)
+
 
 
   expect_message(b <- run_model(

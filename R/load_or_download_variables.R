@@ -23,6 +23,7 @@
 #' @param quiet Logical with default = FALSE. Should messages be displayed?
 #' These messages are intended to give more information about the estimation
 #' and data retrieval process.
+#' @param constrain.to.minimum.sample Logical. Should all data series be constrained to the minimum data series? Default is FALSE.
 #'
 #' @note Currently does not support mixed inputs, i.e. downloading some data and
 #'   reading the rest from files.
@@ -43,7 +44,8 @@ load_or_download_variables <- function(specification,
                                        dictionary = NULL,
                                        inputdata_directory = NULL,
                                        save_to_disk = NULL,
-                                       quiet = FALSE) {
+                                       quiet = FALSE,
+                                       constrain.to.minimum.sample = FALSE) {
 
   # input check
   if (is.null(dictionary)) {
@@ -190,15 +192,19 @@ load_or_download_variables <- function(specification,
       n = n()
     ) %>%
     ungroup()
-  if (max(dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
-    warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+
+  if(constrain.to.minimum.sample){
+    if (max(dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
+      warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+    }
+    min_date <- max(availability$min_date) # highest minimum date
+    max_date <- min(availability$max_date) # lowest maximum date
+    full <- full %>%
+      filter(time >= min_date & time <= max_date)
+    # might still not be balanced but beginning- & end-points are balanced
+    # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
   }
-  min_date <- max(availability$min_date) # highest minimum date
-  max_date <- min(availability$max_date) # lowest maximum date
-  full <- full %>%
-    filter(time >= min_date & time <= max_date)
-  # might still not be balanced but beginning- & end-points are balanced
-  # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
+
 
   if (!is.null(save_to_disk)) {
     if(!is.character(save_to_disk)){stop("'save_to_disk' must be a character file path.")}

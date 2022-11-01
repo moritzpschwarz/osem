@@ -124,7 +124,8 @@ run_model <- function(specification,
                                             dictionary = dictionary,
                                             inputdata_directory = inputdata_directory,
                                             save_to_disk = save_to_disk,
-                                            quiet = quiet)
+                                            quiet = quiet,
+                                            ...)
 
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order_eurostatvars, data = loaded_data, dictionary = dictionary)
