@@ -41,7 +41,7 @@ run_module <- function(module, data, classification, use_logs = c("both","y","x"
   } else if(module$type == "n") {
 
     # prepare data (create regressors)
-    clean_df <- clean_data(raw_data)
+    clean_df <- clean_data(raw_data, ...)
 
     # extract base variable names (and convert to lower case because janitor::clean_names() does so)
     dep <- module$dependent

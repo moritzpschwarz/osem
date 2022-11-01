@@ -54,31 +54,31 @@ plot.aggmod.forecast <- function(object, exclude.exogenous = TRUE, order.as.run 
   if(exclude.exogenous){
     plot_df %>%
       filter(na_item %in% when_excluding_exog) -> plot_df
-    }
+  }
 
 
-    if(order.as.run & !exclude.exogenous){cat("As 'order.as.run' is TRUE, exogenous values will not be shown.\n")}
+  if(order.as.run & !exclude.exogenous){cat("As 'order.as.run' is TRUE, exogenous values will not be shown.\n")}
 
-    # left_join(object$dictionary %>%
-    #             rename(na_item = model_varnma) %>%
-    #             select(na_item, model_varname), by = "na_item")
+  # left_join(object$dictionary %>%
+  #             rename(na_item = model_varnma) %>%
+  #             select(na_item, model_varname), by = "na_item")
 
-  plot_df %>%
-    ggplot(aes(x = time, y = values, color = fit, group = var, fit = var)) +
-    geom_line(size = 1, na.rm = TRUE) +
-
-    facet_wrap(~na_item, scales = "free") +
-
-    labs(x = NULL, y = NULL) +
-
-    scale_y_continuous(labels = scales::comma) +
-    scale_colour_viridis_d() +
-
-    theme_minimal() +
-    theme(legend.position = "none",
-          panel.grid.major.x = element_blank(),
-          panel.grid.minor.x = element_blank(),
-          panel.grid.minor.y = element_blank()) -> initial_plot
+  # plot_df %>%
+  #   ggplot(aes(x = time, y = values, color = fit, group = var, fit = var)) +
+  #   geom_line(size = 1, na.rm = TRUE) +
+  #
+  #   facet_wrap(~na_item, scales = "free") +
+  #
+  #   labs(x = NULL, y = NULL) +
+  #
+  #   scale_y_continuous(labels = scales::comma) +
+  #   scale_colour_viridis_d() +
+  #
+  #   theme_minimal() +
+  #   theme(legend.position = "none",
+  #         panel.grid.major.x = element_blank(),
+  #         panel.grid.minor.x = element_blank(),
+  #         panel.grid.minor.y = element_blank()) -> initial_plot
 
 
   object$forecast %>%
@@ -101,7 +101,17 @@ plot.aggmod.forecast <- function(object, exclude.exogenous = TRUE, order.as.run 
                 select(dependent) %>%
                 rename(na_item = dependent), by = "na_item") %>%
 
-    mutate(fit = "forecast") %>%
+    mutate(fit = "forecast") -> forecasts_processed
+
+  plot_df %>%
+    filter(fit == "TRUE") %>%
+    group_by(na_item) %>%
+    filter(time == max(time)) %>%
+    ungroup() %>%
+    select(-var) %>%
+    mutate(fit = "forecast") -> last_hist_value
+
+  bind_rows(forecasts_processed, last_hist_value) %>%
     bind_rows(plot_df) %>%
 
     {if(order.as.run){

@@ -36,6 +36,7 @@ estimate_module <- function(clean_data,
                             saturation = c("IIS", "SIS"),
                             saturation.tpval = 0.01,
                             selection.tpval = 0.01,
+                            max.block.size = 20,
                             gets_selection = TRUE) {
   log_opts <- match.arg(use_logs)
 
@@ -69,21 +70,20 @@ estimate_module <- function(clean_data,
         xvars_names <- NULL
       }
 
-
       yvar <- clean_data %>%
         select(all_of(paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename))) %>%
         pull()
 
       xvars <- clean_data %>%
-        mutate(trend = rev(as.numeric(as.factor(time))),.after = time) %>%
+
         select(
+          if(trend){all_of("trend")}else{NULL},
           if(!identical(x_vars_basename,character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_basename))}else{NULL},
           if (i != 0) {
             all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
           } else {
             NULL
           },
-          if(trend){all_of("trend")}else{NULL},
           q_2, q_3, q_4
         )
     }
@@ -121,11 +121,12 @@ estimate_module <- function(clean_data,
       # debug_list <- list(yvar = yvar, xvars = xvars,i = i,saturation.tpval = saturation.tpval)
       # save(debug_list, file = "debug_list.RData")
 
-      if((ncol(xvars) + 30) > nrow(xvars)){
-        max.block.size <- round((nrow(xvars) - ncol(xvars))/3)
-      } else {max.block.size <- 30}
+      # try to prevent that isat does not run out of degrees of freedom
+      if((ncol(xvars) + ((max.block.size*2)+1)) > nrow(xvars)){
+        maxblocksize <- round((nrow(xvars) - ncol(xvars))/3)
+      } else {maxblocksize <- max.block.size}
 
-      if(max.block.size < 1){
+      if(maxblocksize < 1){
         warning(paste0("Specification not valid - the sample for estiamting the module with the dependent variable ",dep_var_basename," is not extensive enough to be estimated with lag ",i,".\n Specification skipped."))
         next
       }
@@ -143,7 +144,7 @@ estimate_module <- function(clean_data,
         iis = TRUE,
         sis = TRUE,
         t.pval = saturation.tpval,
-        max.block.size = max.block.size
+        max.block.size = maxblocksize
       )
     } else {
       intermed.model <- gets::arx(

@@ -260,7 +260,7 @@ forecast_model <- function(model,
         .[[1]] %>%
         .$dep_var_basename
 
-      # check quarterly dummies
+      # check quarterly dummies to drop
       q_pred_todrop <- c("q_1","q_2","q_3","q_4")[!c("q_1","q_2","q_3","q_4") %in% colnames(isat_obj$aux$mX)]
 
       # check if mconst is used
@@ -317,6 +317,10 @@ forecast_model <- function(model,
           as_tibble()
       }
 
+      if ("trend" %in% names(coef(isat_obj))) {
+        trend_pred <- tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead))
+      }
+
 
       exog_df_ready %>%
 
@@ -325,6 +329,10 @@ forecast_model <- function(model,
 
         # drop not used quarterly dummies
         select(-any_of(q_pred_todrop)) %>%
+
+        {if ("trend" %in% names(coef(isat_obj))) {
+          bind_cols(.,trend_pred)
+        } else { . }} %>%
 
         {if (!is.null(gets::isatdates(isat_obj)$iis)) {
           bind_cols(.,iis_pred)
@@ -392,6 +400,7 @@ forecast_model <- function(model,
       data_obj %>%
         select(time, all_of(x_names_vec_nolag)) %>%
         bind_rows(current_pred_raw %>%
+                    #select(time, all_of(x_names_vec_nolag), any_of("trend"))) -> intermed
                     select(time, all_of(x_names_vec_nolag))) -> intermed
 
       to_be_added <- tibble(.rows = nrow(intermed))
@@ -408,7 +417,7 @@ forecast_model <- function(model,
 
       bind_cols(intermed, to_be_added) %>%
         left_join(current_pred_raw %>%
-                    select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
+                    select(time, any_of("trend"), starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
         drop_na %>%
         select(-time) %>%
         select(any_of(row.names(isat_obj$mean.results))) %>%
