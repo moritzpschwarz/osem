@@ -8,6 +8,10 @@
 
 run_shiny <- function(model = NULL) {
 
+  if (!requireNamespace("DT", quietly = TRUE)) {
+    stop("Shiny App requires package 'DT'.")
+  }
+
   appDir <- system.file("shiny-output", "shinyaggmodel", package = "aggregate.model")
 
   if (appDir == "") {
@@ -21,7 +25,7 @@ run_shiny <- function(model = NULL) {
   # }
 
 
-  shinyOptions(aggmodel_direct = model)
+  shiny::shinyOptions(aggmodel_direct = model)
   source(system.file("shiny-output", "shinyaggmodel/app.R", package = "aggregate.model"))$value
 
 }

@@ -22,5 +22,8 @@ Imports:
     shiny
 LazyData: true
 Suggests: 
-    testthat (>= 3.0.0)
+    DT,
+    ggraph,
+    testthat (>= 3.0.0),
+    tidygraph
 Config/testthat/edition: 3
