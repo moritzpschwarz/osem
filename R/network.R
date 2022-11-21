@@ -48,6 +48,24 @@ network <- function(model) {
     adj[from, to] <- 1
   }
 
+  # now check whether is actually used
+  models <- dependency$model
+  names(models) <- dependency$dependent
+  models <- models[!sapply(models,is.null)]
+  for (i in 1:length(models)) {
+    # since variables may appear in transformed form (ln, lag), need to search for it
+    yvar <- names(models)[i]
+    potential <- rownames(adj)[adj[, colnames(adj) == yvar] == 1]
+    retained <- rownames(models[i][[1]]$mean.results)
+    for (k in 1:length(potential)) {
+      # check whether was retained
+      found <- sum(grepl(pattern = potential[k], x = retained)) >= 1
+      if (!found) {
+        adj[potential[k], yvar] <- 2 # if not found, replace 1 by 2 (linetype)
+      }
+    }
+  }
+
   graph_df <- tidygraph::as_tbl_graph(adj)
   graph_df <- graph_df %>%
     tidygraph::activate(nodes) %>%
@@ -55,12 +73,12 @@ network <- function(model) {
 
     out <- ggraph::ggraph(graph_df, layout = "kk") +
       ggraph::geom_node_point(aes(color = class), size = 3) +
-      ggraph::geom_edge_link(arrow = arrow(length = unit(2, 'mm')),
-                             end_cap = ggraph::circle(4, 'mm')) +
-      ggraph::geom_edge_loop(aes(end_cap = ggraph::circle(1, 'mm'), span = 120, direction = -45),
+      ggraph::geom_edge_link(aes(edge_linetype = weight),
                              arrow = arrow(length = unit(2, 'mm')),
-                             position = "jitter",
-                             linetype = 1) +
+                             end_cap = ggraph::circle(4, 'mm')) +
+      ggraph::geom_edge_loop(aes(edge_linetype = weight, end_cap = ggraph::circle(1, 'mm'), span = 120, direction = -45),
+                             arrow = arrow(length = unit(2, 'mm')),
+                             position = "jitter") +
       ggraph::geom_node_text(aes(label = name), repel = TRUE, size = 3) +
       scale_color_discrete(name = "Type of Variable",
                            labels = c("definition/identity", "endogenous", "exogenous")) +
