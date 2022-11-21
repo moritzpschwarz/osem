@@ -4,7 +4,7 @@
 \alias{clean_data}
 \title{Prepare the clean dataframe for modelling}
 \usage{
-clean_data(raw_data, preestimated_xvars = NULL, max.lag = 4)
+clean_data(raw_data, preestimated_xvars = NULL, max.lag = 4, trend = TRUE)
 }
 \arguments{
 \item{raw_data}{A tibble or data.frame with the y variable and the x
@@ -17,7 +17,8 @@ have been pre-estimated by another equation in levels. Needs to have a
 column called 'time', which is of class \code{\link[base:Dates]{Date}}.}
 
 \item{max.lag}{The maximum number of lags to use for both the AR terms as
-well as for the independent variables.}
+well as for the independent variables.
+@param trend Logical. Should a trend be added? Default is TRUE.}
 }
 \value{
 A tibble with the cleaned data.

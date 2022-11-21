@@ -10,11 +10,13 @@ estimate_module(
   x_vars_basename = c("gross_capital_formation",
     "household_and_npish_final_consumption_expenditure"),
   use_logs = c("both", "y", "x"),
+  trend = TRUE,
   ardl_or_ecm = "ardl",
   max.lag = 4,
   saturation = c("IIS", "SIS"),
   saturation.tpval = 0.01,
   selection.tpval = 0.01,
+  max.block.size = 20,
   gets_selection = TRUE
 )
 }
