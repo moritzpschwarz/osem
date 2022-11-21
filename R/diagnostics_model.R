@@ -24,7 +24,9 @@ diagnostics_model <- function(model) {
                      AR = NA,
                      ARCH = NA,
                      IIS = NA,
-                     SIS = NA)
+                     SIS = NA,
+                     n = NA,
+                     indicator_share = NA)
 
   # fill in the values
   for (i in 1:length(models)) {
@@ -58,6 +60,13 @@ diagnostics_model <- function(model) {
       diag[i, "IIS"] <- length(iis)
       diag[i, "SIS"] <- length(sis)
     }
+
+    # record number of observations
+    diag[i, "n"] <- module$n
+
+    # record share of indicators retained
+    diag[i, "indicator_share"] <- (diag[i, "IIS"] + diag[i, "SIS"]) / diag[i, "n"]
+
   } # end for
 
   return(diag)
