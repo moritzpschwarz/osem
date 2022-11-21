@@ -14,7 +14,7 @@ network <- function(model) {
     stop("Package 'ggraph' required for network visualization.")
   }
   if (!requireNamespace("tidygraph", quietly = TRUE)) {
-    stop("Package 'ggraph' required for network visualization.")
+    stop("Package 'tidygraph' required for network visualization.")
   }
 
   # stores the dependencies between the modules
