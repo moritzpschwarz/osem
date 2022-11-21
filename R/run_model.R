@@ -27,6 +27,7 @@
 #' @param quiet Logical with default = FALSE. Should messages be displayed?
 #' These messages are intended to give more information about the estimation
 #' and data retrieval process.
+#' @inheritParams clean_data
 #' @param ... further arguments to be passed to \code{estimate_module}.
 #'
 #' @return An object of class \link[=new_aggmod]{aggmod}, which is a named list
@@ -90,6 +91,8 @@ run_model <- function(specification,
                       save_to_disk = NULL,
                       present = FALSE,
                       quiet = FALSE,
+                      max.lag = 4,
+                      trend = TRUE,
                       ...) {
 
   if(!(is.data.frame(specification) | is.matrix(specification))){

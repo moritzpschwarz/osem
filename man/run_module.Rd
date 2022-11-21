@@ -4,7 +4,15 @@
 \alias{run_module}
 \title{Runs a module}
 \usage{
-run_module(module, data, classification, use_logs = c("both", "y", "x"), ...)
+run_module(
+  module,
+  data,
+  classification,
+  use_logs = c("both", "y", "x"),
+  max.lag = 4,
+  trend = TRUE,
+  ...
+)
 }
 \arguments{
 \item{module}{A row of the specification table.}
@@ -19,6 +27,11 @@ endogenous by modelling, endogenous by identity/definition, or exogenous.
 As returned by \link{classify_variables}.}
 
 \item{use_logs}{Character vector. Either "both", "x", or "y" to decide whether to use logs.}
+
+\item{max.lag}{The maximum number of lags to use for both the AR terms as
+well as for the independent variables.}
+
+\item{trend}{Logical. Should a trend be added? Default is TRUE.}
 }
 \value{
 Returns a list with two named elements.
