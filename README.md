@@ -30,14 +30,14 @@ First we load the package:
 
 ``` r
 library(aggregate.model)
-#> Loading required package: gets
-#> Loading required package: zoo
+#> Lade nötiges Paket: gets
+#> Lade nötiges Paket: zoo
 #> 
-#> Attaching package: 'zoo'
-#> The following objects are masked from 'package:base':
+#> Attache Paket: 'zoo'
+#> Die folgenden Objekte sind maskiert von 'package:base':
 #> 
 #>     as.Date, as.Date.numeric
-#> Loading required package: parallel
+#> Lade nötiges Paket: parallel
 ```
 
 ### Specify the model
@@ -940,13 +940,21 @@ model_result <- run_model(
   specification = spec,
   filter_list = filter_list,
   save_to_disk = "data/use/InputData.xlsx",
-  download = TRUE
+  download = TRUE,
+  trend = TRUE,
+  max.lag = 4,
+  saturation.tpval = 0.1/NROW(clean_data)
 )
-#> Table namq_10_gdp cached at C:\Users\morit\AppData\Local\Temp\RtmpagqCB2/eurostat/namq_10_gdp_date_code_FF.rds
-#> Table namq_10_a10 cached at C:\Users\morit\AppData\Local\Temp\RtmpagqCB2/eurostat/namq_10_a10_date_code_FF.rds
-#> Table env_ac_aigg_q cached at C:\Users\morit\AppData\Local\Temp\RtmpagqCB2/eurostat/env_ac_aigg_q_date_code_FF.rds
-#> Table ei_lmlc_q cached at C:\Users\morit\AppData\Local\Temp\RtmpagqCB2/eurostat/ei_lmlc_q_date_code_FF.rds
-#> Table sts_cobp_q cached at C:\Users\morit\AppData\Local\Temp\RtmpagqCB2/eurostat/sts_cobp_q_date_code_FF.rds
+#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/namq_10_gdp_date_code_FF.rds
+#> Table  namq_10_gdp  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/namq_10_gdp_date_code_FF.rds
+#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/namq_10_a10_date_code_FF.rds
+#> Table  namq_10_a10  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/namq_10_a10_date_code_FF.rds
+#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/env_ac_aigg_q_date_code_FF.rds
+#> Table  env_ac_aigg_q  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/env_ac_aigg_q_date_code_FF.rds
+#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/ei_lmlc_q_date_code_FF.rds
+#> Table  ei_lmlc_q  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/ei_lmlc_q_date_code_FF.rds
+#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/sts_cobp_q_date_code_FF.rds
+#> Table  sts_cobp_q  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/sts_cobp_q_date_code_FF.rds
 #> Warning in load_or_download_variables(specification =
 #> module_order_eurostatvars, : Unbalanced panel, will lose more than 20\% of data
 #> when making balanced
@@ -977,7 +985,10 @@ model_result <- run_model(
   specification = spec,
   filter_list = filter_list,
   download = FALSE,
-  inputdata_directory = "data/use"
+  inputdata_directory = "data/use",
+  trend = TRUE,
+  max.lag = 4,
+  saturation.tpval = 0.1/NROW(clean_data)
 )
 ```
 
@@ -996,7 +1007,7 @@ Once we are done, we can plot the forecast:
 
 ``` r
 plot(model_forecast, order.as.run = TRUE)
-#> Warning: Removed 1 row(s) containing missing values (geom_path).
+#> Warning: Removed 3 row(s) containing missing values (geom_path).
 ```
 
 <img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />

@@ -118,7 +118,7 @@ server <- function(input, output) {
       DT::datatable() %>%
       DT::formatStyle(columns = c("AR", "ARCH"),
                       backgroundColor = DT::styleInterval(cuts = c(0.01, 0.05), values = c("lightcoral", "lightsalmon", "lightgreen"))) %>%
-      DT::formatRound(columns = c("AR", "ARCH"),
+      DT::formatRound(columns = c("AR", "ARCH", "indicator_share"),
                       digits = 4)
 
     })

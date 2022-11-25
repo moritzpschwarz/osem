@@ -13,6 +13,8 @@ run_model(
   save_to_disk = NULL,
   present = FALSE,
   quiet = FALSE,
+  max.lag = 4,
+  trend = TRUE,
   ...
 )
 }
@@ -49,6 +51,11 @@ should be presented or not. NOTE: not implemented yet.}
 \item{quiet}{Logical with default = FALSE. Should messages be displayed?
 These messages are intended to give more information about the estimation
 and data retrieval process.}
+
+\item{max.lag}{The maximum number of lags to use for both the AR terms as
+well as for the independent variables.}
+
+\item{trend}{Logical. Should a trend be added? Default is TRUE.}
 
 \item{...}{further arguments to be passed to \code{estimate_module}.}
 }

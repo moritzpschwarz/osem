@@ -157,7 +157,10 @@ model_result <- run_model(
   specification = spec,
   filter_list = filter_list,
   save_to_disk = "data/use/InputData.xlsx",
-  download = TRUE
+  download = TRUE,
+  trend = TRUE,
+  max.lag = 4,
+  saturation.tpval = 0.1/NROW(clean_data)
 )
 ```
 
@@ -169,7 +172,10 @@ model_result <- run_model(
   specification = spec,
   filter_list = filter_list,
   download = FALSE,
-  inputdata_directory = "data/use"
+  inputdata_directory = "data/use",
+  trend = TRUE,
+  max.lag = 4,
+  saturation.tpval = 0.1/NROW(clean_data)
 )
 ```
 

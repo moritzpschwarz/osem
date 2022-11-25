@@ -8,6 +8,7 @@
 #'   model.
 #' @param use_logs Character vector. Either "both", "x", or "y" to decide whether to use logs.
 #' @inheritParams identify_module_data
+#' @inheritParams clean_data
 #'
 #'
 #' @return Returns a list with two named elements.
@@ -22,7 +23,7 @@
 #'
 #' @export
 
-run_module <- function(module, data, classification, use_logs = c("both","y","x"), ...) {
+run_module <- function(module, data, classification, use_logs = c("both","y","x"), max.lag = 4, trend = TRUE, ...) {
 
   raw_data <- identify_module_data(module, classification, data)
 
@@ -41,7 +42,7 @@ run_module <- function(module, data, classification, use_logs = c("both","y","x"
   } else if(module$type == "n") {
 
     # prepare data (create regressors)
-    clean_df <- clean_data(raw_data, ...)
+    clean_df <- clean_data(raw_data = raw_data, max.lag = max.lag, trend = trend)
 
     # extract base variable names (and convert to lower case because janitor::clean_names() does so)
     dep <- module$dependent
