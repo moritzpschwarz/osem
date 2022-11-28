@@ -4,6 +4,8 @@
 # aggregate.model
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/moritzpschwarz/aggregate.model/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/moritzpschwarz/aggregate.model/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of the aggregate.model Package is to implement and
@@ -30,14 +32,14 @@ First we load the package:
 
 ``` r
 library(aggregate.model)
-#> Lade nötiges Paket: gets
-#> Lade nötiges Paket: zoo
+#> Loading required package: gets
+#> Loading required package: zoo
 #> 
-#> Attache Paket: 'zoo'
-#> Die folgenden Objekte sind maskiert von 'package:base':
+#> Attaching package: 'zoo'
+#> The following objects are masked from 'package:base':
 #> 
 #>     as.Date, as.Date.numeric
-#> Lade nötiges Paket: parallel
+#> Loading required package: parallel
 ```
 
 ### Specify the model
@@ -945,16 +947,11 @@ model_result <- run_model(
   max.lag = 4,
   saturation.tpval = 0.1/NROW(clean_data)
 )
-#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/namq_10_gdp_date_code_FF.rds
-#> Table  namq_10_gdp  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/namq_10_gdp_date_code_FF.rds
-#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/namq_10_a10_date_code_FF.rds
-#> Table  namq_10_a10  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/namq_10_a10_date_code_FF.rds
-#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/env_ac_aigg_q_date_code_FF.rds
-#> Table  env_ac_aigg_q  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/env_ac_aigg_q_date_code_FF.rds
-#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/ei_lmlc_q_date_code_FF.rds
-#> Table  ei_lmlc_q  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/ei_lmlc_q_date_code_FF.rds
-#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/sts_cobp_q_date_code_FF.rds
-#> Table  sts_cobp_q  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpKm3Iqj/eurostat/sts_cobp_q_date_code_FF.rds
+#> Table namq_10_gdp cached at C:\Users\morit\AppData\Local\Temp\RtmpgJlnKT/eurostat/namq_10_gdp_date_code_FF.rds
+#> Table namq_10_a10 cached at C:\Users\morit\AppData\Local\Temp\RtmpgJlnKT/eurostat/namq_10_a10_date_code_FF.rds
+#> Table env_ac_aigg_q cached at C:\Users\morit\AppData\Local\Temp\RtmpgJlnKT/eurostat/env_ac_aigg_q_date_code_FF.rds
+#> Table ei_lmlc_q cached at C:\Users\morit\AppData\Local\Temp\RtmpgJlnKT/eurostat/ei_lmlc_q_date_code_FF.rds
+#> Table sts_cobp_q cached at C:\Users\morit\AppData\Local\Temp\RtmpgJlnKT/eurostat/sts_cobp_q_date_code_FF.rds
 #> Warning in load_or_download_variables(specification =
 #> module_order_eurostatvars, : Unbalanced panel, will lose more than 20\% of data
 #> when making balanced

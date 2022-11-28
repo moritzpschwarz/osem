@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 # aggregate.model
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/moritzpschwarz/aggregate.model/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/moritzpschwarz/aggregate.model/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of the aggregate.model Package is to implement and operationalise the Aggregate Model, developed by Moritz Schwarz, Jonas Kurle, Felix Pretis, and Andrew Martinez. This is an adaptation of the [Norwegian Aggregate Model](https://normetrics.no/nam/), developed by Gunnar Bardsen and Ragnar Nymoen. 
