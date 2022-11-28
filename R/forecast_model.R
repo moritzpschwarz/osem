@@ -399,6 +399,12 @@ forecast_model <- function(model,
 
       data_obj %>%
         select(time, all_of(x_names_vec_nolag)) %>%
+
+        ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
+        # The drop_na below was used because for GCapitalForm the value for July 2022 was missing - while it was there for FinConsExpHH
+        # Now the question is whether the drop_na messes up the timing
+        #drop_na %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
+
         bind_rows(current_pred_raw %>%
                     #select(time, all_of(x_names_vec_nolag), any_of("trend"))) -> intermed
                     select(time, all_of(x_names_vec_nolag))) -> intermed
