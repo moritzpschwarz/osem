@@ -12,7 +12,7 @@ load_or_download_variables(
   inputdata_directory = NULL,
   save_to_disk = NULL,
   quiet = FALSE,
-  constrain.to.minimum.sample = FALSE
+  constrain.to.minimum.sample = TRUE
 )
 }
 \arguments{

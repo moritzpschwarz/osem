@@ -4,6 +4,9 @@
 
 # This has a direct endogeneity
 # config_table_small <- tibble(
+#   type = c("d",
+#            "d",
+#            "n"),
 #   dependent = c("JL",
 #                 "TOTS",
 #                 "B"),
@@ -15,6 +18,9 @@
 
 # This has an indirect endogeneity
 # config_table_small <- tibble(
+#   type = c("d",
+#            "d",
+#            "n"),
 #   dependent = c("JL",
 #                 "TOTS",
 #                 "B",
@@ -49,6 +55,7 @@
 #'
 #' @examples
 #' config_table_small <- tibble(
+#'   type = c("d","d","n"),
 #'   dependent = c("JL", "TOTS", "B"),
 #'   independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J")
 #' )

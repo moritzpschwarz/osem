@@ -19,7 +19,8 @@ Imports:
     fastDummies,
     janitor,
     lubridate,
-    shiny
+    shiny,
+    rlang
 LazyData: true
 Suggests: 
     DT,

@@ -14,32 +14,31 @@
 #'   "n"
 #' ),
 #' dependent = c(
-#'   "JL",
+#'   "StatDiscrep",
 #'   "TOTS",
-#'   "B"
+#'   "Import"
 #' ),
 #' independent = c(
-#'   "TOTS - CP - CO - J - A",
-#'   "YF + B",
-#'   "CP + J"
+#'   "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+#'   "GValueAdd + Import",
+#'   "FinConsExpHH + GCapitalForm"
 #' )
 #' )
 #'
 #' fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
 #' fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
 #' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
-#' \dontrun{
+#'\donttest{
 #' a <- run_model(specification = spec, dictionary = NULL, inputdata_directory = NULL, filter_list = filter_list, download = TRUE, save_to_disk = NULL, present = FALSE)
-#' }
-#' plot(forecast(a))
-#'
-plot.aggmod.forecast <- function(object, exclude.exogenous = TRUE, order.as.run = FALSE){
+#' plot(forecast_model(a))
+#'}
+plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, ...){
 
-  if(class(object) != "aggmod.forecast"){
+  if(class(x) != "aggmod.forecast"){
     stop("Input object not of type aggmod.forecast. Run 'forecast_model' again and use the output of that function.")
   }
 
-  object$orig_model$full_data %>%
+  x$orig_model$full_data %>%
     mutate(var = na_item,
            na_item = gsub("\\.hat","",na_item),
            fit = as.character(str_detect(var, ".hat"))) -> plot_df
@@ -59,7 +58,7 @@ plot.aggmod.forecast <- function(object, exclude.exogenous = TRUE, order.as.run 
 
   if(order.as.run & !exclude.exogenous){cat("As 'order.as.run' is TRUE, exogenous values will not be shown.\n")}
 
-  # left_join(object$dictionary %>%
+  # left_join(x$dictionary %>%
   #             rename(na_item = model_varnma) %>%
   #             select(na_item, model_varname), by = "na_item")
 
@@ -81,7 +80,7 @@ plot.aggmod.forecast <- function(object, exclude.exogenous = TRUE, order.as.run 
   #         panel.grid.minor.y = element_blank()) -> initial_plot
 
 
-  object$forecast %>%
+  x$forecast %>%
     select(central.estimate) %>%
     unnest(central.estimate) %>%
     pivot_longer(-c(time)) %>%
@@ -97,7 +96,7 @@ plot.aggmod.forecast <- function(object, exclude.exogenous = TRUE, order.as.run 
     rename_with(.fn = ~gsub("ln.","",.)) %>%
 
     pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
-    full_join(object$orig_model$module_order_eurostatvars %>%
+    full_join(x$orig_model$module_order_eurostatvars %>%
                 select(dependent) %>%
                 rename(na_item = dependent), by = "na_item") %>%
 
@@ -115,7 +114,7 @@ plot.aggmod.forecast <- function(object, exclude.exogenous = TRUE, order.as.run 
     bind_rows(plot_df) %>%
 
     {if(order.as.run){
-      mutate(.,na_item = factor(na_item, levels = object$orig_model$module_order_eurostatvars$dependent)) %>%
+      mutate(.,na_item = factor(na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
         drop_na(na_item) %>%
         arrange(time, na_item)} else {.}} %>%
 

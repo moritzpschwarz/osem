@@ -4,7 +4,7 @@
 \alias{print.aggmod}
 \title{Print output of an Aggregate Model}
 \usage{
-\method{print}{aggmod}(model)
+\method{print}{aggmod}(x, ...)
 }
 \arguments{
 \item{model}{An object of type 'aggmod'}
