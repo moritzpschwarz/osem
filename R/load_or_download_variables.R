@@ -45,7 +45,7 @@ load_or_download_variables <- function(specification,
                                        inputdata_directory = NULL,
                                        save_to_disk = NULL,
                                        quiet = FALSE,
-                                       constrain.to.minimum.sample = FALSE) {
+                                       constrain.to.minimum.sample = TRUE) {
 
   # input check
   if (is.null(dictionary)) {
