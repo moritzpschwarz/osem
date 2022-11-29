@@ -29,9 +29,12 @@
 #'
 #' fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
 #' fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-#' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
+#' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa,
+#' "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
 #' \dontrun{
-#' a <- run_model(specification = spec, dictionary = NULL, inputdata_directory = NULL, filter_list = filter_list, download = TRUE, save_to_disk = NULL, present = FALSE)
+#' a <- run_model(specification = spec, dictionary = NULL,
+#' inputdata_directory = NULL, filter_list = filter_list,
+#' download = TRUE, save_to_disk = NULL, present = FALSE)
 #' forecast(a)
 #' }
 
@@ -44,7 +47,8 @@ forecast_model <- function(model,
                            ar.fill.max = 4,
                            plot.forecast = TRUE){
 
-  if(class(model) != "aggmod"){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
+  #if(class(model) != "aggmod"){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
+  if(!isa(model, "aggmod")){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
   if(!is.null(exog_fill_method) & !exog_fill_method %in% c("AR","last")){stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR' or 'last'.")}
   if(!is.null(ar.fill.max) & (!is.integer(as.integer(ar.fill.max)) | ar.fill.max < 1)){stop("The option 'ar.fill.max' can either be NULL or must be an integer that is larger than 0.")}
 

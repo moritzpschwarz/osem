@@ -4,10 +4,14 @@
 #' @param dep_var_basename A character string of the name of the dependent variable as contained in clean_data() in a level form (i.e. no ln or D in front of the name).
 #' @param x_vars_basename A character vector of the name(s) of the independent variable(s) as contained in clean_data() in a level form (i.e. no ln or D in front of the name).
 #' @param use_logs To decide whether to log any variables. Must be one of "both", "y", or "x". Default is "both".
+#' @param trend Logical. To determine whether a trend should be added. Default is TRUE.
 #' @param ardl_or_ecm Either 'ardl' or 'ecm' to determine whether to estimate the model as an Autoregressive Distributed Lag Function (ardl) or as an Equilibrium Correction Model (ecm).
 #' @param max.lag The maximum number of lags to use for both the AR terms as well as for the independent variables.
 #' @param saturation Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.
 #' @param saturation.tpval The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.
+#' @param max.block.size Integer. Maximum size of block of variables to be selected over, default = 20.
+#' @param gets_selection Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.
+#' @param selection.tpval Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.
 #'
 #' @return A list containing all estimated models, with the model with the smallest BIC under 'best_model'.
 #' @export
@@ -35,9 +39,9 @@ estimate_module <- function(clean_data,
                             max.lag = 4,
                             saturation = c("IIS", "SIS"),
                             saturation.tpval = 0.01,
-                            selection.tpval = 0.01,
                             max.block.size = 20,
-                            gets_selection = TRUE) {
+                            gets_selection = TRUE,
+                            selection.tpval = 0.01) {
   log_opts <- match.arg(use_logs)
 
   if (!ardl_or_ecm %in% c("ardl", "ecm")) {

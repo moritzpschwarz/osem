@@ -941,17 +941,22 @@ Now we are ready to run the model with the `run_model()` function:
 model_result <- run_model(
   specification = spec,
   filter_list = filter_list,
-  save_to_disk = "data/use/InputData.xlsx",
+  save_to_disk = "inst/extdata/InputData.xlsx",
   download = TRUE,
   trend = TRUE,
   max.lag = 4,
   saturation.tpval = 0.1/NROW(clean_data)
 )
-#> Table namq_10_gdp cached at C:\Users\morit\AppData\Local\Temp\RtmpgJlnKT/eurostat/namq_10_gdp_date_code_FF.rds
-#> Table namq_10_a10 cached at C:\Users\morit\AppData\Local\Temp\RtmpgJlnKT/eurostat/namq_10_a10_date_code_FF.rds
-#> Table env_ac_aigg_q cached at C:\Users\morit\AppData\Local\Temp\RtmpgJlnKT/eurostat/env_ac_aigg_q_date_code_FF.rds
-#> Table ei_lmlc_q cached at C:\Users\morit\AppData\Local\Temp\RtmpgJlnKT/eurostat/ei_lmlc_q_date_code_FF.rds
-#> Table sts_cobp_q cached at C:\Users\morit\AppData\Local\Temp\RtmpgJlnKT/eurostat/sts_cobp_q_date_code_FF.rds
+#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/namq_10_gdp_date_code_FF.rds
+#> Table  namq_10_gdp  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/namq_10_gdp_date_code_FF.rds
+#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/namq_10_a10_date_code_FF.rds
+#> Table  namq_10_a10  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/namq_10_a10_date_code_FF.rds
+#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/env_ac_aigg_q_date_code_FF.rds
+#> Table  env_ac_aigg_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/env_ac_aigg_q_date_code_FF.rds
+#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/ei_lmlc_q_date_code_FF.rds
+#> Table  ei_lmlc_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/ei_lmlc_q_date_code_FF.rds
+#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/sts_cobp_q_date_code_FF.rds
+#> Table  sts_cobp_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/sts_cobp_q_date_code_FF.rds
 #> Warning in load_or_download_variables(specification =
 #> module_order_eurostatvars, : Unbalanced panel, will lose more than 20\% of data
 #> when making balanced
@@ -982,7 +987,7 @@ model_result <- run_model(
   specification = spec,
   filter_list = filter_list,
   download = FALSE,
-  inputdata_directory = "data/use",
+  inputdata_directory = "inst/extdata",
   trend = TRUE,
   max.lag = 4,
   saturation.tpval = 0.1/NROW(clean_data)
