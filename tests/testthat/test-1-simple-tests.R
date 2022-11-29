@@ -358,7 +358,7 @@ test_that("Extensive Model", {
 
   expect_warning(ab <- run_model(
     specification = spec,
-    dictionary = dict.devel,
+    dictionary = dict,
     inputdata_directory = NULL,
     filter_list = filter_list,
     download = TRUE,
