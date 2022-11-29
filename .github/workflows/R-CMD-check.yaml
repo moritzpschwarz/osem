@@ -44,9 +44,13 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Install tinytex
+        run: |
+          remotes::install_cran("tinytex")
+
       - uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
-          args: 'c("--no-build-vignettes")'
-          build_args: 'c("--no-build-vignettes")'
+          args: 'c("--no-manual", "--as-cran", "--no-build-vignettes")'
+          build_args : 'c("--no-build-vignettes")'
           error-on: '"error"'
