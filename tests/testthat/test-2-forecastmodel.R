@@ -1,3 +1,4 @@
+options(timeout=1000)
 
 # You'd then also provide a helper that skips tests where you can't
 # be sure of producing exactly the same output

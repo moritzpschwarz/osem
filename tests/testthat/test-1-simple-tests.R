@@ -1,3 +1,5 @@
+options(timeout=1000)
+
 test_that("no errors when running very simple model", {
 
   spec <- tibble(
