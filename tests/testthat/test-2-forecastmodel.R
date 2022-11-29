@@ -40,42 +40,51 @@ test_that("Test that forecasting works",{
       "d",
       "n",
       "n",
+      "n",
+      "n",
       "n"
     ),
     dependent = c(
-      "JL",
+      "StatDiscrep",
       "TOTS",
-      "B",
-      "CP",
-      "J"
+      "Import",
+      "FinConsExpHH",
+      "GCapitalForm",
+      "Emissions",
+      "GDP"
     ),
     independent = c(
-      "TOTS - CP - CO - J - A",
-      "YF + B",
-      "CP + J",
-      "",
-      "CO"
+      "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+      "GValueAdd + Import",
+      "FinConsExpHH + GCapitalForm",
+      "FinConsExpGov",
+      "Emissions",
+      "GDP",
+      ""
     )
   )
 
-  fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
-  fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-  filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
+  fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR", varcolumn = "na_item")
+  fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR", varcolumn = "na_item")
+  fc <- list(geo = "AT", unit = "THS_T", nace_r2 = "TOTAL_HH", varcolumn = "airpol")
+  filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa, "GHG" = fc, "B1GQ" = fa)
 
-  b <- run_model(
-    specification = spec,
-    dictionary = NULL,
-    inputdata_directory = NULL,
-    filter_list = filter_list,
-    download = TRUE,
-    save_to_disk = NULL,
-    present = FALSE,
-    quiet = TRUE
-  )
+  expect_warning(
+    b <- run_model(
+      specification = spec,
+      dictionary = NULL,
+      inputdata_directory = NULL,
+      filter_list = filter_list,
+      download = TRUE,
+      save_to_disk = NULL,
+      present = FALSE,
+      quiet = TRUE
+    ))
 
-
+  set.seed(123)
   expect_message(forecast_model(b), regexp = "No exogenous values")
 
+  skip_on_ci()
   expect_snapshot_plot("Forecast_plot",plot(forecast_model(b)))
 
 
