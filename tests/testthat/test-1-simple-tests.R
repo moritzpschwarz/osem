@@ -143,7 +143,7 @@ test_that("no errors when running a slightly more complicated model", {
   #   present = FALSE
   # )
 
-  expect_message(b <- run_model(
+  expect_warning(b <- run_model(
     specification = spec,
     dictionary = NULL,
     inputdata_directory = NULL,
@@ -155,7 +155,9 @@ test_that("no errors when running a slightly more complicated model", {
 
   expect_output(print(b))
 
-  #checking what happens when download is false and inputdata is also false
+
+
+#checking what happens when download is false and inputdata is also false
   expect_error(b <- run_model(
     specification = spec,
     dictionary = NULL,
@@ -180,7 +182,7 @@ test_that("no errors when running a slightly more complicated model", {
 
 
   # Let's check that an ecm also works
-  expect_message(b <- run_model(
+  expect_warning(b <- run_model(
     specification = spec,
     dictionary = NULL,
     inputdata_directory = NULL,
@@ -242,7 +244,7 @@ test_that("Incorporate Emissions", {
   #   present = FALSE
   # )
 
-  expect_message(b <- run_model(
+  expect_warning(b <- run_model(
     specification = spec,
     dictionary = NULL,
     inputdata_directory = NULL,
@@ -340,30 +342,34 @@ test_that("Extensive Model", {
   #   present = FALSE
   # )
 
-  ab <- run_model(
-    specification = spec,
-    dictionary = dict.devel,
-    inputdata_directory = "data/use",
-    filter_list = filter_list,
-    download = FALSE,
-    present = FALSE
-  )
-
-
-  abf <- forecast_model(ab)
-  plot(abf, order.as.run = TRUE)
+  # ab <- run_model(
+  #   specification = spec,
+  #   dictionary = dict.devel,
+  #   inputdata_directory = "data/use",
+  #   filter_list = filter_list,
+  #   download = FALSE,
+  #   present = FALSE,
+  #   saturation.tpval = 0.1
+  # )
 
 
 
-  expect_message(b <- run_model(
+
+
+  expect_warning(ab <- run_model(
     specification = spec,
     dictionary = dict.devel,
     inputdata_directory = NULL,
     filter_list = filter_list,
     download = TRUE,
     save_to_disk = NULL,
-    present = FALSE
+    present = FALSE,
+    saturation.tpval = 0.1/NROW(clean_data)
   ))
+
+  abf <- forecast_model(ab)
+  plot(abf, order.as.run = TRUE)
+
 
 
 
