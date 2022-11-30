@@ -44,9 +44,7 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
-      - name: Install tinytex
-        run: |
-          remotes::install_cran("tinytex")
+      - uses: r-lib/actions/setup-tinytex@v2
 
       - uses: r-lib/actions/check-r-package@v2
         with:
