@@ -116,6 +116,8 @@ load_or_download_variables <- function(specification,
       }
     }
 
+    full$time <- as.Date(full$time)
+
     # check whether all Eurostat codes were found
     if (!identical(length(codes.remain), 0L)) {
       stop("Not all Eurostat codes were found in the provided dataset ids.")
@@ -175,6 +177,8 @@ load_or_download_variables <- function(specification,
       full <- rbind(full, tmp)
       #   }
     }
+
+    full$time <- as.Date(full$time)
 
     # check whether all Eurostat codes were found
     if (!identical(length(codes.remain), 0L)) {
