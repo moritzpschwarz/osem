@@ -103,12 +103,12 @@ load_or_download_variables <- function(specification,
         # choose subset according to filter
         #if(ids$data.ids[i] == "ei_lmlc_q"){browser()}
         sub <- tmp %>%
-          filter(if_all(varcolname, ~ . == codes.found$var[j])) %>%
+          filter(if_all(all_of(varcolname), ~ . == codes.found$var[j])) %>%
           filter(geo == filter$geo & unit == filter$unit) %>%
           {if(select(., any_of("s_adj")) %>% ncol == 1){filter(.,s_adj == filter$s_adj)} else {.}} %>%
           {if(select(., any_of("nace_r2")) %>% ncol == 1){filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
           {if(select(., any_of("cpa2_1")) %>% ncol == 1){filter(.,cpa2_1 == codes.found$cpa2_1[j])} else {.}} %>%
-          rename_with(.cols = varcolname, .fn = ~paste0("na_item")) %>%
+          rename_with(.cols = all_of(varcolname), .fn = ~paste0("na_item")) %>%
           mutate(na_item = codes.found$model_varname[j])
 
         # add subset to full, final dataset
