@@ -74,7 +74,7 @@ add_to_original_data <- function(clean_data,
   # Update Moritz 29/08/2022: does not give me an error - also the example in the documentation works
 
   intermed %>%
-    dplyr::rename_with(.cols = any_of(c("fitted", "fitted.level", "fitted.cumsum")), .fn = ~ paste0(gsub("fitted", dep_var_basename, .), ".hat")) %>%
+    dplyr::rename_with(.cols = dplyr::any_of(c("fitted", "fitted.level", "fitted.cumsum")), .fn = ~ paste0(gsub("fitted", dep_var_basename, .), ".hat")) %>%
     return()
 
 }

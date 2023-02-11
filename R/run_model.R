@@ -47,7 +47,7 @@
 #' @export
 #'
 #' @examples
-#' spec <- tibble(
+#' spec <- dplyr::tibble(
 #'   type = c(
 #'     "d",
 #'     "d",
@@ -75,7 +75,7 @@
 #' download = TRUE, save_to_disk = NULL, present = FALSE)
 #' }
 
-# config_table_small <- tibble(
+# config_table_small <- dplyr::tibble(
 #   dependent = c("StatDiscrep",
 #                 "TOTS",
 #                 "Import"),
@@ -140,7 +140,7 @@ run_model <- function(specification,
 
   # initialise storage of estimation results
   module_collection <- module_order_eurostatvars %>%
-    mutate(dataset = list(NA_complex_),
+    dplyr::mutate(dataset = list(NA_complex_),
            model = list(NA_complex_))
 
   tmp_data <- full_data
@@ -163,11 +163,11 @@ run_model <- function(specification,
     )
 
     # store module estimates dataset, including fitted values
-    module_collection[module_collection$order == i, "dataset"] <- tibble(dataset = list(module_estimate$data))
-    module_collection[module_collection$order == i, "model"] <- tibble(dataset = list(module_estimate$model))
-    module_collection[module_collection$order == i, "model.args"] <- tibble(dataset = list(module_estimate$args))
-    module_collection[module_collection$order == i, "indep"] <- tibble(dataset = list(module_estimate$indep))
-    module_collection[module_collection$order == i, "dep"] <- tibble(dataset = list(module_estimate$dep))
+    module_collection[module_collection$order == i, "dataset"] <- dplyr::tibble(dataset = list(module_estimate$data))
+    module_collection[module_collection$order == i, "model"] <- dplyr::tibble(dataset = list(module_estimate$model))
+    module_collection[module_collection$order == i, "model.args"] <- dplyr::tibble(dataset = list(module_estimate$args))
+    module_collection[module_collection$order == i, "indep"] <- dplyr::tibble(dataset = list(module_estimate$indep))
+    module_collection[module_collection$order == i, "dep"] <- dplyr::tibble(dataset = list(module_estimate$dep))
 
     # update dataset for next module by adding fitted values
     tmp_data <- update_data(orig_data = tmp_data, new_data = module_estimate$data)

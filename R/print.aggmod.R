@@ -27,30 +27,30 @@ print.aggmod <- function(x, ...){
   } else {
     x$args$dictionary
   } } %>%
-    select(model_varname, full_name) %>%
-    mutate(dependent = model_varname,
+    dplyr::select(model_varname, full_name) %>%
+    dplyr::mutate(dependent = model_varname,
            splitvars = model_varname)
 
 
 
   x$module_order_eurostatvars %>%
-    select(index, order, dependent, independent) %>%
+    dplyr::select(index, order, dependent, independent) %>%
 
     # deal with dependent vars
-    left_join(dictionary %>% select(dependent, full_name), by = "dependent") %>%
+    dplyr::left_join(dictionary %>% dplyr::select(dependent, full_name), by = "dependent") %>%
     relocate(full_name, .after = dependent) %>%
 
     # deal with independet vars
-    mutate(ind_spaced = independent,
+    dplyr::mutate(ind_spaced = independent,
            independent = gsub(" ", "", independent)) %>%
-    rowwise() %>%
-    mutate(splitvars = list(strsplits(independent,c("\\-", "\\+")))) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(splitvars = list(strsplits(independent,c("\\-", "\\+")))) %>%
     unnest(splitvars, keep_empty = TRUE) %>%
-    left_join(dictionary %>% select(splitvars, full_name) %>% rename(name_ind = full_name), by = "splitvars") %>%
+    dplyr::left_join(dictionary %>% dplyr::select(splitvars, full_name) %>% rename(name_ind = full_name), by = "splitvars") %>%
 
-    group_by(index, dependent,full_name,  ind_spaced) %>%
+    dplyr::group_by(index, dependent,full_name,  ind_spaced) %>%
     summarise(ind_name = toString(name_ind), .groups = "drop") %>%
-    mutate(ind_name = ifelse(ind_name == "NA","Only AR Specification", ind_name)) %>%
+    dplyr::mutate(ind_name = ifelse(ind_name == "NA","Only AR Specification", ind_name)) %>%
 
     # styling
     rename(`Ind. Var` = ind_spaced,

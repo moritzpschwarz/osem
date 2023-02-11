@@ -86,7 +86,7 @@ translate_variables <- function(specification, dictionary = NULL) {
 
   # add the translated columns
   specification <- specification %>%
-    mutate(dependent_eu = dep,
+    dplyr::mutate(dependent_eu = dep,
            independent_eu = indep) %>%
     relocate(dependent_eu, .after = dependent) %>%
     relocate(independent_eu, .after = independent)

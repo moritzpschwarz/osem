@@ -105,9 +105,9 @@ load_or_download_variables <- function(specification,
         sub <- tmp %>%
           dplyr::filter(dplyr::if_all(dplyr::all_of(varcolname), ~ . == codes.found$var[j])) %>%
           dplyr::filter(geo == filter$geo & unit == filter$unit) %>%
-          {if(dplyr::select(., any_of("s_adj")) %>% ncol == 1){dplyr::filter(.,s_adj == filter$s_adj)} else {.}} %>%
-          {if(dplyr::select(., any_of("nace_r2")) %>% ncol == 1){dplyr::filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
-          {if(dplyr::select(., any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(.,cpa2_1 == codes.found$cpa2_1[j])} else {.}} %>%
+          {if(dplyr::select(., dplyr::any_of("s_adj")) %>% ncol == 1){dplyr::filter(.,s_adj == filter$s_adj)} else {.}} %>%
+          {if(dplyr::select(., dplyr::any_of("nace_r2")) %>% ncol == 1){dplyr::filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
+          {if(dplyr::select(., dplyr::any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(.,cpa2_1 == codes.found$cpa2_1[j])} else {.}} %>%
           rename_with(.cols = dplyr::all_of(varcolname), .fn = ~paste0("na_item")) %>%
           dplyr::mutate(na_item = codes.found$model_varname[j])
 
@@ -169,8 +169,8 @@ load_or_download_variables <- function(specification,
       #     sub <- tmp %>%
       #       dplyr::filter(dplyr::if_all(na_item, ~ . == codes.found[j])) %>%
       #       dplyr::filter(geo == curfilter$geo & unit == curfilter$unit) %>%
-      #       {if(dplyr::select(., any_of("s_adj")) %>% ncol == 1){dplyr::filter(.,s_adj == curfilter$s_adj)} else {.}} %>%
-      #       {if(dplyr::select(., any_of("nace_r2")) %>% ncol == 1){dplyr::filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
+      #       {if(dplyr::select(., dplyr::any_of("s_adj")) %>% ncol == 1){dplyr::filter(.,s_adj == curfilter$s_adj)} else {.}} %>%
+      #       {if(dplyr::select(., dplyr::any_of("nace_r2")) %>% ncol == 1){dplyr::filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
       #       dplyr::mutate(na_item = codes.found$var.ids[j])
       #
       #     # add subset to full, final dataset

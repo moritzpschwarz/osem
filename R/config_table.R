@@ -3,7 +3,7 @@
 # To check the errors
 
 # This has a direct endogeneity
-# config_table_small <- tibble(
+# config_table_small <- dplyr::tibble(
 #   type = c("d",
 #            "d",
 #            "n"),
@@ -17,7 +17,7 @@
 
 
 # This has an indirect endogeneity
-# config_table_small <- tibble(
+# config_table_small <- dplyr::tibble(
 #   type = c("d",
 #            "d",
 #            "n"),
@@ -32,7 +32,7 @@
 
 
 # This is the correct specification
-# config_table_small <- tibble(
+# config_table_small <- dplyr::tibble(
 #   dependent = c("JL",
 #                 "TOTS",
 #                 "B"),
@@ -54,7 +54,7 @@
 #' @export
 #'
 #' @examples
-#' config_table_small <- tibble(
+#' config_table_small <- dplyr::tibble(
 #'   type = c("d","d","n"),
 #'   dependent = c("JL", "TOTS", "B"),
 #'   independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J")
@@ -81,7 +81,7 @@ check_config_table <- function(config_table) {
     ))) %>%
     dplyr::ungroup() %>%
     tidyr::unnest(splitvars, keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
-    # group_by(dependent) %>%
+    # dplyr::group_by(dependent) %>%
     # dplyr::rowwise() %>%
     dplyr::mutate(direct_endog = dplyr::case_when(dependent == splitvars~TRUE,
                                                   is.na(splitvars)~FALSE,
@@ -142,7 +142,7 @@ check_config_table <- function(config_table) {
     dplyr::distinct(index, type, dependent, independent, all_exog) %>%
     dplyr::filter(all_exog) %>%
     dplyr::select(-all_exog) %>%
-    #dplyr::mutate(order = if_else(condition = (n()>0),true = (1:n()),false = NA_integer_)) -> order_exog
+    #dplyr::mutate(order = if_else(condition = (dplyr::n()>0),true = (1:dplyr::n()),false = NA_integer_)) -> order_exog
     {if (nrow(.) > 0) {dplyr::mutate(.,order = 1:dplyr::n())} else {dplyr::mutate(., order = NA_integer_)}} -> order_exog
 
   config_table_endog_exog %>%
@@ -192,7 +192,7 @@ check_config_table <- function(config_table) {
   #   dplyr::group_by(index) %>%
   #   dplyr::filter(!any(endog)) %>%
   #   dplyr::distinct(index, dependent, independent) %>%
-  #   dplyr::mutate(order = 1:n(),
+  #   dplyr::mutate(order = 1:dplyr::n(),
   #          order = order + max(order_exog$order)) %>%
   #   dplyr::ungroup() %>%
   #   dplyr::bind_rows(order_exog)
@@ -208,7 +208,7 @@ check_config_table <- function(config_table) {
 }
 
 #
-# translation_table <- tibble(
+# translation_table <- dplyr::tibble(
 #   eurostat = c("B1GQ", "B1G", "P6", "P7", "P5G",
 #                "P3", "P3_S13", "P31_S13", "P32_S13", "P31_S14_S15", "P31_S14",
 #                "P31_S15", "YA1", "YA0", "YA2"),

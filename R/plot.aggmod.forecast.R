@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-#' spec <- tibble(
+#' spec <- dplyr::tibble(
 #' type = c(
 #'   "d",
 #'   "d",
@@ -45,28 +45,28 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   }
 
   x$orig_model$full_data %>%
-    mutate(var = na_item,
+    dplyr::mutate(var = na_item,
            na_item = gsub("\\.hat","",na_item),
            fit = as.character(str_detect(var, ".hat"))) -> plot_df
 
   plot_df %>%
-    distinct(na_item, fit) %>%
-    mutate(fit = as.logical(fit)) %>%
-    filter(fit) %>%
-    pull(na_item) -> when_excluding_exog
+    dplyr::distinct(na_item, fit) %>%
+    dplyr::mutate(fit = as.logical(fit)) %>%
+    dplyr::filter(fit) %>%
+    dplyr::pull(na_item) -> when_excluding_exog
 
 
   if(exclude.exogenous){
     plot_df %>%
-      filter(na_item %in% when_excluding_exog) -> plot_df
+      dplyr::filter(na_item %in% when_excluding_exog) -> plot_df
   }
 
 
   if(order.as.run & !exclude.exogenous){cat("As 'order.as.run' is TRUE, exogenous values will not be shown.\n")}
 
-  # left_join(x$dictionary %>%
+  # dplyr::left_join(x$dictionary %>%
   #             rename(na_item = model_varnma) %>%
-  #             select(na_item, model_varname), by = "na_item")
+  #             dplyr::select(na_item, model_varname), by = "na_item")
 
   # plot_df %>%
   #   ggplot(aes(x = time, y = values, color = fit, group = var, fit = var)) +
@@ -87,41 +87,41 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
 
   x$forecast %>%
-    select(central.estimate) %>%
+    dplyr::select(central.estimate) %>%
     unnest(central.estimate) %>%
-    pivot_longer(-c(time)) %>%
+    tidyr::pivot_longer(-c(time)) %>%
     drop_na %>%
-    pivot_wider(id_cols = c(time), names_from = name, values_from = value) -> central_forecasts
+    tidyr::pivot_wider(id_cols = c(time), names_from = name, values_from = value) -> central_forecasts
 
   central_forecasts %>%
     names %>%
     str_detect(., "^ln.") -> to_exponentiate
 
   central_forecasts %>%
-    mutate(across(.cols = all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
+    dplyr::mutate(across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
     rename_with(.fn = ~gsub("ln.","",.)) %>%
 
-    pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
-    full_join(x$orig_model$module_order_eurostatvars %>%
-                select(dependent) %>%
+    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
+    dplyr::full_join(x$orig_model$module_order_eurostatvars %>%
+                dplyr::select(dependent) %>%
                 rename(na_item = dependent), by = "na_item") %>%
 
-    mutate(fit = "forecast") -> forecasts_processed
+    dplyr::mutate(fit = "forecast") -> forecasts_processed
 
   plot_df %>%
-    filter(fit == "TRUE") %>%
-    group_by(na_item) %>%
-    filter(time == max(time)) %>%
-    ungroup() %>%
-    select(-var) %>%
-    mutate(fit = "forecast") -> last_hist_value
+    dplyr::filter(fit == "TRUE") %>%
+    dplyr::group_by(na_item) %>%
+    dplyr::filter(time == max(time)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-var) %>%
+    dplyr::mutate(fit = "forecast") -> last_hist_value
 
-  bind_rows(forecasts_processed, last_hist_value) %>%
-    bind_rows(plot_df) %>%
+  dplyr::bind_rows(forecasts_processed, last_hist_value) %>%
+    dplyr::bind_rows(plot_df) %>%
 
     {if(order.as.run){
-      mutate(.,na_item = factor(na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
-        drop_na(na_item) %>%
+      dplyr::mutate(.,na_item = factor(na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
+        tidyr::drop_na(na_item) %>%
         arrange(time, na_item)} else {.}} %>%
 
     ggplot(aes(x = time, y = values, color = fit)) +
