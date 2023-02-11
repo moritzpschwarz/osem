@@ -410,7 +410,7 @@ forecast_model <- function(model,
         ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
         # The drop_na below was used because for GCapitalForm the value for July 2022 was missing - while it was there for FinConsExpHH
         # Now the question is whether the drop_na messes up the timing
-        #drop_na %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
+        drop_na %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
 
         bind_rows(current_pred_raw %>%
                     #select(time, all_of(x_names_vec_nolag), any_of("trend"))) -> intermed
@@ -422,8 +422,10 @@ forecast_model <- function(model,
           mutate(across(c(#starts_with("D."),
             starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
           select(c(#starts_with("D."),
-            starts_with("ln."))) %>%
-          rename_with(.fn = ~ paste0("L", j, ".", .)) %>%
+            starts_with("ln."))) -> inter_intermed
+
+        inter_intermed %>%
+          setNames(paste0("L", j, ".", names(inter_intermed))) %>%
           bind_cols(to_be_added, .) -> to_be_added
       }
 
