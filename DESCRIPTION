@@ -23,6 +23,8 @@ Imports:
 LazyData: true
 Suggests: 
     stringr,
+    ggplot2,
+    utils,
     shiny,
     readxl,
     readr,

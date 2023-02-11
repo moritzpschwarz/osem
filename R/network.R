@@ -91,13 +91,13 @@ network <- function(model) {
     out <- ggraph::ggraph(graph_df, layout = "kk") +
       ggraph::geom_node_point(ggplot2::aes(color = class), size = 3) +
       ggraph::geom_edge_link(ggplot2::aes(edge_linetype = as.factor(weight)),
-                             arrow = arrow(length = unit(2, 'mm')),
+                             arrow = ggplot2::arrow(length = ggplot2::unit(2, 'mm')),
                              end_cap = ggraph::circle(4, 'mm')) +
       ggraph::geom_edge_loop(ggplot2::aes(edge_linetype = as.factor(weight),
                                  end_cap = ggraph::circle(1, 'mm'),
                                  span = 120,
                                  direction = -45),
-                             arrow = arrow(length = unit(2, 'mm')),
+                             arrow = ggplot2::arrow(length = ggplot2::unit(2, 'mm')),
                              position = "jitter") +
       ggraph::geom_node_text(ggplot2::aes(label = name), repel = TRUE, size = 3) +
       ggplot2::scale_color_discrete(name = "Type of Variable",

@@ -49,7 +49,7 @@ print.aggmod <- function(x, ...){
     dplyr::left_join(dictionary %>% dplyr::select(splitvars, full_name) %>% dplyr::rename(name_ind = full_name), by = "splitvars") %>%
 
     dplyr::group_by(index, dependent,full_name,  ind_spaced) %>%
-    summarise(ind_name = toString(name_ind), .groups = "drop") %>%
+    dplyr::summarise(ind_name = toString(name_ind), .groups = "drop") %>%
     dplyr::mutate(ind_name = ifelse(ind_name == "NA","Only AR Specification", ind_name)) %>%
 
     # styling

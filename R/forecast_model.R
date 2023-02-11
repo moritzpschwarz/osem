@@ -449,7 +449,7 @@ forecast_model <- function(model,
       # pred_df$test <- 10
       # pred_df$L1.ln.p31_s14_s15 <- backup
 
-      pred_obj <- gets::predict.isat(isat_obj, newmxreg = as.matrix(tail(pred_df, n.ahead)),
+      pred_obj <- gets::predict.isat(isat_obj, newmxreg = as.matrix(utils::tail(pred_df, n.ahead)),
                                      n.ahead = n.ahead, plot = plot.forecast,
                                      ci.levels = ci.levels)
 

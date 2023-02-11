@@ -49,7 +49,7 @@ clean_data <- function(raw_data,
   intermed %>%
     dplyr::bind_cols(to_be_added) %>%
     dplyr::mutate(index = 1:dplyr::n()) %>%
-    dplyr::dplyr::relocate(index) %>%
+    dplyr::relocate(index) %>%
     dplyr::mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
     fastDummies::dummy_cols(
       select_columns = "q", remove_first_dummy = TRUE,
