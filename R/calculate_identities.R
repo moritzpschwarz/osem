@@ -13,7 +13,6 @@
 #'   Eurostat.
 #'
 #' @export
-#' @importFrom rlang :=
 
 calculate_identities <- function(specification, data, dictionary = NULL) {
 

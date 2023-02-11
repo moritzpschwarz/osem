@@ -43,14 +43,14 @@ add_to_original_data <- function(clean_data,
     {
       if (ardl_or_ecm == "ecm") {
         dplyr::mutate(.,
-          fitted.cumsum = dplyr::case_when(
-            is.na(dplyr::all_of("fitted")) & is.na(lead(dplyr::all_of("fitted"))) ~ 0,
-            # ATTENTION TO DO: here change by Moritz: used to be paste0("L.",dep_var_basename)
-            is.na(dplyr::all_of("fitted")) & !is.na(lead(dplyr::all_of("fitted"))) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
-            !is.na(dplyr::all_of("fitted")) ~ dplyr::all_of("fitted")
-          ),
-          fitted.cumsum = cumsum(dplyr::all_of("fitted.cumsum")),
-          fitted.cumsum = ifelse(is.na(dplyr::all_of("fitted")), NA, dplyr::all_of("fitted.cumsum"))
+                      fitted.cumsum = dplyr::case_when(
+                        is.na(.data$fitted) & is.na(dplyr::lead(.data$fitted)) ~ 0,
+                        # ATTENTION TO DO: here change by Moritz: used to be paste0("L.",dep_var_basename)
+                        is.na(.data$fitted) & !is.na(dplyr::lead(.data$fitted)) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
+                        !is.na(.data$fitted) ~ .data$fitted
+                      ),
+                      fitted.cumsum = cumsum(.data$fitted.cumsum),
+                      fitted.cumsum = ifelse(is.na(.data$fitted.cumsum), NA, .data$fitted.cumsum)
         )
       } else {
         .
@@ -58,9 +58,9 @@ add_to_original_data <- function(clean_data,
     } %>%
     {
       if (ardl_or_ecm == "ecm") {
-        dplyr::mutate(., fitted.level = exp(dplyr::all_of("fitted.cumsum")))
+        dplyr::mutate(., fitted.level = exp(.data$fitted.cumsum))
       } else if (ardl_or_ecm == "ardl") {
-        dplyr::mutate(., fitted.level = exp(dplyr::all_of("fitted")))
+        dplyr::mutate(., fitted.level = exp(.data$fitted))
       } else {
         .
       }

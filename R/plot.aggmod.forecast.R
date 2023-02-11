@@ -90,7 +90,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::select(central.estimate) %>%
     tidyr::unnest(central.estimate) %>%
     tidyr::pivot_longer(-c(time)) %>%
-    drop_na %>%
+    tidyr::drop_na() %>%
     tidyr::pivot_wider(id_cols = c(time), names_from = name, values_from = value) -> central_forecasts
 
   central_forecasts %>%

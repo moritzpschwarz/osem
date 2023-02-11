@@ -122,7 +122,6 @@ run_model <- function(specification,
   # add columns that translate dependent and independent variables into Eurostat codes
   module_order_eurostatvars <- translate_variables(specification = module_order,
                                                    dictionary = dictionary)
-  browser()
   # download or locally load the data necessary for the whole aggregate model
   loaded_data <- load_or_download_variables(specification = module_order_eurostatvars,
                                             filter_list = filter_list,

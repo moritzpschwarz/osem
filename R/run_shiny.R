@@ -12,6 +12,9 @@ run_shiny <- function(model = NULL) {
   if (!requireNamespace("DT", quietly = TRUE)) {
     stop("Shiny App requires package 'DT'.")
   }
+  if (!requireNamespace("shiny", quietly = TRUE)) {
+    stop("Shiny App requires package 'shiny'.")
+  }
 
   appDir <- system.file("shiny-output", "shinyaggmodel", package = "aggregate.model")
 

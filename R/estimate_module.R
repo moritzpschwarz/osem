@@ -170,16 +170,15 @@ estimate_module <- function(clean_data,
     isat_list[i + 1, "isat_object"] <- dplyr::tibble(isat_object = list(intermed.model))
   }
 
-
   best_isat_model <- isat_list %>%
-    dplyr::filter(BIC == min(dplyr::all_of("BIC"))) %>%
+    dplyr::filter(BIC == min(isat_list$BIC)) %>%
     dplyr::pull(dplyr::all_of("isat_object")) %>%
     dplyr::first()
 
   ## gets selection on the best model ------------
-  best_isat_model.selected <- gets::gets.isat(best_isat_model,
-                                              print.searchinfo = FALSE,
-                                              t.pval = selection.tpval)
+  best_isat_model.selected <- gets::gets(best_isat_model,
+                                         print.searchinfo = FALSE,
+                                         t.pval = selection.tpval)
 
   retained.coefs <- row.names(best_isat_model.selected$mean.results)
   retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]

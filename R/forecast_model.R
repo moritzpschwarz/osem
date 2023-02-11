@@ -410,7 +410,7 @@ forecast_model <- function(model,
         ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
         # The drop_na below was used because for GCapitalForm the value for July 2022 was missing - while it was there for FinConsExpHH
         # Now the question is whether the drop_na messes up the timing
-        drop_na %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
+        tidyr::drop_na() %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
 
         dplyr::bind_rows(current_pred_raw %>%
                            #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
@@ -432,8 +432,10 @@ forecast_model <- function(model,
 
       dplyr::bind_cols(intermed, to_be_added) %>%
         dplyr::left_join(current_pred_raw %>%
-                    dplyr::select(time, dplyr::any_of("trend"), dplyr::starts_with("q_"), dplyr::starts_with("iis"), dplyr::starts_with("sis")), by = "time") %>%
-        drop_na %>%
+                           dplyr::select(time, dplyr::any_of("trend"), dplyr::starts_with("q_"),
+                                         dplyr::starts_with("iis"), dplyr::starts_with("sis")),
+                         by = "time") %>%
+        tidyr::drop_na() %>%
         dplyr::select(-time) %>%
         dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
         return() -> pred_df
@@ -461,7 +463,7 @@ forecast_model <- function(model,
                            current_spec %>% dplyr::pull(dependent))
 
       dplyr::tibble(time = current_pred_raw %>% dplyr::pull(time),
-             value = as.numeric(pred_obj[,1])) %>%
+                    value = as.numeric(pred_obj[,1])) %>%
         setNames(c("time",outvarname)) -> central_estimate
 
       # dplyr::tibble(time = current_pred_raw %>% dplyr::pull(time)) %>%
@@ -471,10 +473,13 @@ forecast_model <- function(model,
 
 
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::as_tibble(pred_obj)))
-      prediction_list[prediction_list$order == i, "data"] <- dplyr::tibble(data = list(dplyr::bind_cols(intermed, to_be_added) %>%
-                                                                                  dplyr::left_join(current_pred_raw %>%
-                                                                                              dplyr::select(time, dplyr::starts_with("q_"), dplyr::starts_with("iis"), dplyr::starts_with("sis")), by = "time") %>%
-                                                                                  drop_na))
+      prediction_list[prediction_list$order == i, "data"] <- dplyr::tibble(
+        data = list(dplyr::bind_cols(intermed, to_be_added) %>%
+                      dplyr::left_join(current_pred_raw %>% dplyr::select(time, dplyr::starts_with("q_"),
+                                                                          dplyr::starts_with("iis"),
+                                                                          dplyr::starts_with("sis")),
+                                       by = "time") %>%
+                      tidyr::drop_na()))
       prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(central_estimate = list(central_estimate))
       #prediction_list[prediction_list$order == i, "all.estimates"] <- dplyr::tibble(all_estimates = list(all_estimates))
 
@@ -531,7 +536,7 @@ forecast_model <- function(model,
       if(any(identity_logs) && !all(identity_logs)){
         identity_pred %>%
           dplyr::mutate(dplyr::across(dplyr::all_of(names(identity_pred)[!identity_logs]),
-                               .fns = list(ln = log), .names = "{.fn}.{col}")) %>%
+                                      .fns = list(ln = log), .names = "{.fn}.{col}")) %>%
           dplyr::select(-dplyr::all_of(dplyr::all_of(names(identity_pred)[!identity_logs]))) -> identity_pred
       }
 
@@ -565,7 +570,7 @@ forecast_model <- function(model,
         current_spec %>% dplyr::pull(dependent) %>% unique) #%>% tolower)
 
       dplyr::tibble(time = current_pred_raw %>% dplyr::pull(time),
-             value = as.numeric(identity_pred_final[,1])) %>%
+                    value = as.numeric(identity_pred_final[,1])) %>%
         setNames(c("time",outvarname)) -> central_estimate
 
 
