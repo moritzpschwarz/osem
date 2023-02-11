@@ -34,14 +34,14 @@ clean_data <- function(raw_data,
     dplyr::arrange(., time) %>%
     dplyr::mutate(
       dplyr::across(-time, list(ln = log), .names = "{.fn}.{.col}"),
-      dplyr::across(starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
+      dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
     ) -> intermed
 
   to_be_added <- dplyr::tibble(.rows = nrow(intermed))
   for (i in 1:max.lag) {
     intermed %>%
-      dplyr::mutate(dplyr::across(c(starts_with("D."), starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
-      dplyr::select(c(starts_with("D."), starts_with("ln."))) %>%
+      dplyr::mutate(dplyr::across(c(dplyr::starts_with("D."), dplyr::starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
+      dplyr::select(c(dplyr::starts_with("D."), dplyr::starts_with("ln."))) %>%
       dplyr::rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
       dplyr::bind_cols(to_be_added, .) -> to_be_added
   }
@@ -49,7 +49,7 @@ clean_data <- function(raw_data,
   intermed %>%
     dplyr::bind_cols(to_be_added) %>%
     dplyr::mutate(index = 1:dplyr::n()) %>%
-    dplyr::relocate(index) %>%
+    dplyr::dplyr::relocate(index) %>%
     dplyr::mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
     fastDummies::dummy_cols(
       select_columns = "q", remove_first_dummy = TRUE,

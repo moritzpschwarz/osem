@@ -37,7 +37,7 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
     # when parsing this, it would appear that we would need to multiply the values
     # therefore changing the denominator from * to _ only for here
     dat_tmp %>%
-      #rename_with(.fn = ~gsub("\\*","_",.)) %>%
+      #dplyr::rename_with(.fn = ~gsub("\\*","_",.)) %>%
       dplyr::mutate(!!dep := eval(parse(text = gsub("\\*","_",indep)))) %>%
       #setNames(c(dat_tmp_names, dep)) %>%
       dplyr::select(-dplyr::any_of("nace_r2")) %>%

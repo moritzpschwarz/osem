@@ -38,22 +38,22 @@ print.aggmod <- function(x, ...){
 
     # deal with dependent vars
     dplyr::left_join(dictionary %>% dplyr::select(dependent, full_name), by = "dependent") %>%
-    relocate(full_name, .after = dependent) %>%
+    dplyr::relocate(full_name, .after = dependent) %>%
 
     # deal with independet vars
     dplyr::mutate(ind_spaced = independent,
            independent = gsub(" ", "", independent)) %>%
     dplyr::rowwise() %>%
     dplyr::mutate(splitvars = list(strsplits(independent,c("\\-", "\\+")))) %>%
-    unnest(splitvars, keep_empty = TRUE) %>%
-    dplyr::left_join(dictionary %>% dplyr::select(splitvars, full_name) %>% rename(name_ind = full_name), by = "splitvars") %>%
+    tidyr::unnest(splitvars, keep_empty = TRUE) %>%
+    dplyr::left_join(dictionary %>% dplyr::select(splitvars, full_name) %>% dplyr::rename(name_ind = full_name), by = "splitvars") %>%
 
     dplyr::group_by(index, dependent,full_name,  ind_spaced) %>%
     summarise(ind_name = toString(name_ind), .groups = "drop") %>%
     dplyr::mutate(ind_name = ifelse(ind_name == "NA","Only AR Specification", ind_name)) %>%
 
     # styling
-    rename(`Ind. Var` = ind_spaced,
+    dplyr::rename(`Ind. Var` = ind_spaced,
            `Model` = index,
            #`Est. Order` = order,
            `Dep. Var.` = dependent,

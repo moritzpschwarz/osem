@@ -351,8 +351,8 @@ forecast_model <- function(model,
 
         {if (xlog) {
           dplyr::mutate(.,
-                        across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
-                        #across(starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
+                        dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
+                        #dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
           )
         } else {.}} -> current_pred_raw
 
@@ -392,7 +392,7 @@ forecast_model <- function(model,
           if (!mvar_name %in% x_names_vec_nolag) {
             if (paste0("ln.",mvar_name) %in% x_names_vec_nolag) {
               mvar_tibble %>%
-                dplyr::mutate(across(dplyr::all_of(mvar_euname), log, .names = "ln.{.col}")) %>%
+                dplyr::mutate(dplyr::across(dplyr::all_of(mvar_euname), log, .names = "ln.{.col}")) %>%
                 dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
             } else {
               stop("Error occurred in adding missing/lower estimated variables (likely identities) to a subsequent/higher model. This is likely being caused by either log specification or lag specifiction. Check code.")
@@ -419,10 +419,10 @@ forecast_model <- function(model,
       to_be_added <- dplyr::tibble(.rows = nrow(intermed))
       for (j in 1:max(ar_vec)) {
         intermed %>%
-          dplyr::mutate(across(c(#starts_with("D."),
-            starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
-          dplyr::select(c(#starts_with("D."),
-            starts_with("ln."))) -> inter_intermed
+          dplyr::mutate(dplyr::across(c(#dplyr::starts_with("D."),
+            dplyr::starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
+          dplyr::select(c(#dplyr::starts_with("D."),
+            dplyr::starts_with("ln."))) -> inter_intermed
 
         inter_intermed %>%
           setNames(paste0("L", j, ".", names(inter_intermed))) %>%
@@ -432,7 +432,7 @@ forecast_model <- function(model,
 
       dplyr::bind_cols(intermed, to_be_added) %>%
         dplyr::left_join(current_pred_raw %>%
-                    dplyr::select(time, dplyr::any_of("trend"), starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
+                    dplyr::select(time, dplyr::any_of("trend"), dplyr::starts_with("q_"), dplyr::starts_with("iis"), dplyr::starts_with("sis")), by = "time") %>%
         drop_na %>%
         dplyr::select(-time) %>%
         dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
@@ -473,7 +473,7 @@ forecast_model <- function(model,
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::as_tibble(pred_obj)))
       prediction_list[prediction_list$order == i, "data"] <- dplyr::tibble(data = list(dplyr::bind_cols(intermed, to_be_added) %>%
                                                                                   dplyr::left_join(current_pred_raw %>%
-                                                                                              dplyr::select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
+                                                                                              dplyr::select(time, dplyr::starts_with("q_"), dplyr::starts_with("iis"), dplyr::starts_with("sis")), by = "time") %>%
                                                                                   drop_na))
       prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(central_estimate = list(central_estimate))
       #prediction_list[prediction_list$order == i, "all.estimates"] <- dplyr::tibble(all_estimates = list(all_estimates))
@@ -530,14 +530,14 @@ forecast_model <- function(model,
       # log all the exogenous columns, if any of the estimated columns is logged
       if(any(identity_logs) && !all(identity_logs)){
         identity_pred %>%
-          dplyr::mutate(across(dplyr::all_of(names(identity_pred)[!identity_logs]),
+          dplyr::mutate(dplyr::across(dplyr::all_of(names(identity_pred)[!identity_logs]),
                                .fns = list(ln = log), .names = "{.fn}.{col}")) %>%
           dplyr::select(-dplyr::all_of(dplyr::all_of(names(identity_pred)[!identity_logs]))) -> identity_pred
       }
 
       # sum the identities
       cols_to_cycle <- gsub(" ","",strsplits(unique(current_spec$independent_orig), c("\\+", "\\-")))
-      operators <- str_extract_all(string = unique(current_spec$independent_orig), pattern = "\\+|\\-")[[1]]
+      operators <- stringr::str_extract_all(string = unique(current_spec$independent_orig), pattern = "\\+|\\-")[[1]]
 
       if(length(cols_to_cycle) != (length(operators)+1)){warning("Identity might be falsely calculated. Check operators.")}
 

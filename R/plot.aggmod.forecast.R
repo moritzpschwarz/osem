@@ -47,7 +47,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   x$orig_model$full_data %>%
     dplyr::mutate(var = na_item,
            na_item = gsub("\\.hat","",na_item),
-           fit = as.character(str_detect(var, ".hat"))) -> plot_df
+           fit = as.character(stringr::str_detect(var, ".hat"))) -> plot_df
 
   plot_df %>%
     dplyr::distinct(na_item, fit) %>%
@@ -65,46 +65,46 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   if(order.as.run & !exclude.exogenous){cat("As 'order.as.run' is TRUE, exogenous values will not be shown.\n")}
 
   # dplyr::left_join(x$dictionary %>%
-  #             rename(na_item = model_varnma) %>%
+  #             dplyr::rename(na_item = model_varnma) %>%
   #             dplyr::select(na_item, model_varname), by = "na_item")
 
   # plot_df %>%
-  #   ggplot(aes(x = time, y = values, color = fit, group = var, fit = var)) +
-  #   geom_line(size = 1, na.rm = TRUE) +
+  #   ggplot2::ggplot(ggplot2::aes(x = time, y = values, color = fit, group = var, fit = var)) +
+  #   ggplot2::geom_line(size = 1, na.rm = TRUE) +
   #
-  #   facet_wrap(~na_item, scales = "free") +
+  #   ggplot2::facet_wrap(~na_item, scales = "free") +
   #
-  #   labs(x = NULL, y = NULL) +
+  #   ggplot2::labs(x = NULL, y = NULL) +
   #
-  #   scale_y_continuous(labels = scales::comma) +
-  #   scale_colour_viridis_d() +
+  #   ggplot2::scale_y_continuous(labels = scales::comma) +
+  #   scale_color_viridis_d() +
   #
-  #   theme_minimal() +
-  #   theme(legend.position = "none",
-  #         panel.grid.major.x = element_blank(),
-  #         panel.grid.minor.x = element_blank(),
-  #         panel.grid.minor.y = element_blank()) -> initial_plot
+  #   ggplot2::theme_minimal() +
+  #   ggplot2::theme(legend.position = "none",
+  #         panel.grid.major.x = ggplot2::element_blank(),
+  #         panel.grid.minor.x = ggplot2::element_blank(),
+  #         panel.grid.minor.y = ggplot2::element_blank()) -> initial_plot
 
 
   x$forecast %>%
     dplyr::select(central.estimate) %>%
-    unnest(central.estimate) %>%
+    tidyr::unnest(central.estimate) %>%
     tidyr::pivot_longer(-c(time)) %>%
     drop_na %>%
     tidyr::pivot_wider(id_cols = c(time), names_from = name, values_from = value) -> central_forecasts
 
   central_forecasts %>%
     names %>%
-    str_detect(., "^ln.") -> to_exponentiate
+    stringr::str_detect(., "^ln.") -> to_exponentiate
 
   central_forecasts %>%
-    dplyr::mutate(across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
-    rename_with(.fn = ~gsub("ln.","",.)) %>%
+    dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
+    dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
 
     tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
     dplyr::full_join(x$orig_model$module_order_eurostatvars %>%
                 dplyr::select(dependent) %>%
-                rename(na_item = dependent), by = "na_item") %>%
+                dplyr::rename(na_item = dependent), by = "na_item") %>%
 
     dplyr::mutate(fit = "forecast") -> forecasts_processed
 
@@ -122,23 +122,23 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     {if(order.as.run){
       dplyr::mutate(.,na_item = factor(na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
         tidyr::drop_na(na_item) %>%
-        arrange(time, na_item)} else {.}} %>%
+        dplyr::arrange(time, na_item)} else {.}} %>%
 
-    ggplot(aes(x = time, y = values, color = fit)) +
-    geom_line(size = 1) +
+    ggplot2::ggplot(ggplot2::aes(x = time, y = values, color = fit)) +
+    ggplot2::geom_line(size = 1) +
 
-    facet_wrap(~na_item, scales = "free") +
+    ggplot2::facet_wrap(~na_item, scales = "free") +
 
-    labs(x = NULL, y = NULL) +
+    ggplot2::labs(x = NULL, y = NULL) +
 
-    scale_y_continuous(labels = scales::comma) +
-    scale_colour_viridis_d() +
+    ggplot2::scale_y_continuous(labels = scales::comma) +
+    scale_color_viridis_d() +
 
-    theme_minimal() +
-    theme(legend.position = "none",
-          panel.grid.major.x = element_blank(),
-          panel.grid.minor.x = element_blank(),
-          panel.grid.minor.y = element_blank())
+    ggplot2::theme_minimal() +
+    ggplot2::theme(legend.position = "none",
+          panel.grid.major.x = ggplot2::element_blank(),
+          panel.grid.minor.x = ggplot2::element_blank(),
+          panel.grid.minor.y = ggplot2::element_blank())
 
 
 

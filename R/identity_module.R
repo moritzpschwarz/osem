@@ -38,7 +38,7 @@ identity_module <- function(module, data, classification) {
   dat_tmp_names <- names(dat_tmp)
 
   dat_tmp %>%
-    rename_with(.fn = ~gsub("\\*","_",.)) %>%
+    dplyr::rename_with(.fn = ~gsub("\\*","_",.)) %>%
     dplyr::mutate(!!dep.fitted := eval(parse(text = gsub("\\*","_",rhs)))) %>%
     setNames(c(dat_tmp_names, dep.fitted)) -> fitted
 

@@ -66,7 +66,7 @@ add_to_original_data <- function(clean_data,
       }
     } -> intermed
 
-  # intermed %>% ggplot(aes(x = as.Date(time))) + geom_line(aes(y = fitted.level), col = "blue") + geom_line(aes(y = p5g))
+  # intermed %>% ggplot2::ggplot(ggplot2::aes(x = as.Date(time))) + ggplot2::geom_line(ggplot2::aes(y = fitted.level), col = "blue") + ggplot2::geom_line(ggplot2::aes(y = p5g))
 
   # Jonas: the code below gives me an error, including for the little example in the documentation
   # the reason is that the renaming then does not yield unique column names ("fitted" becomes dep_var_basename but it exists already)
