@@ -2,7 +2,7 @@ options(timeout=1000)
 
 test_that("no errors when running very simple model", {
 
-  spec <- tibble(
+  spec <- dplyr::tibble(
     type = c(
       "d",
       "d",
@@ -44,7 +44,7 @@ test_that("no errors when running very simple model", {
 test_that("no errors when running a slightly more complicated model", {
 
 
-  spec <- tibble(
+  spec <- dplyr::tibble(
     type = c(
       "d",
       "d",
@@ -99,7 +99,7 @@ test_that("no errors when running a slightly more complicated model", {
 
   ## Test AR1 and fully exogenous ----
 
-  spec <- tibble(
+  spec <- dplyr::tibble(
     type = c(
       "d",
       "d",
@@ -153,7 +153,7 @@ test_that("no errors when running a slightly more complicated model", {
     download = TRUE,
     save_to_disk = NULL,
     present = FALSE
-  ))
+  ), "Table |Unbalanced panel")
 
   expect_output(print(b))
 
@@ -168,7 +168,7 @@ test_that("no errors when running a slightly more complicated model", {
     download = FALSE,
     save_to_disk = NULL,
     present = FALSE
-  ))
+  ), "Must specify 'inputdata_directory'")
 
 
   #checking what happens when download is false and inputdata is also false
@@ -180,7 +180,7 @@ test_that("no errors when running a slightly more complicated model", {
     download = FALSE,
     save_to_disk = NULL,
     present = FALSE
-  ))
+  ), "Must specify 'inputdata_directory'")
 
 
   # Let's check that an ecm also works
@@ -192,7 +192,7 @@ test_that("no errors when running a slightly more complicated model", {
     download = TRUE,
     save_to_disk = NULL,
     ardl_or_ecm = "ecm"
-  ))
+  ), "Unbalanced panel")
 
 
 })
@@ -200,7 +200,7 @@ test_that("no errors when running a slightly more complicated model", {
 
 test_that("Incorporate Emissions", {
 
-  spec <- tibble(
+  spec <- dplyr::tibble(
     type = c(
       "d",
       "d",
@@ -254,7 +254,7 @@ test_that("Incorporate Emissions", {
     download = TRUE,
     save_to_disk = NULL,
     present = FALSE
-  ))
+  ), "Unbalanced panel")
 
   expect_output(print(b))
 
@@ -267,7 +267,7 @@ test_that("Incorporate Emissions", {
 test_that("Extensive Model", {
 
 
-  spec <- tibble(
+  spec <- dplyr::tibble(
     type = c(
       #"d",
       "d",
@@ -367,7 +367,7 @@ test_that("Extensive Model", {
     save_to_disk = NULL,
     present = FALSE,
     saturation.tpval = 0.1/NROW(clean_data)
-  ))
+  ), "Unbalanced panel")
 
   abf <- forecast_model(ab)
   plot(abf, order.as.run = TRUE)

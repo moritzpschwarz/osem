@@ -123,7 +123,8 @@ load_or_download_variables <- function(specification,
       stop("Not all Eurostat codes were found in the provided dataset ids.")
     }
 
-  } else { # not download but local directory
+  } else if(is.character(inputdata_directory)){ # not download but local directory
+
 
     if(file.exists(inputdata_directory) & !dir.exists(inputdata_directory)){
       stop("The variable 'inputdata_directory' must be a character path to a directory, not to a file.")}
@@ -184,7 +185,17 @@ load_or_download_variables <- function(specification,
     if (!identical(length(codes.remain), 0L)) {
       stop("Not all Eurostat codes were found in the provided dataset ids.")
     }
-  } # end local directory
+  } else if(is.data.frame(inputdata_directory)){ # end local directory
+
+    if(!quiet){
+      cat("Variable provided as 'inputdata_directory' seems to be a data.frame type. Used as data source.\n")
+    }
+
+    full <- inputdata_directory
+  } else {
+
+    stop("Check the variable 'inputdata_directory'! You can specify either NULL to download data (with download = TRUE), a file path to an existing folder with files or an already loaded variable as a data.frame with the right dimensions.")
+  }
 
   # might have to deal with unbalanced data (though arx/isat might deal with it?)
   # quick solution for our present case, might not work for all cases
