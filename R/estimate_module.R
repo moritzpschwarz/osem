@@ -177,9 +177,9 @@ estimate_module <- function(clean_data,
     dplyr::first()
 
   ## gets selection on the best model ------------
-  best_isat_model.selected <- gets::gets(best_isat_model,
-                                         print.searchinfo = FALSE,
-                                         t.pval = selection.tpval)
+  best_isat_model.selected <- gets::gets.isat(best_isat_model,
+                                              print.searchinfo = FALSE,
+                                              t.pval = selection.tpval)
 
   retained.coefs <- row.names(best_isat_model.selected$mean.results)
   retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]

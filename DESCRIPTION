@@ -17,14 +17,15 @@ Imports:
     tidyr,
     eurostat,
     fastDummies,
-    janitor,
     lubridate,
     rlang,
     magrittr
 LazyData: true
 Suggests: 
+    stringr,
     shiny,
     readxl,
+    readr,
     scales,
     writexl,
     DT,
