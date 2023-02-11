@@ -13,6 +13,7 @@
 #'   Eurostat.
 #'
 #' @export
+#' @importFrom rlang :=
 
 calculate_identities <- function(specification, data, dictionary = NULL) {
 
@@ -22,7 +23,7 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
 
   # not sure whether can solve without dropping these vars
   # could add back later but not necessary?
-  dat <- data %>% dplyr::select(-unit, -geo, -s_adj)
+  dat <- data %>% dplyr::select(-dplyr::all_of(c("unit","geo","s_adj")))
 
   for (i in 1:NROW(identities)) {
     identity <- identities[i, ]
@@ -30,7 +31,7 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
     #indep <- identity$independent_eu
     indep <- identity$independent
     dat %>%
-      tidyr::pivot_wider(id_cols = time, names_from = na_item, values_from = values) -> dat_tmp
+      tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") -> dat_tmp
 
     #dat_tmp_names <- names(dat_tmp)
     # make sure the column names are not using * as denominator for NACE codes

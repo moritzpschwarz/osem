@@ -58,9 +58,9 @@ add_to_original_data <- function(clean_data,
     } %>%
     {
       if (ardl_or_ecm == "ecm") {
-        dplyr::mutate(., fitted.level = exp(fitted.cumsum))
+        dplyr::mutate(., fitted.level = exp(dplyr::all_of("fitted.cumsum")))
       } else if (ardl_or_ecm == "ardl") {
-        dplyr::mutate(., fitted.level = exp(fitted))
+        dplyr::mutate(., fitted.level = exp(dplyr::all_of("fitted")))
       } else {
         .
       }
@@ -74,7 +74,8 @@ add_to_original_data <- function(clean_data,
   # Update Moritz 29/08/2022: does not give me an error - also the example in the documentation works
 
   intermed %>%
-    dplyr::rename_with(.cols = dplyr::any_of(c("fitted", "fitted.level", "fitted.cumsum")), .fn = ~ paste0(gsub("fitted", dep_var_basename, .), ".hat")) %>%
+    dplyr::rename_with(.cols = dplyr::any_of(c("fitted", "fitted.level", "fitted.cumsum")),
+                       .fn = ~ paste0(gsub("fitted", dep_var_basename, .), ".hat")) %>%
     return()
 
 }

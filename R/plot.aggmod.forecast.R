@@ -77,7 +77,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   #   ggplot2::labs(x = NULL, y = NULL) +
   #
   #   ggplot2::scale_y_continuous(labels = scales::comma) +
-  #   scale_color_viridis_d() +
+  #   ggplot2::scale_color_viridis_d() +
   #
   #   ggplot2::theme_minimal() +
   #   ggplot2::theme(legend.position = "none",
@@ -132,7 +132,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     ggplot2::labs(x = NULL, y = NULL) +
 
     ggplot2::scale_y_continuous(labels = scales::comma) +
-    scale_color_viridis_d() +
+    ggplot2::scale_color_viridis_d() +
 
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "none",

@@ -122,7 +122,7 @@ run_model <- function(specification,
   # add columns that translate dependent and independent variables into Eurostat codes
   module_order_eurostatvars <- translate_variables(specification = module_order,
                                                    dictionary = dictionary)
-
+  browser()
   # download or locally load the data necessary for the whole aggregate model
   loaded_data <- load_or_download_variables(specification = module_order_eurostatvars,
                                             filter_list = filter_list,
@@ -141,7 +141,7 @@ run_model <- function(specification,
   # initialise storage of estimation results
   module_collection <- module_order_eurostatvars %>%
     dplyr::mutate(dataset = list(NA_complex_),
-           model = list(NA_complex_))
+                  model = list(NA_complex_))
 
   tmp_data <- full_data
   # loop through all modules

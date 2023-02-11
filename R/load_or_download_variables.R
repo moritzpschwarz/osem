@@ -60,6 +60,11 @@ load_or_download_variables <- function(specification,
 
   if (isTRUE(download)) {
 
+    # Save original timeout setting
+    tmpmc <- options("timeout")
+    on.exit(options(tmpmc)) # set the old mc warning on exit
+    options(timeout = 1000)
+
     # note:
     # ideally wanted to set filters, so don't need to download all data series and all countries
     # eurostat::get_eurostat(id = "namq_10_gdp", filters = list(na_item = "B1GQ", geo = "AT"), cache = FALSE)
@@ -152,7 +157,7 @@ load_or_download_variables <- function(specification,
       if(grepl("\\.(Rds|RDS|rds)$",pth)){
         tmp <- readRDS(file = pth)
       } else if (grepl("\\.(csv)$",pth)){
-        tmp <- readr::read_csv(pth)
+        tmp <- readr::read_csv(pth, show_col_types = FALSE, guess_max = 1000000)
       } else if (grepl("\\.(xls|xlsx)$",pth)){
         tmp <- readxl::read_excel(path = pth, guess_max = 1000000)
         #stop("Loading from xls or xlsx file not yet implemented.)
@@ -198,7 +203,7 @@ load_or_download_variables <- function(specification,
     dplyr::ungroup()
 
   if(constrain.to.minimum.sample){
-    if (max(dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
+    if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
       warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
     }
     min_date <- max(availability$min_date) # highest minimum date
