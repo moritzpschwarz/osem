@@ -78,7 +78,7 @@ data for the aggregate model and the fitted values of each module.}
 Runs the aggregate model according to the given specification of modules.
 }
 \examples{
-spec <- tibble(
+spec <- dplyr::tibble(
   type = c(
     "d",
     "d",

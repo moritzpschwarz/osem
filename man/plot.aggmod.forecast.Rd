@@ -19,7 +19,7 @@
 Plot a Forecast Object of the Aggregate Model
 }
 \examples{
-spec <- tibble(
+spec <- dplyr::tibble(
 type = c(
   "d",
   "d",

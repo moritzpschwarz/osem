@@ -36,7 +36,7 @@ An object of class aggmod.forecast
 Forecast Aggregate model
 }
 \examples{
-spec <- tibble(
+spec <- dplyr::tibble(
   type = c(
     "d",
     "d",

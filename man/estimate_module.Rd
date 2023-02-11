@@ -52,7 +52,7 @@ A list containing all estimated models, with the model with the smallest BIC und
 Estimate the specific module using indicator saturation
 }
 \examples{
-sample_data <- tibble(
+sample_data <- dplyr::tibble(
   time = rep(seq.Date(
     from = as.Date("2000-01-01"),
     to = as.Date("2000-12-31"), by = 1
