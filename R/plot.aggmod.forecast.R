@@ -1,8 +1,9 @@
 #' Plot a Forecast Object of the Aggregate Model
 #'
-#' @param object An object of class aggmod.forecast, which is the output from the forecast_model function.
+#' @param x An object of class aggmod.forecast, which is the output from the forecast_model function.
 #' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.
 #' @param order.as.run Logical. Should the plots be arranged in the way that the model was run? Default FALSE.
+#' @param ... Further arguments (currently not in use).
 #'
 #' @export
 #'

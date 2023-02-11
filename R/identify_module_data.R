@@ -22,7 +22,7 @@ identify_module_data <- function(module, classification, data) {
   # extract variable names
   dep <- module$dependent
   indep <- module$independent
-  indep <- unlist(strsplits(indep, split = c("\\+", "\\-")))
+  indep <- unlist(strsplits(indep, splits = c("\\+", "\\-")))
   indep <- gsub(" ", "", indep)
 
   # if module is an identity/definition module then the dependent variable is not necessary

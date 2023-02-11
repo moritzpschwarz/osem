@@ -1,6 +1,7 @@
 #' Print output of an Aggregate Model
 #'
-#' @param model An object of type 'aggmod'
+#' @param x An object of type 'aggmod'
+#' @param ... Further arguments.
 #'
 #' @export
 #'

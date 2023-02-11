@@ -10,19 +10,23 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Depends: 
-    R (>= 2.10),
-    tidyverse,
-    gets
+    R (>= 3.5)
 Imports: 
+    gets (>= 0.37),
     dplyr,
+    tidyr,
     eurostat,
     fastDummies,
     janitor,
     lubridate,
-    shiny,
-    rlang
+    rlang,
+    magrittr
 LazyData: true
 Suggests: 
+    shiny,
+    readxl,
+    scales,
+    writexl,
     DT,
     ggraph,
     testthat (>= 3.0.0),

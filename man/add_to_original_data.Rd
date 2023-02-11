@@ -33,7 +33,7 @@ A tibble with the fitted values as one column.
 Add the estimated fitted values back to the original
 }
 \examples{
-sample_data <- tibble(
+sample_data <- dplyr::tibble(
   time = rep(seq.Date(
     from = as.Date("2000-01-01"),
     to = as.Date("2000-12-31"), by = 1

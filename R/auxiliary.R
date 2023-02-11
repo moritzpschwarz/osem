@@ -1,6 +1,9 @@
 #' unpack formulas
 #'
 #' NOTE: exported for now for interactive programming, later will be internal
+#' @param x String to split
+#' @param splits vector of elements to split the string by.
+#' @param ... Further arguments.
 #'
 #' @export
 
@@ -64,6 +67,8 @@ classify_variables <- function(specification) {
 #' Updates the aggregate model dataset with fitted values
 #'
 #' NOTE: exported for now, later will be internal
+#' @param orig_data Original data that is to be updated.
+#' @param new_data New dataset that will update the original data.
 #'
 #' @export
 

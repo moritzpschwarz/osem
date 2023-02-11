@@ -166,7 +166,7 @@ forecast_model <- function(model,
       if (exists("iis_pred")) {rm(iis_pred)}
       if (exists("sis_pred")) {rm(sis_pred)}
 
-      predict(object = isat_ar_predict, n.ahead = n.ahead, newmxreg = x_ar_predict_pred_df) %>%
+      gets::predict.isat(object = isat_ar_predict, n.ahead = n.ahead, newmxreg = x_ar_predict_pred_df) %>%
         as.vector -> pred_values
 
       tibble(data = pred_values) %>%

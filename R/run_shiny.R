@@ -3,6 +3,7 @@
 #' Opens a window for the user to interact with the app. The user can upload
 #' an \link[=new_aggmod]{aggmod} object returned by \code{\link{run_model}} and
 #' produce graphical and tabular output.
+#' @param model The model object that is passed by the 'present_model()' function.
 #'
 #' @export
 

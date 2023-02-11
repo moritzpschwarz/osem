@@ -32,6 +32,8 @@ As returned by \link{classify_variables}.}
 well as for the independent variables.}
 
 \item{trend}{Logical. Should a trend be added? Default is TRUE.}
+
+\item{...}{Further arguments to be passed to 'estimate_module'}
 }
 \value{
 Returns a list with two named elements.
