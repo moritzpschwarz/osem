@@ -159,6 +159,7 @@ run_model <- function(specification,
       module = module_order_eurostatvars[module_order_eurostatvars$order == i, ],
       data = tmp_data,
       classification = classification,
+      trend = trend,
       ...
     )
 

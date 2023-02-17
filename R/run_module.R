@@ -56,6 +56,7 @@ run_module <- function(module, data, classification, use_logs = c("both","y","x"
                                         dep_var_basename = dep,
                                         x_vars_basename = indep,
                                         use_logs = use_logs,
+                                        trend = trend,
                                         ...)
 
     moduledata <- add_to_original_data(clean_data = clean_df,
