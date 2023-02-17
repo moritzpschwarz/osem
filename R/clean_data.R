@@ -4,7 +4,7 @@
 #'   variables. Needs to have a column called 'time', which is of class
 #'   \code{\link[base:Dates]{Date}}. Variable names need to be in column
 #'   'na_item', and values in column 'values'.
-#' @param max.lag The maximum number of lags to use for both the AR terms as
+#' @param max.lag Integer. The maximum number of lags to use for both the AR terms as
 #'   well as for the independent variables.
 #' @param trend Logical. Should a trend be added? Default is TRUE.
 #'

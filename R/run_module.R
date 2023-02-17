@@ -9,6 +9,7 @@
 #' @param use_logs Character vector. Either "both", "x", or "y" to decide whether to use logs.
 #' @inheritParams identify_module_data
 #' @inheritParams clean_data
+#' @inheritParams estimate_module
 #'
 #'
 #' @return Returns a list with two named elements.
@@ -23,7 +24,21 @@
 #'
 #' @export
 
-run_module <- function(module, data, classification, use_logs = c("both","y","x"), max.lag = 4, trend = TRUE, ...) {
+run_module <- function(
+    module,
+    data,
+    classification,
+    use_logs = c("both", "y", "x"),
+    trend = TRUE,
+    ardl_or_ecm = "ardl",
+    max.lag = 4,
+    saturation = c("IIS", "SIS"),
+    saturation.tpval = 0.01,
+    max.block.size = 20,
+    gets_selection = TRUE,
+    selection.tpval = 0.01,
+    ...
+) {
 
   raw_data <- identify_module_data(module, classification, data)
 
@@ -55,9 +70,14 @@ run_module <- function(module, data, classification, use_logs = c("both","y","x"
     estimated_module <- estimate_module(clean_data = clean_df,
                                         dep_var_basename = dep,
                                         x_vars_basename = indep,
-                                        use_logs = use_logs,
                                         trend = trend,
-                                        ...)
+                                        ardl_or_ecm = ardl_or_ecm,
+                                        max.lag = max.lag,
+                                        saturation = saturation,
+                                        saturation.tpval = saturation.tpval,
+                                        max.block.size = max.block.size,
+                                        gets_selection = gets_selection,
+                                        selection.tpval = selection.tpval)
 
     moduledata <- add_to_original_data(clean_data = clean_df,
                                        isat_object = estimated_module$best_model,
