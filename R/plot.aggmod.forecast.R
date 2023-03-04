@@ -46,8 +46,8 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
   x$orig_model$full_data %>%
     dplyr::mutate(var = na_item,
-           na_item = gsub("\\.hat","",na_item),
-           fit = as.character(stringr::str_detect(var, ".hat"))) -> plot_df
+                  na_item = gsub("\\.hat","",na_item),
+                  fit = as.character(stringr::str_detect(var, ".hat"))) -> plot_df
 
   plot_df %>%
     dplyr::distinct(na_item, fit) %>%
@@ -93,9 +93,41 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     tidyr::drop_na() %>%
     tidyr::pivot_wider(id_cols = c(time), names_from = name, values_from = value) -> central_forecasts
 
+  # x$forecast %>%
+  #   mutate(dep_var = map(central.estimate, function(x){
+  #     names(x)[2]
+  #   })) %>%
+  #   unnest(dep_var) %>%
+  #   relocate(dep_var,)
+  #
+  #
+  # for(e in 1:length(x$forecast$central.estimate)){
+  #   # e = 1
+  #   ti <- x$forecast$central.estimate[[e]]$time
+  #   name <- names(x$forecast$central.estimate[[e]])[2]
+  #
+  #   cbind(dplyr::tibble(time = ti,
+  #                       name = name),
+  #         x$forecast$all.estimates[[e]])
+  #
+  #
+  #
+  # }
+
+
+  x$forecast %>%
+    dplyr::select(dep_var, all.estimates) %>%
+    tidyr::unnest(all.estimates) %>%
+    tidyr::pivot_longer(-c(time, dep_var)) -> all_forecasts
+  #tidyr::pivot_wider(id_cols = c(time), names_from = name, values_from = value)
+
   central_forecasts %>%
     names %>%
     stringr::str_detect(., "^ln.") -> to_exponentiate
+
+  tibble(dep_var = names(central_forecasts),
+         expo = to_exponentiate,
+         all = c("time",unique(all_forecasts$dep_var))) -> to_exponentiate_tibble
 
   central_forecasts %>%
     dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
@@ -103,10 +135,19 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
     tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
     dplyr::full_join(x$orig_model$module_order_eurostatvars %>%
-                dplyr::select(dependent) %>%
-                dplyr::rename(na_item = dependent), by = "na_item") %>%
+                       dplyr::select(dependent) %>%
+                       dplyr::rename(na_item = dependent), by = "na_item") %>%
 
     dplyr::mutate(fit = "forecast") -> forecasts_processed
+
+  all_forecasts %>%
+    mutate(value = case_when(dep_var %in% to_exponentiate_tibble$all[to_exponentiate_tibble$expo == TRUE] ~ exp(value),
+                             TRUE ~ value)) %>%
+    rename(na_item = dep_var, values = value) %>%
+    dplyr::full_join(x$orig_model$module_order_eurostatvars %>%
+                       dplyr::select(dependent) %>%
+                       dplyr::rename(na_item = dependent), by = "na_item") %>%
+    dplyr::mutate(fit = "forecast_uncertainty") -> all_forecasts_processed
 
   plot_df %>%
     dplyr::filter(fit == "TRUE") %>%
@@ -116,15 +157,40 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::select(-var) %>%
     dplyr::mutate(fit = "forecast") -> last_hist_value
 
+  # dplyr::bind_rows(forecasts_processed, last_hist_value) %>%
+  #   dplyr::bind_rows(plot_df) %>%
+  #
+  #   {if(order.as.run){
+  #     dplyr::mutate(.,na_item = factor(na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
+  #       tidyr::drop_na(na_item) %>%
+  #       dplyr::arrange(time, na_item)} else {.}} %>%
+  #
+  #   ggplot2::ggplot(ggplot2::aes(x = time, y = values, color = fit)) +
+  #   ggplot2::geom_line(size = 1) +
+  #
+  #   ggplot2::facet_wrap(~na_item, scales = "free") +
+  #
+  #   ggplot2::labs(x = NULL, y = NULL) +
+  #
+  #   ggplot2::scale_y_continuous(labels = scales::comma) +
+  #   ggplot2::scale_color_viridis_d() +
+  #
+  #   ggplot2::theme_minimal() +
+  #   ggplot2::theme(legend.position = "none",
+  #                  panel.grid.major.x = ggplot2::element_blank(),
+  #                  panel.grid.minor.x = ggplot2::element_blank(),
+  #                  panel.grid.minor.y = ggplot2::element_blank())
+
+
+
+
+
+
   dplyr::bind_rows(forecasts_processed, last_hist_value) %>%
     dplyr::bind_rows(plot_df) %>%
 
-    {if(order.as.run){
-      dplyr::mutate(.,na_item = factor(na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
-        tidyr::drop_na(na_item) %>%
-        dplyr::arrange(time, na_item)} else {.}} %>%
-
     ggplot2::ggplot(ggplot2::aes(x = time, y = values, color = fit)) +
+    ggplot2::geom_line(data = all_forecasts_processed, ggplot2::aes(group = paste0(name,na_item), y = values, x = time), linewidth = 0.1, alpha = 0.8) +
     ggplot2::geom_line(size = 1) +
 
     ggplot2::facet_wrap(~na_item, scales = "free") +
@@ -136,15 +202,9 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "none",
-          panel.grid.major.x = ggplot2::element_blank(),
-          panel.grid.minor.x = ggplot2::element_blank(),
-          panel.grid.minor.y = ggplot2::element_blank())
-
-
-
-
-
-
+                   panel.grid.major.x = ggplot2::element_blank(),
+                   panel.grid.minor.x = ggplot2::element_blank(),
+                   panel.grid.minor.y = ggplot2::element_blank())
 
 
 

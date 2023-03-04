@@ -192,6 +192,7 @@ forecast_model <- function(model,
   prediction_list <- dplyr::tibble(
     index = model$module_order_eurostatvars$index,
     order = model$module_order_eurostatvars$order,
+    dep_var = model$module_order_eurostatvars$dependent,
     predict.isat_object = list(NA_complex_),
     data = list(NA_complex_),
     central.estimate = list(NA_complex_),
@@ -388,7 +389,8 @@ forecast_model <- function(model,
           prediction_list %>%
             dplyr::filter(index == mvar_model_index) %>%
             dplyr::pull(all.estimates) %>%
-            .[[1]] -> mvar_all.estimates
+            .[[1]] %>%
+            dplyr::select(-"time") -> mvar_all.estimates
 
           mvar_euname <- model$module_collection %>%
             dplyr::filter(index == mvar_model_index) %>%
@@ -486,7 +488,7 @@ forecast_model <- function(model,
         tidyr::gather(variable, class) %>%
         dplyr::mutate(chk = class == "list") %>%
         dplyr::summarise(chk = any(chk)) %>%
-        pull(chk)
+        dplyr::pull(chk)
 
       if(chk_any_listcols){
         ## repeat the above with all
@@ -556,18 +558,18 @@ forecast_model <- function(model,
         for(run in seq_along(1:uncertainty_sample)){
 
           pred_df.all %>%
-            mutate(across(-c(dplyr::any_of("trend"),
-                             dplyr::starts_with("q_"),
-                             dplyr::starts_with("iis"),
-                             dplyr::starts_with("sis")),
-                          ~purrr::map(., function(x){
-                            if(!is.null(ncol(x))){
-                              pull(x, run)
-                            } else {
-                              x
-                            }})
+            dplyr::mutate(across(-c(dplyr::any_of("trend"),
+                                    dplyr::starts_with("q_"),
+                                    dplyr::starts_with("iis"),
+                                    dplyr::starts_with("sis")),
+                                 ~purrr::map(., function(x){
+                                   if(!is.null(ncol(x))){
+                                     dplyr::pull(x, run)
+                                   } else {
+                                     x
+                                   }})
             )) %>%
-            unnest(-c(dplyr::any_of("trend"), dplyr::starts_with("q_"),dplyr::starts_with("iis"), dplyr::starts_with("sis"))) %>%
+            tidyr::unnest(-c(dplyr::any_of("trend"), dplyr::starts_with("q_"),dplyr::starts_with("iis"), dplyr::starts_with("sis"))) %>%
             utils::tail(., n.ahead) %>%
             as.matrix -> pred_df_run
 
@@ -583,7 +585,7 @@ forecast_model <- function(model,
         # here pred only takes into account the uncertainty in the x-variables
         # pred_draws combines the model residual uncertainty for y and the uncertainty of the x-variables
         preds_runs %>%
-          mutate(pred_draws = pred + res_draws) -> pred_runs_final
+          dplyr::mutate(pred_draws = pred + res_draws) -> pred_runs_final
 
         pred_runs_final %>%
           dplyr::select(c("run","time","pred_draws")) %>%
@@ -618,6 +620,10 @@ forecast_model <- function(model,
       #   setNames(c("time",paste0(outvarname,".", gsub("^y","",names(pred_obj[,-1]))))) -> all_estimates
 
 
+      colnames(pred_draw_matrix) <- paste0("run_",1:uncertainty_sample)
+      pred_draw_matrix <- dplyr::as_tibble(pred_draw_matrix) %>%
+        dplyr::bind_cols(dplyr::tibble(time = current_pred_raw$time), .)
+
 
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::as_tibble(pred_obj)))
       prediction_list[prediction_list$order == i, "data"] <- dplyr::tibble(
@@ -627,6 +633,7 @@ forecast_model <- function(model,
                                                                           dplyr::starts_with("sis")),
                                        by = "time") %>%
                       tidyr::drop_na()))
+
       prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(central_estimate = list(central_estimate))
       prediction_list[prediction_list$order == i, "all.estimates"] <- dplyr::tibble(all_estimates = list(pred_draw_matrix))
 
@@ -666,7 +673,8 @@ forecast_model <- function(model,
         prediction_list %>%
           dplyr::filter(index == mvar_model_index) %>%
           dplyr::pull(all.estimates) %>%
-          .[[1]] -> mvar_all.estimates
+          .[[1]] %>%
+          dplyr::select(-"time") -> mvar_all.estimates
 
         identity_logs <- c(identity_logs, ifelse(mvar_logs %in% c("both","x") || is.null(mvar_logs), TRUE, FALSE))
 
@@ -758,7 +766,7 @@ forecast_model <- function(model,
 
         if(operators[col_cycle-1] == "+"){
 
-          identity_pred_final.all <- unnest(identity_pred_final.all, cols = everything()) +
+          identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) +
             {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
               tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
                 dplyr::pull(1)
@@ -768,7 +776,7 @@ forecast_model <- function(model,
 
         } else if(operators[col_cycle-1] == "-"){
 
-          identity_pred_final.all <- unnest(identity_pred_final.all, cols = everything()) -
+          identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) -
             {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
               tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
                 dplyr::pull(1)
@@ -785,6 +793,11 @@ forecast_model <- function(model,
                     value = as.numeric(identity_pred_final[,1])) %>%
         setNames(c("time",outvarname)) -> central_estimate
 
+      # just change the type of the object holding all estimates
+      identity_pred_final.all <- as.matrix(identity_pred_final.all)
+      colnames(identity_pred_final.all) <- paste0("run_",1:uncertainty_sample)
+      identity_pred_final.all <- dplyr::as_tibble(identity_pred_final.all) %>%
+        dplyr::bind_cols(dplyr::tibble(time = current_pred_raw$time), .)
 
       names(identity_pred_final) <- unique(current_spec$dependent)
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::tibble(yhat = identity_pred_final[,1])))
