@@ -34,6 +34,20 @@ test_that("no errors when running very simple model", {
       #save_to_disk = here::here("input_data/test.xlsx"),
       save_to_disk = NULL,
       present = FALSE
+    ), regexp = "Reading cache file |trying URL| Table "
+  )
+
+  expect_silent(
+    a <- run_model(
+      specification = spec,
+      dictionary = NULL,
+      inputdata_directory = NULL,
+      filter_list = filter_list,
+      download = TRUE,
+      #save_to_disk = here::here("input_data/test.xlsx"),
+      save_to_disk = NULL,
+      present = FALSE,
+      quiet = TRUE
     )
   )
 
@@ -84,7 +98,7 @@ test_that("no errors when running a slightly more complicated model", {
   #   present = FALSE
   # )
 
-  expect_message(b <- run_model(
+  expect_message(run_model(
     specification = spec,
     dictionary = NULL,
     inputdata_directory = NULL,
@@ -92,7 +106,7 @@ test_that("no errors when running a slightly more complicated model", {
     download = TRUE,
     save_to_disk = NULL,
     present = FALSE
-  ))
+  ), regexp = "Reading cache file |trying URL| Table ")
 
 
 

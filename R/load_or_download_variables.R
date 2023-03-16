@@ -87,7 +87,15 @@ load_or_download_variables <- function(specification,
 
     # loop through required datasets
     for (i in 1:length(ids$data.ids)) {
-      tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
+
+      if(quiet){
+        suppressMessages(tmp <- eurostat::get_eurostat(id = ids$data.ids[i]))
+      } else {
+        tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
+      }
+
+
+
       if(is.null(tmp)) {stop("Issue with automatic EUROSTAT download. Likely cause is a lack of internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")}
       varcolname <- codes.download %>% filter(dataset_id == ids$data.ids[i]) %>% distinct(var_col) %>% pull(var_col)
       codes.in.tmp <- tmp %>% pull(varcolname) %>% unique
@@ -147,7 +155,7 @@ load_or_download_variables <- function(specification,
     full <- data.frame()
 
     # loop through required datasets
-    for (i in 1:length(files)) {
+    for (i in seq_along(files)) {
       pth <- file.path(inputdata_directory, files[i])
 
       if(grepl("\\.(Rds|RDS|rds)$",pth)){
