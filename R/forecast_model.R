@@ -416,21 +416,24 @@ forecast_model <- function(model,
                     #select(time, all_of(x_names_vec_nolag), any_of("trend"))) -> intermed
                     select(time, all_of(x_names_vec_nolag))) -> intermed
 
-      to_be_added <- tibble(.rows = nrow(intermed))
-      for (j in 1:max(ar_vec)) {
-        intermed %>%
-          mutate(across(c(#starts_with("D."),
-            starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
-          select(c(#starts_with("D."),
-            starts_with("ln."))) -> inter_intermed
+      if(ncol(intermed) > 1){
+        to_be_added <- tibble(.rows = nrow(intermed))
+        for (j in 1:max(ar_vec)) {
+          intermed %>%
+            mutate(across(c(#starts_with("D."),
+              starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
+            select(c(#starts_with("D."),
+              starts_with("ln."))) -> inter_intermed
 
-        inter_intermed %>%
-          setNames(paste0("L", j, ".", names(inter_intermed))) %>%
-          bind_cols(to_be_added, .) -> to_be_added
+          inter_intermed %>%
+            setNames(paste0("L", j, ".", names(inter_intermed))) %>%
+            bind_cols(to_be_added, .) -> to_be_added
+        }
+        intermed <- bind_cols(intermed, to_be_added)
       }
 
 
-      bind_cols(intermed, to_be_added) %>%
+      intermed %>%
         left_join(current_pred_raw %>%
                     select(time, any_of("trend"), starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
         drop_na %>%
@@ -458,7 +461,7 @@ forecast_model <- function(model,
                                with(model.args) %>%
                                .[[1]] %>%
                                .$use_logs %in% c("both","y")) {"ln."} else {""},
-                           current_spec %>% pull(dependent))
+                           current_spec %>% pull(dependent) %>% unique)
 
       tibble(time = current_pred_raw %>% pull(time),
              value = as.numeric(pred_obj[,1])) %>%
@@ -471,7 +474,7 @@ forecast_model <- function(model,
 
 
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(as_tibble(pred_obj)))
-      prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(bind_cols(intermed, to_be_added) %>%
+      prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(intermed %>%
                                                                                   left_join(current_pred_raw %>%
                                                                                               select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
                                                                                   drop_na))
