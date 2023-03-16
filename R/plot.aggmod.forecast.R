@@ -71,7 +71,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
   # plot_df %>%
   #   ggplot2::ggplot(ggplot2::aes(x = time, y = values, color = fit, group = var, fit = var)) +
-  #   ggplot2::geom_line(size = 1, na.rm = TRUE) +
+  #   ggplot2::geom_line(linewidth = 1, na.rm = TRUE) +
   #
   #   ggplot2::facet_wrap(~na_item, scales = "free") +
   #
@@ -214,7 +214,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   #       dplyr::arrange(time, na_item)} else {.}} %>%
   #
   #   ggplot2::ggplot(ggplot2::aes(x = time, y = values, color = fit)) +
-  #   ggplot2::geom_line(size = 1) +
+  #   ggplot2::geom_line(linewidth = 1) +
   #
   #   ggplot2::facet_wrap(~na_item, scales = "free") +
   #
