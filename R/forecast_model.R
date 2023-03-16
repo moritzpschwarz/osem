@@ -811,11 +811,12 @@ forecast_model <- function(model,
   out$forecast <- prediction_list
   out$orig_model <- model
   out$dictionary <- model$dictionary
+  out$exog_data <- exog_df_ready
 
   class(out) <- "aggmod.forecast"
 
   if(plot.forecast){
-    plot.aggmod.forecast(out)
+    plot(out)
   }
 
   return(out)
