@@ -28,6 +28,7 @@
 #' These messages are intended to give more information about the estimation
 #' and data retrieval process.
 #' @inheritParams clean_data
+#' @inheritParams estimate_module
 #' @param ... further arguments to be passed to \code{estimate_module}.
 #'
 #' @return An object of class \link[=new_aggmod]{aggmod}, which is a named list
@@ -94,8 +95,15 @@ run_model <- function(specification,
                       save_to_disk = NULL,
                       present = FALSE,
                       quiet = FALSE,
-                      max.lag = 4,
+                      use_logs = c("both", "y", "x"),
                       trend = TRUE,
+                      ardl_or_ecm = "ardl",
+                      max.lag = 4,
+                      saturation = c("IIS", "SIS"),
+                      saturation.tpval = 0.01,
+                      max.block.size = 20,
+                      gets_selection = TRUE,
+                      selection.tpval = 0.01,
                       ...) {
 
   if(!(is.data.frame(specification) | is.matrix(specification))){
@@ -158,6 +166,14 @@ run_model <- function(specification,
       module = module_order_eurostatvars[module_order_eurostatvars$order == i, ],
       data = tmp_data,
       classification = classification,
+      trend = trend,
+      ardl_or_ecm = ardl_or_ecm,
+      max.lag = max.lag,
+      saturation = saturation,
+      saturation.tpval = saturation.tpval,
+      max.block.size = max.block.size,
+      gets_selection = gets_selection,
+      selection.tpval = selection.tpval,
       ...
     )
 
