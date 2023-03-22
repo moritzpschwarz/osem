@@ -14,7 +14,7 @@
 #' @export
 #'
 #' @examples
-#' sample_data <- tibble(
+#' sample_data <- dplyr::tibble(
 #'   time = rep(seq.Date(
 #'     from = as.Date("2000-01-01"),
 #'     to = as.Date("2000-12-31"), by = 1
@@ -27,35 +27,35 @@ clean_data <- function(raw_data,
                        max.lag = 4,
                        trend = TRUE) {
   raw_data %>%
-    select(na_item, time, values) %>%
-    pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>%
+    dplyr::select(na_item, time, values) %>%
+    tidyr::pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>%
     #janitor::clean_names() %>%
-    #rename_with(.fn = tolower) %>%
-    arrange(., time) %>%
-    mutate(
-      across(-time, list(ln = log), .names = "{.fn}.{.col}"),
-      across(starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
+    #dplyr::rename_with(.fn = tolower) %>%
+    dplyr::arrange(., time) %>%
+    dplyr::mutate(
+      dplyr::across(-time, list(ln = log), .names = "{.fn}.{.col}"),
+      dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
     ) -> intermed
 
-  to_be_added <- tibble(.rows = nrow(intermed))
+  to_be_added <- dplyr::tibble(.rows = nrow(intermed))
   for (i in 1:max.lag) {
     intermed %>%
-      mutate(across(c(starts_with("D."), starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
-      select(c(starts_with("D."), starts_with("ln."))) %>%
-      rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
-      bind_cols(to_be_added, .) -> to_be_added
+      dplyr::mutate(dplyr::across(c(dplyr::starts_with("D."), dplyr::starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
+      dplyr::select(c(dplyr::starts_with("D."), dplyr::starts_with("ln."))) %>%
+      dplyr::rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
+      dplyr::bind_cols(to_be_added, .) -> to_be_added
   }
 
   intermed %>%
-    bind_cols(to_be_added) %>%
-    mutate(index = 1:n()) %>%
-    relocate(index) %>%
-    mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
+    dplyr::bind_cols(to_be_added) %>%
+    dplyr::mutate(index = 1:dplyr::n()) %>%
+    dplyr::relocate(index) %>%
+    dplyr::mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
     fastDummies::dummy_cols(
       select_columns = "q", remove_first_dummy = TRUE,
       remove_selected_columns = TRUE
     ) %>%
-    {if(trend){mutate(.,trend = as.numeric(as.factor(time)),.after = time)} else {.}} -> cleaned_data
+    {if(trend){dplyr::mutate(.,trend = as.numeric(as.factor(time)),.after = time)} else {.}} -> cleaned_data
 
   return(cleaned_data)
 

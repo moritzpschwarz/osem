@@ -1,6 +1,7 @@
 #' Print output of an Aggregate Model
 #'
-#' @param model An object of type 'aggmod'
+#' @param x An object of type 'aggmod'
+#' @param ... Further arguments.
 #'
 #' @export
 #'
@@ -26,33 +27,33 @@ print.aggmod <- function(x, ...){
   } else {
     x$args$dictionary
   } } %>%
-    select(model_varname, full_name) %>%
-    mutate(dependent = model_varname,
+    dplyr::select(model_varname, full_name) %>%
+    dplyr::mutate(dependent = model_varname,
            splitvars = model_varname)
 
 
 
   x$module_order_eurostatvars %>%
-    select(index, order, dependent, independent) %>%
+    dplyr::select(index, order, dependent, independent) %>%
 
     # deal with dependent vars
-    left_join(dictionary %>% select(dependent, full_name), by = "dependent") %>%
-    relocate(full_name, .after = dependent) %>%
+    dplyr::left_join(dictionary %>% dplyr::select(dependent, full_name), by = "dependent") %>%
+    dplyr::relocate(full_name, .after = dependent) %>%
 
     # deal with independet vars
-    mutate(ind_spaced = independent,
+    dplyr::mutate(ind_spaced = independent,
            independent = gsub(" ", "", independent)) %>%
-    rowwise() %>%
-    mutate(splitvars = list(strsplits(independent,c("\\-", "\\+")))) %>%
-    unnest(splitvars, keep_empty = TRUE) %>%
-    left_join(dictionary %>% select(splitvars, full_name) %>% rename(name_ind = full_name), by = "splitvars") %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(splitvars = list(strsplits(independent,c("\\-", "\\+")))) %>%
+    tidyr::unnest(splitvars, keep_empty = TRUE) %>%
+    dplyr::left_join(dictionary %>% dplyr::select(splitvars, full_name) %>% dplyr::rename(name_ind = full_name), by = "splitvars") %>%
 
-    group_by(index, dependent,full_name,  ind_spaced) %>%
-    summarise(ind_name = toString(name_ind), .groups = "drop") %>%
-    mutate(ind_name = ifelse(ind_name == "NA","Only AR Specification", ind_name)) %>%
+    dplyr::group_by(index, dependent,full_name,  ind_spaced) %>%
+    dplyr::summarise(ind_name = toString(name_ind), .groups = "drop") %>%
+    dplyr::mutate(ind_name = ifelse(ind_name == "NA","Only AR Specification", ind_name)) %>%
 
     # styling
-    rename(`Ind. Var` = ind_spaced,
+    dplyr::rename(`Ind. Var` = ind_spaced,
            `Model` = index,
            #`Est. Order` = order,
            `Dep. Var.` = dependent,

@@ -22,7 +22,7 @@ identify_module_data <- function(module, classification, data) {
   # extract variable names
   dep <- module$dependent
   indep <- module$independent
-  indep <- unlist(strsplits(indep, split = c("\\+", "\\-")))
+  indep <- unlist(strsplits(indep, splits = c("\\+", "\\-")))
   indep <- gsub(" ", "", indep)
 
   # if module is an identity/definition module then the dependent variable is not necessary
@@ -33,11 +33,11 @@ identify_module_data <- function(module, classification, data) {
     # in the model, need the predicted values (hat) of the endogenous variables
     # check status of the variables: if x need original data; if n or d, need hat
     vars.need <- classification[classification$var %in% vars.need.base, ] %>%
-      mutate(vartrans = case_when(class == "n" ~ paste0(var, ".hat"),
+      dplyr::mutate(vartrans = dplyr::case_when(class == "n" ~ paste0(var, ".hat"),
                                   class == "d" ~ paste0(var, ".hat"),
                                   class == "x" ~ var,
                                   TRUE ~ NA_character_)) %>%
-      pull(vartrans)
+      dplyr::pull(vartrans)
 
   } else if (module$type == "n") { # module is endogenous and actually modelled
     # for endogenous modelled variables, always use the observed values
@@ -51,7 +51,7 @@ identify_module_data <- function(module, classification, data) {
 
   # extract the necessary data
   sub <- data %>%
-    filter(na_item %in% vars.need)
+    dplyr::filter(na_item %in% vars.need)
 
   return(sub)
 

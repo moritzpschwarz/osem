@@ -32,7 +32,7 @@ translate_variables <- function(specification, dictionary = NULL) {
   indep <- gsub(" ", "", specification$independent)
 
   # extract all separators "-" or "+" for all RHS formulas
-  seps <- str_extract_all(string = indep, pattern = "\\-|\\+")
+  seps <- stringr::str_extract_all(string = indep, pattern = "\\-|\\+")
 
   # replace dependent variable names by Eurostat code
   for (i in seq_along(dep)) {
@@ -86,10 +86,10 @@ translate_variables <- function(specification, dictionary = NULL) {
 
   # add the translated columns
   specification <- specification %>%
-    mutate(dependent_eu = dep,
+    dplyr::mutate(dependent_eu = dep,
            independent_eu = indep) %>%
-    relocate(dependent_eu, .after = dependent) %>%
-    relocate(independent_eu, .after = independent)
+    dplyr::relocate(dependent_eu, .after = dependent) %>%
+    dplyr::relocate(independent_eu, .after = independent)
 
   return(specification)
 

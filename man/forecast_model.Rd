@@ -9,6 +9,8 @@ forecast_model(
   exog_predictions = NULL,
   n.ahead = 10,
   ci.levels = c(0.5, 0.66, 0.95),
+  uncertainty_sample = 100,
+  seed = 123,
   exog_fill_method = "AR",
   ar.fill.max = 4,
   plot.forecast = TRUE
@@ -23,11 +25,15 @@ forecast_model(
 
 \item{ci.levels}{Numeric vector. Vector with confidence intervals to be calculated. Default: c(0.5,0.66,0.95)}
 
+\item{seed}{Numeric. Seed to use for the forecast uncertainty. Default is 123.}
+
 \item{exog_fill_method}{Character, either 'AR' or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used.}
 
 \item{ar.fill.max}{Integer. When no exogenous values have been provided, these must be inferred. If option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. This options determines the number of AR terms that should be used. Default is 4.}
 
 \item{plot.forecast}{Logical. Should the result be plotted? Default is TRUE.}
+
+\item{uncertainty.sample}{Integer. Number of draws to be made from the model residuals. Default is 100.}
 }
 \value{
 An object of class aggmod.forecast
@@ -36,7 +42,7 @@ An object of class aggmod.forecast
 Forecast Aggregate model
 }
 \examples{
-spec <- tibble(
+spec <- dplyr::tibble(
   type = c(
     "d",
     "d",

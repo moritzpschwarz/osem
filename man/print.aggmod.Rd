@@ -7,7 +7,9 @@
 \method{print}{aggmod}(x, ...)
 }
 \arguments{
-\item{model}{An object of type 'aggmod'}
+\item{x}{An object of type 'aggmod'}
+
+\item{...}{Further arguments.}
 }
 \description{
 Print output of an Aggregate Model

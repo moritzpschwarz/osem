@@ -1,4 +1,4 @@
-#' Creates and runs the Shiny App "shinyaggmodel"
+#' Creates and runs the Shiny Configuration App "shinyconfigaggmodel"
 #'
 #' Opens a window for the user to interact with the app. The user can upload
 #' an \link[=new_aggmod]{aggmod} object returned by \code{\link{run_model}} and
@@ -7,7 +7,7 @@
 #'
 #' @export
 
-run_shiny <- function(model = NULL) {
+run_shiny_configuration <- function(model = NULL) {
 
   if (!requireNamespace("DT", quietly = TRUE)) {
     stop("Shiny App requires package 'DT'.")
@@ -16,7 +16,7 @@ run_shiny <- function(model = NULL) {
     stop("Shiny App requires package 'shiny'.")
   }
 
-  appDir <- system.file("shiny-output", "shinyaggmodel", package = "aggregate.model")
+  appDir <- system.file("shiny-output", "shinyconfigaggmodel", package = "aggregate.model")
 
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `aggregate.model`.", call. = FALSE)
@@ -30,6 +30,6 @@ run_shiny <- function(model = NULL) {
 
 
   shiny::shinyOptions(aggmodel_direct = model)
-  source(system.file("shiny-output", "shinyaggmodel/app.R", package = "aggregate.model"))$value
+  source(system.file("shiny-output", "shinyconfigaggmodel/app.R", package = "aggregate.model"))$value
 
 }

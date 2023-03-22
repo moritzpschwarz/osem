@@ -6,6 +6,11 @@
 \usage{
 update_data(orig_data, new_data)
 }
+\arguments{
+\item{orig_data}{Original data that is to be updated.}
+
+\item{new_data}{New dataset that will update the original data.}
+}
 \description{
 NOTE: exported for now, later will be internal
 }
