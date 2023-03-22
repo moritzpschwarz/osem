@@ -458,8 +458,11 @@ forecast_model <- function(model,
                            #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
                            dplyr::select(time, dplyr::all_of(x_names_vec_nolag))) -> intermed
 
-      # add the lagged x-variables
-      to_be_added <- dplyr::tibble(.rows = nrow(intermed))
+
+  # add the lagged x-variables
+  if(ncol(intermed) > 1){
+  to_be_added <- dplyr::tibble(.rows = nrow(intermed))     
+
       for (j in 1:max(ar_vec)) {
         intermed %>%
           dplyr::mutate(dplyr::across(-time, ~dplyr::lag(., n = j))) %>%
@@ -470,8 +473,11 @@ forecast_model <- function(model,
           setNames(paste0("L", j, ".", names(inter_intermed))) %>%
           dplyr::bind_cols(to_be_added, .) -> to_be_added
       }
+        intermed <- dplyr::bind_cols(intermed, to_be_added)
+      }
 
-      dplyr::bind_cols(intermed, to_be_added) %>%
+
+      intermed %>%
         dplyr::left_join(current_pred_raw %>%
                            dplyr::select(time, dplyr::any_of("trend"), dplyr::starts_with("q_"),
                                          dplyr::starts_with("iis"), dplyr::starts_with("sis")),
@@ -609,7 +615,8 @@ forecast_model <- function(model,
                                with(model.args) %>%
                                .[[1]] %>%
                                .$use_logs %in% c("both","y")) {"ln."} else {""},
-                           current_spec %>% dplyr::pull(dependent))
+                           current_spec %>% dplyr::pull(dependent) %in% unique)
+
 
       dplyr::tibble(time = current_pred_raw %>% dplyr::pull(time),
                     value = as.numeric(pred_obj[,1])) %>%
@@ -627,7 +634,7 @@ forecast_model <- function(model,
 
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::as_tibble(pred_obj)))
       prediction_list[prediction_list$order == i, "data"] <- dplyr::tibble(
-        data = list(dplyr::bind_cols(intermed, to_be_added) %>%
+        data = list(intermed %>%
                       dplyr::left_join(current_pred_raw %>% dplyr::select(time, dplyr::starts_with("q_"),
                                                                           dplyr::starts_with("iis"),
                                                                           dplyr::starts_with("sis")),
@@ -636,6 +643,7 @@ forecast_model <- function(model,
 
       prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(central_estimate = list(central_estimate))
       prediction_list[prediction_list$order == i, "all.estimates"] <- dplyr::tibble(all_estimates = list(pred_draw_matrix))
+
 
     } else {
 

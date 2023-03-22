@@ -176,16 +176,17 @@ estimate_module <- function(clean_data,
     dplyr::first()
 
   ## gets selection on the best model ------------
+  if(gets_selection){
   best_isat_model.selected <- gets::gets(best_isat_model,
                                          print.searchinfo = FALSE,
                                          t.pval = selection.tpval)
-
+  
   retained.coefs <- row.names(best_isat_model.selected$mean.results)
   retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
   retained.xvars <- as.matrix(xvars[,retained.coefs])
-
+  
   retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
-
+  
   best_isat_model.selected.isat <- gets::isat(y = yvar,
                                               ar = best_isat_model$aux$args$ar,
                                               mc = best_isat_model$aux$args$mc,
@@ -195,6 +196,7 @@ estimate_module <- function(clean_data,
                                               iis = TRUE,
                                               sis = TRUE,
                                               t.pval = saturation.tpval)
+}
 
 
   out <- list()
@@ -203,7 +205,8 @@ estimate_module <- function(clean_data,
   #  dplyr::filter(BIC == min(BIC)) %>%
   #  dplyr::pull(dplyr::all_of("isat_object")) %>%
   #  dplyr::first()
-  out$best_model <- best_isat_model.selected.isat
+  out$best_model <- if(gets_selection){best_isat_model.selected.isat} else {best_isat_model}
+
   out$args <- list(clean_data = clean_data,
                    dep_var_basename = dep_var_basename,
                    x_vars_basename = x_vars_basename,

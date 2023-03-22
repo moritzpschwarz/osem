@@ -239,6 +239,12 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   dplyr::bind_rows(forecasts_processed, last_hist_value) %>%
     dplyr::bind_rows(plot_df) %>%
 
+
+    {if(order.as.run){
+      dplyr::mutate(.,na_item = factor(na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
+        tidyr::drop_na(na_item) %>%
+        dplyr::arrange(time, na_item)} else {.}} %>%
+        
     ggplot2::ggplot(ggplot2::aes(x = time, y = values, color = fit)) +
 
     #ggplot2::geom_line(data = all_forecasts_processed, ggplot2::aes(group = paste0(name,na_item), y = values, x = time), linewidth = 0.1, alpha = 0.8) +
@@ -248,6 +254,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
     ggplot2::geom_line(linewidth = 1) +
     ggplot_options +
+
 
     ggplot2::facet_wrap(~na_item, scales = "free") +
 

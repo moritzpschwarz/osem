@@ -92,7 +92,15 @@ load_or_download_variables <- function(specification,
 
     # loop through required datasets
     for (i in 1:length(ids$data.ids)) {
-      tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
+
+      if(quiet){
+        suppressMessages(tmp <- eurostat::get_eurostat(id = ids$data.ids[i]))
+      } else {
+        tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
+      }
+
+
+
       if(is.null(tmp)) {stop("Issue with automatic EUROSTAT download. Likely cause is a lack of internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")}
       varcolname <- codes.download %>% dplyr::filter(dataset_id == ids$data.ids[i]) %>% dplyr::distinct(var_col) %>% dplyr::pull(var_col)
       codes.in.tmp <- tmp %>% dplyr::pull(varcolname) %>% unique
@@ -128,7 +136,8 @@ load_or_download_variables <- function(specification,
       stop("Not all Eurostat codes were found in the provided dataset ids.")
     }
 
-  } else { # not download but local directory
+  } else if(is.character(inputdata_directory)){ # not download but local directory
+
 
     if(file.exists(inputdata_directory) & !dir.exists(inputdata_directory)){
       stop("The variable 'inputdata_directory' must be a character path to a directory, not to a file.")}
@@ -151,7 +160,7 @@ load_or_download_variables <- function(specification,
     full <- data.frame()
 
     # loop through required datasets
-    for (i in 1:length(files)) {
+    for (i in seq_along(files)) {
       pth <- file.path(inputdata_directory, files[i])
 
       if(grepl("\\.(Rds|RDS|rds)$",pth)){
@@ -189,7 +198,17 @@ load_or_download_variables <- function(specification,
     if (!identical(length(codes.remain), 0L)) {
       stop("Not all Eurostat codes were found in the provided dataset ids.")
     }
-  } # end local directory
+  } else if(is.data.frame(inputdata_directory)){ # end local directory
+
+    if(!quiet){
+      cat("Variable provided as 'inputdata_directory' seems to be a data.frame type. Used as data source.\n")
+    }
+
+    full <- inputdata_directory
+  } else {
+
+    stop("Check the variable 'inputdata_directory'! You can specify either NULL to download data (with download = TRUE), a file path to an existing folder with files or an already loaded variable as a data.frame with the right dimensions.")
+  }
 
   # might have to deal with unbalanced data (though arx/isat might deal with it?)
   # quick solution for our present case, might not work for all cases
