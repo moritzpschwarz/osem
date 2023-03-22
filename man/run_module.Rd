@@ -41,8 +41,6 @@ As returned by \link{classify_variables}.}
 \item{max.lag}{Integer. The maximum number of lags to use for both the AR terms as
 well as for the independent variables.}
 
-\item{trend}{Logical. Should a trend be added? Default is TRUE.}
-
 \item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
 
 \item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
@@ -54,7 +52,6 @@ well as for the independent variables.}
 \item{selection.tpval}{Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.}
 
 \item{...}{Further arguments to be passed to 'estimate_module'}
-
 }
 \value{
 Returns a list with two named elements.

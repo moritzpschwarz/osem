@@ -282,10 +282,13 @@ forecast_model <- function(model,
         mconst <- FALSE
       }
 
-      # get ar
+      # identify any ar terms in the estimated data
       pred_ar_needed <- colnames(isat_obj$aux$mX)[grepl("ar[0-9]+",colnames(isat_obj$aux$mX))]
 
+      # this condition checks whether there are any ar terms that need to be created
       if (!is.null(pred_ar_needed) & !identical(character(0),pred_ar_needed)) {
+
+        # if we need AR terms, the following loop creates the names of those variables (incl. considering whether they are logged)
         ar_vec <- 0:max(as.numeric(gsub("ar","",pred_ar_needed)))
         y_names_vec <- c()
         for (ar in ar_vec) {
@@ -293,7 +296,9 @@ forecast_model <- function(model,
           y_names_vec <- c(y_names_vec,paste0(paste0(ifelse(ar == 0,"",paste0("L",ar,"."))),ifelse(ylog,"ln.",""),y_vars_basename))
         }
       } else {
+        # if we do not need any AR terms then we simply use the standard name (and add ln. if necessary)
         y_names_vec <- paste0(ifelse(ylog,"ln.",""),y_vars_basename)
+        ar_vec <- 0
       }
 
       if (!identical(character(0),x_vars_basename)) {
@@ -458,24 +463,24 @@ forecast_model <- function(model,
                            #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
                            dplyr::select(time, dplyr::all_of(x_names_vec_nolag))) -> intermed
 
+      # add the lagged x-variables
+      if(ncol(intermed) > 1){
+        to_be_added <- dplyr::tibble(.rows = nrow(intermed))
 
-  # add the lagged x-variables
-  if(ncol(intermed) > 1){
-  to_be_added <- dplyr::tibble(.rows = nrow(intermed))     
+        for (j in ar_vec) {
+          if(j == 0){next}
 
-      for (j in 1:max(ar_vec)) {
-        intermed %>%
-          dplyr::mutate(dplyr::across(-time, ~dplyr::lag(., n = j))) %>%
-          #dplyr::starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
-          dplyr::select(-time) -> inter_intermed
+          intermed %>%
+            dplyr::mutate(dplyr::across(-time, ~dplyr::lag(., n = j))) %>%
+            #dplyr::starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
+            dplyr::select(-time) -> inter_intermed
 
-        inter_intermed %>%
-          setNames(paste0("L", j, ".", names(inter_intermed))) %>%
-          dplyr::bind_cols(to_be_added, .) -> to_be_added
-      }
+          inter_intermed %>%
+            setNames(paste0("L", j, ".", names(inter_intermed))) %>%
+            dplyr::bind_cols(to_be_added, .) -> to_be_added
+        }
         intermed <- dplyr::bind_cols(intermed, to_be_added)
       }
-
 
       intermed %>%
         dplyr::left_join(current_pred_raw %>%
@@ -609,13 +614,12 @@ forecast_model <- function(model,
       #   pred_runs_final <- NULL
       # }
 
-
       outvarname <- paste0(if (model$module_collection %>%
                                dplyr::filter(order == i) %>%
                                with(model.args) %>%
                                .[[1]] %>%
                                .$use_logs %in% c("both","y")) {"ln."} else {""},
-                           current_spec %>% dplyr::pull(dependent) %in% unique)
+                           current_spec %>% dplyr::pull(dependent) %>% unique)
 
 
       dplyr::tibble(time = current_pred_raw %>% dplyr::pull(time),
