@@ -23,6 +23,7 @@
 #' @param quiet Logical with default = FALSE. Should messages be displayed?
 #' These messages are intended to give more information about the estimation
 #' and data retrieval process.
+#' @param constrain.to.minimum.sample Logical. Should all data series be constrained to the minimum data series? Default is FALSE.
 #'
 #' @note Currently does not support mixed inputs, i.e. downloading some data and
 #'   reading the rest from files.
@@ -43,7 +44,8 @@ load_or_download_variables <- function(specification,
                                        dictionary = NULL,
                                        inputdata_directory = NULL,
                                        save_to_disk = NULL,
-                                       quiet = FALSE) {
+                                       quiet = FALSE,
+                                       constrain.to.minimum.sample = TRUE) {
 
   # input check
   if (is.null(dictionary)) {
@@ -85,7 +87,15 @@ load_or_download_variables <- function(specification,
 
     # loop through required datasets
     for (i in 1:length(ids$data.ids)) {
-      tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
+
+      if(quiet){
+        suppressMessages(tmp <- eurostat::get_eurostat(id = ids$data.ids[i]))
+      } else {
+        tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
+      }
+
+
+
       if(is.null(tmp)) {stop("Issue with automatic EUROSTAT download. Likely cause is a lack of internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")}
       varcolname <- codes.download %>% filter(dataset_id == ids$data.ids[i]) %>% distinct(var_col) %>% pull(var_col)
       codes.in.tmp <- tmp %>% pull(varcolname) %>% unique
@@ -114,12 +124,15 @@ load_or_download_variables <- function(specification,
       }
     }
 
+    full$time <- as.Date(full$time)
+
     # check whether all Eurostat codes were found
     if (!identical(length(codes.remain), 0L)) {
       stop("Not all Eurostat codes were found in the provided dataset ids.")
     }
 
-  } else { # not download but local directory
+  } else if(is.character(inputdata_directory)){ # not download but local directory
+
 
     if(file.exists(inputdata_directory) & !dir.exists(inputdata_directory)){
       stop("The variable 'inputdata_directory' must be a character path to a directory, not to a file.")}
@@ -142,7 +155,7 @@ load_or_download_variables <- function(specification,
     full <- data.frame()
 
     # loop through required datasets
-    for (i in 1:length(files)) {
+    for (i in seq_along(files)) {
       pth <- file.path(inputdata_directory, files[i])
 
       if(grepl("\\.(Rds|RDS|rds)$",pth)){
@@ -174,11 +187,23 @@ load_or_download_variables <- function(specification,
       #   }
     }
 
+    full$time <- as.Date(full$time)
+
     # check whether all Eurostat codes were found
     if (!identical(length(codes.remain), 0L)) {
       stop("Not all Eurostat codes were found in the provided dataset ids.")
     }
-  } # end local directory
+  } else if(is.data.frame(inputdata_directory)){ # end local directory
+
+    if(!quiet){
+      cat("Variable provided as 'inputdata_directory' seems to be a data.frame type. Used as data source.\n")
+    }
+
+    full <- inputdata_directory
+  } else {
+
+    stop("Check the variable 'inputdata_directory'! You can specify either NULL to download data (with download = TRUE), a file path to an existing folder with files or an already loaded variable as a data.frame with the right dimensions.")
+  }
 
   # might have to deal with unbalanced data (though arx/isat might deal with it?)
   # quick solution for our present case, might not work for all cases
@@ -190,15 +215,19 @@ load_or_download_variables <- function(specification,
       n = n()
     ) %>%
     ungroup()
-  if (max(dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
-    warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+
+  if(constrain.to.minimum.sample){
+    if (max(dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
+      warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+    }
+    min_date <- max(availability$min_date) # highest minimum date
+    max_date <- min(availability$max_date) # lowest maximum date
+    full <- full %>%
+      filter(time >= min_date & time <= max_date)
+    # might still not be balanced but beginning- & end-points are balanced
+    # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
   }
-  min_date <- max(availability$min_date) # highest minimum date
-  max_date <- min(availability$max_date) # lowest maximum date
-  full <- full %>%
-    filter(time >= min_date & time <= max_date)
-  # might still not be balanced but beginning- & end-points are balanced
-  # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
+
 
   if (!is.null(save_to_disk)) {
     if(!is.character(save_to_disk)){stop("'save_to_disk' must be a character file path.")}

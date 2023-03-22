@@ -3,6 +3,9 @@
 #' @param model An aggregate model of class 'aggmod'
 #' @param exog_predictions A data.frame or tibble with values for the exogenous values. The number of rows of this data must be equal to n.ahead.
 #' @param n.ahead Periods to forecast ahead
+#' @param ci.levels Numeric vector. Vector with confidence intervals to be calculated. Default: c(0.5,0.66,0.95)
+#' @param ar.fill.max Integer. When no exogenous values have been provided, these must be inferred. If option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. This options determines the number of AR terms that should be used. Default is 4.
+#' @param exog_fill_method Character, either 'AR' or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used.
 #' @param plot.forecast Logical. Should the result be plotted? Default is TRUE.
 #'
 #' @return An object of class aggmod.forecast
@@ -29,9 +32,12 @@
 #'
 #' fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
 #' fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-#' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
+#' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa,
+#' "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
 #' \dontrun{
-#' a <- run_model(specification = spec, dictionary = NULL, inputdata_directory = NULL, filter_list = filter_list, download = TRUE, save_to_disk = NULL, present = FALSE)
+#' a <- run_model(specification = spec, dictionary = NULL,
+#' inputdata_directory = NULL, filter_list = filter_list,
+#' download = TRUE, save_to_disk = NULL, present = FALSE)
 #' forecast(a)
 #' }
 
@@ -44,7 +50,8 @@ forecast_model <- function(model,
                            ar.fill.max = 4,
                            plot.forecast = TRUE){
 
-  if(class(model) != "aggmod"){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
+  #if(class(model) != "aggmod"){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
+  if(!isa(model, "aggmod")){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
   if(!is.null(exog_fill_method) & !exog_fill_method %in% c("AR","last")){stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR' or 'last'.")}
   if(!is.null(ar.fill.max) & (!is.integer(as.integer(ar.fill.max)) | ar.fill.max < 1)){stop("The option 'ar.fill.max' can either be NULL or must be an integer that is larger than 0.")}
 
@@ -260,7 +267,7 @@ forecast_model <- function(model,
         .[[1]] %>%
         .$dep_var_basename
 
-      # check quarterly dummies
+      # check quarterly dummies to drop
       q_pred_todrop <- c("q_1","q_2","q_3","q_4")[!c("q_1","q_2","q_3","q_4") %in% colnames(isat_obj$aux$mX)]
 
       # check if mconst is used
@@ -273,7 +280,7 @@ forecast_model <- function(model,
       # get ar
       pred_ar_needed <- colnames(isat_obj$aux$mX)[grepl("ar[0-9]+",colnames(isat_obj$aux$mX))]
 
-      if (!is.null(pred_ar_needed)) {
+      if (!is.null(pred_ar_needed) & !identical(character(0),pred_ar_needed)) {
         ar_vec <- 0:max(as.numeric(gsub("ar","",pred_ar_needed)))
         y_names_vec <- c()
         for (ar in ar_vec) {
@@ -317,6 +324,10 @@ forecast_model <- function(model,
           as_tibble()
       }
 
+      if ("trend" %in% names(coef(isat_obj))) {
+        trend_pred <- tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead))
+      }
+
 
       exog_df_ready %>%
 
@@ -325,6 +336,10 @@ forecast_model <- function(model,
 
         # drop not used quarterly dummies
         select(-any_of(q_pred_todrop)) %>%
+
+        {if ("trend" %in% names(coef(isat_obj))) {
+          bind_cols(.,trend_pred)
+        } else { . }} %>%
 
         {if (!is.null(gets::isatdates(isat_obj)$iis)) {
           bind_cols(.,iis_pred)
@@ -391,24 +406,36 @@ forecast_model <- function(model,
 
       data_obj %>%
         select(time, all_of(x_names_vec_nolag)) %>%
+
+        ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
+        # The drop_na below was used because for GCapitalForm the value for July 2022 was missing - while it was there for FinConsExpHH
+        # Now the question is whether the drop_na messes up the timing
+        drop_na %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
+
         bind_rows(current_pred_raw %>%
+                    #select(time, all_of(x_names_vec_nolag), any_of("trend"))) -> intermed
                     select(time, all_of(x_names_vec_nolag))) -> intermed
 
-      to_be_added <- tibble(.rows = nrow(intermed))
-      for (j in 1:max(ar_vec)) {
-        intermed %>%
-          mutate(across(c(#starts_with("D."),
-            starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
-          select(c(#starts_with("D."),
-            starts_with("ln."))) %>%
-          rename_with(.fn = ~ paste0("L", j, ".", .)) %>%
-          bind_cols(to_be_added, .) -> to_be_added
+      if(ncol(intermed) > 1){
+        to_be_added <- tibble(.rows = nrow(intermed))
+        for (j in 1:max(ar_vec)) {
+          intermed %>%
+            mutate(across(c(#starts_with("D."),
+              starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
+            select(c(#starts_with("D."),
+              starts_with("ln."))) -> inter_intermed
+
+          inter_intermed %>%
+            setNames(paste0("L", j, ".", names(inter_intermed))) %>%
+            bind_cols(to_be_added, .) -> to_be_added
+        }
+        intermed <- bind_cols(intermed, to_be_added)
       }
 
 
-      bind_cols(intermed, to_be_added) %>%
+      intermed %>%
         left_join(current_pred_raw %>%
-                    select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
+                    select(time, any_of("trend"), starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
         drop_na %>%
         select(-time) %>%
         select(any_of(row.names(isat_obj$mean.results))) %>%
@@ -434,7 +461,7 @@ forecast_model <- function(model,
                                with(model.args) %>%
                                .[[1]] %>%
                                .$use_logs %in% c("both","y")) {"ln."} else {""},
-                           current_spec %>% pull(dependent))
+                           current_spec %>% pull(dependent) %>% unique)
 
       tibble(time = current_pred_raw %>% pull(time),
              value = as.numeric(pred_obj[,1])) %>%
@@ -447,7 +474,7 @@ forecast_model <- function(model,
 
 
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(as_tibble(pred_obj)))
-      prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(bind_cols(intermed, to_be_added) %>%
+      prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(intermed %>%
                                                                                   left_join(current_pred_raw %>%
                                                                                               select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
                                                                                   drop_na))

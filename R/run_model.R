@@ -27,6 +27,8 @@
 #' @param quiet Logical with default = FALSE. Should messages be displayed?
 #' These messages are intended to give more information about the estimation
 #' and data retrieval process.
+#' @inheritParams clean_data
+#' @inheritParams estimate_module
 #' @param ... further arguments to be passed to \code{estimate_module}.
 #'
 #' @return An object of class \link[=new_aggmod]{aggmod}, which is a named list
@@ -66,9 +68,12 @@
 #'
 #' fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
 #' fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-#' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
+#' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa,
+#' "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
 #' \donttest{
-#' a <- run_model(specification = spec, dictionary = NULL, inputdata_directory = NULL, filter_list = filter_list, download = TRUE, save_to_disk = NULL, present = FALSE)
+#' a <- run_model(specification = spec, dictionary = NULL,
+#' inputdata_directory = NULL, filter_list = filter_list,
+#' download = TRUE, save_to_disk = NULL, present = FALSE)
 #' }
 
 # config_table_small <- tibble(
@@ -90,6 +95,15 @@ run_model <- function(specification,
                       save_to_disk = NULL,
                       present = FALSE,
                       quiet = FALSE,
+                      use_logs = c("both", "y", "x"),
+                      trend = TRUE,
+                      ardl_or_ecm = "ardl",
+                      max.lag = 4,
+                      saturation = c("IIS", "SIS"),
+                      saturation.tpval = 0.01,
+                      max.block.size = 20,
+                      gets_selection = TRUE,
+                      selection.tpval = 0.01,
                       ...) {
 
   if(!(is.data.frame(specification) | is.matrix(specification))){
@@ -153,6 +167,14 @@ run_model <- function(specification,
       module = module_order_eurostatvars[module_order_eurostatvars$order == i, ],
       data = tmp_data,
       classification = classification,
+      trend = trend,
+      ardl_or_ecm = ardl_or_ecm,
+      max.lag = max.lag,
+      saturation = saturation,
+      saturation.tpval = saturation.tpval,
+      max.block.size = max.block.size,
+      gets_selection = gets_selection,
+      selection.tpval = selection.tpval,
       ...
     )
 

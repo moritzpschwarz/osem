@@ -5,26 +5,26 @@
 #' @export
 #'
 
-print.aggmod <- function(model){
+print.aggmod <- function(x, ...){
 
 
   cat("Aggregate Model Output\n")
   cat("-----------------------\n")
 
   cat(paste0("\nEstimation Options:"))
-  cat(paste0("\nSample: ", min(model$full_data$time)," to ",max(model$full_data$time)))
-  cat(paste0("\nMax Lags Considered:"), ifelse(is.null(model$args$max.lag), 4, model$args$max.lag))
-  cat(paste0("\nEstimation Option:"), ifelse(is.null(model$args$ardl_or_ecm), "ARDL", model$args$ardl_or_ecm))
+  cat(paste0("\nSample: ", min(x$full_data$time)," to ",max(x$full_data$time)))
+  cat(paste0("\nMax Lags Considered:"), ifelse(is.null(x$args$max.lag), 4, x$args$max.lag))
+  cat(paste0("\nEstimation Option:"), ifelse(is.null(x$args$ardl_or_ecm), "ARDL", x$args$ardl_or_ecm))
   cat("\n")
 
 
 
   cat("\nRelationships considered: \n")
 
-  dictionary <- {if(is.null(model$args$dictionary)){
+  dictionary <- {if(is.null(x$args$dictionary)){
     dict
   } else {
-    model$args$dictionary
+    x$args$dictionary
   } } %>%
     select(model_varname, full_name) %>%
     mutate(dependent = model_varname,
@@ -32,7 +32,7 @@ print.aggmod <- function(model){
 
 
 
-  model$module_order_eurostatvars %>%
+  x$module_order_eurostatvars %>%
     select(index, order, dependent, independent) %>%
 
     # deal with dependent vars
@@ -62,7 +62,7 @@ print.aggmod <- function(model){
     print
 
 
-  cat("\n\nRelationships estimated in the order: ",paste0(model$module_collection$index, collapse = ","))
+  cat("\n\nRelationships estimated in the order: ",paste0(x$module_collection$index, collapse = ","))
 
 
 

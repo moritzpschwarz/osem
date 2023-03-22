@@ -10,12 +10,14 @@ estimate_module(
   x_vars_basename = c("gross_capital_formation",
     "household_and_npish_final_consumption_expenditure"),
   use_logs = c("both", "y", "x"),
+  trend = TRUE,
   ardl_or_ecm = "ardl",
   max.lag = 4,
   saturation = c("IIS", "SIS"),
   saturation.tpval = 0.01,
-  selection.tpval = 0.01,
-  gets_selection = TRUE
+  max.block.size = 20,
+  gets_selection = TRUE,
+  selection.tpval = 0.01
 )
 }
 \arguments{
@@ -27,6 +29,8 @@ estimate_module(
 
 \item{use_logs}{To decide whether to log any variables. Must be one of "both", "y", or "x". Default is "both".}
 
+\item{trend}{Logical. To determine whether a trend should be added. Default is TRUE.}
+
 \item{ardl_or_ecm}{Either 'ardl' or 'ecm' to determine whether to estimate the model as an Autoregressive Distributed Lag Function (ardl) or as an Equilibrium Correction Model (ecm).}
 
 \item{max.lag}{The maximum number of lags to use for both the AR terms as well as for the independent variables.}
@@ -34,6 +38,12 @@ estimate_module(
 \item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
 
 \item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
+
+\item{max.block.size}{Integer. Maximum size of block of variables to be selected over, default = 20.}
+
+\item{gets_selection}{Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.}
+
+\item{selection.tpval}{Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.}
 }
 \value{
 A list containing all estimated models, with the model with the smallest BIC under 'best_model'.

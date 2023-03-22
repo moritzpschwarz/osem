@@ -4,10 +4,14 @@
 #' @param dep_var_basename A character string of the name of the dependent variable as contained in clean_data() in a level form (i.e. no ln or D in front of the name).
 #' @param x_vars_basename A character vector of the name(s) of the independent variable(s) as contained in clean_data() in a level form (i.e. no ln or D in front of the name).
 #' @param use_logs To decide whether to log any variables. Must be one of "both", "y", or "x". Default is "both".
+#' @param trend Logical. To determine whether a trend should be added. Default is TRUE.
 #' @param ardl_or_ecm Either 'ardl' or 'ecm' to determine whether to estimate the model as an Autoregressive Distributed Lag Function (ardl) or as an Equilibrium Correction Model (ecm).
 #' @param max.lag The maximum number of lags to use for both the AR terms as well as for the independent variables.
 #' @param saturation Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.
 #' @param saturation.tpval The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.
+#' @param max.block.size Integer. Maximum size of block of variables to be selected over, default = 20.
+#' @param gets_selection Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.
+#' @param selection.tpval Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.
 #'
 #' @return A list containing all estimated models, with the model with the smallest BIC under 'best_model'.
 #' @export
@@ -30,12 +34,14 @@ estimate_module <- function(clean_data,
                               "household_and_npish_final_consumption_expenditure"
                             ),
                             use_logs = c("both", "y", "x"),
+                            trend = TRUE,
                             ardl_or_ecm = "ardl",
                             max.lag = 4,
                             saturation = c("IIS", "SIS"),
                             saturation.tpval = 0.01,
-                            selection.tpval = 0.01,
-                            gets_selection = TRUE) {
+                            max.block.size = 20,
+                            gets_selection = TRUE,
+                            selection.tpval = 0.01) {
   log_opts <- match.arg(use_logs)
 
   if (!ardl_or_ecm %in% c("ardl", "ecm")) {
@@ -73,7 +79,9 @@ estimate_module <- function(clean_data,
         pull()
 
       xvars <- clean_data %>%
+
         select(
+          if(trend){all_of("trend")}else{NULL},
           if(!identical(x_vars_basename,character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_basename))}else{NULL},
           if (i != 0) {
             all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
@@ -117,11 +125,12 @@ estimate_module <- function(clean_data,
       # debug_list <- list(yvar = yvar, xvars = xvars,i = i,saturation.tpval = saturation.tpval)
       # save(debug_list, file = "debug_list.RData")
 
-      if((ncol(xvars) + 30) > nrow(xvars)){
-        max.block.size <- round((nrow(xvars) - ncol(xvars))/3)
-      } else {max.block.size <- 30}
+      # try to prevent that isat does not run out of degrees of freedom
+      if((ncol(xvars) + ((max.block.size*2)+1)) > nrow(xvars)){
+        maxblocksize <- round((nrow(xvars) - ncol(xvars))/3)
+      } else {maxblocksize <- max.block.size}
 
-      if(max.block.size < 1){
+      if(maxblocksize < 1){
         warning(paste0("Specification not valid - the sample for estiamting the module with the dependent variable ",dep_var_basename," is not extensive enough to be estimated with lag ",i,".\n Specification skipped."))
         next
       }
@@ -139,7 +148,7 @@ estimate_module <- function(clean_data,
         iis = TRUE,
         sis = TRUE,
         t.pval = saturation.tpval,
-        max.block.size = max.block.size
+        max.block.size = maxblocksize
       )
     } else {
       intermed.model <- gets::arx(
@@ -166,25 +175,30 @@ estimate_module <- function(clean_data,
     first()
 
   ## gets selection on the best model ------------
-  best_isat_model.selected <- gets::gets(best_isat_model,
-                                         print.searchinfo = FALSE,
-                                         t.pval = selection.tpval)
+  if(gets_selection){
+    best_isat_model.selected <- gets::gets(best_isat_model,
+                                           print.searchinfo = FALSE,
+                                           t.pval = selection.tpval)
 
-  retained.coefs <- row.names(best_isat_model.selected$mean.results)
-  retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
-  retained.xvars <- as.matrix(xvars[,retained.coefs])
+    retained.coefs <- row.names(best_isat_model.selected$mean.results)
+    retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
+    retained.xvars <- as.matrix(xvars[,retained.coefs])
 
-  retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
+    retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
 
-  best_isat_model.selected.isat <- isat(y = yvar,
-                                        ar = best_isat_model$aux$args$ar,
-                                        mc = best_isat_model$aux$args$mc,
-                                        mxreg = retained.xvars,
-                                        plot = FALSE,
-                                        print.searchinfo = FALSE,
-                                        iis = TRUE,
-                                        sis = TRUE,
-                                        t.pval = saturation.tpval)
+    best_isat_model.selected.isat <- isat(y = yvar,
+                                          ar = best_isat_model$aux$args$ar,
+                                          mc = best_isat_model$aux$args$mc,
+                                          mxreg = retained.xvars,
+                                          plot = FALSE,
+                                          print.searchinfo = FALSE,
+                                          iis = TRUE,
+                                          sis = TRUE,
+                                          t.pval = saturation.tpval)
+  }
+
+
+
 
 
   out <- list()
@@ -193,7 +207,7 @@ estimate_module <- function(clean_data,
   #  filter(BIC == min(BIC)) %>%
   #  pull(isat_object) %>%
   #  first()
-  out$best_model <- best_isat_model.selected.isat
+  out$best_model <- if(gets_selection){best_isat_model.selected.isat} else {best_isat_model}
   out$args <- list(clean_data = clean_data,
                    dep_var_basename = dep_var_basename,
                    x_vars_basename = x_vars_basename,

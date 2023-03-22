@@ -4,14 +4,14 @@
 \alias{plot.aggmod.forecast}
 \title{Plot a Forecast Object of the Aggregate Model}
 \usage{
-\method{plot}{aggmod.forecast}(object, exclude.exogenous = TRUE, order.as.run = FALSE)
+\method{plot}{aggmod.forecast}(x, exclude.exogenous = TRUE, order.as.run = FALSE, ...)
 }
 \arguments{
-\item{object}{An object of class aggmod.forecast, which is the output from the forecast_model function.}
-
 \item{exclude.exogenous}{Logical. Should exogenous values be plotted? Default is FALSE.}
 
 \item{order.as.run}{Logical. Should the plots be arranged in the way that the model was run? Default FALSE.}
+
+\item{object}{An object of class aggmod.forecast, which is the output from the forecast_model function.}
 }
 \description{
 Plot a Forecast Object of the Aggregate Model
@@ -24,23 +24,25 @@ type = c(
   "n"
 ),
 dependent = c(
-  "JL",
+  "StatDiscrep",
   "TOTS",
-  "B"
+  "Import"
 ),
 independent = c(
-  "TOTS - CP - CO - J - A",
-  "YF + B",
-  "CP + J"
+  "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+  "GValueAdd + Import",
+  "FinConsExpHH + GCapitalForm"
 )
 )
 
 fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
 fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
-\dontrun{
-a <- run_model(specification = spec, dictionary = NULL, inputdata_directory = NULL, filter_list = filter_list, download = TRUE, save_to_disk = NULL, present = FALSE)
+filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa,
+"P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
+\donttest{
+a <- run_model(specification = spec, dictionary = NULL,
+inputdata_directory = NULL, filter_list = filter_list, download = TRUE,
+save_to_disk = NULL, present = FALSE)
+plot(forecast_model(a))
 }
-plot(forecast(a))
-
 }

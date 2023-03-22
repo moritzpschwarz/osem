@@ -9,7 +9,9 @@ ui <- fluidPage(
                tableOutput("files"),
                tags$hr(),
                h1("Specification"),
-               tableOutput("spec")#,
+               DT::DTOutput("spec"),
+               h1("Dependency"),
+               plotOutput("network")#,
                #tableOutput(outputId = "test")
              )
     ),
@@ -23,7 +25,13 @@ ui <- fluidPage(
     tabPanel("Equations", fluid = TRUE,
              mainPanel(
                verbatimTextOutput("equations")
-             ))
+             )
+    ),
+    tabPanel("Diagnostics", fluid = TRUE,
+             mainPanel(
+               DT::DTOutput("diag")
+             )
+    )
   )
 
 )
@@ -95,7 +103,7 @@ server <- function(input, output) {
   output$test <- renderText(input$range_plot)
 
   output$files <- renderTable(input$upload)
-  output$spec <- renderTable(head(aggmod()$module_order_eurostatvars))
+  output$spec <- DT::renderDT(aggmod()$module_order_eurostatvars)
   output$plots <- renderPlot({
     sel() %>%
       filter(time >= as.Date(input$range_plot[1]) & time <= as.Date(input$range_plot[2])) %>%
@@ -104,6 +112,20 @@ server <- function(input, output) {
       facet_wrap(facets = "variable", scales = "free", nrow = length(unique(sel()$variable)))
   })
   output$equations <- renderPrint(eq(), width = 1000)
+  output$diag <- DT::renderDT({
+
+    diagnostics_model(aggmod()) %>%
+      DT::datatable() %>%
+      DT::formatStyle(columns = c("AR", "ARCH"),
+                      backgroundColor = DT::styleInterval(cuts = c(0.01, 0.05), values = c("lightcoral", "lightsalmon", "lightgreen"))) %>%
+      DT::formatRound(columns = c("AR", "ARCH", "indicator_share"),
+                      digits = 4)
+
+    })
+  output$network <- renderPlot({
+    req(aggmod())
+    network(aggmod())
+  })
 
 }
 

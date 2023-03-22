@@ -5,9 +5,9 @@
 #' @export
 
 strsplits <- function(x, splits, ...) {
-  for (split in splits)
+  for (tosplit in splits)
   {
-    x <- unlist(strsplit(x, split, ...))
+    x <- unlist(strsplit(x, tosplit, ...))
   }
   return(x[!x == ""]) # Remove empty values
 }
@@ -19,6 +19,7 @@ strsplits <- function(x, splits, ...) {
 #' endogenous by modelling (n), and endogenous by definition/identity (d).
 #'
 #' NOTE: exported for now, later will be internal
+#' @param specification A specification to be classified.
 #'
 #' @export
 

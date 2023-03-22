@@ -4,15 +4,10 @@
 #'   variables. Needs to have a column called 'time', which is of class
 #'   \code{\link[base:Dates]{Date}}. Variable names need to be in column
 #'   'na_item', and values in column 'values'.
-#' @param preestimated_xvars A tibble or data.frame with the x variables that
-#'   have been pre-estimated by another equation in levels. Needs to have a
-#'   column called 'time', which is of class \code{\link[base:Dates]{Date}}.
-#' @param max.lag The maximum number of lags to use for both the AR terms as
+#' @param max.lag Integer. The maximum number of lags to use for both the AR terms as
 #'   well as for the independent variables.
+#' @param trend Logical. Should a trend be added? Default is TRUE.
 #'
-#' @note Jonas: I suggest we do not use the argument 'preestimated_xvars' and
-#'   instead include any fitted values via the argument #' 'raw_data' (clearly
-#'   indicated by variable ending .hat).
 #'
 #' @return A tibble with the cleaned data.
 #'
@@ -29,21 +24,13 @@
 #' clean_data(sample_data, max.lag = 4)
 
 clean_data <- function(raw_data,
-                       preestimated_xvars = NULL,
-                       max.lag = 4) {
+                       max.lag = 4,
+                       trend = TRUE) {
   raw_data %>%
     select(na_item, time, values) %>%
     pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>%
     #janitor::clean_names() %>%
     #rename_with(.fn = tolower) %>%
-    # Add previously estimated data
-    {
-      if (!is.null(preestimated_xvars)) {
-        full_join(., preestimated_xvars %>% select(-any_of("index")), by = "time")
-      } else {
-        .
-      }
-    } %>%
     arrange(., time) %>%
     mutate(
       across(-time, list(ln = log), .names = "{.fn}.{.col}"),
@@ -67,7 +54,8 @@ clean_data <- function(raw_data,
     fastDummies::dummy_cols(
       select_columns = "q", remove_first_dummy = TRUE,
       remove_selected_columns = TRUE
-    ) -> cleaned_data
+    ) %>%
+    {if(trend){mutate(.,trend = as.numeric(as.factor(time)),.after = time)} else {.}} -> cleaned_data
 
   return(cleaned_data)
 

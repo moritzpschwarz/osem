@@ -4,3 +4,4 @@
 ^LICENSE\.md$
 ^\.pre-commit-config\.yaml$
 ^small_examples$
+^\.github$

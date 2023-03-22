@@ -6,6 +6,9 @@
 \usage{
 classify_variables(specification)
 }
+\arguments{
+\item{specification}{A specification to be classified.}
+}
 \description{
 Classifies variables according to their state in the model: exogenous (x),
 endogenous by modelling (n), and endogenous by definition/identity (d).
