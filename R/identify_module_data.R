@@ -37,7 +37,7 @@ identify_module_data <- function(module, classification, data) {
                                   class == "d" ~ paste0(var, ".hat"),
                                   class == "x" ~ var,
                                   TRUE ~ NA_character_)) %>%
-      dplyr::pull(vartrans)
+      dplyr::pull(.data$vartrans)
 
   } else if (module$type == "n") { # module is endogenous and actually modelled
     # for endogenous modelled variables, always use the observed values
@@ -51,7 +51,7 @@ identify_module_data <- function(module, classification, data) {
 
   # extract the necessary data
   sub <- data %>%
-    dplyr::filter(na_item %in% vars.need)
+    dplyr::filter(.data$na_item %in% vars.need)
 
   return(sub)
 

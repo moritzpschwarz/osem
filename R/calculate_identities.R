@@ -18,7 +18,7 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
 
   # identity must be given as a module (i.e. must be a dependent variable)
   identities <- specification %>%
-    dplyr::filter(type == "d")
+    dplyr::filter(.$type == "d")
 
   # not sure whether can solve without dropping these vars
   # could add back later but not necessary?
@@ -41,7 +41,7 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
       dplyr::mutate(!!dep := eval(parse(text = gsub("\\*","_",indep)))) %>%
       #setNames(c(dat_tmp_names, dep)) %>%
       dplyr::select(-dplyr::any_of("nace_r2")) %>%
-      tidyr::pivot_longer(cols = !time, names_to = "na_item", values_to = "values") -> dat
+      tidyr::pivot_longer(cols = !"time", names_to = "na_item", values_to = "values") -> dat
   }
 
   return(dat)

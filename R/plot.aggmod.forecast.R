@@ -45,20 +45,20 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   }
 
   x$orig_model$full_data %>%
-    dplyr::mutate(var = na_item,
-           na_item = gsub("\\.hat","",na_item),
-           fit = as.character(stringr::str_detect(var, ".hat"))) -> plot_df
+    dplyr::mutate(var = .data$na_item,
+                  na_item = gsub("\\.hat","",.data$na_item),
+                  fit = as.character(stringr::str_detect(.data$var, ".hat"))) -> plot_df
 
   plot_df %>%
-    dplyr::distinct(na_item, fit) %>%
-    dplyr::mutate(fit = as.logical(fit)) %>%
-    dplyr::filter(fit) %>%
-    dplyr::pull(na_item) -> when_excluding_exog
+    dplyr::distinct(dplyr::across(c("na_item", "fit"))) %>%
+    dplyr::mutate(fit = as.logical(.data$fit)) %>%
+    dplyr::filter(.data$fit) %>%
+    dplyr::pull(.data$na_item) -> when_excluding_exog
 
 
   if(exclude.exogenous){
     plot_df %>%
-      dplyr::filter(na_item %in% when_excluding_exog) -> plot_df
+      dplyr::filter(.data$na_item %in% when_excluding_exog) -> plot_df
   }
 
 
@@ -87,11 +87,11 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
 
   x$forecast %>%
-    dplyr::select(central.estimate) %>%
-    tidyr::unnest(central.estimate) %>%
-    tidyr::pivot_longer(-c(time)) %>%
+    dplyr::select("central.estimate") %>%
+    tidyr::unnest("central.estimate") %>%
+    tidyr::pivot_longer(-"time") %>%
     tidyr::drop_na() %>%
-    tidyr::pivot_wider(id_cols = c(time), names_from = name, values_from = value) -> central_forecasts
+    tidyr::pivot_wider(id_cols = "time", names_from = "name", values_from = "value") -> central_forecasts
 
   central_forecasts %>%
     names %>%
@@ -101,34 +101,34 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
     dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
 
-    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
+    tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
     dplyr::full_join(x$orig_model$module_order_eurostatvars %>%
-                dplyr::select(dependent) %>%
-                dplyr::rename(na_item = dependent), by = "na_item") %>%
+                       dplyr::select("dependent") %>%
+                       dplyr::rename(na_item = .data$dependent), by = "na_item") %>%
 
     dplyr::mutate(fit = "forecast") -> forecasts_processed
 
   plot_df %>%
-    dplyr::filter(fit == "TRUE") %>%
-    dplyr::group_by(na_item) %>%
-    dplyr::filter(time == max(time)) %>%
+    dplyr::filter(.data$fit == "TRUE") %>%
+    dplyr::group_by(.data$na_item) %>%
+    dplyr::filter(.data$time == max(.data$time)) %>%
     dplyr::ungroup() %>%
-    dplyr::select(-var) %>%
+    dplyr::select(-"var") %>%
     dplyr::mutate(fit = "forecast") -> last_hist_value
 
   dplyr::bind_rows(forecasts_processed, last_hist_value) %>%
     dplyr::bind_rows(plot_df) %>%
 
     {if(order.as.run){
-      dplyr::mutate(.,na_item = factor(na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
-        tidyr::drop_na(na_item) %>%
-        dplyr::arrange(time, na_item)} else {.}} %>%
+      dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
+        tidyr::drop_na(.data$na_item) %>%
+        dplyr::arrange(.data$time, .data$na_item)} else {.}} %>%
 
 
-    ggplot2::ggplot(ggplot2::aes(x = time, y = values, color = fit)) +
+    ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
     ggplot2::geom_line(linewidth = 1) +
 
-    ggplot2::facet_wrap(~na_item, scales = "free") +
+    ggplot2::facet_wrap(~.data$na_item, scales = "free") +
 
     ggplot2::labs(x = NULL, y = NULL) +
 
@@ -137,9 +137,9 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "none",
-          panel.grid.major.x = ggplot2::element_blank(),
-          panel.grid.minor.x = ggplot2::element_blank(),
-          panel.grid.minor.y = ggplot2::element_blank())
+                   panel.grid.major.x = ggplot2::element_blank(),
+                   panel.grid.minor.x = ggplot2::element_blank(),
+                   panel.grid.minor.y = ggplot2::element_blank())
 
 
 

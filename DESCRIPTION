@@ -33,5 +33,7 @@ Suggests:
     DT,
     ggraph,
     testthat (>= 3.0.0),
-    tidygraph
+    tidygraph,
+    plotly, 
+    purrr
 Config/testthat/edition: 3
