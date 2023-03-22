@@ -463,7 +463,7 @@ forecast_model <- function(model,
                                with(model.args) %>%
                                .[[1]] %>%
                                .$use_logs %in% c("both","y")) {"ln."} else {""},
-                           current_spec %>% dplyr::pull(dependent) %in% unique)
+                           current_spec %>% dplyr::pull(dependent) %>% unique)
 
 
       dplyr::tibble(time = current_pred_raw %>% dplyr::pull(time),
