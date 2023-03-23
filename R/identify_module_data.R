@@ -15,7 +15,6 @@
 #' @return Returns a subset of the original \code{data} that only contains the
 #'   relevant variables for the module.
 #'
-#' @export
 
 identify_module_data <- function(module, classification, data) {
 

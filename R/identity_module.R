@@ -8,7 +8,6 @@
 #' @return Returns the original tibble or data.frame \code{data} in wide format
 #'   and appended with the fitted values of the module.
 #'
-#' @export
 
 identity_module <- function(module, data, classification) {
 

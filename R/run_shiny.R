@@ -5,7 +5,6 @@
 #' produce graphical and tabular output.
 #' @param model The model object that is passed by the 'present_model()' function.
 #'
-#' @export
 
 run_shiny <- function(model = NULL) {
 

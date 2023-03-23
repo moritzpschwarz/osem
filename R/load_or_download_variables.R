@@ -35,7 +35,6 @@
 #'   \code{filter} argument specification to make the download faster by
 #'   restricting it to the necessary subset only.
 #'
-#' @export
 
 
 load_or_download_variables <- function(specification,
@@ -140,7 +139,6 @@ load_or_download_variables <- function(specification,
 
   } else if(is.character(inputdata_directory)){ # not download but local directory
 
-
     if(file.exists(inputdata_directory) & !dir.exists(inputdata_directory)){
       stop("The variable 'inputdata_directory' must be a character path to a directory, not to a file.")}
 
@@ -168,8 +166,14 @@ load_or_download_variables <- function(specification,
       if(grepl("\\.(Rds|RDS|rds)$",pth)){
         tmp <- readRDS(file = pth)
       } else if (grepl("\\.(csv)$",pth)){
+        if (!requireNamespace("readr", quitely = TRUE)) {
+          stop("Package \"readr\" must be installed to read in .csv files.")
+        }
         tmp <- readr::read_csv(pth, show_col_types = FALSE, guess_max = 1000000)
       } else if (grepl("\\.(xls|xlsx)$",pth)){
+        if (!requireNamespace("readxl", quitely = TRUE)) {
+          stop("Package \"readxl\" must be installed to read in .xls or .xlsx files.")
+        }
         tmp <- readxl::read_excel(path = pth, guess_max = 1000000)
         #stop("Loading from xls or xlsx file not yet implemented.)
       }
@@ -250,8 +254,14 @@ load_or_download_variables <- function(specification,
     if (ending %in% c(".RDS", ".rds", ".Rds")) {
       saveRDS(object = full, file = save_to_disk)
     } else if (ending == ".csv") {
+      if (!requireNamespace("readr", quitely = TRUE)) {
+        stop("Package \"readr\" must be installed to save .csv files.")
+      }
       readr::write_csv(x = full, file = save_to_disk)
     } else if (ending %in% c(".xls", ".xlsx")) {
+      if (!requireNamespace("writexl", quitely = TRUE)) {
+        stop("Package \"writexl\" must be installed to save .xls or .xlsx files.")
+      }
       writexl::write_xlsx(x = full, path = save_to_disk)
     } else {
       warning(paste0("File ending currently chosen in 'save_to_disk' is ",ending,", which is not yet implemented. Please choose one of RDS, rds, Rds, csv, xls, xlsx."))

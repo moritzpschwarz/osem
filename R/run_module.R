@@ -23,7 +23,6 @@
 #'   the model and the fitted values of the dependent variable.}
 #' }
 #'
-#' @export
 
 run_module <- function(
     module,

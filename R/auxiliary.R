@@ -5,7 +5,6 @@
 #' @param splits vector of elements to split the string by.
 #' @param ... Further arguments.
 #'
-#' @export
 
 strsplits <- function(x, splits, ...) {
   for (tosplit in splits)
@@ -24,7 +23,6 @@ strsplits <- function(x, splits, ...) {
 #' NOTE: exported for now, later will be internal
 #' @param specification A specification to be classified.
 #'
-#' @export
 
 classify_variables <- function(specification) {
 
@@ -70,7 +68,6 @@ classify_variables <- function(specification) {
 #' @param orig_data Original data that is to be updated.
 #' @param new_data New dataset that will update the original data.
 #'
-#' @export
 
 update_data <- function(orig_data, new_data) {
 

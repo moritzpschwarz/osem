@@ -12,7 +12,6 @@
 #'   values for the identity/definition variables that were not available in
 #'   Eurostat.
 #'
-#' @export
 
 calculate_identities <- function(specification, data, dictionary = NULL) {
 

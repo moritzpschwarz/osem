@@ -51,7 +51,6 @@
 #' @param config_table A tibble or data.frame with one column named 'dependent', containing the LHS (Y variables) and one named 'independent' containing the RHS (x variables separated by + and - ).
 #'
 #' @return A tibble that gives the order of the modules to be run.
-#' @export
 #'
 #' @examples
 #' config_table_small <- dplyr::tibble(
@@ -59,7 +58,7 @@
 #'   dependent = c("JL", "TOTS", "B"),
 #'   independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J")
 #' )
-#' check_config_table(config_table_small)
+#' aggregate.model:::check_config_table(config_table_small)
 #'
 check_config_table <- function(config_table) {
 

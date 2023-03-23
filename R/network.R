@@ -5,7 +5,6 @@
 #' @return Returns a network graph illustrating the dependence between the
 #'   different modules.
 #'
-#' @export
 
 network <- function(model) {
 

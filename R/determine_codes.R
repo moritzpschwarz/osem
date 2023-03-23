@@ -17,7 +17,6 @@
 #'   \item{data.ids}{contains the Eurostat dataset ids.}
 #' }
 #'
-#' @export
 #'
 
 determine_datacodes <- function(specification, dictionary = NULL) {
@@ -133,7 +132,6 @@ determine_datacodes <- function(specification, dictionary = NULL) {
 #'   \item{var.ids}{contains the Eurostat variable ids}
 #' }
 #'
-#' @export
 #'
 
 determine_eurocodes <- function(specification, dictionary = NULL) {

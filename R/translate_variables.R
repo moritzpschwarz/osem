@@ -18,7 +18,6 @@
 #'   two added columns for the model variable name (\code{model_varname}) and
 #'   the dataset identifier (\code{dataset_id}).
 #'
-#' @export
 
 
 translate_variables <- function(specification, dictionary = NULL) {

@@ -11,7 +11,6 @@
 #'
 #' @return A tibble with the cleaned data.
 #'
-#' @export
 #'
 #' @examples
 #' sample_data <- dplyr::tibble(
@@ -21,7 +20,7 @@
 #'   ), each = 2),
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
-#' clean_data(sample_data, max.lag = 4)
+#' aggregate.model:::clean_data(sample_data, max.lag = 4)
 
 clean_data <- function(raw_data,
                        max.lag = 4,
