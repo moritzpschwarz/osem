@@ -141,7 +141,7 @@ check_config_table <- function(config_table) {
     dplyr::ungroup() %>%
     dplyr::distinct(dplyr::across(c("index", "type", "dependent", "independent", "all_exog"))) %>%
     dplyr::filter(.data$all_exog) %>%
-    dplyr::select(-.data$all_exog) %>%
+    dplyr::select(-"all_exog") %>%
     #dplyr::mutate(order = if_else(condition = (dplyr::n()>0),true = (1:dplyr::n()),false = NA_integer_)) -> order_exog
     {if (nrow(.) > 0) {dplyr::mutate(.,order = 1:dplyr::n())} else {dplyr::mutate(., order = NA_integer_)}} -> order_exog
 

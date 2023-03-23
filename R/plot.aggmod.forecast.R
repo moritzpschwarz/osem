@@ -53,7 +53,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::distinct(dplyr::across(c("na_item", "fit"))) %>%
     dplyr::mutate(fit = as.logical(.data$fit)) %>%
     dplyr::filter(.data$fit) %>%
-    dplyr::pull(.data$na_item) -> when_excluding_exog
+    dplyr::pull("na_item") -> when_excluding_exog
 
 
   if(exclude.exogenous){
@@ -104,7 +104,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
     dplyr::full_join(x$orig_model$module_order_eurostatvars %>%
                        dplyr::select("dependent") %>%
-                       dplyr::rename(na_item = .data$dependent), by = "na_item") %>%
+                       dplyr::rename(na_item = "dependent"), by = "na_item") %>%
 
     dplyr::mutate(fit = "forecast") -> forecasts_processed
 
@@ -121,7 +121,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
     {if(order.as.run){
       dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
-        tidyr::drop_na(.data$na_item) %>%
+        tidyr::drop_na("na_item") %>%
         dplyr::arrange(.data$time, .data$na_item)} else {.}} %>%
 
 

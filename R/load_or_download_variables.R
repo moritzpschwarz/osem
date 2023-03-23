@@ -80,7 +80,7 @@ load_or_download_variables <- function(specification,
     id_to_dataset <- dictionary %>%
       dplyr::rowwise() %>%
       dplyr::mutate(var.ids = dplyr::case_when(!is.na(.data$nace_r2) ~ paste0(.data$eurostat_code,"*",.data$nace_r2),
-                                        TRUE ~ .data$eurostat_code)) %>%
+                                               TRUE ~ .data$eurostat_code)) %>%
       dplyr::select("var.ids", "dataset_id", "var_col", "model_varname", "cpa2_1")
 
     codes.download <- dplyr::tibble(var.ids = ids$var.ids,
@@ -94,16 +94,18 @@ load_or_download_variables <- function(specification,
     for (i in 1:length(ids$data.ids)) {
 
       if(quiet){
-        suppressMessages(tmp <- eurostat::get_eurostat(id = ids$data.ids[i]))
+        suppressWarnings(suppressMessages(tmp <- eurostat::get_eurostat(id = ids$data.ids[i])))
       } else {
         tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
       }
 
-
-
       if(is.null(tmp)) {stop("Issue with automatic EUROSTAT download. Likely cause is a lack of/an unstable internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")}
-      varcolname <- codes.download %>% dplyr::filter(.data$dataset_id == ids$data.ids[i]) %>% dplyr::distinct(dplyr::across("var_col")) %>% dplyr::pull(.data$var_col)
-      codes.in.tmp <- tmp %>% dplyr::pull(.data$varcolname) %>% unique
+      varcolname <- codes.download %>%
+        dplyr::filter(.data$dataset_id == ids$data.ids[i]) %>%
+        dplyr::distinct(dplyr::across(dplyr::all_of("var_col"))) %>%
+        dplyr::pull(.data$var_col)
+
+      codes.in.tmp <- tmp %>% dplyr::pull(varcolname) %>% unique
       codes.found <- codes.download %>% dplyr::filter(.data$dataset_id == ids$data.ids[i], .data$var %in% codes.in.tmp)
       codes.remain <- dplyr::setdiff(codes.remain, codes.found$var.ids)
 

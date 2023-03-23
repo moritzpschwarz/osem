@@ -88,8 +88,8 @@ translate_variables <- function(specification, dictionary = NULL) {
   specification <- specification %>%
     dplyr::mutate(dependent_eu = dep,
                   independent_eu = indep) %>%
-    dplyr::relocate(.data$dependent_eu, .after = .data$dependent) %>%
-    dplyr::relocate(.data$independent_eu, .after = .data$independent)
+    dplyr::relocate("dependent_eu", .after = "dependent") %>%
+    dplyr::relocate("independent_eu", .after = "independent")
 
   return(specification)
 

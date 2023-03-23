@@ -39,7 +39,7 @@ print.aggmod <- function(x, ...){
     # deal with dependent vars
     dplyr::left_join(dictionary %>%
                        dplyr::select("dependent", "full_name"), by = "dependent") %>%
-    dplyr::relocate(.data$full_name, .after = "dependent") %>%
+    dplyr::relocate("full_name", .after = "dependent") %>%
 
     # deal with independet vars
     dplyr::mutate(ind_spaced = .data$independent,
@@ -49,19 +49,19 @@ print.aggmod <- function(x, ...){
     tidyr::unnest("splitvars", keep_empty = TRUE) %>%
     dplyr::left_join(dictionary %>%
                        dplyr::select("splitvars", "full_name") %>%
-                       dplyr::rename(name_ind = .data$full_name), by = "splitvars") %>%
+                       dplyr::rename(name_ind = "full_name"), by = "splitvars") %>%
 
     dplyr::group_by(.data$index, .data$dependent, .data$full_name, .data$ind_spaced) %>%
     dplyr::summarise(ind_name = toString(.data$name_ind), .groups = "drop") %>%
     dplyr::mutate(ind_name = ifelse(.data$ind_name == "NA","Only AR Specification", .data$ind_name)) %>%
 
     # styling
-    dplyr::rename(`Ind. Var` = .data$ind_spaced,
-                  `Model` = .data$index,
+    dplyr::rename(`Ind. Var` = "ind_spaced",
+                  `Model` = "index",
                   #`Est. Order` = order,
-                  `Dep. Var.` = .data$dependent,
-                  `Full Name Ind. Var` = .data$ind_name,
-                  `Full Name Dep. Var` = .data$full_name) %>%
+                  `Dep. Var.` = "dependent",
+                  `Full Name Ind. Var` = "ind_name",
+                  `Full Name Dep. Var` = "full_name") %>%
 
     print
 

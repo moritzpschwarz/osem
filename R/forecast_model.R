@@ -117,7 +117,7 @@ forecast_model <- function(model,
         dplyr::arrange(.data$time) -> to_ar_predict
 
       to_ar_predict %>%
-        dplyr::pull(.data$col_to_forecast) -> y_ar_predict
+        dplyr::pull(col_to_forecast) -> y_ar_predict
 
       to_ar_predict %>%
         dplyr::select("q_2", "q_3", "q_4") -> x_ar_predict
@@ -217,7 +217,7 @@ forecast_model <- function(model,
 
       #nnest(ind_vars_eu, keep_empty = TRUE) %>%
       tidyr::unnest("independent", keep_empty = TRUE) %>%
-      tidyr::drop_na(.data$index) %>%
+      tidyr::drop_na("index") %>%
       dplyr::select("index",
                     #dependent_eu, independent_eu,ind_vars_eu,
                     "dependent",
@@ -374,13 +374,13 @@ forecast_model <- function(model,
 
           mvar_logs <- model$module_collection %>%
             dplyr::filter(.data$index == mvar_model_index) %>%
-            with(.data$model.args) %>%
+            .$model.args %>%
             .[[1]] %>%
             .$use_logs
 
           mvar_euname <- model$module_collection %>%
             dplyr::filter(.data$index == mvar_model_index) %>%
-            dplyr::pull(.data$dependent)
+            dplyr::pull("dependent")
 
           mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
 
@@ -460,10 +460,10 @@ forecast_model <- function(model,
 
       outvarname <- paste0(if (model$module_collection %>%
                                dplyr::filter(.data$order == i) %>%
-                               with(.data$model.args) %>%
+                               .$model.args %>%
                                .[[1]] %>%
                                .$use_logs %in% c("both","y")) {"ln."} else {""},
-                           current_spec %>% dplyr::pull(.data$dependent) %>% unique)
+                           current_spec %>% dplyr::pull("dependent") %>% unique)
 
 
       dplyr::tibble(time = current_pred_raw %>% dplyr::pull(.data$time),
@@ -513,7 +513,7 @@ forecast_model <- function(model,
 
         mvar_logs <- model$module_collection %>%
           dplyr::filter(.data$index == mvar_model_index) %>%
-          with(.data$model.args) %>%
+          .$model.args %>%
           .[[1]] %>%
           .$use_logs
 
@@ -521,7 +521,7 @@ forecast_model <- function(model,
 
         mvar_euname <- model$module_collection %>%
           dplyr::filter(.data$index == mvar_model_index) %>%
-          dplyr::pull(.data$dependent)
+          dplyr::pull("dependent")
 
         mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
 
@@ -572,7 +572,7 @@ forecast_model <- function(model,
       }
 
       outvarname <- paste0(#if(any(identity_logs) && !all(identity_logs)){"ln."} else {""},
-        current_spec %>% dplyr::pull(.data$dependent) %>% unique) #%>% tolower)
+        current_spec %>% dplyr::pull("dependent") %>% unique) #%>% tolower)
 
       dplyr::tibble(time = current_pred_raw %>% dplyr::pull(.data$time),
                     value = as.numeric(identity_pred_final[,1])) %>%
