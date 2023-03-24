@@ -461,7 +461,7 @@ forecast_model <- function(model,
 
         dplyr::bind_rows(current_pred_raw %>%
                            #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
-                           dplyr::select(time, dplyr::all_of(x_names_vec_nolag))) -> intermed
+                           dplyr::select("time", dplyr::all_of(x_names_vec_nolag))) -> intermed
 
       # add the lagged x-variables
       if(ncol(intermed) > 1){
@@ -471,9 +471,8 @@ forecast_model <- function(model,
           if(j == 0){next}
 
           intermed %>%
-            dplyr::mutate(dplyr::across(-time, ~dplyr::lag(., n = j))) %>%
-            #dplyr::starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
-            dplyr::select(-time) -> inter_intermed
+            dplyr::mutate(dplyr::across(-time, ~ dplyr::lag(., n = j))) %>%
+            dplyr::select(-"time") -> inter_intermed
 
           inter_intermed %>%
             setNames(paste0("L", j, ".", names(inter_intermed))) %>%

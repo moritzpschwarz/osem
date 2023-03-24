@@ -51,7 +51,6 @@ well as for the independent variables.}
 
 \item{selection.tpval}{Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.}
 
-\item{...}{Further arguments to be passed to 'estimate_module'}
 }
 \value{
 Returns a list with two named elements.
