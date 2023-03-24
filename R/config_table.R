@@ -3,7 +3,7 @@
 # To check the errors
 
 # This has a direct endogeneity
-# config_table_small <- tibble(
+# config_table_small <- dplyr::tibble(
 #   type = c("d",
 #            "d",
 #            "n"),
@@ -17,7 +17,7 @@
 
 
 # This has an indirect endogeneity
-# config_table_small <- tibble(
+# config_table_small <- dplyr::tibble(
 #   type = c("d",
 #            "d",
 #            "n"),
@@ -32,7 +32,7 @@
 
 
 # This is the correct specification
-# config_table_small <- tibble(
+# config_table_small <- dplyr::tibble(
 #   dependent = c("JL",
 #                 "TOTS",
 #                 "B"),
@@ -51,15 +51,14 @@
 #' @param config_table A tibble or data.frame with one column named 'dependent', containing the LHS (Y variables) and one named 'independent' containing the RHS (x variables separated by + and - ).
 #'
 #' @return A tibble that gives the order of the modules to be run.
-#' @export
 #'
 #' @examples
-#' config_table_small <- tibble(
+#' config_table_small <- dplyr::tibble(
 #'   type = c("d","d","n"),
 #'   dependent = c("JL", "TOTS", "B"),
 #'   independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J")
 #' )
-#' check_config_table(config_table_small)
+#' aggregate.model:::check_config_table(config_table_small)
 #'
 check_config_table <- function(config_table) {
 
@@ -73,19 +72,19 @@ check_config_table <- function(config_table) {
 
   # check that there is no endogeneity
   config_table %>%
-    mutate(independent = gsub(" ", "", independent)) %>%
-    rowwise() %>%
-    mutate(splitvars = list(strsplits(
-      independent,
+    dplyr::mutate(independent = gsub(" ", "", .data$independent)) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(splitvars = list(strsplits(
+      .data$independent,
       c("\\-", "\\+")
     ))) %>%
-    ungroup() %>%
-    unnest(splitvars, keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
-    # group_by(dependent) %>%
-    # rowwise() %>%
-    mutate(direct_endog = case_when(dependent == splitvars~TRUE,
-                                    is.na(splitvars)~FALSE,
-                                    TRUE ~ FALSE)) -> direct_endog
+    dplyr::ungroup() %>%
+    tidyr::unnest("splitvars", keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
+    # dplyr::group_by(dependent) %>%
+    # dplyr::rowwise() %>%
+    dplyr::mutate(direct_endog = dplyr::case_when(.data$dependent == .data$splitvars~TRUE,
+                                                  is.na(.data$splitvars)~FALSE,
+                                                  TRUE ~ FALSE)) -> direct_endog
 
   if (any(direct_endog$direct_endog)) {
     stop(
@@ -96,11 +95,11 @@ check_config_table <- function(config_table) {
   }
 
   direct_endog %>%
-    rowwise() %>%
-    mutate(pairs = list(sort(c(dependent, splitvars)))) %>%
-    ungroup() %>%
-    filter(duplicated(pairs)) %>%
-    pull(pairs) -> indirect_endog
+    dplyr::rowwise() %>%
+    dplyr::mutate(pairs = list(sort(c(.data$dependent, .data$splitvars)))) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(duplicated(.data$pairs)) %>%
+    dplyr::pull(.data$pairs) -> indirect_endog
 
 
   if (!identical(indirect_endog, list())) {
@@ -120,95 +119,95 @@ check_config_table <- function(config_table) {
 
   # create the right order for estimation
   config_table %>%
-    mutate(
-      index = 1:n(), .before = 1,
-      independent = gsub(" ", "", independent)
+    dplyr::mutate(
+      index = 1:dplyr::n(), .before = 1,
+      independent = gsub(" ", "", .data$independent)
     ) %>%
-    rowwise() %>%
-    mutate(splitvars = list(strsplits(
-      independent,
+    dplyr::rowwise() %>%
+    dplyr::mutate(splitvars = list(strsplits(
+      .data$independent,
       c("\\-", "\\+")
     ))) %>%
-    ungroup() %>%
-    unnest(splitvars, keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
-    mutate(endog = ifelse(splitvars %in% dependent, TRUE, FALSE)) -> config_table_endog_exog
+    dplyr::ungroup() %>%
+    tidyr::unnest("splitvars", keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
+    dplyr::mutate(endog = ifelse(.data$splitvars %in% .data$dependent, TRUE, FALSE)) -> config_table_endog_exog
 
   config_table_endog_exog %>%
-    group_by(dependent, independent) %>%
-    mutate(all_exog = case_when(is.na(splitvars)~FALSE,
-                                !any(endog)~TRUE,
-                                TRUE ~ FALSE)) %>%
-    ungroup() %>%
-    distinct(index, type, dependent, independent, all_exog) %>%
-    filter(all_exog) %>%
-    select(-all_exog) %>%
-    #mutate(order = if_else(condition = (n()>0),true = (1:n()),false = NA_integer_)) -> order_exog
-    {if (nrow(.) > 0) {mutate(.,order = 1:n())} else {mutate(., order = NA_integer_)}} -> order_exog
+    dplyr::group_by(.data$dependent, .data$independent) %>%
+    dplyr::mutate(all_exog = dplyr::case_when(is.na(.data$splitvars)~FALSE,
+                                              !any(.data$endog)~TRUE,
+                                              TRUE ~ FALSE)) %>%
+    dplyr::ungroup() %>%
+    dplyr::distinct(dplyr::across(c("index", "type", "dependent", "independent", "all_exog"))) %>%
+    dplyr::filter(.data$all_exog) %>%
+    dplyr::select(-"all_exog") %>%
+    #dplyr::mutate(order = if_else(condition = (dplyr::n()>0),true = (1:dplyr::n()),false = NA_integer_)) -> order_exog
+    {if (nrow(.) > 0) {dplyr::mutate(.,order = 1:dplyr::n())} else {dplyr::mutate(., order = NA_integer_)}} -> order_exog
 
   config_table_endog_exog %>%
-    group_by(dependent, independent) %>%
-    mutate(all_exog = case_when(is.na(splitvars)~FALSE,
-                                !any(endog)~TRUE,
-                                TRUE ~ FALSE)) %>%
-    ungroup() %>%
-    filter(!all_exog) -> not_exog
+    dplyr::group_by(.data$dependent, .data$independent) %>%
+    dplyr::mutate(all_exog = dplyr::case_when(is.na(.data$splitvars)~FALSE,
+                                              !any(.data$endog)~TRUE,
+                                              TRUE ~ FALSE)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(!.data$all_exog) -> not_exog
 
   while (nrow(not_exog) != 0) {
     not_exog %>%
-      mutate(
-        already_estimated = case_when(
-          endog & (splitvars %in% order_exog$dependent) ~ TRUE,
+      dplyr::mutate(
+        already_estimated = dplyr::case_when(
+          .data$endog & (.data$splitvars %in% order_exog$dependent) ~ TRUE,
           TRUE ~ FALSE
         ),
-        endog = case_when(
-          endog & already_estimated ~ FALSE,
-          TRUE ~ endog
+        endog = dplyr::case_when(
+          .data$endog & .data$already_estimated ~ FALSE,
+          TRUE ~ .data$endog
         )
       ) %>%
-      group_by(index, type) %>%
-      filter(!any(endog)) %>%
-      distinct(index, dependent, independent) %>%
-      ungroup() %>%
-      mutate(
-        order = 1:n(),
-        order = order + max(order_exog$order)
+      dplyr::group_by(.data$index, .data$type) %>%
+      dplyr::filter(!any(.data$endog)) %>%
+      dplyr::distinct(dplyr::across(c("index", "dependent", "independent"))) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(
+        order = 1:dplyr::n(),
+        order = order + if (is.null(order_exog$order) | identical(integer(0),order_exog$order)) {0} else {max(order_exog$order)}
       ) -> remove_from_not_exog
 
-    bind_rows(remove_from_not_exog, order_exog) -> order_exog
+    dplyr::bind_rows(remove_from_not_exog, order_exog) -> order_exog
 
-    not_exog %>% filter(!index %in% remove_from_not_exog$index) -> not_exog
+    not_exog %>% dplyr::filter(!.data$index %in% remove_from_not_exog$index) -> not_exog
   }
 
 
   # config_table_endog_exog %>%
-  #   group_by(dependent, independent) %>%
-  #   mutate(all_exog = !any(endog)) %>%
-  #   ungroup() %>%
-  #   filter(!all_exog) %>%
-  #   mutate(already_estimated = case_when(endog & (splitvars %in% order_exog$dependent)~TRUE,
+  #   dplyr::group_by(dependent, independent) %>%
+  #   dplyr::mutate(all_exog = !any(endog)) %>%
+  #   dplyr::ungroup() %>%
+  #   dplyr::filter(!all_exog) %>%
+  #   dplyr::mutate(already_estimated = dplyr::case_when(endog & (splitvars %in% order_exog$dependent)~TRUE,
   #                                        TRUE ~ FALSE),
-  #          endog = case_when(endog & already_estimated ~ FALSE,
+  #          endog = dplyr::case_when(endog & already_estimated ~ FALSE,
   #                            TRUE ~ endog)) %>%
-  #   group_by(index) %>%
-  #   filter(!any(endog)) %>%
-  #   distinct(index, dependent, independent) %>%
-  #   mutate(order = 1:n(),
+  #   dplyr::group_by(index) %>%
+  #   dplyr::filter(!any(endog)) %>%
+  #   dplyr::distinct(index, dependent, independent) %>%
+  #   dplyr::mutate(order = 1:dplyr::n(),
   #          order = order + max(order_exog$order)) %>%
-  #   ungroup() %>%
-  #   bind_rows(order_exog)
+  #   dplyr::ungroup() %>%
+  #   dplyr::bind_rows(order_exog)
   #
 
   order_exog %>%
-    arrange(order) %>%
-    mutate(
-      independent = gsub("\\+", " + ", independent),
-      independent = gsub("\\-", " - ", independent)
+    dplyr::arrange(.data$order) %>%
+    dplyr::mutate(
+      independent = gsub("\\+", " + ", .data$independent),
+      independent = gsub("\\-", " - ", .data$independent)
     ) %>%
     return()
 }
 
 #
-# translation_table <- tibble(
+# translation_table <- dplyr::tibble(
 #   eurostat = c("B1GQ", "B1G", "P6", "P7", "P5G",
 #                "P3", "P3_S13", "P31_S13", "P32_S13", "P31_S14_S15", "P31_S14",
 #                "P31_S15", "YA1", "YA0", "YA2"),

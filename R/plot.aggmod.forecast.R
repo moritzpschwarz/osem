@@ -1,13 +1,14 @@
 #' Plot a Forecast Object of the Aggregate Model
 #'
-#' @param object An object of class aggmod.forecast, which is the output from the forecast_model function.
+#' @param x An object of class aggmod.forecast, which is the output from the forecast_model function.
 #' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.
 #' @param order.as.run Logical. Should the plots be arranged in the way that the model was run? Default FALSE.
+#' @param ... Further arguments (currently not in use).
 #'
 #' @export
 #'
 #' @examples
-#' spec <- tibble(
+#' spec <- dplyr::tibble(
 #' type = c(
 #'   "d",
 #'   "d",
@@ -44,100 +45,101 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   }
 
   x$orig_model$full_data %>%
-    mutate(var = na_item,
-           na_item = gsub("\\.hat","",na_item),
-           fit = as.character(str_detect(var, ".hat"))) -> plot_df
+    dplyr::mutate(var = .data$na_item,
+                  na_item = gsub("\\.hat","",.data$na_item),
+                  fit = as.character(stringr::str_detect(.data$var, ".hat"))) -> plot_df
 
   plot_df %>%
-    distinct(na_item, fit) %>%
-    mutate(fit = as.logical(fit)) %>%
-    filter(fit) %>%
-    pull(na_item) -> when_excluding_exog
+    dplyr::distinct(dplyr::across(c("na_item", "fit"))) %>%
+    dplyr::mutate(fit = as.logical(.data$fit)) %>%
+    dplyr::filter(.data$fit) %>%
+    dplyr::pull("na_item") -> when_excluding_exog
 
 
   if(exclude.exogenous){
     plot_df %>%
-      filter(na_item %in% when_excluding_exog) -> plot_df
+      dplyr::filter(.data$na_item %in% when_excluding_exog) -> plot_df
   }
 
 
   if(order.as.run & !exclude.exogenous){cat("As 'order.as.run' is TRUE, exogenous values will not be shown.\n")}
 
-  # left_join(x$dictionary %>%
-  #             rename(na_item = model_varnma) %>%
-  #             select(na_item, model_varname), by = "na_item")
+  # dplyr::left_join(x$dictionary %>%
+  #             dplyr::rename(na_item = model_varnma) %>%
+  #             dplyr::select(na_item, model_varname), by = "na_item")
 
   # plot_df %>%
-  #   ggplot(aes(x = time, y = values, color = fit, group = var, fit = var)) +
-  #   geom_line(linewidth = 1, na.rm = TRUE) +
+  #   ggplot2::ggplot(ggplot2::aes(x = time, y = values, color = fit, group = var, fit = var)) +
+  #   ggplot2::geom_line(linewidth = 1, na.rm = TRUE) +
   #
-  #   facet_wrap(~na_item, scales = "free") +
+  #   ggplot2::facet_wrap(~na_item, scales = "free") +
   #
-  #   labs(x = NULL, y = NULL) +
+  #   ggplot2::labs(x = NULL, y = NULL) +
   #
-  #   scale_y_continuous(labels = scales::comma) +
-  #   scale_colour_viridis_d() +
+  #   ggplot2::scale_y_continuous(labels = scales::comma) +
+  #   ggplot2::scale_color_viridis_d() +
   #
-  #   theme_minimal() +
-  #   theme(legend.position = "none",
-  #         panel.grid.major.x = element_blank(),
-  #         panel.grid.minor.x = element_blank(),
-  #         panel.grid.minor.y = element_blank()) -> initial_plot
+  #   ggplot2::theme_minimal() +
+  #   ggplot2::theme(legend.position = "none",
+  #         panel.grid.major.x = ggplot2::element_blank(),
+  #         panel.grid.minor.x = ggplot2::element_blank(),
+  #         panel.grid.minor.y = ggplot2::element_blank()) -> initial_plot
 
 
   x$forecast %>%
-    select(central.estimate) %>%
-    unnest(central.estimate) %>%
-    pivot_longer(-c(time)) %>%
-    drop_na %>%
-    pivot_wider(id_cols = c(time), names_from = name, values_from = value) -> central_forecasts
+    dplyr::select("central.estimate") %>%
+    tidyr::unnest("central.estimate") %>%
+    tidyr::pivot_longer(-"time") %>%
+    tidyr::drop_na() %>%
+    tidyr::pivot_wider(id_cols = "time", names_from = "name", values_from = "value") -> central_forecasts
 
   central_forecasts %>%
     names %>%
-    str_detect(., "^ln.") -> to_exponentiate
+    stringr::str_detect(., "^ln.") -> to_exponentiate
 
   central_forecasts %>%
-    mutate(across(.cols = all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
-    rename_with(.fn = ~gsub("ln.","",.)) %>%
+    dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
+    dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
 
-    pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
-    full_join(x$orig_model$module_order_eurostatvars %>%
-                select(dependent) %>%
-                rename(na_item = dependent), by = "na_item") %>%
+    tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
+    dplyr::full_join(x$orig_model$module_order_eurostatvars %>%
+                       dplyr::select("dependent") %>%
+                       dplyr::rename(na_item = "dependent"), by = "na_item") %>%
 
-    mutate(fit = "forecast") -> forecasts_processed
+    dplyr::mutate(fit = "forecast") -> forecasts_processed
 
   plot_df %>%
-    filter(fit == "TRUE") %>%
-    group_by(na_item) %>%
-    filter(time == max(time)) %>%
-    ungroup() %>%
-    select(-var) %>%
-    mutate(fit = "forecast") -> last_hist_value
+    dplyr::filter(.data$fit == "TRUE") %>%
+    dplyr::group_by(.data$na_item) %>%
+    dplyr::filter(.data$time == max(.data$time)) %>%
+    dplyr::ungroup() %>%
+    dplyr::select(-"var") %>%
+    dplyr::mutate(fit = "forecast") -> last_hist_value
 
-  bind_rows(forecasts_processed, last_hist_value) %>%
-    bind_rows(plot_df) %>%
+  dplyr::bind_rows(forecasts_processed, last_hist_value) %>%
+    dplyr::bind_rows(plot_df) %>%
 
     {if(order.as.run){
-      mutate(.,na_item = factor(na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
-        drop_na(na_item) %>%
-        arrange(time, na_item)} else {.}} %>%
+      dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
+        tidyr::drop_na("na_item") %>%
+        dplyr::arrange(.data$time, .data$na_item)} else {.}} %>%
 
-    ggplot(aes(x = time, y = values, color = fit)) +
-    geom_line(linewidth = 1) +
 
-    facet_wrap(~na_item, scales = "free") +
+    ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
+    ggplot2::geom_line(linewidth = 1) +
 
-    labs(x = NULL, y = NULL) +
+    ggplot2::facet_wrap(~.data$na_item, scales = "free") +
 
-    scale_y_continuous(labels = scales::comma) +
-    scale_colour_viridis_d() +
+    ggplot2::labs(x = NULL, y = NULL) +
 
-    theme_minimal() +
-    theme(legend.position = "none",
-          panel.grid.major.x = element_blank(),
-          panel.grid.minor.x = element_blank(),
-          panel.grid.minor.y = element_blank())
+    ggplot2::scale_y_continuous(labels = scales::label_comma()) +
+    ggplot2::scale_color_viridis_d() +
+
+    ggplot2::theme_minimal() +
+    ggplot2::theme(legend.position = "none",
+                   panel.grid.major.x = ggplot2::element_blank(),
+                   panel.grid.minor.x = ggplot2::element_blank(),
+                   panel.grid.minor.y = ggplot2::element_blank())
 
 
 

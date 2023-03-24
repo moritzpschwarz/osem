@@ -17,7 +17,6 @@
 #'   \item{data.ids}{contains the Eurostat dataset ids.}
 #' }
 #'
-#' @export
 #'
 
 determine_datacodes <- function(specification, dictionary = NULL) {
@@ -26,13 +25,13 @@ determine_datacodes <- function(specification, dictionary = NULL) {
   #
   # if(new){
   dictionary %>%
-    rowwise() %>%
-    mutate(codes.avail = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
-                                   TRUE ~eurostat_code)) %>%
-    pull(codes.avail) -> codes.avail
+    dplyr::rowwise() %>%
+    dplyr::mutate(codes.avail = dplyr::case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
+                                                 TRUE ~eurostat_code)) %>%
+    dplyr::pull(.data$codes.avail) -> codes.avail
 
   dictionary %>%
-    pull(model_varname) -> model.ids
+    dplyr::pull(.data$model_varname) -> model.ids
 
   # delete irrelevant values, such as TOTS
   codes.avail <- codes.avail[!is.na(dictionary$dataset_id)]
@@ -60,11 +59,11 @@ determine_datacodes <- function(specification, dictionary = NULL) {
 
   # match the Eurostat variable codes to the Eurostat dataset id
   codes <- data.frame(eurostat_code = codes.eurostat)
-  codes <- left_join(x = codes, y = dictionary %>%
-                       select(eurostat_code, nace_r2, dataset_id) %>%
-                       rowwise() %>%
-                       mutate(eurostat_code = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
-                                                        TRUE ~eurostat_code)), by = "eurostat_code")
+  codes <- dplyr::left_join(x = codes, y = dictionary %>%
+                              dplyr::select("eurostat_code", "nace_r2", "dataset_id") %>%
+                              dplyr::rowwise() %>%
+                              dplyr::mutate(eurostat_code = dplyr::case_when(!is.na(.data$nace_r2) ~ paste0(.data$eurostat_code, "*", .data$nace_r2),
+                                                                             TRUE ~ .data$eurostat_code)), by = "eurostat_code")
 
   # which datasets need to be downloaded?
   dataset.ids <- unique(codes$dataset_id)
@@ -104,7 +103,7 @@ determine_datacodes <- function(specification, dictionary = NULL) {
   #
   #   # match the Eurostat variable codes to the Eurostat dataset id
   #   codes <- data.frame(eurostat_code = codes.eurostat)
-  #   codes <- left_join(x = codes, y = dictionary %>% select(eurostat_code, dataset_id), by = "eurostat_code")
+  #   codes <- dplyr::left_join(x = codes, y = dictionary %>% dplyr::select(eurostat_code, dataset_id), by = "eurostat_code")
   #
   #   # which datasets need to be downloaded?
   #   dataset.ids <- unique(codes$dataset_id)
@@ -133,7 +132,6 @@ determine_datacodes <- function(specification, dictionary = NULL) {
 #'   \item{var.ids}{contains the Eurostat variable ids}
 #' }
 #'
-#' @export
 #'
 
 determine_eurocodes <- function(specification, dictionary = NULL) {
@@ -144,11 +142,11 @@ determine_eurocodes <- function(specification, dictionary = NULL) {
 
   #codes.avail <- dictionary$eurostat_code
   codes.avail <- dictionary %>%
-    drop_na(dataset_id) %>%
-    rowwise() %>%
-    mutate(codes.avail = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
-                                   TRUE ~eurostat_code)) %>%
-    pull(codes.avail)
+    tidyr::drop_na(.data$dataset_id) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(codes.avail = dplyr::case_when(!is.na(.data$nace_r2)~paste0(.data$eurostat_code,"*",.data$nace_r2),
+                                                 TRUE ~ .data$eurostat_code)) %>%
+    dplyr::pull(.data$codes.avail)
 
   # extract the codes used in the model
   dep.set <- specification$dependent_eu
@@ -171,13 +169,13 @@ determine_eurocodes <- function(specification, dictionary = NULL) {
   codes.eurostat <- codes.used[which(codes.used %in% codes.avail)]
 
   dictionary %>%
-    drop_na(dataset_id) %>%
-    rowwise() %>%
-    mutate(codes.avail = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
-                                   TRUE ~eurostat_code)) %>%
-    ungroup() %>%
-    filter(codes.avail %in% codes.used) %>%
-    pull(model_varname) -> codes.varname
+    tidyr::drop_na(.data$dataset_id) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(codes.avail = dplyr::case_when(!is.na(.data$nace_r2)~paste0(.data$eurostat_code,"*",.data$nace_r2),
+                                                 TRUE ~ .data$eurostat_code)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(.data$codes.avail %in% codes.used) %>%
+    dplyr::pull(.data$model_varname) -> codes.varname
 
   # output list
   out <- list(var.ids = codes.eurostat, model_varname = codes.varname)

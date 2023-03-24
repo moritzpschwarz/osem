@@ -16,8 +16,7 @@ run_module(
   saturation.tpval = 0.01,
   max.block.size = 20,
   gets_selection = TRUE,
-  selection.tpval = 0.01,
-  ...
+  selection.tpval = 0.01
 )
 }
 \arguments{

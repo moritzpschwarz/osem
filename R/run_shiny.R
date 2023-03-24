@@ -3,13 +3,16 @@
 #' Opens a window for the user to interact with the app. The user can upload
 #' an \link[=new_aggmod]{aggmod} object returned by \code{\link{run_model}} and
 #' produce graphical and tabular output.
+#' @param model The model object that is passed by the 'present_model()' function.
 #'
-#' @export
 
 run_shiny <- function(model = NULL) {
 
   if (!requireNamespace("DT", quietly = TRUE)) {
     stop("Shiny App requires package 'DT'.")
+  }
+  if (!requireNamespace("shiny", quietly = TRUE)) {
+    stop("Shiny App requires package 'shiny'.")
   }
 
   appDir <- system.file("shiny-output", "shinyaggmodel", package = "aggregate.model")

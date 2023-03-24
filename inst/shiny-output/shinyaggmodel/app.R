@@ -1,4 +1,4 @@
-
+library(shiny)
 
 ui <- fluidPage(
 
@@ -107,9 +107,9 @@ server <- function(input, output) {
   output$plots <- renderPlot({
     sel() %>%
       filter(time >= as.Date(input$range_plot[1]) & time <= as.Date(input$range_plot[2])) %>%
-    ggplot(aes(x = time, y = value, color = type)) +
-      geom_line() +
-      facet_wrap(facets = "variable", scales = "free", nrow = length(unique(sel()$variable)))
+    ggplot2::ggplot(ggplot2::aes(x = time, y = value, color = type)) +
+      ggplot2::geom_line() +
+      ggplot2::facet_wrap(facets = "variable", scales = "free", nrow = length(unique(sel()$variable)))
   })
   output$equations <- renderPrint(eq(), width = 1000)
   output$diag <- DT::renderDT({

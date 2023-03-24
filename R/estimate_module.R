@@ -14,18 +14,19 @@
 #' @param selection.tpval Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.
 #'
 #' @return A list containing all estimated models, with the model with the smallest BIC under 'best_model'.
-#' @export
+#'
+#' @importFrom stats BIC coef fitted setNames
 #'
 #' @examples
-#' sample_data <- tibble(
+#' sample_data <- dplyr::tibble(
 #'   time = rep(seq.Date(
 #'     from = as.Date("2000-01-01"),
 #'     to = as.Date("2000-12-31"), by = 1
 #'   ), each = 2),
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
-#' sample_data_clean <- clean_data(sample_data, max.lag = 4)
-#' estimate_module(sample_data_clean, "yvar", "xvar")
+#' sample_data_clean <- aggregate.model:::clean_data(sample_data, max.lag = 4)
+#' aggregate.model:::estimate_module(sample_data_clean, "yvar", "xvar")
 #'
 estimate_module <- function(clean_data,
                             dep_var_basename = "imports_of_goods_and_services",
@@ -48,7 +49,7 @@ estimate_module <- function(clean_data,
     stop("The variable 'ardl_or_ecm' in the 'estimate_module' function must be either 'ecm' or 'ardl'. You have supplied a different value.")
   }
 
-  isat_list <- tibble(
+  isat_list <- dplyr::tibble(
     ar = 0:max.lag,
     BIC = 0,
     isat_object = list(NA_complex_)
@@ -75,26 +76,26 @@ estimate_module <- function(clean_data,
       }
 
       yvar <- clean_data %>%
-        select(all_of(paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename))) %>%
-        pull()
+        dplyr::select(dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename))) %>%
+        dplyr::pull()
 
       xvars <- clean_data %>%
 
-        select(
-          if(trend){all_of("trend")}else{NULL},
-          if(!identical(x_vars_basename,character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_basename))}else{NULL},
+        dplyr::select(
+          if(trend){dplyr::all_of("trend")}else{NULL},
+          if(!identical(x_vars_basename,character(0))){dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_basename))}else{NULL},
           if (i != 0) {
-            all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
+            dplyr::all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
           } else {
             NULL
           },
-          q_2, q_3, q_4
+          dplyr::any_of(c("q_2", "q_3", "q_4"))
         )
     }
     if (ardl_or_ecm == "ecm") {
       yvar <- clean_data %>%
-        select(all_of(paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename))) %>%
-        pull()
+        dplyr::select(dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename))) %>%
+        dplyr::pull()
 
 
       # TO DO: Check log specification and check when model is AR only
@@ -108,16 +109,16 @@ estimate_module <- function(clean_data,
       }
 
       xvars <- clean_data %>%
-        select(
-          all_of(paste0(ifelse(log_opts %in% c("both", "y"), "L1.ln.", "L1."), dep_var_basename)),
-          if(!identical(x_vars_basename, character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "L1.ln.", "L1."), x_vars_basename))}else{NULL},
-          if(!identical(x_vars_basename, character(0))){all_of(paste0(ifelse(log_opts %in% c("both", "x"), "D.ln.", "D."), x_vars_basename))}else{NULL},
+        dplyr::select(
+          dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "L1.ln.", "L1."), dep_var_basename)),
+          if(!identical(x_vars_basename, character(0))){dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "x"), "L1.ln.", "L1."), x_vars_basename))}else{NULL},
+          if(!identical(x_vars_basename, character(0))){dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "x"), "D.ln.", "D."), x_vars_basename))}else{NULL},
           if (i != 0) {
-            all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
+            dplyr::all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
           } else {
             NULL
           },
-          q_2, q_3, q_4
+          dplyr::any_of(c("q_2", "q_3", "q_4"))
         )
     }
 
@@ -164,50 +165,47 @@ estimate_module <- function(clean_data,
     }
 
 
-    isat_list[i + 1, "BIC"] <- BIC(intermed.model)
-    isat_list[i + 1, "isat_object"] <- tibble(isat_object = list(intermed.model))
+    isat_list[i + 1, "BIC"] <- stats::BIC(intermed.model)
+    isat_list[i + 1, "isat_object"] <- dplyr::tibble(isat_object = list(intermed.model))
   }
 
-
   best_isat_model <- isat_list %>%
-    filter(BIC == min(BIC)) %>%
-    pull(isat_object) %>%
-    first()
+    dplyr::filter(BIC == min(isat_list$BIC)) %>%
+    dplyr::pull(dplyr::all_of("isat_object")) %>%
+    dplyr::first()
 
   ## gets selection on the best model ------------
   if(gets_selection){
-    best_isat_model.selected <- gets::gets(best_isat_model,
-                                           print.searchinfo = FALSE,
-                                           t.pval = selection.tpval)
+  best_isat_model.selected <- gets::gets(best_isat_model,
+                                         print.searchinfo = FALSE,
+                                         t.pval = selection.tpval)
 
-    retained.coefs <- row.names(best_isat_model.selected$mean.results)
-    retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
-    retained.xvars <- as.matrix(xvars[,retained.coefs])
+  retained.coefs <- row.names(best_isat_model.selected$mean.results)
+  retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
+  retained.xvars <- as.matrix(xvars[,retained.coefs])
 
-    retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
+  retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
 
-    best_isat_model.selected.isat <- isat(y = yvar,
-                                          ar = best_isat_model$aux$args$ar,
-                                          mc = best_isat_model$aux$args$mc,
-                                          mxreg = retained.xvars,
-                                          plot = FALSE,
-                                          print.searchinfo = FALSE,
-                                          iis = TRUE,
-                                          sis = TRUE,
-                                          t.pval = saturation.tpval)
-  }
-
-
-
+  best_isat_model.selected.isat <- gets::isat(y = yvar,
+                                              ar = best_isat_model$aux$args$ar,
+                                              mc = best_isat_model$aux$args$mc,
+                                              mxreg = retained.xvars,
+                                              plot = FALSE,
+                                              print.searchinfo = FALSE,
+                                              iis = TRUE,
+                                              sis = TRUE,
+                                              t.pval = saturation.tpval)
+}
 
 
   out <- list()
   out$isat_list <- isat_list
   #out$best_model <- isat_list %>%
-  #  filter(BIC == min(BIC)) %>%
-  #  pull(isat_object) %>%
-  #  first()
+  #  dplyr::filter(BIC == min(BIC)) %>%
+  #  dplyr::pull(dplyr::all_of("isat_object")) %>%
+  #  dplyr::first()
   out$best_model <- if(gets_selection){best_isat_model.selected.isat} else {best_isat_model}
+
   out$args <- list(clean_data = clean_data,
                    dep_var_basename = dep_var_basename,
                    x_vars_basename = x_vars_basename,

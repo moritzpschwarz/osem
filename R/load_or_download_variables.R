@@ -35,7 +35,6 @@
 #'   \code{filter} argument specification to make the download faster by
 #'   restricting it to the necessary subset only.
 #'
-#' @export
 
 
 load_or_download_variables <- function(specification,
@@ -60,6 +59,11 @@ load_or_download_variables <- function(specification,
 
   if (isTRUE(download)) {
 
+    # Save original timeout setting
+    tmpmc <- options("timeout")
+    on.exit(options(tmpmc)) # set the old mc warning on exit
+    options(timeout = 1000)
+
     # note:
     # ideally wanted to set filters, so don't need to download all data series and all countries
     # eurostat::get_eurostat(id = "namq_10_gdp", filters = list(na_item = "B1GQ", geo = "AT"), cache = FALSE)
@@ -68,20 +72,20 @@ load_or_download_variables <- function(specification,
 
     # initialise variables
     dictionary %>%
-      distinct(dataset_id, var_col) -> var_col_list
+      dplyr::distinct(dplyr::across(c("dataset_id", "var_col"))) -> var_col_list
 
     ids <- determine_datacodes(specification = specification, dictionary = dictionary)
 
     id_to_dataset <- dictionary %>%
-      rowwise %>%
-      mutate(var.ids = case_when(!is.na(nace_r2)~paste0(eurostat_code,"*",nace_r2),
-                                 TRUE ~eurostat_code)) %>%
-      select(var.ids, dataset_id, var_col, model_varname, cpa2_1)
+      dplyr::rowwise() %>%
+      dplyr::mutate(var.ids = dplyr::case_when(!is.na(.data$nace_r2) ~ paste0(.data$eurostat_code,"*",.data$nace_r2),
+                                               TRUE ~ .data$eurostat_code)) %>%
+      dplyr::select("var.ids", "dataset_id", "var_col", "model_varname", "cpa2_1")
 
-    codes.download <- tibble(var.ids = ids$var.ids,
-                             model.ids = ids$model.ids) %>%
-      left_join(id_to_dataset, by = "var.ids") %>%
-      separate(var.ids, into = c("var","nace_r2"), sep = "\\*", fill = "right", remove = FALSE)
+    codes.download <- dplyr::tibble(var.ids = ids$var.ids,
+                                    model.ids = ids$model.ids) %>%
+      dplyr::left_join(id_to_dataset, by = "var.ids") %>%
+      tidyr::separate(.data$var.ids, into = c("var","nace_r2"), sep = "\\*", fill = "right", remove = FALSE)
     codes.remain <- codes.download$var.ids
     full <- data.frame()
 
@@ -89,18 +93,20 @@ load_or_download_variables <- function(specification,
     for (i in 1:length(ids$data.ids)) {
 
       if(quiet){
-        suppressMessages(tmp <- eurostat::get_eurostat(id = ids$data.ids[i]))
+        suppressWarnings(suppressMessages(tmp <- eurostat::get_eurostat(id = ids$data.ids[i])))
       } else {
         tmp <- eurostat::get_eurostat(id = ids$data.ids[i])
       }
 
+      if(is.null(tmp)) {stop("Issue with automatic EUROSTAT download. Likely cause is a lack of/an unstable internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")}
+      varcolname <- codes.download %>%
+        dplyr::filter(.data$dataset_id == ids$data.ids[i]) %>%
+        dplyr::distinct(dplyr::across(dplyr::all_of("var_col"))) %>%
+        dplyr::pull(.data$var_col)
 
-
-      if(is.null(tmp)) {stop("Issue with automatic EUROSTAT download. Likely cause is a lack of internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")}
-      varcolname <- codes.download %>% filter(dataset_id == ids$data.ids[i]) %>% distinct(var_col) %>% pull(var_col)
-      codes.in.tmp <- tmp %>% pull(varcolname) %>% unique
-      codes.found <- codes.download %>% filter(dataset_id == ids$data.ids[i], var %in% codes.in.tmp)
-      codes.remain <- setdiff(codes.remain, codes.found$var.ids)
+      codes.in.tmp <- tmp %>% dplyr::pull(varcolname) %>% unique
+      codes.found <- codes.download %>% dplyr::filter(.data$dataset_id == ids$data.ids[i], .data$var %in% codes.in.tmp)
+      codes.remain <- dplyr::setdiff(codes.remain, codes.found$var.ids)
 
       for (j in 1:nrow(codes.found)) {
         # which filter should be applied for that variable
@@ -111,16 +117,16 @@ load_or_download_variables <- function(specification,
         # choose subset according to filter
         #if(ids$data.ids[i] == "ei_lmlc_q"){browser()}
         sub <- tmp %>%
-          filter(if_all(all_of(varcolname), ~ . == codes.found$var[j])) %>%
-          filter(geo == filter$geo & unit == filter$unit) %>%
-          {if(select(., any_of("s_adj")) %>% ncol == 1){filter(.,s_adj == filter$s_adj)} else {.}} %>%
-          {if(select(., any_of("nace_r2")) %>% ncol == 1){filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
-          {if(select(., any_of("cpa2_1")) %>% ncol == 1){filter(.,cpa2_1 == codes.found$cpa2_1[j])} else {.}} %>%
-          rename_with(.cols = all_of(varcolname), .fn = ~paste0("na_item")) %>%
-          mutate(na_item = codes.found$model_varname[j])
+          dplyr::filter(dplyr::if_all(dplyr::all_of(varcolname), ~ . == codes.found$var[j])) %>%
+          dplyr::filter(.data$geo == filter$geo & .data$unit == filter$unit) %>%
+          {if(dplyr::select(., dplyr::any_of("s_adj")) %>% ncol == 1){dplyr::filter(.,.data$s_adj == filter$s_adj)} else {.}} %>%
+          {if(dplyr::select(., dplyr::any_of("nace_r2")) %>% ncol == 1){dplyr::filter(.,.data$nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
+          {if(dplyr::select(., dplyr::any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(.,.data$cpa2_1 == codes.found$cpa2_1[j])} else {.}} %>%
+          dplyr::rename_with(.cols = dplyr::all_of(varcolname), .fn = ~paste0("na_item")) %>%
+          dplyr::mutate(na_item = codes.found$model_varname[j])
 
         # add subset to full, final dataset
-        full <- bind_rows(full, sub)
+        full <- dplyr::bind_rows(full, sub)
       }
     }
 
@@ -132,7 +138,6 @@ load_or_download_variables <- function(specification,
     }
 
   } else if(is.character(inputdata_directory)){ # not download but local directory
-
 
     if(file.exists(inputdata_directory) & !dir.exists(inputdata_directory)){
       stop("The variable 'inputdata_directory' must be a character path to a directory, not to a file.")}
@@ -161,8 +166,14 @@ load_or_download_variables <- function(specification,
       if(grepl("\\.(Rds|RDS|rds)$",pth)){
         tmp <- readRDS(file = pth)
       } else if (grepl("\\.(csv)$",pth)){
-        tmp <- read.csv(pth)
+        if (!requireNamespace("readr", quitely = TRUE)) {
+          stop("Package \"readr\" must be installed to read in .csv files.")
+        }
+        tmp <- readr::read_csv(pth, show_col_types = FALSE, guess_max = 1000000)
       } else if (grepl("\\.(xls|xlsx)$",pth)){
+        if (!requireNamespace("readxl", quitely = TRUE)) {
+          stop("Package \"readxl\" must be installed to read in .xls or .xlsx files.")
+        }
         tmp <- readxl::read_excel(path = pth, guess_max = 1000000)
         #stop("Loading from xls or xlsx file not yet implemented.)
       }
@@ -176,14 +187,14 @@ load_or_download_variables <- function(specification,
       #     curfilter <- filter_list[[codes.found[j]]]
       #     # choose subset according to filter
       #     sub <- tmp %>%
-      #       filter(if_all(na_item, ~ . == codes.found[j])) %>%
-      #       filter(geo == curfilter$geo & unit == curfilter$unit) %>%
-      #       {if(select(., any_of("s_adj")) %>% ncol == 1){filter(.,s_adj == curfilter$s_adj)} else {.}} %>%
-      #       {if(select(., any_of("nace_r2")) %>% ncol == 1){filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
-      #       mutate(na_item = codes.found$var.ids[j])
+      #       dplyr::filter(dplyr::if_all(na_item, ~ . == codes.found[j])) %>%
+      #       dplyr::filter(geo == curfilter$geo & unit == curfilter$unit) %>%
+      #       {if(dplyr::select(., dplyr::any_of("s_adj")) %>% ncol == 1){dplyr::filter(.,s_adj == curfilter$s_adj)} else {.}} %>%
+      #       {if(dplyr::select(., dplyr::any_of("nace_r2")) %>% ncol == 1){dplyr::filter(.,nace_r2 == codes.found$nace_r2[j])} else {.}} %>%
+      #       dplyr::mutate(na_item = codes.found$var.ids[j])
       #
       #     # add subset to full, final dataset
-      full <- rbind(full, tmp)
+      full <- dplyr::bind_rows(full, tmp)
       #   }
     }
 
@@ -208,22 +219,22 @@ load_or_download_variables <- function(specification,
   # might have to deal with unbalanced data (though arx/isat might deal with it?)
   # quick solution for our present case, might not work for all cases
   availability <- full %>%
-    group_by(na_item) %>%
-    summarise(
-      min_date = min(time),
-      max_date = max(time),
-      n = n()
+    dplyr::group_by(.data$na_item) %>%
+    dplyr::summarise(
+      min_date = min(.data$time),
+      max_date = max(.data$time),
+      n = dplyr::n()
     ) %>%
-    ungroup()
+    dplyr::ungroup()
 
   if(constrain.to.minimum.sample){
-    if (max(dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
+    if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
       warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
     }
     min_date <- max(availability$min_date) # highest minimum date
     max_date <- min(availability$max_date) # lowest maximum date
     full <- full %>%
-      filter(time >= min_date & time <= max_date)
+      dplyr::filter(.data$time >= min_date & .data$time <= max_date)
     # might still not be balanced but beginning- & end-points are balanced
     # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
   }
@@ -238,13 +249,19 @@ load_or_download_variables <- function(specification,
     }
 
     # which file ending was chosen
-    ending <- str_extract(string = save_to_disk, pattern = "\\.[:alpha:]+$")
+    ending <- stringr::str_extract(string = save_to_disk, pattern = "\\.[:alpha:]+$")
 
     if (ending %in% c(".RDS", ".rds", ".Rds")) {
       saveRDS(object = full, file = save_to_disk)
     } else if (ending == ".csv") {
-      write_csv(x = full, file = save_to_disk)
+      if (!requireNamespace("readr", quitely = TRUE)) {
+        stop("Package \"readr\" must be installed to save .csv files.")
+      }
+      readr::write_csv(x = full, file = save_to_disk)
     } else if (ending %in% c(".xls", ".xlsx")) {
+      if (!requireNamespace("writexl", quitely = TRUE)) {
+        stop("Package \"writexl\" must be installed to save .xls or .xlsx files.")
+      }
       writexl::write_xlsx(x = full, path = save_to_disk)
     } else {
       warning(paste0("File ending currently chosen in 'save_to_disk' is ",ending,", which is not yet implemented. Please choose one of RDS, rds, Rds, csv, xls, xlsx."))

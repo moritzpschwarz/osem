@@ -1,8 +1,10 @@
 #' unpack formulas
 #'
 #' NOTE: exported for now for interactive programming, later will be internal
+#' @param x String to split
+#' @param splits vector of elements to split the string by.
+#' @param ... Further arguments.
 #'
-#' @export
 
 strsplits <- function(x, splits, ...) {
   for (tosplit in splits)
@@ -21,7 +23,6 @@ strsplits <- function(x, splits, ...) {
 #' NOTE: exported for now, later will be internal
 #' @param specification A specification to be classified.
 #'
-#' @export
 
 classify_variables <- function(specification) {
 
@@ -37,10 +38,10 @@ classify_variables <- function(specification) {
   vars.x <- setdiff(vars.all, dep)
 
   # n are all variables that are in dep and have type == "n" in classification
-  vars.n <- specification[specification$type == "n", ] %>% pull(dependent)
+  vars.n <- specification[specification$type == "n", ] %>% dplyr::pull(.data$dependent)
 
   # d are all variables that are in dep and have type == "d" in classification
-  vars.d <- specification[specification$type == "d", ] %>% pull(dependent)
+  vars.d <- specification[specification$type == "d", ] %>% dplyr::pull(.data$dependent)
 
   # sanity check: all elements member of at least one set, no overlap between them -> partition
   stopifnot(setequal(vars.all, union(union(vars.x, vars.n), vars.d)))
@@ -50,7 +51,7 @@ classify_variables <- function(specification) {
 
   # output
   classification <- data.frame(var = vars.all) %>%
-    mutate(class = case_when(var %in% vars.x ~ "x",
+    dplyr::mutate(class = dplyr::case_when(var %in% vars.x ~ "x",
                              var %in% vars.n ~ "n",
                              var %in% vars.d ~ "d",
                              TRUE ~ NA_character_)
@@ -64,20 +65,26 @@ classify_variables <- function(specification) {
 #' Updates the aggregate model dataset with fitted values
 #'
 #' NOTE: exported for now, later will be internal
+#' @param orig_data Original data that is to be updated.
+#' @param new_data New dataset that will update the original data.
 #'
-#' @export
 
 update_data <- function(orig_data, new_data) {
 
   # which values to add (always add fitted level)
   add <- new_data %>%
-    select(contains(c("time", ".level.hat")))
+    dplyr::select(dplyr::contains(c("time", ".level.hat")))
 
   # change name to make consistent with identify_module_data()
   cnames <- colnames(add)
   cur_name <- gsub("\\.level\\.hat","",cnames[cnames != "time"])
-  orig_name_index <- grep(cur_name,orig_data %>% distinct(na_item) %>% pull, fixed = TRUE)
-  orig_data_names <- orig_data %>% distinct(na_item) %>% pull
+  orig_name_index <- grep(cur_name,orig_data %>%
+                            dplyr::distinct(.data$na_item) %>%
+                            dplyr::pull(), fixed = TRUE)
+
+  orig_data_names <- orig_data %>%
+    dplyr::distinct(.data$na_item) %>%
+    dplyr::pull()
   orig_name <- orig_data_names[orig_name_index]
 
   cnames[cnames != "time"] <- gsub(cur_name, orig_name,cnames[cnames != "time"])
@@ -87,13 +94,13 @@ update_data <- function(orig_data, new_data) {
 
   # bring original data into wide format
   orig_data_wide <- orig_data %>%
-    pivot_wider(names_from = na_item, values_from = values)
+    tidyr::pivot_wider(names_from = "na_item", values_from = "values")
 
   # combine
-  final_wide <- full_join(x = orig_data_wide, y = add, by = "time")
+  final_wide <- dplyr::full_join(x = orig_data_wide, y = add, by = "time")
 
   # pivot longer again b/c is how clean_data() and identify_module_data() work
-  final <- pivot_longer(final_wide, cols = !time, names_to = "na_item", values_to = "values")
+  final <- tidyr::pivot_longer(final_wide, cols = !"time", names_to = "na_item", values_to = "values")
 
   return(final)
 

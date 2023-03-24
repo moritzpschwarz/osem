@@ -6,6 +6,13 @@
 \usage{
 strsplits(x, splits, ...)
 }
+\arguments{
+\item{x}{String to split}
+
+\item{splits}{vector of elements to split the string by.}
+
+\item{...}{Further arguments.}
+}
 \description{
 NOTE: exported for now for interactive programming, later will be internal
 }

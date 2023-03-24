@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-#' spec <- tibble(
+#' spec <- dplyr::tibble(
 #'   type = c(
 #'     "d",
 #'     "d",
@@ -61,29 +61,29 @@ forecast_model <- function(model,
   classification <- classify_variables(specification = model$module_order_eurostatvars)
 
   classification %>%
-    filter(class == "x") %>%
-    pull(var) -> exog_vars
+    dplyr::filter(.data$class == "x") %>%
+    dplyr::pull(.data$var) -> exog_vars
 
   if (is.null(exog_predictions) & exog_fill_method == "last") {
     message("No exogenous values provided. Model will use the last available value.\nAlternative is exog_fill_method = 'AR'.")
     exog_df <- model$full_data %>%
-      filter(na_item %in% exog_vars) %>%
-      group_by(na_item) %>%
-      filter(time == max(time)) #%>%
-    #mutate(na_item = janitor::make_clean_names(na_item))
+      dplyr::filter(.data$na_item %in% exog_vars) %>%
+      dplyr::group_by(.data$na_item) %>%
+      dplyr::filter(.data$time == max(.data$time)) #%>%
+    #dplyr::mutate(na_item = janitor::make_clean_names(na_item))
 
     if(!all(exog_df$time == exog_df$time[1])){
       warning("Latest Exogenous Data is not available for all variables. For those where most recent data is not available, the period before that is used.")
     }
 
     exog_df %>%
-      group_by(na_item) %>%
-      rowwise() %>%
-      mutate(time = list(seq(time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
-      unnest(time) %>%
-      ungroup %>%
-      mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
-      pivot_wider(names_from = "na_item",values_from = "values", id_cols = c(time,q)) %>%
+      dplyr::group_by(.data$na_item) %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
+      tidyr::unnest("time") %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
+      tidyr::pivot_wider(names_from = "na_item",values_from = "values", id_cols = c("time","q")) %>%
 
       fastDummies::dummy_cols(
         select_columns = "q", remove_first_dummy = FALSE,
@@ -94,17 +94,17 @@ forecast_model <- function(model,
     message(paste0("No exogenous values provided. Model will forecast the exogenous values with an AR", ar.fill.max," process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').\nAlternative is exog_fill_method = 'last'."))
 
     exog_df_intermed <- model$full_data %>%
-      filter(na_item %in% exog_vars) %>%
-      group_by(na_item) %>%
-      pivot_wider(id_cols = time, names_from = na_item, values_from = values)
+      dplyr::filter(.data$na_item %in% exog_vars) %>%
+      dplyr::group_by(.data$na_item) %>%
+      tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values")
 
     exog_df_forecast <- model$full_data %>%
-      filter(time == max(time)) %>%
-      distinct(time) %>%
-      rowwise() %>%
-      mutate(time = list(seq(time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
-      unnest(time) %>%
-      ungroup
+      dplyr::filter(.data$time == max(.data$time)) %>%
+      dplyr::distinct(dplyr::across("time")) %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
+      tidyr::unnest("time") %>%
+      dplyr::ungroup()
 
     for(col_to_forecast in seq_along(exog_df_intermed)){
       # col_to_forecast <- 2
@@ -112,19 +112,19 @@ forecast_model <- function(model,
       # skip the time column
       if(col_to_forecast == 1){next}
       exog_df_intermed %>%
-        mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
+        dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
         fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = TRUE,remove_selected_columns = TRUE) %>%
-        arrange(time) -> to_ar_predict
+        dplyr::arrange(.data$time) -> to_ar_predict
 
       to_ar_predict %>%
-        pull(col_to_forecast) -> y_ar_predict
+        dplyr::pull(col_to_forecast) -> y_ar_predict
 
       to_ar_predict %>%
-        select(q_2, q_3, q_4) -> x_ar_predict
+        dplyr::select("q_2", "q_3", "q_4") -> x_ar_predict
 
-      isat_ar_predict <- isat(y = y_ar_predict, mxreg = x_ar_predict,
-                              mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
-                              print.searchinfo = FALSE, sis = TRUE, iis = TRUE)
+      isat_ar_predict <- gets::isat(y = y_ar_predict, mxreg = x_ar_predict,
+                                    mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
+                                    print.searchinfo = FALSE, sis = TRUE, iis = TRUE)
 
 
       # get iis dummies
@@ -134,7 +134,7 @@ forecast_model <- function(model,
                            ncol = nrow(gets::isatdates(isat_ar_predict)$iis),
                            dimnames  = list(NULL,
                                             gets::isatdates(isat_ar_predict)$iis$breaks)) %>%
-          as_tibble()
+          dplyr::as_tibble()
       }
 
       # get sis dummies
@@ -144,39 +144,39 @@ forecast_model <- function(model,
                            ncol = nrow(gets::isatdates(isat_ar_predict)$sis),
                            dimnames  = list(NULL,
                                             gets::isatdates(isat_ar_predict)$sis$breaks)) %>%
-          as_tibble()
+          dplyr::as_tibble()
       }
 
       model$full_data %>%
-        filter(time == max(time)) %>%
-        distinct(time) %>%
-        rowwise() %>%
-        mutate(time = list(seq(time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
-        unnest(time) %>%
-        ungroup %>%
+        dplyr::filter(.data$time == max(.data$time)) %>%
+        dplyr::distinct(dplyr::across("time")) %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
+        tidyr::unnest("time") %>%
+        dplyr::ungroup() %>%
 
-        mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
+        dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
         fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = TRUE, remove_selected_columns = TRUE) %>%
 
-        {if (exists("iis_pred")) {bind_cols(.,iis_pred)} else {.}} %>%
-        {if (exists("sis_pred")) {bind_cols(.,sis_pred)} else {.}} %>%
+        {if (exists("iis_pred")) {dplyr::bind_cols(.,iis_pred)} else {.}} %>%
+        {if (exists("sis_pred")) {dplyr::bind_cols(.,sis_pred)} else {.}} %>%
 
-        select(-time) -> x_ar_predict_pred_df
+        dplyr::select(-"time") -> x_ar_predict_pred_df
 
       if (exists("iis_pred")) {rm(iis_pred)}
       if (exists("sis_pred")) {rm(sis_pred)}
 
-      predict(object = isat_ar_predict, n.ahead = n.ahead, newmxreg = x_ar_predict_pred_df) %>%
+      gets::predict.isat(object = isat_ar_predict, n.ahead = n.ahead, newmxreg = x_ar_predict_pred_df) %>%
         as.vector -> pred_values
 
-      tibble(data = pred_values) %>%
+      dplyr::tibble(data = pred_values) %>%
         setNames(names(exog_df_intermed)[col_to_forecast]) %>%
-        bind_cols(exog_df_forecast,.) -> exog_df_forecast
+        dplyr::bind_cols(exog_df_forecast,.) -> exog_df_forecast
 
     }
 
     exog_df_forecast %>%
-      mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
+      dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
 
       fastDummies::dummy_cols(
         select_columns = "q", remove_first_dummy = FALSE,
@@ -185,7 +185,7 @@ forecast_model <- function(model,
 
 
   # 2. Forecasting step by step according to model order ------------------------------------------------
-  prediction_list <- tibble(
+  prediction_list <- dplyr::tibble(
     index = model$module_order_eurostatvars$index,
     order = model$module_order_eurostatvars$order,
     predict.isat_object = list(NA_complex_),
@@ -199,71 +199,71 @@ forecast_model <- function(model,
     # i = 1
 
     current_spec <- model$module_order_eurostatvars %>%
-      filter(order == i) %>%
+      dplyr::filter(.data$order == i) %>%
 
       # save original form of independent col
-      mutate(independent_orig = independent) %>%
+      dplyr::mutate(independent_orig = .data$independent) %>%
 
       # make sure each independent variable has a separate row
-      mutate(independent = gsub(" ", "", independent)) %>%
+      dplyr::mutate(independent = gsub(" ", "", .data$independent)) %>%
       #independent_eu = gsub(" ", "", independent_eu),) %>%
-      rowwise() %>%
-      mutate(#ind_vars_eu = list(strsplits(independent_eu,c("\\-", "\\+"))),
-        independent = list(strsplits(independent,c("\\-", "\\+")))) %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(#ind_vars_eu = list(strsplits(independent_eu,c("\\-", "\\+"))),
+        independent = list(strsplits(.data$independent,c("\\-", "\\+")))) %>%
 
       # following line added to deal with AR models when ind_vars is a list of NULL
-      #bind_rows(tibble(ind_vars_eu = list(""))) %>%
-      bind_rows(tibble(independent = list(""))) %>%
+      #dplyr::bind_rows(dplyr::tibble(ind_vars_eu = list(""))) %>%
+      dplyr::bind_rows(dplyr::tibble(independent = list(""))) %>%
 
       #nnest(ind_vars_eu, keep_empty = TRUE) %>%
-      unnest(independent, keep_empty = TRUE) %>%
-      drop_na(index) %>%
-      select(index,
-             #dependent_eu, independent_eu,ind_vars_eu,
-             dependent,
-             independent,
-             independent_orig) #%>%
-    #mutate(independent_eu = tolower(independent_eu),ind_vars_eu = tolower(ind_vars_eu))
+      tidyr::unnest("independent", keep_empty = TRUE) %>%
+      tidyr::drop_na("index") %>%
+      dplyr::select("index",
+                    #dependent_eu, independent_eu,ind_vars_eu,
+                    "dependent",
+                    "independent",
+                    "independent_orig") #%>%
+    #dplyr::mutate(independent_eu = tolower(independent_eu),ind_vars_eu = tolower(ind_vars_eu))
 
     if(model$module_order_eurostatvars$type[model$module_order_eurostatvars$order == i] != "d"){
       # set up
       # get isat obj
       model$module_collection %>%
-        filter(order == i) %>%
-        pull(model) %>% .[[1]] -> isat_obj
+        dplyr::filter(.data$order == i) %>%
+        dplyr::pull(.data$model) %>% .[[1]] -> isat_obj
 
       # get data obj
       model$module_collection %>%
-        filter(order == i) %>%
-        pull(dataset) %>% .[[1]] -> data_obj
+        dplyr::filter(.data$order == i) %>%
+        dplyr::pull(.data$dataset) %>% .[[1]] -> data_obj
 
       # determine ARDL or ECM
       is_ardl <- is.null(model$args$ardl_or_ecm) | identical(model$args$ardl_or_ecm,"ARDL")
 
       # determine log y
       ylog <- model$module_collection %>%
-        filter(order == i) %>%
-        pull(model.args) %>%
+        dplyr::filter(.data$order == i) %>%
+        dplyr::pull(.data$model.args) %>%
         .[[1]] %>%
         .$use_logs %in% c("both","y")
 
       # determine log x
       xlog <- model$module_collection %>%
-        filter(order == i) %>%
-        pull(model.args) %>%
+        dplyr::filter(.data$order == i) %>%
+        dplyr::pull(.data$model.args) %>%
         .[[1]] %>%
         .$use_logs %in% c("both","x")
 
       # determine x vars
       x_vars_basename <- model$module_collection %>%
-        filter(order == i) %>%
-        pull(model.args) %>%
+        dplyr::filter(.data$order == i) %>%
+        dplyr::pull(.data$model.args) %>%
         .[[1]] %>%
         .$x_vars_basename
 
       y_vars_basename <- model$module_collection %>%
-        filter(order == i) %>%
-        pull(model.args) %>%
+        dplyr::filter(.data$order == i) %>%
+        dplyr::pull(.data$model.args) %>%
         .[[1]] %>%
         .$dep_var_basename
 
@@ -311,7 +311,7 @@ forecast_model <- function(model,
                            ncol = nrow(gets::isatdates(isat_obj)$iis),
                            dimnames  = list(NULL,
                                             gets::isatdates(isat_obj)$iis$breaks)) %>%
-          as_tibble()
+          dplyr::as_tibble()
       }
 
       # get sis dummies
@@ -321,38 +321,38 @@ forecast_model <- function(model,
                            ncol = nrow(gets::isatdates(isat_obj)$sis),
                            dimnames  = list(NULL,
                                             gets::isatdates(isat_obj)$sis$breaks)) %>%
-          as_tibble()
+          dplyr::as_tibble()
       }
 
       if ("trend" %in% names(coef(isat_obj))) {
-        trend_pred <- tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead))
+        trend_pred <- dplyr::tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead))
       }
 
 
       exog_df_ready %>%
 
         # select the relevant variables
-        select(time, any_of(c("q_1","q_2","q_3","q_4")), any_of(names(data_obj))) %>%
+        dplyr::select("time", dplyr::any_of(c("q_1","q_2","q_3","q_4")), dplyr::any_of(names(data_obj))) %>%
 
         # drop not used quarterly dummies
-        select(-any_of(q_pred_todrop)) %>%
+        dplyr::select(-dplyr::any_of(q_pred_todrop)) %>%
 
         {if ("trend" %in% names(coef(isat_obj))) {
-          bind_cols(.,trend_pred)
+          dplyr::bind_cols(.,trend_pred)
         } else { . }} %>%
 
         {if (!is.null(gets::isatdates(isat_obj)$iis)) {
-          bind_cols(.,iis_pred)
+          dplyr::bind_cols(.,iis_pred)
         } else { . }} %>%
 
         {if (!is.null(gets::isatdates(isat_obj)$sis)) {
-          bind_cols(.,sis_pred)
+          dplyr::bind_cols(.,sis_pred)
         } else { . }} %>%
 
         {if (xlog) {
-          mutate(.,
-                 across(.cols = any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
-                 #across(starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
+          dplyr::mutate(.,
+                        dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
+                        #dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
           )
         } else {.}} -> current_pred_raw
 
@@ -364,81 +364,83 @@ forecast_model <- function(model,
         for (mvar in missing_vars) {
           # mvar = "p5g"
           model$module_order_eurostatvars %>%
-            filter(dependent == mvar) %>%
-            pull(index) -> mvar_model_index
+            dplyr::filter(.data$dependent == mvar) %>%
+            dplyr::pull(.data$index) -> mvar_model_index
 
           prediction_list %>%
-            filter(index == mvar_model_index) %>%
-            pull(predict.isat_object) %>%
+            dplyr::filter(.data$index == mvar_model_index) %>%
+            dplyr::pull(.data$predict.isat_object) %>%
             .[[1]] -> mvar_model_obj
 
           mvar_logs <- model$module_collection %>%
-            filter(index == mvar_model_index) %>%
-            with(model.args) %>%
+            dplyr::filter(.data$index == mvar_model_index) %>%
+            .$model.args %>%
             .[[1]] %>%
             .$use_logs
 
           mvar_euname <- model$module_collection %>%
-            filter(index == mvar_model_index) %>%
-            pull(dependent)
+            dplyr::filter(.data$index == mvar_model_index) %>%
+            dplyr::pull("dependent")
 
           mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
 
           # TODO: Here we can implement the forecast plume
           # currently we are using 'yhat' below - but the mvar_model_obj has all values of the ci.levels
-          mvar_tibble <- tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
+          mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
             setNames(mvar_name)
 
           if (!mvar_name %in% x_names_vec_nolag) {
             if (paste0("ln.",mvar_name) %in% x_names_vec_nolag) {
               mvar_tibble %>%
-                mutate(across(all_of(mvar_euname), log, .names = "ln.{.col}")) %>%
-                select(all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
+                dplyr::mutate(dplyr::across(dplyr::all_of(mvar_euname), log, .names = "ln.{.col}")) %>%
+                dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
             } else {
               stop("Error occurred in adding missing/lower estimated variables (likely identities) to a subsequent/higher model. This is likely being caused by either log specification or lag specifiction. Check code.")
             }
           }
 
-          current_pred_raw <- bind_cols(current_pred_raw,mvar_tibble)
+          current_pred_raw <- dplyr::bind_cols(current_pred_raw,mvar_tibble)
 
         }
       }
 
       data_obj %>%
-        select(time, all_of(x_names_vec_nolag)) %>%
+        dplyr::select("time", dplyr::all_of(x_names_vec_nolag)) %>%
 
         ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
         # The drop_na below was used because for GCapitalForm the value for July 2022 was missing - while it was there for FinConsExpHH
         # Now the question is whether the drop_na messes up the timing
-        drop_na %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
+        tidyr::drop_na() %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
 
-        bind_rows(current_pred_raw %>%
-                    #select(time, all_of(x_names_vec_nolag), any_of("trend"))) -> intermed
-                    select(time, all_of(x_names_vec_nolag))) -> intermed
+        dplyr::bind_rows(current_pred_raw %>%
+                           #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
+                           dplyr::select("time", dplyr::all_of(x_names_vec_nolag))) -> intermed
 
       if(ncol(intermed) > 1){
-        to_be_added <- tibble(.rows = nrow(intermed))
+        to_be_added <- dplyr::tibble(.rows = nrow(intermed))
         for (j in 1:max(ar_vec)) {
           intermed %>%
-            mutate(across(c(#starts_with("D."),
-              starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
-            select(c(#starts_with("D."),
-              starts_with("ln."))) -> inter_intermed
+            dplyr::mutate(dplyr::across(c(#dplyr::starts_with("D."),
+              dplyr::starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
+            dplyr::select(c(#dplyr::starts_with("D."),
+              dplyr::starts_with("ln."))) -> inter_intermed
 
           inter_intermed %>%
             setNames(paste0("L", j, ".", names(inter_intermed))) %>%
-            bind_cols(to_be_added, .) -> to_be_added
+            dplyr::bind_cols(to_be_added, .) -> to_be_added
         }
-        intermed <- bind_cols(intermed, to_be_added)
+        intermed <- dplyr::bind_cols(intermed, to_be_added)
       }
 
 
       intermed %>%
-        left_join(current_pred_raw %>%
-                    select(time, any_of("trend"), starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
-        drop_na %>%
-        select(-time) %>%
-        select(any_of(row.names(isat_obj$mean.results))) %>%
+        dplyr::left_join(current_pred_raw %>%
+                           dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
+                                         dplyr::starts_with("iis"), dplyr::starts_with("sis")),
+                         by = "time") %>%
+        tidyr::drop_na() %>%
+        dplyr::select(-"time") %>%
+        dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
         return() -> pred_df
 
       #print(pred_df)
@@ -452,40 +454,45 @@ forecast_model <- function(model,
       # pred_df$test <- 10
       # pred_df$L1.ln.p31_s14_s15 <- backup
 
-      pred_obj <- predict(isat_obj, newmxreg = as.matrix(tail(pred_df, n.ahead)),
-                          n.ahead = n.ahead, plot = plot.forecast,
-                          ci.levels = ci.levels)
+      pred_obj <- gets::predict.isat(isat_obj, newmxreg = as.matrix(utils::tail(pred_df, n.ahead)),
+                                     n.ahead = n.ahead, plot = plot.forecast,
+                                     ci.levels = ci.levels)
 
       outvarname <- paste0(if (model$module_collection %>%
-                               filter(order == i) %>%
-                               with(model.args) %>%
+                               dplyr::filter(.data$order == i) %>%
+                               .$model.args %>%
                                .[[1]] %>%
                                .$use_logs %in% c("both","y")) {"ln."} else {""},
-                           current_spec %>% pull(dependent) %>% unique)
+                           current_spec %>% dplyr::pull("dependent") %>% unique)
 
-      tibble(time = current_pred_raw %>% pull(time),
-             value = as.numeric(pred_obj[,1])) %>%
+
+      dplyr::tibble(time = current_pred_raw %>% dplyr::pull(.data$time),
+                    value = as.numeric(pred_obj[,1])) %>%
         setNames(c("time",outvarname)) -> central_estimate
 
-      # tibble(time = current_pred_raw %>% pull(time)) %>%
-      #   bind_cols(pred_obj[,-1]) %>%
+      # dplyr::tibble(time = current_pred_raw %>% dplyr::pull(time)) %>%
+      #   dplyr::bind_cols(pred_obj[,-1]) %>%
       #   setNames(c("time",paste0(outvarname,".", gsub("^y","",names(pred_obj[,-1]))))) -> all_estimates
 
 
 
-      prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(as_tibble(pred_obj)))
-      prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(intermed %>%
-                                                                                  left_join(current_pred_raw %>%
-                                                                                              select(time, starts_with("q_"), starts_with("iis"), starts_with("sis")), by = "time") %>%
-                                                                                  drop_na))
-      prediction_list[prediction_list$order == i, "central.estimate"] <- tibble(central_estimate = list(central_estimate))
-      #prediction_list[prediction_list$order == i, "all.estimates"] <- tibble(all_estimates = list(all_estimates))
+      prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::as_tibble(pred_obj)))
+      prediction_list[prediction_list$order == i, "data"] <- dplyr::tibble(
+        data = list(intermed %>%
+                      dplyr::left_join(current_pred_raw %>% dplyr::select("time", dplyr::starts_with("q_"),
+                                                                          dplyr::starts_with("iis"),
+                                                                          dplyr::starts_with("sis")),
+                                       by = "time") %>%
+                      tidyr::drop_na()))
+      prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(central_estimate = list(central_estimate))
+      #prediction_list[prediction_list$order == i, "all.estimates"] <- dplyr::tibble(all_estimates = list(all_estimates))
+
 
     } else {
       # Loop goes to this part if the type of the module is not "d"
-      identity_pred <- tibble()
+      identity_pred <- dplyr::tibble()
       identity_pred <- exog_df_ready %>%
-        select(all_of(current_spec$independent[current_spec$independent %in% names(exog_df_ready)]))
+        dplyr::select(dplyr::all_of(current_spec$independent[current_spec$independent %in% names(exog_df_ready)]))
 
       identity_logs <- c(rep(FALSE,length(current_spec$independent[current_spec$independent %in% names(exog_df_ready)])))
 
@@ -496,35 +503,35 @@ forecast_model <- function(model,
         # mvar = "yf"
 
         model$module_order_eurostatvars %>%
-          filter(dependent == mvar) %>%
-          pull(index) -> mvar_model_index
+          dplyr::filter(.data$dependent == mvar) %>%
+          dplyr::pull(.data$index) -> mvar_model_index
 
         prediction_list %>%
-          filter(index == mvar_model_index) %>%
-          pull(predict.isat_object) %>%
+          dplyr::filter(.data$index == mvar_model_index) %>%
+          dplyr::pull(.data$predict.isat_object) %>%
           .[[1]] -> mvar_model_obj
 
         mvar_logs <- model$module_collection %>%
-          filter(index == mvar_model_index) %>%
-          with(model.args) %>%
+          dplyr::filter(.data$index == mvar_model_index) %>%
+          .$model.args %>%
           .[[1]] %>%
           .$use_logs
 
         identity_logs <- c(identity_logs, ifelse(mvar_logs %in% c("both","x") || is.null(mvar_logs), TRUE, FALSE))
 
         mvar_euname <- model$module_collection %>%
-          filter(index == mvar_model_index) %>%
-          pull(dependent)
+          dplyr::filter(.data$index == mvar_model_index) %>%
+          dplyr::pull("dependent")
 
         mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
 
-        mvar_tibble <- tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
+        mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
           setNames(mvar_name)
 
         if(ncol(identity_pred)==0){
           identity_pred <- mvar_tibble
         } else {
-          identity_pred <- bind_cols(identity_pred,mvar_tibble)
+          identity_pred <- dplyr::bind_cols(identity_pred,mvar_tibble)
         }
 
 
@@ -533,14 +540,14 @@ forecast_model <- function(model,
       # log all the exogenous columns, if any of the estimated columns is logged
       if(any(identity_logs) && !all(identity_logs)){
         identity_pred %>%
-          mutate(across(all_of(names(identity_pred)[!identity_logs]),
-                        .fns = list(ln = log), .names = "{.fn}.{col}")) %>%
-          select(-all_of(all_of(names(identity_pred)[!identity_logs]))) -> identity_pred
+          dplyr::mutate(dplyr::across(dplyr::all_of(names(identity_pred)[!identity_logs]),
+                                      .fns = list(ln = log), .names = "{.fn}.{col}")) %>%
+          dplyr::select(-dplyr::all_of(dplyr::all_of(names(identity_pred)[!identity_logs]))) -> identity_pred
       }
 
       # sum the identities
       cols_to_cycle <- gsub(" ","",strsplits(unique(current_spec$independent_orig), c("\\+", "\\-")))
-      operators <- str_extract_all(string = unique(current_spec$independent_orig), pattern = "\\+|\\-")[[1]]
+      operators <- stringr::str_extract_all(string = unique(current_spec$independent_orig), pattern = "\\+|\\-")[[1]]
 
       if(length(cols_to_cycle) != (length(operators)+1)){warning("Identity might be falsely calculated. Check operators.")}
 
@@ -565,17 +572,17 @@ forecast_model <- function(model,
       }
 
       outvarname <- paste0(#if(any(identity_logs) && !all(identity_logs)){"ln."} else {""},
-        current_spec %>% pull(dependent) %>% unique) #%>% tolower)
+        current_spec %>% dplyr::pull("dependent") %>% unique) #%>% tolower)
 
-      tibble(time = current_pred_raw %>% pull(time),
-             value = as.numeric(identity_pred_final[,1])) %>%
+      dplyr::tibble(time = current_pred_raw %>% dplyr::pull(.data$time),
+                    value = as.numeric(identity_pred_final[,1])) %>%
         setNames(c("time",outvarname)) -> central_estimate
 
 
       names(identity_pred_final) <- unique(current_spec$dependent)
-      prediction_list[prediction_list$order == i, "predict.isat_object"] <- tibble(predict.isat_object = list(tibble(yhat = identity_pred_final[,1])))
-      prediction_list[prediction_list$order == i, "data"] <- tibble(data = list(bind_cols(identity_pred_final, identity_pred)))
-      prediction_list[prediction_list$order == i, "central.estimate"] <- tibble(data = list(central_estimate))
+      prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::tibble(yhat = identity_pred_final[,1])))
+      prediction_list[prediction_list$order == i, "data"] <- dplyr::tibble(data = list(dplyr::bind_cols(identity_pred_final, identity_pred)))
+      prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(data = list(central_estimate))
     }
   }
 
