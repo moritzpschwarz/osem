@@ -7,7 +7,6 @@
 #' @param data A tibble or data.frame containing the full data for the aggregate
 #'   model.
 #' @param use_logs Character vector. Either "both", "x", or "y" to decide whether to use logs.
-#' @param ... Further arguments to be passed to 'estimate_module'
 #' @inheritParams identify_module_data
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
@@ -36,9 +35,7 @@ run_module <- function(
     saturation.tpval = 0.01,
     max.block.size = 20,
     gets_selection = TRUE,
-    selection.tpval = 0.01,
-    ...
-) {
+    selection.tpval = 0.01) {
 
   raw_data <- identify_module_data(module, classification, data)
 
@@ -70,6 +67,7 @@ run_module <- function(
     estimated_module <- estimate_module(clean_data = clean_df,
                                         dep_var_basename = dep,
                                         x_vars_basename = indep,
+                                        use_logs = use_logs,
                                         trend = trend,
                                         ardl_or_ecm = ardl_or_ecm,
                                         max.lag = max.lag,
