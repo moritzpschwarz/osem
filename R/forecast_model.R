@@ -277,10 +277,13 @@ forecast_model <- function(model,
         mconst <- FALSE
       }
 
-      # get ar
+      # identify any ar terms in the estimated data
       pred_ar_needed <- colnames(isat_obj$aux$mX)[grepl("ar[0-9]+",colnames(isat_obj$aux$mX))]
 
+      # this condition checks whether there are any ar terms that need to be created
       if (!is.null(pred_ar_needed) & !identical(character(0),pred_ar_needed)) {
+
+        # if we need AR terms, the following loop creates the names of those variables (incl. considering whether they are logged)
         ar_vec <- 0:max(as.numeric(gsub("ar","",pred_ar_needed)))
         y_names_vec <- c()
         for (ar in ar_vec) {
@@ -288,7 +291,9 @@ forecast_model <- function(model,
           y_names_vec <- c(y_names_vec,paste0(paste0(ifelse(ar == 0,"",paste0("L",ar,"."))),ifelse(ylog,"ln.",""),y_vars_basename))
         }
       } else {
+        # if we do not need any AR terms then we simply use the standard name (and add ln. if necessary)
         y_names_vec <- paste0(ifelse(ylog,"ln.",""),y_vars_basename)
+        ar_vec <- 0
       }
 
       if (!identical(character(0),x_vars_basename)) {
@@ -416,14 +421,15 @@ forecast_model <- function(model,
                            #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
                            dplyr::select("time", dplyr::all_of(x_names_vec_nolag))) -> intermed
 
+      # add the lagged x-variables
       if(ncol(intermed) > 1){
         to_be_added <- dplyr::tibble(.rows = nrow(intermed))
-        for (j in 1:max(ar_vec)) {
+        for (j in ar_vec) {
+          if(j == 0){next}
           intermed %>%
-            dplyr::mutate(dplyr::across(c(#dplyr::starts_with("D."),
-              dplyr::starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
-            dplyr::select(c(#dplyr::starts_with("D."),
-              dplyr::starts_with("ln."))) -> inter_intermed
+            dplyr::mutate(dplyr::across(-time, ~dplyr::lag(., n = j))) %>%
+            dplyr::starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
+            dplyr::select(-time) -> inter_intermed
 
           inter_intermed %>%
             setNames(paste0("L", j, ".", names(inter_intermed))) %>%
@@ -431,7 +437,6 @@ forecast_model <- function(model,
         }
         intermed <- dplyr::bind_cols(intermed, to_be_added)
       }
-
 
       intermed %>%
         dplyr::left_join(current_pred_raw %>%
@@ -458,12 +463,71 @@ forecast_model <- function(model,
                                      n.ahead = n.ahead, plot = plot.forecast,
                                      ci.levels = ci.levels)
 
+      # make samples from the model residuals and add them to the mean prediction
+      set.seed(seed)
+      res_draws <- sample(as.numeric(isat_obj$residuals), size = uncertainty_sample*n.ahead, replace = TRUE)
+      pred_draw_matrix <- as.vector(pred_obj$yhat) + matrix(res_draws,nrow = n.ahead)
+
+      # if there are any list columns then that means that a preceding variable has uncertainty
+      # then the pred_draw_matrix is replaced with the uncertainty estimates
+      if(chk_any_listcols){
+        preds_runs <- dplyr::tibble()
+        for(run in seq_along(1:uncertainty_sample)){
+
+          pred_df.all %>%
+            dplyr::mutate(across(-c(dplyr::any_of("trend"),
+                                    dplyr::starts_with("q_"),
+                                    dplyr::starts_with("iis"),
+                                    dplyr::starts_with("sis")),
+                                 ~purrr::map(., function(x){
+                                   if(!is.null(ncol(x))){
+                                     dplyr::pull(x, run)
+                                   } else {
+                                     x
+                                   }})
+            )) %>%
+            tidyr::unnest(-c(dplyr::any_of("trend"), dplyr::starts_with("q_"),dplyr::starts_with("iis"), dplyr::starts_with("sis"))) %>%
+            utils::tail(., n.ahead) %>%
+            as.matrix -> pred_df_run
+
+          pred_obj_run <- gets::predict.isat(isat_obj, newmxreg = pred_df_run,
+                                             n.ahead = n.ahead, plot = FALSE,
+                                             ci.levels = ci.levels)
+
+          dplyr::tibble(run = run,
+                        time = 1:n.ahead,
+                        pred = as.numeric(pred_obj_run$yhat)) %>%
+            dplyr::bind_rows(preds_runs, .) -> preds_runs
+        }
+        # here pred only takes into account the uncertainty in the x-variables
+        # pred_draws combines the model residual uncertainty for y and the uncertainty of the x-variables
+        preds_runs %>%
+          dplyr::mutate(pred_draws = pred + res_draws) -> pred_runs_final
+
+        pred_runs_final %>%
+          dplyr::select(c("run","time","pred_draws")) %>%
+          tidyr::pivot_wider(id_cols = "time", names_from = "run", values_from = "pred_draws") %>%
+          dplyr::select(-"time") %>%
+          as.matrix() -> pred_runs_final_matrix
+
+        dimnames(pred_runs_final_matrix) <- NULL
+
+        # now replace the pred_draw_matrix - this one only survives without being overwritten if there is no preceding uncertainty
+        pred_draw_matrix <- pred_runs_final_matrix
+
+      }
+      # } else {
+      #   pred_runs_final <- NULL
+      # }
+
+
       outvarname <- paste0(if (model$module_collection %>%
                                dplyr::filter(.data$order == i) %>%
                                .$model.args %>%
                                .[[1]] %>%
                                .$use_logs %in% c("both","y")) {"ln."} else {""},
                            current_spec %>% dplyr::pull("dependent") %>% unique)
+
 
 
       dplyr::tibble(time = current_pred_raw %>% dplyr::pull(.data$time),
