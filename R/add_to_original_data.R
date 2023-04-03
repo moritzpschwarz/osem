@@ -14,7 +14,6 @@
 #' @return A tibble with the fitted values as one column.
 #'
 #'
-#' @export
 #'
 #' @examples
 #' sample_data <- dplyr::tibble(
@@ -24,9 +23,11 @@
 #'   ), each = 2),
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
-#' sample_data_clean <- clean_data(sample_data, max.lag = 4)
-#' estimation <- estimate_module(sample_data_clean, "yvar", "xvar")
-#' add_to_original_data(sample_data_clean, estimation$best_model, dep_var_basename = "yvar")
+#' sample_data_clean <- aggregate.model:::clean_data(sample_data, max.lag = 4)
+#' estimation <- aggregate.model:::estimate_module(sample_data_clean, "yvar", "xvar")
+#' aggregate.model:::add_to_original_data(
+#'   sample_data_clean, estimation$best_model,
+#'   dep_var_basename = "yvar")
 add_to_original_data <- function(clean_data,
                                  isat_object,
                                  dep_var_basename = "imports_of_goods_and_services",

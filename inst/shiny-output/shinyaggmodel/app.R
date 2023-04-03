@@ -19,7 +19,7 @@ ui <- fluidPage(
                 dateRangeInput(inputId = "range_plot", label = "Date Range for Plots",
                                start = as.Date("1960-01-01"), end = Sys.Date()),
              mainPanel(
-               plotOutput("plots", width = 1000, height = 1500)
+               plotOutput("plots")
              )
     ),
     tabPanel("Equations", fluid = TRUE,
@@ -59,23 +59,23 @@ server <- function(input, output) {
 
   wide <- reactive({
     aggmod()$full_data %>%
-      tidyr::pivot_wider(names_from = na_item, values_from = values)
+      pivot_wider(names_from = na_item, values_from = values)
   })
 
   sel <- reactive({
     f <- colnames(wide())[grep(colnames(wide()), pattern = "\\.hat")]
     basef <- sub("\\.hat*", "", f)
     sub <- wide() %>%
-      dplyr::select(time, union(basef, f)) %>%
-      tidyr::pivot_longer(cols = !time, names_to = c("variable", "type"), names_sep = "\\.", values_to = "value") %>%
-      dplyr::mutate(type = dplyr::case_when(is.na(type) ~ "observed",
+      select(time, union(basef, f)) %>%
+      pivot_longer(cols = !time, names_to = c("variable", "type"), names_sep = "\\.", values_to = "value") %>%
+      mutate(type = case_when(is.na(type) ~ "observed",
                               type == "hat" ~ "fitted"))
     return(sub)
   })
 
   eq <- reactive({
     modulesprint <- aggmod()$module_collection %>%
-      dplyr::filter(type == "n")
+      filter(type == "n")
     wholeprint <- ""
     for (i in 1:NROW(modulesprint)) {
       wholeprint <- capture.output(print(modulesprint[[i, "model"]]), file = NULL)
@@ -106,7 +106,7 @@ server <- function(input, output) {
   output$spec <- DT::renderDT(aggmod()$module_order_eurostatvars)
   output$plots <- renderPlot({
     sel() %>%
-      dplyr::filter(time >= as.Date(input$range_plot[1]) & time <= as.Date(input$range_plot[2])) %>%
+      filter(time >= as.Date(input$range_plot[1]) & time <= as.Date(input$range_plot[2])) %>%
     ggplot2::ggplot(ggplot2::aes(x = time, y = value, color = type)) +
       ggplot2::geom_line() +
       ggplot2::facet_wrap(facets = "variable", scales = "free", nrow = length(unique(sel()$variable)))

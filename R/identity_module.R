@@ -8,7 +8,6 @@
 #' @return Returns the original tibble or data.frame \code{data} in wide format
 #'   and appended with the fitted values of the module.
 #'
-#' @export
 
 identity_module <- function(module, data, classification) {
 
@@ -23,8 +22,8 @@ identity_module <- function(module, data, classification) {
 
   # check state of all that appear and translate to hat where necessary
   trans <- classification[(classification$var %in% indep), ] %>%
-    dplyr::filter(class %in% c("n", "d")) %>%
-    dplyr::mutate(vartrans = paste0(var, ".hat"))
+    dplyr::filter(.data$class %in% c("n", "d")) %>%
+    dplyr::mutate(vartrans = paste0(.data$var, ".hat"))
 
   # translate
   for (i in 1:NROW(trans)) {
@@ -33,7 +32,7 @@ identity_module <- function(module, data, classification) {
 
   # calculate fitted values
   data %>%
-    tidyr::pivot_wider(id_cols = time, names_from = na_item, values_from = values) -> dat_tmp
+    tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") -> dat_tmp
 
   dat_tmp_names <- names(dat_tmp)
 

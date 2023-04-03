@@ -11,7 +11,6 @@
 #'
 #' @return A tibble with the cleaned data.
 #'
-#' @export
 #'
 #' @examples
 #' sample_data <- dplyr::tibble(
@@ -21,19 +20,20 @@
 #'   ), each = 2),
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
-#' clean_data(sample_data, max.lag = 4)
+#' aggregate.model:::clean_data(sample_data, max.lag = 4)
 
 clean_data <- function(raw_data,
                        max.lag = 4,
                        trend = TRUE) {
+
   raw_data %>%
-    dplyr::select(na_item, time, values) %>%
-    tidyr::pivot_wider(id_cols = time, names_from = na_item, values_from = values) %>%
+    dplyr::select("na_item", "time", "values") %>%
+    tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
     #janitor::clean_names() %>%
     #dplyr::rename_with(.fn = tolower) %>%
-    dplyr::arrange(., time) %>%
+    dplyr::arrange(.data$time) %>%
     dplyr::mutate(
-      dplyr::across(-time, list(ln = log), .names = "{.fn}.{.col}"),
+      dplyr::across(-"time", list(ln = log), .names = "{.fn}.{.col}"),
       dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
     ) -> intermed
 
@@ -49,13 +49,13 @@ clean_data <- function(raw_data,
   intermed %>%
     dplyr::bind_cols(to_be_added) %>%
     dplyr::mutate(index = 1:dplyr::n()) %>%
-    dplyr::relocate(index) %>%
-    dplyr::mutate(q = lubridate::quarter(time, with_year = FALSE)) %>%
+    dplyr::relocate("index") %>%
+    dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
     fastDummies::dummy_cols(
       select_columns = "q", remove_first_dummy = TRUE,
       remove_selected_columns = TRUE
     ) %>%
-    {if(trend){dplyr::mutate(.,trend = as.numeric(as.factor(time)),.after = time)} else {.}} -> cleaned_data
+    {if(trend){dplyr::mutate(.,trend = as.numeric(as.factor(.data$time)),.after = "time")} else {.}} -> cleaned_data
 
   return(cleaned_data)
 

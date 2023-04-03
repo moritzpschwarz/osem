@@ -29,7 +29,6 @@
 #' and data retrieval process.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
-#' @param ... further arguments to be passed to \code{estimate_module}.
 #'
 #' @return An object of class \link[=new_aggmod]{aggmod}, which is a named list
 #'   with four elements:
@@ -103,8 +102,8 @@ run_model <- function(specification,
                       saturation.tpval = 0.01,
                       max.block.size = 20,
                       gets_selection = TRUE,
-                      selection.tpval = 0.01,
-                      ...) {
+                      selection.tpval = 0.01
+                      ) {
 
   if(!(is.data.frame(specification) | is.matrix(specification))){
     stop("'specification' must be a data.frame, tibble, or matrix object. Check the documentation how a specification object must look like.")
@@ -166,6 +165,7 @@ run_model <- function(specification,
       module = module_order_eurostatvars[module_order_eurostatvars$order == i, ],
       data = tmp_data,
       classification = classification,
+      use_logs = use_logs,
       trend = trend,
       ardl_or_ecm = ardl_or_ecm,
       max.lag = max.lag,
@@ -173,8 +173,7 @@ run_model <- function(specification,
       saturation.tpval = saturation.tpval,
       max.block.size = max.block.size,
       gets_selection = gets_selection,
-      selection.tpval = selection.tpval,
-      ...
+      selection.tpval = selection.tpval
     )
 
     # store module estimates dataset, including fitted values

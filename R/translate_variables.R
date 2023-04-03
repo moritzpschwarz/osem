@@ -18,7 +18,6 @@
 #'   two added columns for the model variable name (\code{model_varname}) and
 #'   the dataset identifier (\code{dataset_id}).
 #'
-#' @export
 
 
 translate_variables <- function(specification, dictionary = NULL) {
@@ -87,9 +86,9 @@ translate_variables <- function(specification, dictionary = NULL) {
   # add the translated columns
   specification <- specification %>%
     dplyr::mutate(dependent_eu = dep,
-           independent_eu = indep) %>%
-    dplyr::relocate(dependent_eu, .after = dependent) %>%
-    dplyr::relocate(independent_eu, .after = independent)
+                  independent_eu = indep) %>%
+    dplyr::relocate("dependent_eu", .after = "dependent") %>%
+    dplyr::relocate("independent_eu", .after = "independent")
 
   return(specification)
 

@@ -8,7 +8,7 @@ Description: What the package does (one paragraph).
 License: AGPL (>= 3)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Depends: 
     R (>= 3.5)
 Imports: 
@@ -19,19 +19,21 @@ Imports:
     fastDummies,
     lubridate,
     rlang,
-    magrittr
+    magrittr,
+    stringr,
+    utils,
+    ggplot2,
+    scales
 LazyData: true
 Suggests: 
-    stringr,
-    ggplot2,
-    utils,
     shiny,
     readxl,
     readr,
-    scales,
     writexl,
     DT,
     ggraph,
     testthat (>= 3.0.0),
-    tidygraph
+    tidygraph,
+    plotly,
+    purrr
 Config/testthat/edition: 3

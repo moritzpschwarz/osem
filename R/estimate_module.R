@@ -14,7 +14,6 @@
 #' @param selection.tpval Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.
 #'
 #' @return A list containing all estimated models, with the model with the smallest BIC under 'best_model'.
-#' @export
 #'
 #' @importFrom stats BIC coef fitted setNames
 #'
@@ -26,8 +25,8 @@
 #'   ), each = 2),
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
-#' sample_data_clean <- clean_data(sample_data, max.lag = 4)
-#' estimate_module(sample_data_clean, "yvar", "xvar")
+#' sample_data_clean <- aggregate.model:::clean_data(sample_data, max.lag = 4)
+#' aggregate.model:::estimate_module(sample_data_clean, "yvar", "xvar")
 #'
 estimate_module <- function(clean_data,
                             dep_var_basename = "imports_of_goods_and_services",
@@ -180,13 +179,13 @@ estimate_module <- function(clean_data,
   best_isat_model.selected <- gets::gets(best_isat_model,
                                          print.searchinfo = FALSE,
                                          t.pval = selection.tpval)
-  
+
   retained.coefs <- row.names(best_isat_model.selected$mean.results)
   retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
   retained.xvars <- as.matrix(xvars[,retained.coefs])
-  
+
   retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
-  
+
   best_isat_model.selected.isat <- gets::isat(y = yvar,
                                               ar = best_isat_model$aux$args$ar,
                                               mc = best_isat_model$aux$args$mc,
