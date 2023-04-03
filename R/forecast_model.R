@@ -492,7 +492,7 @@ forecast_model <- function(model,
 
           pred_obj_run <- gets::predict.isat(isat_obj, newmxreg = pred_df_run,
                                              n.ahead = n.ahead, plot = FALSE,
-                                             ci.levels = ci.levels)
+                                             ci.levels = ci.levels, n.sim = 1)
 
           dplyr::tibble(run = run,
                         time = 1:n.ahead,
