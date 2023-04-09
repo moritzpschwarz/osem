@@ -49,10 +49,8 @@ the column names and the structure of the specification table must
 follow the basic structure below.
 
 ``` r
-spec <- tibble(
+spec <- dplyr::tibble(
   type = c(
-    "d",
-    "d",
     "n",
     "n",
     "n",
@@ -60,13 +58,10 @@ spec <- tibble(
     "d",
     "n",
     "n",
-    "d",
     "n",
     "n"
   ),
   dependent = c(
-    "StatDiscrep",
-    "TOTS",
     "Import",
     "FinConsExpHH",
     "GCapitalForm",
@@ -74,25 +69,20 @@ spec <- tibble(
     "GDP",
     "GValueAddGov", # as in NAM, technical relationship
     "GValueAddManuf", # more complicated in NAM, see 2.3.3 and 6.3.1
-    "DomDemand", # as in NAM
     "GValueAddConstr" ,
     "GValueAddWholesaletrade"
   ),
   independent = c(
-    "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
-    "GValueAdd + Import",
     "FinConsExpHH + GCapitalForm",
     "",
-    "FinConsExpGov",
-    "GDP",
+    "FinConsExpGov + FinConsExpHH",
+    "GDP + Export + GValueAddIndus",
     "GValueAddGov + GValueAddAgri + GValueAddIndus + GValueAddConstr + GValueAddWholesaletrade + GValueAddInfocom + GValueAddFinance + GValueAddRealest + GValueAddResearch + GValueAddArts",
     "FinConsExpGov", # as in NAM, technical relationship
-    "DomDemand + Export + LabCostManuf", # NAM uses 'export market indicator' not exports - unclear what this is, NAM uses unit labour cost in NOR manufacturing relative to the foreign price level - here is just total labour cost
-    "FinConsExpHH + FinConsExpGov + GCapitalForm",
-    "DomDemand + LabCostConstr + BuildingPermits", # in NAM some form of YFP2J = 0.3JBOL + 0.2JF P N + 0.3JO + 0.3JOIL. Unclear what this is. Using Building Permits instead
-    "DomDemand + Export + LabCostService"
-  )
-)
+    "Export + LabCostManuf", # NAM uses 'export market indicator' not exports - unclear what this is, NAM uses unit labour cost in NOR manufacturing relative to the foreign price level - here is just total labour cost
+    "LabCostConstr + BuildingPermits", # in NAM some form of YFP2J = 0.3JBOL + 0.2JF P N + 0.3JO + 0.3JOIL. Unclear what this is. Using Building Permits instead
+    "Export + LabCostService"
+  ))
 ```
 
 To summarise this, we can print out the specification table:
@@ -112,28 +102,6 @@ independent
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align:left;">
-d
-</td>
-<td style="text-align:left;">
-StatDiscrep
-</td>
-<td style="text-align:left;">
-TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-d
-</td>
-<td style="text-align:left;">
-TOTS
-</td>
-<td style="text-align:left;">
-GValueAdd + Import
-</td>
-</tr>
 <tr>
 <td style="text-align:left;">
 n
@@ -163,7 +131,7 @@ n
 GCapitalForm
 </td>
 <td style="text-align:left;">
-FinConsExpGov
+FinConsExpGov + FinConsExpHH
 </td>
 </tr>
 <tr>
@@ -174,7 +142,7 @@ n
 Emissions
 </td>
 <td style="text-align:left;">
-GDP
+GDP + Export + GValueAddIndus
 </td>
 </tr>
 <tr>
@@ -209,18 +177,7 @@ n
 GValueAddManuf
 </td>
 <td style="text-align:left;">
-DomDemand + Export + LabCostManuf
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-d
-</td>
-<td style="text-align:left;">
-DomDemand
-</td>
-<td style="text-align:left;">
-FinConsExpHH + FinConsExpGov + GCapitalForm
+Export + LabCostManuf
 </td>
 </tr>
 <tr>
@@ -231,7 +188,7 @@ n
 GValueAddConstr
 </td>
 <td style="text-align:left;">
-DomDemand + LabCostConstr + BuildingPermits
+LabCostConstr + BuildingPermits
 </td>
 </tr>
 <tr>
@@ -242,7 +199,7 @@ n
 GValueAddWholesaletrade
 </td>
 <td style="text-align:left;">
-DomDemand + Export + LabCostService
+Export + LabCostService
 </td>
 </tr>
 </tbody>
@@ -919,17 +876,17 @@ fe <- list(geo = "AT", s_adj = "SCA", unit = "I15")
 ff <- list(geo = "AT", s_adj = "SCA", unit = "I16")
 
 filter_list <- list(
-  "P7" = fa,
-  "YA0" = fb,
-  "P31_S14_S15" = fa,
-  "P5G" = fa,
-  "B1G" = fa,
-  "P3_S13" = fa,
-  "P6" = fa,
-  "GHG" = fc,
-  "B1GQ" = fa,
-  "PSQM" = fe,
-  "LM-LCI-TOT" = ff
+"P7" = fa,
+"YA0" = fb,
+"P31_S14_S15" = fa,
+"P5G" = fa,
+"B1G" = fa,
+"P3_S13" = fa,
+"P6" = fa,
+"GHG" = fc,
+"B1GQ" = fa,
+"PSQM" = fe,
+"LM-LCI-TOT" = ff
 )
 ```
 
@@ -947,33 +904,25 @@ model_result <- run_model(
   max.lag = 4,
   saturation.tpval = 0.1/NROW(clean_data)
 )
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/namq_10_gdp_date_code_FF.rds
-#> Table  namq_10_gdp  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/namq_10_gdp_date_code_FF.rds
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/namq_10_a10_date_code_FF.rds
-#> Table  namq_10_a10  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/namq_10_a10_date_code_FF.rds
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/env_ac_aigg_q_date_code_FF.rds
-#> Table  env_ac_aigg_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/env_ac_aigg_q_date_code_FF.rds
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/ei_lmlc_q_date_code_FF.rds
-#> Table  ei_lmlc_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/ei_lmlc_q_date_code_FF.rds
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/sts_cobp_q_date_code_FF.rds
-#> Table  sts_cobp_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpEzG1tu/eurostat/sts_cobp_q_date_code_FF.rds
+#> Table namq_10_a10 cached at C:\Users\morit\AppData\Local\Temp\Rtmpmwe6Vh/eurostat/namq_10_a10_date_code_FF.rds
+#> Table namq_10_gdp cached at C:\Users\morit\AppData\Local\Temp\Rtmpmwe6Vh/eurostat/namq_10_gdp_date_code_FF.rds
+#> Table env_ac_aigg_q cached at C:\Users\morit\AppData\Local\Temp\Rtmpmwe6Vh/eurostat/env_ac_aigg_q_date_code_FF.rds
+#> Table ei_lmlc_q cached at C:\Users\morit\AppData\Local\Temp\Rtmpmwe6Vh/eurostat/ei_lmlc_q_date_code_FF.rds
+#> Table sts_cobp_q cached at C:\Users\morit\AppData\Local\Temp\Rtmpmwe6Vh/eurostat/sts_cobp_q_date_code_FF.rds
 #> Warning in load_or_download_variables(specification =
 #> module_order_eurostatvars, : Unbalanced panel, will lose more than 20\% of data
 #> when making balanced
 #> 
 #> --- Estimation begins ---
-#> Estimating GCapitalForm = FinConsExpGov 
 #> Estimating GValueAddGov = FinConsExpGov 
+#> Estimating GValueAddManuf = Export + LabCostManuf 
+#> Estimating GValueAddConstr = LabCostConstr + BuildingPermits 
+#> Estimating GValueAddWholesaletrade = Export + LabCostService 
 #> Estimating FinConsExpHH =  
-#> Estimating Import = FinConsExpHH + GCapitalForm 
-#> Constructing DomDemand = FinConsExpHH + FinConsExpGov + GCapitalForm 
-#> Constructing TOTS = GValueAdd + Import 
-#> Estimating GValueAddManuf = DomDemand + Export + LabCostManuf 
-#> Estimating GValueAddConstr = DomDemand + LabCostConstr + BuildingPermits 
-#> Estimating GValueAddWholesaletrade = DomDemand + Export + LabCostService 
-#> Constructing StatDiscrep = TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export 
 #> Constructing GDP = GValueAddGov + GValueAddAgri + GValueAddIndus + GValueAddConstr + GValueAddWholesaletrade + GValueAddInfocom + GValueAddFinance + GValueAddRealest + GValueAddResearch + GValueAddArts 
-#> Estimating Emissions = GDP
+#> Estimating GCapitalForm = FinConsExpGov + FinConsExpHH 
+#> Estimating Emissions = GDP + Export + GValueAddIndus 
+#> Estimating Import = FinConsExpHH + GCapitalForm
 ```
 
 The first time that we run this, all data will be downloaded and saved
@@ -1009,7 +958,7 @@ Once we are done, we can plot the forecast:
 
 ``` r
 plot(model_forecast, order.as.run = TRUE)
-#> Warning: Removed 3 row(s) containing missing values (geom_path).
+#> Warning: Removed 2 rows containing missing values (`geom_line()`).
 ```
 
 <img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
