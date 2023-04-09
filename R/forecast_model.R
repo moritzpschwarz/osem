@@ -428,7 +428,6 @@ forecast_model <- function(model,
           if(j == 0){next}
           intermed %>%
             dplyr::mutate(dplyr::across(-time, ~dplyr::lag(., n = j))) %>%
-            dplyr::starts_with("ln.")), ~ dplyr::lag(., n = j))) %>%
             dplyr::select(-time) -> inter_intermed
 
           inter_intermed %>%
