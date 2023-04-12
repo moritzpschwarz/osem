@@ -176,26 +176,26 @@ estimate_module <- function(clean_data,
 
   ## gets selection on the best model ------------
   if(gets_selection){
-  best_isat_model.selected <- gets::gets(best_isat_model,
-                                         print.searchinfo = FALSE,
-                                         t.pval = selection.tpval)
+    best_isat_model.selected <- gets::gets(best_isat_model,
+                                           print.searchinfo = FALSE,
+                                           t.pval = selection.tpval)
 
-  retained.coefs <- row.names(best_isat_model.selected$mean.results)
-  retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
-  retained.xvars <- as.matrix(xvars[,retained.coefs])
+    retained.coefs <- row.names(best_isat_model.selected$mean.results)
+    retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
+    retained.xvars <- as.matrix(xvars[,retained.coefs])
 
-  retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
+    retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
 
-  best_isat_model.selected.isat <- gets::isat(y = yvar,
-                                              ar = best_isat_model$aux$args$ar,
-                                              mc = best_isat_model$aux$args$mc,
-                                              mxreg = retained.xvars,
-                                              plot = FALSE,
-                                              print.searchinfo = FALSE,
-                                              iis = TRUE,
-                                              sis = TRUE,
-                                              t.pval = saturation.tpval)
-}
+    best_isat_model.selected.isat <- gets::isat(y = yvar,
+                                                ar = best_isat_model$aux$args$ar,
+                                                mc = best_isat_model$aux$args$mc,
+                                                mxreg = retained.xvars,
+                                                plot = FALSE,
+                                                print.searchinfo = FALSE,
+                                                iis = TRUE,
+                                                sis = TRUE,
+                                                t.pval = saturation.tpval)
+  }
 
 
   out <- list()

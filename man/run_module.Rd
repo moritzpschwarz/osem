@@ -49,7 +49,6 @@ well as for the independent variables.}
 \item{gets_selection}{Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.}
 
 \item{selection.tpval}{Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.}
-
 }
 \value{
 Returns a list with two named elements.

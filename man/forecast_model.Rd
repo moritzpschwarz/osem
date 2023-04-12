@@ -11,11 +11,13 @@ forecast_model(
   ci.levels = c(0.5, 0.66, 0.95),
   exog_fill_method = "AR",
   ar.fill.max = 4,
-  plot.forecast = TRUE
+  plot.forecast = TRUE,
+  uncertainty_sample = 100,
+  seed = 1234
 )
 }
 \arguments{
-\item{model}{An aggregate model of class 'aggmod'}
+\item{model}{An aggregate model object of class 'aggmod'.}
 
 \item{exog_predictions}{A data.frame or tibble with values for the exogenous values. The number of rows of this data must be equal to n.ahead.}
 
@@ -28,6 +30,10 @@ forecast_model(
 \item{ar.fill.max}{Integer. When no exogenous values have been provided, these must be inferred. If option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. This options determines the number of AR terms that should be used. Default is 4.}
 
 \item{plot.forecast}{Logical. Should the result be plotted? Default is TRUE.}
+
+\item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
+
+\item{seed}{Integer. Seed for the uncertainty draws to be made. Default is 1234.}
 }
 \value{
 An object of class aggmod.forecast
