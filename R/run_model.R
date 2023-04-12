@@ -193,9 +193,17 @@ run_model <- function(specification,
   out$args <- list(specification = specification, dictionary = dictionary,
                    inputdata_directory = inputdata_directory,
                    filter_list = filter_list, download = download,
-                   save_to_disk = save_to_disk, present = present)
+                   save_to_disk = save_to_disk, present = present,
+                   trend = trend, max.lag = max.lag, use_logs = use_logs,
+                   ardl_or_ecm = ardl_or_ecm,
+                   saturation = saturation,
+                   saturation.tpval = saturation.tpval,
+                   max.block.size = max.block.size,
+                   gets_selection = gets_selection,
+                   selection.tpval = selection.tpval)
   out$module_order_eurostatvars <- module_order_eurostatvars
   out$module_collection <- module_collection
+  out$processed_input_data <- full_data
   out$full_data <- tmp_data
   out$dictionary <- dictionary
 

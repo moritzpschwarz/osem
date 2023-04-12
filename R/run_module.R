@@ -49,7 +49,7 @@ run_module <- function(
     out <- list(model = NULL,
                 data = moduledata,
                 args = NULL)#
-                  #list(use_logs = match.arg(use_logs)))
+    #list(use_logs = match.arg(use_logs)))
 
   } else if(module$type == "n") {
 
@@ -80,7 +80,7 @@ run_module <- function(
     moduledata <- add_to_original_data(clean_data = clean_df,
                                        isat_object = estimated_module$best_model,
                                        dep_var_basename = dep,
-                                       ardl_or_ecm = estimated_module$args[[5]])
+                                       ardl_or_ecm = estimated_module$args$ardl_or_ecm)
 
     out <- list(model = estimated_module$best_model,
                 data = moduledata,
