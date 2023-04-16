@@ -112,10 +112,12 @@ forecast_model <- function(model,
     if(model$module_order_eurostatvars$type[model$module_order_eurostatvars$order == i] != "d"){
 
       pred_setup_list <- forecast_setup_estimated_relationships(model = model,
-                                                          i = i,
-                                                          exog_df_ready = exog_df_ready,
-                                                          n.ahead = n.ahead,
-                                                          current_spec = current_spec)
+                                                                i = i,
+                                                                exog_df_ready = exog_df_ready,
+                                                                n.ahead = n.ahead,
+                                                                current_spec = current_spec,
+                                                                prediction_list = prediction_list,
+                                                                uncertainty_sample = uncertainty_sample)
 
       final_i_data <- pred_setup_list$final_i_data
       pred_df <- pred_setup_list$pred_df

@@ -20,11 +20,21 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       tidyr::unnest("time") %>%
       dplyr::ungroup() %>%
       dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
-      tidyr::pivot_wider(names_from = "na_item",values_from = "values", id_cols = c("time","q")) %>%
+      tidyr::pivot_wider(names_from = "na_item",values_from = "values", id_cols = c("time","q")) -> exog_df_q
+
+    if(!all(c(1,2,3,4) %in% unique(exog_df_q$q))){
+      dplyr::tibble(q = c(1,2,3,4)[!c(1,2,3,4) %in% unique(exog_df_q$q)]) %>%
+        dplyr::bind_rows(exog_df_q,.) -> exog_df_q
+    }
+
+    exog_df_q %>%
 
       fastDummies::dummy_cols(
         select_columns = "q", remove_first_dummy = FALSE,
-        remove_selected_columns = TRUE) -> exog_df_ready
+        remove_selected_columns = TRUE)  %>%
+      tidyr::drop_na(time) -> exog_df_ready
+
+
   }
 
   if (is.null(exog_predictions) & exog_fill_method == "AR") {
@@ -59,10 +69,15 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       to_ar_predict %>%
         dplyr::select("q_2", "q_3", "q_4") -> x_ar_predict
 
-      isat_ar_predict <- gets::isat(y = y_ar_predict, mxreg = x_ar_predict,
-                                    mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
-                                    print.searchinfo = FALSE, sis = TRUE, iis = TRUE)
-
+      isat_ar_predict <- tryCatch(gets::isat(y = y_ar_predict, mxreg = x_ar_predict,
+                                             mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
+                                             print.searchinfo = FALSE, sis = TRUE, iis = TRUE),
+                                  error = function(abcd){
+                                    message(paste0("Exogneous forecasted values for ", names(exog_df_intermed)[col_to_forecast]," will only use SIS, not IIS as too many indicators retained.\n"))
+                                    gets::isat(y = y_ar_predict, mxreg = x_ar_predict,
+                                               mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
+                                               print.searchinfo = FALSE, sis = TRUE, iis = FALSE)
+                                  })
 
       # get iis dummies
       if(!is.null(gets::isatdates(isat_ar_predict)$iis)){
@@ -100,6 +115,37 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
         dplyr::select(-"time") -> x_ar_predict_pred_df
 
+      if(!all(c("q_2", "q_3", "q_4") %in% colnames(x_ar_predict_pred_df))){
+
+        model$full_data %>%
+          dplyr::filter(.data$time == max(.data$time)) %>%
+          dplyr::distinct(dplyr::across("time")) %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
+          tidyr::unnest("time") %>%
+          dplyr::ungroup() %>%
+
+          dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
+          fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE, remove_selected_columns = TRUE) %>% # here is the difference
+
+          {if (exists("iis_pred")) {dplyr::bind_cols(.,iis_pred)} else {.}} %>%
+          {if (exists("sis_pred")) {dplyr::bind_cols(.,sis_pred)} else {.}} %>%
+
+          dplyr::select(-"time") -> new_cols_to_add
+
+
+        if(!all(c("q_2", "q_3", "q_4") %in% colnames(new_cols_to_add))){
+          new_col_name <- c("q_2", "q_3", "q_4")[!c("q_2", "q_3", "q_4") %in% colnames(new_cols_to_add)]
+          dplyr::tibble(x = rep(0,nrow(new_cols_to_add))) %>%
+            setNames(new_col_name) %>%
+            dplyr::bind_cols(new_cols_to_add) -> new_cols_to_add
+
+        }
+
+        new_cols_to_add[,!colnames(new_cols_to_add) %in% colnames(x_ar_predict_pred_df), drop = FALSE] %>%
+          dplyr::bind_cols(., x_ar_predict_pred_df) -> x_ar_predict_pred_df
+      }
+
       if (exists("iis_pred")) {rm(iis_pred)}
       if (exists("sis_pred")) {rm(sis_pred)}
 
@@ -113,11 +159,18 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
     }
 
     exog_df_forecast %>%
-      dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
+      dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) -> exog_df_forecast_q
 
+    if(!all(c(1,2,3,4) %in% unique(exog_df_forecast_q$q))){
+      dplyr::tibble(q = c(1,2,3,4)[!c(1,2,3,4) %in% unique(exog_df_forecast_q$q)]) %>%
+        dplyr::bind_rows(exog_df_forecast_q,.) -> exog_df_forecast_q
+    }
+
+    exog_df_forecast_q %>%
       fastDummies::dummy_cols(
         select_columns = "q", remove_first_dummy = FALSE,
-        remove_selected_columns = TRUE) -> exog_df_ready
+        remove_selected_columns = TRUE) %>%
+      tidyr::drop_na(time) -> exog_df_ready
   }
 
 

@@ -30,7 +30,7 @@ forecast_insample <- function(model, seed = 1234) {
   all_times <- seq(time_minmax$min,time_minmax$max, by = "quarter")
   time_to_use <- all_times[ceiling(length(all_times)/2):length(all_times)]
 
-  all_models <- list()
+  # all_models <- list()
   # for(j in 1:length(time_to_use)){
   #   #if(time_to_use[j] == "2019-04-01"){browser()}else{next}
   #   print(time_to_use[j])
@@ -40,7 +40,9 @@ forecast_insample <- function(model, seed = 1234) {
   #     dictionary = model$args$dictionary,
   #     filter_list =  model$args$filter_list,
   #     trend = model$args$trend,
-  #     max.lag = model$args$max.lag,
+  #     #max.lag = model$args$max.lag,
+  #     max.ar = model$args$max.ar,
+  #     max.dl = model$args$max.dl,
   #     max.block.size = model$args$max.block.size,
   #     ardl_or_ecm = model$args$ardl_or_ecm,
   #     use_logs = model$args$use_logs,
@@ -60,11 +62,9 @@ forecast_insample <- function(model, seed = 1234) {
   #     all_models[[j]] <- insample_model
   #   }
   # }
-  #
-  #save(all_models, file = "all_models.RData")
-  load("all_models.RData")
 
-  browser()
+  #save(all_models, file = "all_models_2.RData")
+  load("all_models_2.RData")
 
   model$processed_input_data %>%
     dplyr::distinct(across("na_item")) %>%
@@ -81,23 +81,83 @@ forecast_insample <- function(model, seed = 1234) {
 
   for(i in 1:length(all_models)){
     #i = 20
+    if(is.null(all_models[[i]])){next}
+
     start <- time_to_use[i]
     end <- time_to_use[length(time_to_use)]
     nsteps <- length(seq.Date(from = as.Date(start), to = as.Date(end), by = "quarter"))
 
-    forecasted_unknownexogvalues[[i]] <- forecast_model(
-      all_models[[i]], n.ahead = nsteps, seed = seed, plot.forecast = FALSE,
-      exog_fill_method = "AR")
+    print(paste0("Forecast ", i, " from ", start, " to ", end))
 
-    forecasted_knownexogvalues[[i]] <- forecast_model(
-      all_models[[i]], n.ahead = nsteps, seed = seed, plot.forecast = FALSE,
-      exog_predictions = exog_data %>% dplyr::filter(.data$time >= as.Date(start),
-                                                     .data$time <= as.Date(end)))
+    forecasted_unknownexogvalues[[i]] <- forecast_model(model = all_models[[i]],
+                                                        n.ahead = nsteps, seed = seed,
+                                                        plot.forecast = FALSE,
+                                                        exog_fill_method = "AR")
+
+    # forecasted_knownexogvalues[[i]] <- forecast_model(
+    #   all_models[[i]], n.ahead = nsteps, seed = seed, plot.forecast = FALSE,
+    #   exog_predictions = exog_data %>% dplyr::filter(.data$time >= as.Date(start),
+    #                                                  .data$time <= as.Date(end)))
+  }
+
+  save(forecasted_unknownexogvalues, file = "forecasted_models.RData")
+
+  browser()
+
+  overall_to_plot_central <- dplyr::tibble()
+  overall_to_plot_alls <- dplyr::tibble()
 
 
+  for(i in 1:length(forecasted_unknownexogvalues)){
+    # i = 3
+    if(is.null(forecasted_unknownexogvalues[[i]])){next}
+    print(i)
 
+    #plot(forecasted_unknownexogvalues[[i]])
+
+    forecasted_unknownexogvalues[[i]]$forecast %>%
+      dplyr::select("dep_var","central.estimate") %>%
+      dplyr::mutate(start = time_to_use[i]) %>%
+      tidyr::unnest(.data$central.estimate) %>%
+      tidyr::pivot_longer(-c("dep_var", "start", "time")) %>%
+      tidyr::drop_na("value") -> centrals
+
+    forecasted_unknownexogvalues[[i]]$forecast %>%
+      dplyr::select("dep_var","all.estimates") %>%
+      dplyr::mutate(start = time_to_use[i]) %>%
+      tidyr::unnest(.data$all.estimates) %>%
+      tidyr::pivot_longer(-c("dep_var", "start", "time")) %>%
+      tidyr::drop_na("value") -> alls
+
+    dplyr::bind_rows(overall_to_plot_central, centrals) -> overall_to_plot_central
 
   }
 
+  overall_to_plot_central %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(value = ifelse(grepl("^ln.", .data$name), exp(.data$value), .data$value)) %>%
+    dplyr::ungroup() -> overall_to_plot_central
+
+
+  forecasted_unknownexogvalues[[length(forecasted_unknownexogvalues)]]$orig_model$full_data %>%
+    dplyr::rename(dep_var = .data$na_item) %>%
+    dplyr::filter(.data$dep_var %in% overall_to_plot_central$dep_var,
+                  #as.Date(min(time_to_use)) < .data$time) -> full_data
+                  .data$time > as.Date("2017-04-01")) -> full_data
+
+
+  overall_to_plot_central %>%
+    dplyr::filter(.data$start > as.Date("2017-04-01")) %>%
+    ggplot(aes(y = value, x = time, color = as.factor(start))) +
+    geom_line() +
+    facet_wrap(~dep_var, scales = "free") +
+    theme_minimal() +
+    theme(legend.position = "none") +
+
+    geom_line(data = full_data,
+              aes(x = time, y= values), color = "black") -> plt
+
+
+  plotly::ggplotly(plt)
 
 }

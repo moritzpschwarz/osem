@@ -1,5 +1,5 @@
 
-forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ahead, current_spec) {
+forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ahead, current_spec, prediction_list, uncertainty_sample) {
 
   # set up
   # get isat obj
