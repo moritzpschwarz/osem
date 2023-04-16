@@ -6,7 +6,8 @@
 #' @param use_logs To decide whether to log any variables. Must be one of "both", "y", or "x". Default is "both".
 #' @param trend Logical. To determine whether a trend should be added. Default is TRUE.
 #' @param ardl_or_ecm Either 'ardl' or 'ecm' to determine whether to estimate the model as an Autoregressive Distributed Lag Function (ardl) or as an Equilibrium Correction Model (ecm).
-#' @param max.lag The maximum number of lags to use for both the AR terms as well as for the independent variables.
+#' @param max.ar Integer. The maximum number of lags to use for the AR terms. as well as for the independent variables.
+#' @param max.dl Integer. The maximum number of lags to use for the independent variables (the distributed lags).
 #' @param saturation Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.
 #' @param saturation.tpval The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.
 #' @param max.block.size Integer. Maximum size of block of variables to be selected over, default = 20.
@@ -25,7 +26,7 @@
 #'   ), each = 2),
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
-#' sample_data_clean <- aggregate.model:::clean_data(sample_data, max.lag = 4)
+#' sample_data_clean <- aggregate.model:::clean_data(sample_data, max.ar = 4)
 #' aggregate.model:::estimate_module(sample_data_clean, "yvar", "xvar")
 #'
 estimate_module <- function(clean_data,
@@ -37,7 +38,8 @@ estimate_module <- function(clean_data,
                             use_logs = c("both", "y", "x"),
                             trend = TRUE,
                             ardl_or_ecm = "ardl",
-                            max.lag = 4,
+                            max.ar = 4,
+                            max.dl = 2,
                             saturation = c("IIS", "SIS"),
                             saturation.tpval = 0.01,
                             max.block.size = 20,
@@ -50,11 +52,11 @@ estimate_module <- function(clean_data,
   }
 
   isat_list <- dplyr::tibble(
-    ar = 0:max.lag,
+    ar = 0:max.ar,
     BIC = 0,
     isat_object = list(NA_complex_)
   )
-  for (i in 0:max.lag) {
+  for (i in 0:max.dl) {
     if (ardl_or_ecm == "ardl") {
 
       # first check whether there is an x variable that is relevant (or whether it is an AR only model)
@@ -211,7 +213,8 @@ estimate_module <- function(clean_data,
                    x_vars_basename = x_vars_basename,
                    use_logs = match.arg(use_logs),
                    ardl_or_ecm = ardl_or_ecm,
-                   max.lag = ardl_or_ecm)
+                   max.ar = max.ar,
+                   max.dl = max.dl)
 
   return(out)
 }
