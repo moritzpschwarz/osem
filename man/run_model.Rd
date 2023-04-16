@@ -16,7 +16,8 @@ run_model(
   use_logs = c("both", "y", "x"),
   trend = TRUE,
   ardl_or_ecm = "ardl",
-  max.lag = 4,
+  max.ar = 4,
+  max.dl = 2,
   saturation = c("IIS", "SIS"),
   saturation.tpval = 0.01,
   max.block.size = 20,
@@ -64,8 +65,9 @@ and data retrieval process.}
 
 \item{ardl_or_ecm}{Either 'ardl' or 'ecm' to determine whether to estimate the model as an Autoregressive Distributed Lag Function (ardl) or as an Equilibrium Correction Model (ecm).}
 
-\item{max.lag}{Integer. The maximum number of lags to use for both the AR terms as
-well as for the independent variables.}
+\item{max.ar}{Integer. The maximum number of lags to use for the AR terms. as well as for the independent variables.}
+
+\item{max.dl}{Integer. The maximum number of lags to use for the independent variables (the distributed lags).}
 
 \item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
 
