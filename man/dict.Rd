@@ -11,6 +11,9 @@ A tibble with 13 rows and 4 variables:
 \item{model_varname}{Variable name in the model equations}
 \item{full_name}{Full name of the variable according to Eurostat}
 \item{dataset_id}{Eurostat identifier for the dataset where the variable is available}
+\item{var_col}{Name of variable/column in Eurostat dataset}
+\item{nace_r2}{Eurostat identifier for NACE Rev. 2 classification}
+\item{cpa2_1}{Eurostat identifier for Classification of Products by Activity (CPA)}
 }
 }
 \source{
