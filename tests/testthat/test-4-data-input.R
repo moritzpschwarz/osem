@@ -452,4 +452,44 @@ test_that("load_or_download_variables() works correctly", {
   expect_identical(a %>% dplyr::filter(na_item == "EmiN2OTotal") %>% dplyr::pull(time) %>% max(), as.Date("2021-10-01"))
   expect_identical(b %>% dplyr::filter(na_item == "EmiN2OTotal") %>% dplyr::pull(time) %>% max(), as.Date("2014-10-01"))
 
+  # test that saving works
+  specification <- dplyr::tibble(
+    type = c(
+      "d",
+      "d",
+      "n"
+    ),
+    dependent = c(
+      "StatDiscrep",
+      "TOTS",
+      "Import"
+    ),
+    independent = c(
+      "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+      "GValueAdd + Import",
+      "FinConsExpHH + GCapitalForm"
+    )
+  )
+  module_order <- aggregate.model:::check_config_table(specification)
+  dictionary <- aggregate.model::dict
+
+  a <- aggregate.model:::load_or_download_variables(
+    specification = module_order,
+    dictionary = dictionary,
+    primary_source = "download",
+    inputdata_directory = NULL,
+    save_to_disk = test_path("testdata", "saved", "test_save_to_disk_functionality.rds"),
+    quiet = FALSE,
+    constrain.to.minimum.sample = TRUE
+  )
+  does_exist <- file.exists(test_path("testdata", "saved", "test_save_to_disk_functionality.rds"))
+  expect_true(does_exist)
+
+  if (does_exist) {
+    info <- file.info(test_path("testdata", "saved", "test_save_to_disk_functionality.rds"))
+    # check that has been updated recently (in last minute)
+    recently <- (Sys.time() < info$mtime + 60) # adds 60 seconds
+    expect_true(recently)
+  }
+
 })
