@@ -121,11 +121,14 @@ load_or_download_variables <- function(specification,
     # -> since local loading updates "found", only download if not found locally (local loading takes precedence)
 
     # this might load data even if it has database == "eurostat" or "edgar" (b/c local first)
-    step1 <- load_locally(to_obtain = to_obtain,
-                          inputdata_directory = inputdata_directory,
-                          quiet = quiet)
-    to_obtain <- step1$to_obtain
-    full <- dplyr::bind_rows(full, step1$df)
+    # step1 only makes sense when inputdata_directory has been specified
+    if (!is.null(inputdata_directory)) {
+      step1 <- load_locally(to_obtain = to_obtain,
+                            inputdata_directory = inputdata_directory,
+                            quiet = quiet)
+      to_obtain <- step1$to_obtain
+      full <- dplyr::bind_rows(full, step1$df)
+    }
 
     not_loaded_eurostat <- which(to_obtain$database == "eurostat" & to_obtain$found == FALSE)
     if (length(not_loaded_eurostat) > 0L) {
