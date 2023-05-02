@@ -1,5 +1,4 @@
-# creates a dictionary to translate variables names from model to Eurostat
-# (key,value)-pairs should be unique, not sure how to deal with different version of "JL", for example
+# creates a dictionary to translate variables names from model to other databases
 
 dict <- tibble::tribble(
   ~model_varname, ~full_name, ~database, ~variable_code, ~dataset_id, ~var_col, ~freq, ~geo, ~unit, ~s_adj, ~nace_r2, ~ipcc_sector, ~cpa2_1, ~siec,
@@ -40,7 +39,9 @@ dict <- tibble::tribble(
   "HDD", "Heating Degree Days", "eurostat", "HDD", "nrg_chdd_m", "indic_nrg", "m", "AT", "NR", NA, NA, NA, NA, NA,
   "CDD", "Cooling Degree Days", "eurostat", "CDD", "nrg_chdd_m", "indic_nrg", "m", "AT", "NR", NA, NA, NA, NA, NA,
   "EmiCH4Livestock", "Methane Emissions from Livestock", "edgar", NA, "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CH4_m_2000_2021.zip", NA, "m", "AT", NA, NA, NA, "3.A", NA, NA,
-  "EmiCO2Industry", "Carbon Emissions from Industrial Processes and Product Use", "edgar", NA, "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip", NA, "m", "AT", NA, NA, NA, "2", NA, NA
+  "EmiCO2Industry", "Carbon Emissions from Industrial Processes and Product Use", "edgar", NA, "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip", NA, "m", "AT", NA, NA, NA, "2", NA, NA,
+  "EmiCO2Combustion", "Carbon Emissions from Fuel Combustion Activities", "edgar", NA, "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip", NA, "m", "AT", NA, NA, NA, "1.A", NA, NA,
+  "EmiN2OTotal", "Nitrous Oxide Emissions Total", "edgar", NA, "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_N2O_m_2000_2021.zip", NA, "m", "AT", NA, NA, NA, "TOTAL", NA, NA
 )
 dict <- as.data.frame(dict)
 

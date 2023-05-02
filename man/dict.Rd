@@ -5,27 +5,29 @@
 \alias{dict}
 \title{Dictionary for translating model variable names}
 \format{
-A tibble with 38 rows and 14 variables:
+A tibble with 40 rows and 14 variables:
 \describe{
-\item{model_varname}{Variable name in the model equations}
+\item{model_varname}{Variable name in the model equations, must be unique}
 \item{full_name}{Full name/description of the variable}
 \item{database}{Name of the database. Internally implemented are \code{"eurostat"} and \code{"edgar"}}
 \item{variable_code}{Identifier of the variable if applicable, e.g. Eurostat variable code}
 \item{dataset_id}{Identifier of the dataset where the variable is available, e.g. Eurostat dataset code or link to file on the web}
 \item{var_col}{Name of variable/column in dataset}
-\item{freq}{Frequency of the variable in the dataset. \code{"d"} for daily, \code{"m"} for monthly, \code{"q"} for quarterly}
+\item{freq}{Frequency of the variable in the dataset. \code{"m"} for monthly, \code{"q"} for quarterly}
 \item{geo}{ISO 3166-1 alpha-2 country code}
 \item{unit}{Eurostat unit in which the variable is measured, e.g. to choose between different measurements for the same variable}
 \item{s_adj}{Eurostat seasonal adjustment or not}
 \item{nace_r2}{Eurostat identifier for NACE Rev. 2 classification}
-\item{ipcc_sector}{EDGAR IPCC National Greenhouse Gas Inventories, see \url{https://www.ipcc-nggip.iges.or.jp/public/2006gl/index.html}}
+\item{ipcc_sector}{EDGAR IPCC National Greenhouse Gas Inventories,
+see \url{https://www.ipcc-nggip.iges.or.jp/public/2006gl/index.html}.
+\code{"TOTAL"} is not an official IPCC code but is internally interpreted to use country totals.}
 \item{cpa2_1}{Eurostat identifier for Classification of Products by Activity (CPA)}
 \item{siec}{Standard International Energy Product Classification, e.g. for Eurostat}
 \item{...}{Additional filters across the database. Need to have exactly the same column name as in the respective database}
 }
 }
 \source{
-Own compilation, codes from \url{https://ec.europa.eu/eurostat} and \url{https://edgar.jrc.ec.europa.eu/dataset_ghg70#conditions}
+Own compilation, codes from \url{https://ec.europa.eu/eurostat} and \url{https://edgar.jrc.ec.europa.eu/dataset_ghg70}
 }
 \usage{
 dict
