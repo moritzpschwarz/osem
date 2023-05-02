@@ -6,9 +6,8 @@
 \usage{
 load_or_download_variables(
   specification,
-  filter_list = NULL,
-  download = TRUE,
   dictionary = NULL,
+  primary_source = c("download", "local"),
   inputdata_directory = NULL,
   save_to_disk = NULL,
   quiet = FALSE,
@@ -17,47 +16,33 @@ load_or_download_variables(
 }
 \arguments{
 \item{specification}{A tibble or data.frame as returned by
-\code{\link{translate_variables}}.}
-
-\item{filter_list}{A named list with one entry per Eurostat code that
-specifies the filter that is applied to choose the correct data series,
-e.g. geographical restrictions or whether seasonally adjusted or not. See
-Details.}
-
-\item{download}{A logical value whether the data should be downloaded from
-Eurostat or will be provided directly via \code{inputdata_directory}.}
+\code{\link{check_config_table}}.}
 
 \item{dictionary}{A tibble or data.frame storing the Eurostat variable code
 in column 'eurostat_code'. If \code{download == TRUE} then the dictionary
 also requires column named 'dataset_id' that stores the Eurostat dataset
 id. When \code{NULL}, the \link[=dict]{default dictionary} is used.}
 
+\item{primary_source}{A character of length 1 determining whether the
+required variables are first obtained from \code{"download"} and then
+\code{"local"}ly or vice versa.}
+
 \item{inputdata_directory}{A path to .rds input files in which the data is
-stored. Can be \code{NULL} if \code{download == TRUE}.}
+stored. Can be \code{NULL}, in which case data is obtained via download if
+possible.}
 
 \item{save_to_disk}{A path to a directory where the final dataset will be
 saved, including file name and ending. Not saved when \code{NULL}.}
 
-\item{quiet}{Logical with default = FALSE. Should messages be displayed?
+\item{quiet}{Logical with default = \code{FALSE}. Should messages be displayed?
 These messages are intended to give more information about the estimation
 and data retrieval process.}
 
-\item{constrain.to.minimum.sample}{Logical. Should all data series be constrained to the minimum data series? Default is FALSE.}
+\item{constrain.to.minimum.sample}{Logical. Should all data series be
+constrained to the minimum data series? Default is \code{TRUE}.}
 }
 \description{
 Either downloads the necessary data for all modules from Eurostat using
 dataset ids or loads the files provided in the user-specified input directory
 and selects the required variables.
-}
-\details{
-Argument \code{filter_list} is not fully functional yet. It allows
-the user to specify which type of data they want. Current implementation
-mostly for minimum viable product. Once the
-\code{\link[eurostat]{get_eurostat}} API functions properly, can use their
-\code{filter} argument specification to make the download faster by
-restricting it to the necessary subset only.
-}
-\note{
-Currently does not support mixed inputs, i.e. downloading some data and
-reading the rest from files.
 }
