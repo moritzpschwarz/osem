@@ -69,7 +69,7 @@ load_or_download_variables <- function(specification,
     stop("Currently, only allow data bases 'eurostat', 'edgar', or local files.")
   }
   if ("edgar" %in% sources) {
-    if (!requireNamespace("readxl", quitely = TRUE)) {
+    if (!requireNamespace("readxl", quietly = TRUE)) {
       stop("Package \"readxl\" must be installed to read in .xlsx files from EDGAR.")
     }
   }
@@ -184,12 +184,12 @@ load_or_download_variables <- function(specification,
     if (ending %in% c(".RDS", ".rds", ".Rds")) {
       saveRDS(object = full, file = save_to_disk)
     } else if (ending == ".csv") {
-      if (!requireNamespace("readr", quitely = TRUE)) {
+      if (!requireNamespace("readr", quietly = TRUE)) {
         stop("Package \"readr\" must be installed to save .csv files.")
       }
       readr::write_csv(x = full, file = save_to_disk)
     } else if (ending %in% c(".xls", ".xlsx")) {
-      if (!requireNamespace("writexl", quitely = TRUE)) {
+      if (!requireNamespace("writexl", quietly = TRUE)) {
         stop("Package \"writexl\" must be installed to save .xls or .xlsx files.")
       }
       writexl::write_xlsx(x = full, path = save_to_disk)
@@ -230,7 +230,7 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
 
   # download Eurostat
   eurostat_dataset_ids <- to_obtain %>%
-    dplyr::filter(database == "eurostat" & isFALSE(found)) %>%
+    dplyr::filter(database == "eurostat" & found == FALSE) %>%
     dplyr::pull(dataset_id) %>%
     unique()
 
@@ -290,7 +290,7 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
                         quarter = lubridate::quarter(time)) %>%
           dplyr::group_by(across(all_of(groupby_columns))) %>%
           dplyr::summarise(values = sum(values),
-                           nobs = n(), # record how many months are available in each quarter
+                           nobs = dplyr::n(), # record how many months are available in each quarter
                            time = min(time)) %>%
           dplyr::ungroup() %>%
           # drop "incomplete" quarters
@@ -326,7 +326,7 @@ download_edgar <- function(to_obtain, quiet) {
 
   # download EDGAR
   edgar_dataset_ids <- to_obtain %>%
-    dplyr::filter(database == "edgar" & isFALSE(found)) %>%
+    dplyr::filter(database == "edgar" & found == FALSE) %>%
     dplyr::pull(dataset_id) %>%
     unique()
   # these should be links
@@ -390,26 +390,26 @@ download_edgar <- function(to_obtain, quiet) {
           tidyr::pivot_longer(cols = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
                               names_to = "Month",
                               values_to = "values") %>%
-          dplyr::mutate(Month = case_when(Month == "Jan" ~ "01",
-                                          Month == "Feb" ~ "02",
-                                          Month == "Mar" ~ "03",
-                                          Month == "Apr" ~ "04",
-                                          Month == "May" ~ "05",
-                                          Month == "Jun" ~ "06",
-                                          Month == "Jul" ~ "07",
-                                          Month == "Aug" ~ "08",
-                                          Month == "Sep" ~ "09",
-                                          Month == "Oct" ~ "10",
-                                          Month == "Nov" ~ "11",
-                                          Month == "Dec" ~ "12",
-                                          TRUE ~ "error")) %>%
+          dplyr::mutate(Month = dplyr::case_when(Month == "Jan" ~ "01",
+                                                 Month == "Feb" ~ "02",
+                                                 Month == "Mar" ~ "03",
+                                                 Month == "Apr" ~ "04",
+                                                 Month == "May" ~ "05",
+                                                 Month == "Jun" ~ "06",
+                                                 Month == "Jul" ~ "07",
+                                                 Month == "Aug" ~ "08",
+                                                 Month == "Sep" ~ "09",
+                                                 Month == "Oct" ~ "10",
+                                                 Month == "Nov" ~ "11",
+                                                 Month == "Dec" ~ "12",
+                                                 TRUE ~ "error")) %>%
           dplyr::mutate(time = as.Date(paste(Year, Month, "01", sep = "-"))) %>%
           dplyr::select(-Year, -Month) %>%
           dplyr::mutate(year = lubridate::year(time),
                         quarter = lubridate::quarter(time)) %>%
           dplyr::group_by(geo, year, quarter) %>%
           dplyr::summarise(values = sum(values),
-                           nobs = n(), # record how many months are available in each quarter
+                           nobs = dplyr::n(), # record how many months are available in each quarter
                            time = min(time)) %>%
           dplyr::ungroup() %>%
           # drop "incomplete" quarters (should not occur b/c released when complete)
@@ -449,19 +449,19 @@ download_edgar <- function(to_obtain, quiet) {
           tidyr::pivot_longer(cols = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
                               names_to = "Month",
                               values_to = "values") %>%
-          dplyr::mutate(Month = case_when(Month == "Jan" ~ "01",
-                                          Month == "Feb" ~ "02",
-                                          Month == "Mar" ~ "03",
-                                          Month == "Apr" ~ "04",
-                                          Month == "May" ~ "05",
-                                          Month == "Jun" ~ "06",
-                                          Month == "Jul" ~ "07",
-                                          Month == "Aug" ~ "08",
-                                          Month == "Sep" ~ "09",
-                                          Month == "Oct" ~ "10",
-                                          Month == "Nov" ~ "11",
-                                          Month == "Dec" ~ "12",
-                                          TRUE ~ "error")) %>%
+          dplyr::mutate(Month = dplyr::case_when(Month == "Jan" ~ "01",
+                                                 Month == "Feb" ~ "02",
+                                                 Month == "Mar" ~ "03",
+                                                 Month == "Apr" ~ "04",
+                                                 Month == "May" ~ "05",
+                                                 Month == "Jun" ~ "06",
+                                                 Month == "Jul" ~ "07",
+                                                 Month == "Aug" ~ "08",
+                                                 Month == "Sep" ~ "09",
+                                                 Month == "Oct" ~ "10",
+                                                 Month == "Nov" ~ "11",
+                                                 Month == "Dec" ~ "12",
+                                                 TRUE ~ "error")) %>%
           dplyr::mutate(time = as.Date(paste(Year, Month, "01", sep = "-"))) %>%
           dplyr::select(-Year, -Month)
         # new filter step: IPCC sector
@@ -494,7 +494,7 @@ download_edgar <- function(to_obtain, quiet) {
                         quarter = lubridate::quarter(time)) %>%
           dplyr::group_by(geo, year, quarter) %>%
           dplyr::summarise(values = sum(values),
-                           nobs = n(), # record how many months are available in each quarter
+                           nobs = dplyr::n(), # record how many months are available in each quarter
                            time = min(time)) %>%
           dplyr::ungroup() %>%
           # drop "incomplete" quarters (should not occur b/c released when complete)
@@ -545,19 +545,15 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
       cat("Variable provided as 'inputdata_directory' seems to be a data.frame type. Used as data source.\n")
     }
 
+    # determine which codes were found in the dataset
     codes.found <- unique(inputdata_directory$na_item)
-    codes.relevant <- to_obtain %>%
-      dplyr::filter(found == FALSE) %>% # only if not yet found via download
-      pull(model_varname) %>%
-      unique()
-
     # since found those, can update to_obtain
-    indices <- which(to_obtain$model_varname %in% codes.relevant)
+    indices <- which(to_obtain$model_varname %in% codes.found & to_obtain$found == FALSE)
     to_obtain[indices, "found"] <- TRUE
 
     # subset the relevant data
     df_local <- inputdata_directory %>%
-      dplyr::filter(na_item %in% codes.relevant) # choose the relevant ones
+      dplyr::filter(na_item %in% to_obtain$model_varname[indices]) # choose the relevant ones
 
   } else {
 
@@ -583,12 +579,12 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
       if(grepl("\\.(Rds|RDS|rds)$",pth)){
         tmp <- readRDS(file = pth)
       } else if (grepl("\\.(csv)$",pth)){
-        if (!requireNamespace("readr", quitely = TRUE)) {
+        if (!requireNamespace("readr", quietly = TRUE)) {
           stop("Package \"readr\" must be installed to read in .csv files.")
         }
         tmp <- readr::read_csv(pth, show_col_types = FALSE, guess_max = 1000000)
       } else if (grepl("\\.(xls|xlsx)$",pth)){
-        if (!requireNamespace("readxl", quitely = TRUE)) {
+        if (!requireNamespace("readxl", quietly = TRUE)) {
           stop("Package \"readxl\" must be installed to read in .xls or .xlsx files.")
         }
         tmp <- readxl::read_excel(path = pth, guess_max = 1000000)
@@ -596,18 +592,15 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
 
       # determine which codes were found in the dataset
       codes.found <- unique(tmp$na_item)
-      codes.relevant <- to_obtain %>%
-        dplyr::filter(found == FALSE) %>% # only if not yet found via download
-        pull(model_varname) %>%
-        unique()
 
       # since found those, can update to_obtain
-      indices <- which(to_obtain$model_varname %in% codes.relevant)
+      indices <- which(to_obtain$model_varname %in% codes.found & to_obtain$found == FALSE)
+      if (length(indices) == 0L) {next} # skip to next iteration if no relevant variables found
       to_obtain[indices, "found"] <- TRUE
 
       # subset the relevant data
       sub <- tmp %>%
-        dplyr::filter(na_item %in% codes.relevant) %>% # choose the relevant ones
+        dplyr::filter(na_item %in% to_obtain$model_varname[indices]) %>% # choose the relevant ones
       # ensure column "time" is a Date variable (Moritz had this)
         dplyr::mutate(time = as.Date(time))
 
@@ -621,3 +614,5 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
   return(list(df = df_local, to_obtain = to_obtain))
 
 }
+
+
