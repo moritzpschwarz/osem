@@ -33,7 +33,7 @@ print.aggmod <- function(x, ...){
 
 
 
-  x$module_order_eurostatvars %>%
+  x$module_order %>%
     dplyr::select("index", "order", "dependent", "independent") %>%
 
     # deal with dependent vars

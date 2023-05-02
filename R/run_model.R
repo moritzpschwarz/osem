@@ -112,7 +112,7 @@ run_model <- function(specification,
 
   if(missing(dictionary) | is.null(dictionary)){dictionary <- aggregate.model::dict}
 
-  if(!all(c("eurostat_code", "model_varname", "full_name", "dataset_id","var_col", "nace_r2") %in% colnames(dictionary))){
+  if(!all(c("variable_code", "model_varname", "full_name", "database", "dataset_id","var_col", "nace_r2", "freq", "geo", "unit", "s_adj") %in% colnames(dictionary))){
     stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'eurostat_code', 'model_varname', 'full_name', 'dataset_id', 'var_col', 'nace_r2'.")
   }
 
@@ -136,30 +136,30 @@ run_model <- function(specification,
                                             quiet = quiet)
 
   # add data that is not directly available but can be calculated from identities
-  full_data <- calculate_identities(specification = module_order_eurostatvars, data = loaded_data, dictionary = dictionary)
+  full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
-  classification <- classify_variables(specification = module_order_eurostatvars)
+  classification <- classify_variables(specification = module_order)
 
   # initialise storage of estimation results
-  module_collection <- module_order_eurostatvars %>%
+  module_collection <- module_order %>%
     dplyr::mutate(dataset = list(NA_complex_),
                   model = list(NA_complex_))
 
   tmp_data <- full_data
   # loop through all modules
-  for (i in module_order_eurostatvars$order) {
+  for (i in module_order$order) {
 
     # print progress update
     if(!quiet){
       if(i == 1){cat("\n--- Estimation begins ---\n")}
-      if(module_order_eurostatvars$type[i] == "n") {cat(paste0("Estimating ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")}
-      if(module_order_eurostatvars$type[i] == "d") {cat(paste0("Constructing ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")}
+      if(module_order$type[i] == "n") {cat(paste0("Estimating ", module_order$dependent[i], " = ", module_order$independent[i]), "\n")}
+      if(module_order$type[i] == "d") {cat(paste0("Constructing ", module_order$dependent[i], " = ", module_order$independent[i]), "\n")}
     }
 
     # estimate current module, using most up-to-date dataset including predicted values
     module_estimate <- run_module(
-      module = module_order_eurostatvars[module_order_eurostatvars$order == i, ],
+      module = module_order[module_order$order == i, ],
       data = tmp_data,
       classification = classification,
       use_logs = use_logs,
@@ -189,9 +189,9 @@ run_model <- function(specification,
   out <- list()
   out$args <- list(specification = specification, dictionary = dictionary,
                    inputdata_directory = inputdata_directory,
-                   filter_list = filter_list, download = download,
+                   primary_source = primary_source,
                    save_to_disk = save_to_disk, present = present)
-  out$module_order_eurostatvars <- module_order_eurostatvars
+  out$module_order <- module_order
   out$module_collection <- module_collection
   out$full_data <- tmp_data
   out$dictionary <- dictionary

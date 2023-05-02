@@ -102,7 +102,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
 
     tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
-    dplyr::full_join(x$orig_model$module_order_eurostatvars %>%
+    dplyr::full_join(x$orig_model$module_order %>%
                        dplyr::select("dependent") %>%
                        dplyr::rename(na_item = "dependent"), by = "na_item") %>%
 
@@ -120,7 +120,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::bind_rows(plot_df) %>%
 
     {if(order.as.run){
-      dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$orig_model$module_order_eurostatvars$dependent)) %>%
+      dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$orig_model$module_order$dependent)) %>%
         tidyr::drop_na("na_item") %>%
         dplyr::arrange(.data$time, .data$na_item)} else {.}} %>%
 
