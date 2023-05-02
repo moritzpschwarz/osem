@@ -14,12 +14,8 @@
 #'   \link[=dict]{default dictionary} is used.
 #' @param inputdata_directory A path to .rds input files in which the data is
 #'   stored. Can be \code{NULL} if \code{download == TRUE}.
-#' @param filter_list A named list with one entry per Eurostat code that
-#'   specifies the filter that is applied to choose the correct data series,
-#'   e.g. geographical restrictions or whether seasonally adjusted or not. See
-#'   \link{load_or_download_variables} for details.
-#' @param download A logical value whether the data should be downloaded from
-#'   Eurostat or will be provided directly via \code{inputdata_directory}.
+#' @param primary_source A string. Determines whether \code{"download"} or
+#' \code{"local"} data loading takes precedence.
 #' @param save_to_disk A path to a directory where the final dataset will be
 #'   saved, including the file name and ending. Not saved when \code{NULL}.
 #' @param present A logical value whether the final aggregate model output
@@ -89,8 +85,7 @@
 run_model <- function(specification,
                       dictionary = NULL,
                       inputdata_directory = paste0(getwd(), "/data/raw"),
-                      filter_list = NULL,
-                      download = FALSE,
+                      primary_source = c("download", "local"),
                       save_to_disk = NULL,
                       present = FALSE,
                       quiet = FALSE,
@@ -104,6 +99,8 @@ run_model <- function(specification,
                       gets_selection = TRUE,
                       selection.tpval = 0.01
                       ) {
+
+  primary_source = match.arg(primary_source)
 
   if(!(is.data.frame(specification) | is.matrix(specification))){
     stop("'specification' must be a data.frame, tibble, or matrix object. Check the documentation how a specification object must look like.")
@@ -127,13 +124,13 @@ run_model <- function(specification,
   module_order <- check_config_table(specification)
 
   # add columns that translate dependent and independent variables into Eurostat codes
-  module_order_eurostatvars <- translate_variables(specification = module_order,
-                                                   dictionary = dictionary)
+  # module_order_eurostatvars <- translate_variables(specification = module_order,
+  #                                                  dictionary = dictionary)
+
   # download or locally load the data necessary for the whole aggregate model
-  loaded_data <- load_or_download_variables(specification = module_order_eurostatvars,
-                                            filter_list = filter_list,
-                                            download = download,
+  loaded_data <- load_or_download_variables(specification = module_order,
                                             dictionary = dictionary,
+                                            primary_source = primary_source,
                                             inputdata_directory = inputdata_directory,
                                             save_to_disk = save_to_disk,
                                             quiet = quiet)
