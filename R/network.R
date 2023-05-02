@@ -5,6 +5,7 @@
 #' @return Returns a network graph illustrating the dependence between the
 #'   different modules.
 #'
+#' @export
 
 network <- function(model) {
 
@@ -84,7 +85,7 @@ network <- function(model) {
 
   graph_df <- tidygraph::as_tbl_graph(adj)
   graph_df <- graph_df %>%
-    tidygraph::activate(.data$nodes) %>%
+    tidygraph::activate(nodes) %>%
     dplyr::inner_join(y = class, by = c("name" = "var"))
 
     out <- ggraph::ggraph(graph_df, layout = "kk") +
