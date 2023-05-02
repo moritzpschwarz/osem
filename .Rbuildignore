@@ -5,3 +5,4 @@
 ^\.pre-commit-config\.yaml$
 ^small_examples$
 ^\.github$
+^data-raw

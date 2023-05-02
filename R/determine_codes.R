@@ -188,6 +188,13 @@ determine_eurocodes <- function(specification, dictionary = NULL) {
 #'
 #' Takes the specification and returns a dictionary-like data frame with the
 #' required model variables, their filters, and where they can be found.
+#'
+#' @inheritParams load_or_download_variables
+#'
+#' @return Returns a data.frame that is a subset of the dictionary (required
+#' variables only) and an additional column \code{found}, which is set to
+#' \code{FALSE} initially and keeps track of the data that has been found
+#' through the (down)load functions.
 
 determine_variables <- function(specification, dictionary) {
 
@@ -211,8 +218,8 @@ determine_variables <- function(specification, dictionary) {
   # exclusion by is.na(database)
 
   to_obtain <- dictionary %>%
-    dplyr::filter(model_varname %in% codes.used) %>%
-    dplyr::filter(!is.na(database)) %>%
+    dplyr::filter(.data$model_varname %in% codes.used) %>%
+    dplyr::filter(!is.na(.data$database)) %>%
     dplyr::mutate(found = FALSE) # will keep track of whether found (download or local)
 
   return(to_obtain)

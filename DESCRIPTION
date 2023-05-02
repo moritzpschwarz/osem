@@ -16,6 +16,7 @@ Imports:
     gets (>= 0.37),
     dplyr,
     tidyr,
+    countrycode,
     eurostat,
     fastDummies,
     lubridate,

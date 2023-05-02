@@ -190,6 +190,9 @@ test_that("download_edgar works correctly", {
 
 test_that("load_locally() works correctly", {
 
+  skip_on_cran()
+  skip_on_ci()
+
   # local data for testing purposes stored in "./tests/testthat/testdata/"
   # complete data in "./complete/" :
   # emin2ototal.rds = emissions n2o total (country-level), 88x4, .rds
@@ -262,6 +265,9 @@ test_that("load_locally() works correctly", {
 })
 
 test_that("load_or_download_variables() works correctly", {
+
+  skip_on_cran()
+  skip_on_ci()
 
   # specification 1: requires only eurostat download
   specification <- dplyr::tibble(

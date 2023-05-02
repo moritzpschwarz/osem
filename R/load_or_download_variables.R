@@ -109,7 +109,7 @@ load_or_download_variables <- function(specification,
     }
     if (any(to_obtain$found == FALSE)) {
       stop(paste0("The following variables could not be obtained: ",
-                  paste(to_obtain %>% dplyr::filter(found == FALSE) %>% dplyr::pull(model_varname), collapse = ", ")))
+                  paste(to_obtain %>% dplyr::filter(.data$found == FALSE) %>% dplyr::pull(.data$model_varname), collapse = ", ")))
     }
 
   } else { # (primary_source == "local")
@@ -146,7 +146,7 @@ load_or_download_variables <- function(specification,
     }
     if (any(to_obtain$found == FALSE)) {
       stop(paste0("The following variables could not be obtained: ",
-                  paste(to_obtain %>% dplyr::filter(found == FALSE) %>% dplyr::pull(model_varname), collapse = ", ")))
+                  paste(to_obtain %>% dplyr::filter(.data$found == FALSE) %>% dplyr::pull(.data$model_varname), collapse = ", ")))
     }
 
   } # end primary_source == "local"
@@ -233,8 +233,8 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
 
   # download Eurostat
   eurostat_dataset_ids <- to_obtain %>%
-    dplyr::filter(database == "eurostat" & found == FALSE) %>%
-    dplyr::pull(dataset_id) %>%
+    dplyr::filter(.data$database == "eurostat" & .data$found == FALSE) %>%
+    dplyr::pull(.data$dataset_id) %>%
     unique()
 
   # loop through required datasets
@@ -257,13 +257,13 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
       varcolname <- to_obtain$var_col[j]
       sub <- tmp %>%
         dplyr::filter(!!as.symbol(varcolname) == to_obtain$variable_code[j]) %>%
-        {if(dplyr::select(., dplyr::any_of("geo")) %>% ncol == 1){dplyr::filter(., geo == to_obtain$geo[j])}else{.}} %>%
-        {if(dplyr::select(., dplyr::any_of("unit")) %>% ncol == 1){dplyr::filter(., unit == to_obtain$unit[j])}else{.}} %>%
-        {if(dplyr::select(., dplyr::any_of("s_adj")) %>% ncol == 1){dplyr::filter(., s_adj == to_obtain$s_adj[j])}else{.}} %>%
-        {if(dplyr::select(., dplyr::any_of("nace_r2")) %>% ncol == 1){dplyr::filter(., nace_r2 == to_obtain$nace_r2[j])}else{.}} %>%
-        {if(dplyr::select(., dplyr::any_of("ipcc_sector")) %>% ncol == 1){dplyr::filter(., ipcc_sector == to_obtain$ipcc_sector[j])}else{.}} %>%
-        {if(dplyr::select(., dplyr::any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(., cpa2_1 == to_obtain$cpa2_1[j])}else{.}} %>%
-        {if(dplyr::select(., dplyr::any_of("siec")) %>% ncol == 1){dplyr::filter(., siec == to_obtain$siec[j])}else{.}}
+        {if(dplyr::select(., dplyr::any_of("geo")) %>% ncol == 1){dplyr::filter(., .data$geo == to_obtain$geo[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("unit")) %>% ncol == 1){dplyr::filter(., .data$unit == to_obtain$unit[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("s_adj")) %>% ncol == 1){dplyr::filter(., .data$s_adj == to_obtain$s_adj[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("nace_r2")) %>% ncol == 1){dplyr::filter(., .data$nace_r2 == to_obtain$nace_r2[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("ipcc_sector")) %>% ncol == 1){dplyr::filter(., .data$ipcc_sector == to_obtain$ipcc_sector[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(., .data$cpa2_1 == to_obtain$cpa2_1[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("siec")) %>% ncol == 1){dplyr::filter(., .data$siec == to_obtain$siec[j])}else{.}}
       # if user specified additional filters, apply them now
       for (k in seq_along(additional_filters)) {
         filtername <- additional_filters[k]
@@ -289,20 +289,20 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
         stopifnot(sum(duplicated(sub[, unique_columns])) == 0L) # sanity check
         groupby_columns <- union(c("year", "quarter"), setdiff(unique_columns, "time")) # want to group_by year-quarter, so exclude time column
         sub <- sub %>%
-          dplyr::mutate(year = lubridate::year(time),
-                        quarter = lubridate::quarter(time)) %>%
-          dplyr::group_by(across(all_of(groupby_columns))) %>%
-          dplyr::summarise(values = sum(values),
-                           nobs = dplyr::n(), # record how many months are available in each quarter
-                           time = min(time)) %>%
+          dplyr::mutate(year = lubridate::year(.data$time),
+                        quarter = lubridate::quarter(.data$time)) %>%
+          dplyr::group_by(dplyr::across(dplyr::all_of(groupby_columns))) %>%
+          dplyr::summarise(values = sum(.data$values),
+                           n = dplyr::n(), # record how many months are available in each quarter
+                           time = min(.data$time)) %>%
           dplyr::ungroup() %>%
           # drop "incomplete" quarters
-          dplyr::filter(nobs == 3L) %>%
-          dplyr::select(-year, -quarter, -nobs)
+          dplyr::filter(.data$n == 3L) %>%
+          dplyr::select(-"year", -"quarter", -"n")
       }
       # ensure column "time" is a Date variable (Moritz had this)
       sub <- sub %>%
-        dplyr::mutate(time = as.Date(time))
+        dplyr::mutate(time = as.Date(.data$time))
       # add subset to df_eurostat, final dataset
       df_eurostat <- dplyr::bind_rows(df_eurostat, sub)
     } # end for variables
@@ -329,8 +329,8 @@ download_edgar <- function(to_obtain, quiet) {
 
   # download EDGAR
   edgar_dataset_ids <- to_obtain %>%
-    dplyr::filter(database == "edgar" & found == FALSE) %>%
-    dplyr::pull(dataset_id) %>%
+    dplyr::filter(.data$database == "edgar" & .data$found == FALSE) %>%
+    dplyr::pull(.data$dataset_id) %>%
     unique()
   # these should be links
   if (length(edgar_dataset_ids) != sum(grepl(pattern = "^http", x = edgar_dataset_ids))) {
@@ -345,13 +345,13 @@ download_edgar <- function(to_obtain, quiet) {
     tmp_download <- tempfile(fileext = "zip")
     if(quiet){
       suppressWarnings(suppressMessages(
-        download.file(url = edgar_dataset_ids[i],
-                      destfile = tmp_download,
-                      mode = "wb")))
+        utils::download.file(url = edgar_dataset_ids[i],
+                             destfile = tmp_download,
+                             mode = "wb")))
     } else {
-      download.file(url = edgar_dataset_ids[i],
-                    destfile = tmp_download,
-                    mode = "wb")
+      utils::download.file(url = edgar_dataset_ids[i],
+                           destfile = tmp_download,
+                           mode = "wb")
     }
     # create temporary directory to extract contents of zip file into
     tmp_extract <- tempdir()
@@ -364,7 +364,7 @@ download_edgar <- function(to_obtain, quiet) {
     filename <- stringr::str_remove(string = zipfilename, pattern = "_m")
     filename <- stringr::str_replace(string = filename, pattern = ".zip", replacement = ".xlsx")
     # unzip the .xlsx file into temporary directory
-    unzip(zipfile = tmp_download, files = filename, exdir = tmp_extract)
+    utils::unzip(zipfile = tmp_download, files = filename, exdir = tmp_extract)
 
     # read in the data
     columns <- c("Country_code_A3", "Year", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
@@ -385,39 +385,39 @@ download_edgar <- function(to_obtain, quiet) {
         # filter the data
         sub <- tmp %>%
           dplyr::select(dplyr::all_of(columns)) %>%
-          dplyr::filter(Country_code_A3 == countrycode::countrycode(to_obtain$geo[j], "iso2c", "iso3c")) %>%
-          dplyr::rename(geo = Country_code_A3) %>%
+          dplyr::filter(.data$Country_code_A3 == countrycode::countrycode(to_obtain$geo[j], "iso2c", "iso3c")) %>%
+          dplyr::rename(geo = .data$Country_code_A3) %>%
           dplyr::mutate(geo = to_obtain$geo[j])
         # shape into long format
         sub <- sub %>%
           tidyr::pivot_longer(cols = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
                               names_to = "Month",
                               values_to = "values") %>%
-          dplyr::mutate(Month = dplyr::case_when(Month == "Jan" ~ "01",
-                                                 Month == "Feb" ~ "02",
-                                                 Month == "Mar" ~ "03",
-                                                 Month == "Apr" ~ "04",
-                                                 Month == "May" ~ "05",
-                                                 Month == "Jun" ~ "06",
-                                                 Month == "Jul" ~ "07",
-                                                 Month == "Aug" ~ "08",
-                                                 Month == "Sep" ~ "09",
-                                                 Month == "Oct" ~ "10",
-                                                 Month == "Nov" ~ "11",
-                                                 Month == "Dec" ~ "12",
+          dplyr::mutate(Month = dplyr::case_when(.data$Month == "Jan" ~ "01",
+                                                 .data$Month == "Feb" ~ "02",
+                                                 .data$Month == "Mar" ~ "03",
+                                                 .data$Month == "Apr" ~ "04",
+                                                 .data$Month == "May" ~ "05",
+                                                 .data$Month == "Jun" ~ "06",
+                                                 .data$Month == "Jul" ~ "07",
+                                                 .data$Month == "Aug" ~ "08",
+                                                 .data$Month == "Sep" ~ "09",
+                                                 .data$Month == "Oct" ~ "10",
+                                                 .data$Month == "Nov" ~ "11",
+                                                 .data$Month == "Dec" ~ "12",
                                                  TRUE ~ "error")) %>%
-          dplyr::mutate(time = as.Date(paste(Year, Month, "01", sep = "-"))) %>%
-          dplyr::select(-Year, -Month) %>%
-          dplyr::mutate(year = lubridate::year(time),
-                        quarter = lubridate::quarter(time)) %>%
-          dplyr::group_by(geo, year, quarter) %>%
-          dplyr::summarise(values = sum(values),
-                           nobs = dplyr::n(), # record how many months are available in each quarter
-                           time = min(time)) %>%
+          dplyr::mutate(time = as.Date(paste(.data$Year, .data$Month, "01", sep = "-"))) %>%
+          dplyr::select(-"Year", -"Month") %>%
+          dplyr::mutate(year = lubridate::year(.data$time),
+                        quarter = lubridate::quarter(.data$time)) %>%
+          dplyr::group_by(.data$geo, .data$year, .data$quarter) %>%
+          dplyr::summarise(values = sum(.data$values),
+                           n = dplyr::n(), # record how many months are available in each quarter
+                           time = min(.data$time)) %>%
           dplyr::ungroup() %>%
           # drop "incomplete" quarters (should not occur b/c released when complete)
-          dplyr::filter(nobs == 3L) %>%
-          dplyr::select(-year, -quarter, -nobs) %>%
+          dplyr::filter(.data$n == 3L) %>%
+          dplyr::select(-"year", -"quarter", -"n") %>%
           dplyr::mutate(na_item = to_obtain$model_varname[j])
         # if after filtering "sub" is not empty, we found the variable and can mark it as such
         if (NROW(sub) == 0L) {
@@ -427,7 +427,7 @@ download_edgar <- function(to_obtain, quiet) {
         }
         # ensure column "time" is a Date variable (Moritz had this)
         sub <- sub %>%
-          dplyr::mutate(time = as.Date(time))
+          dplyr::mutate(time = as.Date(.data$time))
         # add subset to df_edgar, final dataset
         df_edgar <- dplyr::bind_rows(df_edgar, sub)
       } # end for variables (total)
@@ -444,29 +444,29 @@ download_edgar <- function(to_obtain, quiet) {
         # filter the data
         sub <- tmp %>%
           dplyr::select(dplyr::all_of(c(columns, "ipcc_code_2006_for_standard_report"))) %>%
-          dplyr::filter(Country_code_A3 == countrycode::countrycode(to_obtain$geo[j], "iso2c", "iso3c")) %>%
-          dplyr::rename(geo = Country_code_A3) %>%
+          dplyr::filter(.data$Country_code_A3 == countrycode::countrycode(to_obtain$geo[j], "iso2c", "iso3c")) %>%
+          dplyr::rename(geo = .data$Country_code_A3) %>%
           dplyr::mutate(geo = to_obtain$geo[j])
         # shape into long format
         sub <- sub %>%
           tidyr::pivot_longer(cols = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
                               names_to = "Month",
                               values_to = "values") %>%
-          dplyr::mutate(Month = dplyr::case_when(Month == "Jan" ~ "01",
-                                                 Month == "Feb" ~ "02",
-                                                 Month == "Mar" ~ "03",
-                                                 Month == "Apr" ~ "04",
-                                                 Month == "May" ~ "05",
-                                                 Month == "Jun" ~ "06",
-                                                 Month == "Jul" ~ "07",
-                                                 Month == "Aug" ~ "08",
-                                                 Month == "Sep" ~ "09",
-                                                 Month == "Oct" ~ "10",
-                                                 Month == "Nov" ~ "11",
-                                                 Month == "Dec" ~ "12",
+          dplyr::mutate(Month = dplyr::case_when(.data$Month == "Jan" ~ "01",
+                                                 .data$Month == "Feb" ~ "02",
+                                                 .data$Month == "Mar" ~ "03",
+                                                 .data$Month == "Apr" ~ "04",
+                                                 .data$Month == "May" ~ "05",
+                                                 .data$Month == "Jun" ~ "06",
+                                                 .data$Month == "Jul" ~ "07",
+                                                 .data$Month == "Aug" ~ "08",
+                                                 .data$Month == "Sep" ~ "09",
+                                                 .data$Month == "Oct" ~ "10",
+                                                 .data$Month == "Nov" ~ "11",
+                                                 .data$Month == "Dec" ~ "12",
                                                  TRUE ~ "error")) %>%
-          dplyr::mutate(time = as.Date(paste(Year, Month, "01", sep = "-"))) %>%
-          dplyr::select(-Year, -Month)
+          dplyr::mutate(time = as.Date(paste(.data$Year, .data$Month, "01", sep = "-"))) %>%
+          dplyr::select(-"Year", -"Month")
         # new filter step: IPCC sector
         # allow for upstream filter, e.g. if user sets "1.B":
         # (i) first check whether it exists already; if so, filter it
@@ -475,8 +475,8 @@ download_edgar <- function(to_obtain, quiet) {
         if (to_obtain$ipcc_sector[j] %in% ipcc_codes_available) {
           # code exists already, simply filter on it
           sub <- sub %>%
-            dplyr::filter(ipcc_code_2006_for_standard_report == to_obtain$ipcc_sector[j]) %>%
-            select(-ipcc_code_2006_for_standard_report)
+            dplyr::filter(.data$ipcc_code_2006_for_standard_report == to_obtain$ipcc_sector[j]) %>%
+            dplyr::select(-"ipcc_code_2006_for_standard_report")
         } else {
           # code does not exist, check sub-codes
           ipcc_subcodes <- stringr::str_subset(string = ipcc_codes_available,
@@ -485,24 +485,24 @@ download_edgar <- function(to_obtain, quiet) {
             stop(paste0("Unable to detect matching IPCC codes or subcodes for variable '",  to_obtain$model_varname[j], "'."))
           }
           sub <- sub %>%
-            dplyr::filter(ipcc_code_2006_for_standard_report %in% ipcc_subcodes) %>%
-            dplyr::group_by(geo, time) %>%
-            dplyr::summarise(values = sum(values)) %>%
+            dplyr::filter(.data$ipcc_code_2006_for_standard_report %in% ipcc_subcodes) %>%
+            dplyr::group_by(.data$geo, .data$time) %>%
+            dplyr::summarise(values = sum(.data$values)) %>%
             dplyr::ungroup()
           # don't necessarily enforce same number of IPCC codes per month (so don't calculate nobs)
         }
         # now aggregate to quarterly
         sub <- sub %>%
-          dplyr::mutate(year = lubridate::year(time),
-                        quarter = lubridate::quarter(time)) %>%
-          dplyr::group_by(geo, year, quarter) %>%
-          dplyr::summarise(values = sum(values),
-                           nobs = dplyr::n(), # record how many months are available in each quarter
-                           time = min(time)) %>%
+          dplyr::mutate(year = lubridate::year(.data$time),
+                        quarter = lubridate::quarter(.data$time)) %>%
+          dplyr::group_by(.data$geo, .data$year, .data$quarter) %>%
+          dplyr::summarise(values = sum(.data$values),
+                           n = dplyr::n(), # record how many months are available in each quarter
+                           time = min(.data$time)) %>%
           dplyr::ungroup() %>%
           # drop "incomplete" quarters (should not occur b/c released when complete)
-          dplyr::filter(nobs == 3L) %>%
-          dplyr::select(-year, -quarter, -nobs) %>%
+          dplyr::filter(.data$n == 3L) %>%
+          dplyr::select(-"year", -"quarter", -"n") %>%
           dplyr::mutate(na_item = to_obtain$model_varname[j])
         # if after filtering "sub" is not empty, we found the variable and can mark it as such
         if (NROW(sub) == 0L) {
@@ -512,7 +512,7 @@ download_edgar <- function(to_obtain, quiet) {
         }
         # ensure column "time" is a Date variable (Moritz had this)
         sub <- sub %>%
-          dplyr::mutate(time = as.Date(time))
+          dplyr::mutate(time = as.Date(.data$time))
         # add subset to df_edgar, final dataset
         df_edgar <- dplyr::bind_rows(df_edgar, sub)
       } # end for variables (sector)
@@ -556,7 +556,7 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
 
     # subset the relevant data
     df_local <- inputdata_directory %>%
-      dplyr::filter(na_item %in% to_obtain$model_varname[indices]) # choose the relevant ones
+      dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) # choose the relevant ones
 
   } else {
 
@@ -603,9 +603,9 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
 
       # subset the relevant data
       sub <- tmp %>%
-        dplyr::filter(na_item %in% to_obtain$model_varname[indices]) %>% # choose the relevant ones
+        dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) %>% # choose the relevant ones
       # ensure column "time" is a Date variable (Moritz had this)
-        dplyr::mutate(time = as.Date(time))
+        dplyr::mutate(time = as.Date(.data$time))
 
       # add the relevant data
       df_local <- dplyr::bind_rows(df_local, sub)
