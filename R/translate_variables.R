@@ -33,12 +33,12 @@ translate_variables <- function(specification, dictionary = NULL) {
   # extract all separators "-" or "+" for all RHS formulas
   seps <- stringr::str_extract_all(string = indep, pattern = "\\-|\\+")
 
-  # replace dependent variable names by Eurostat code
+  # replace dependent variable names by variable code
   for (i in seq_along(dep)) {
     if(all(!dictionary$model_varname %in% dep[i])){stop(paste0("Model Variable Name '",dep[i],"' not found in dictionary. Check both dictionary and specification."))}
     ind <- which(dictionary$model_varname == dep[i]) # gets the row of the dictionary
     if (length(ind) == 1L) {
-      dep[i] <- dictionary$eurostat_code[ind]
+      dep[i] <- dictionary$variable_code[ind]
       # add the NACE Sector to the eurostat code
       if (!is.na(dictionary$nace_r2[ind])) {dep[i] <- paste0(dep[i],"*",dictionary$nace_r2[ind])}
     }
@@ -58,7 +58,7 @@ translate_variables <- function(specification, dictionary = NULL) {
       if(all(!dictionary$model_varname %in% vars[j])){stop(paste0("Model Variable Name '",vars[j],"' not found in dictionary. Check both dictionary and specification."))}
       ind <- which(dictionary$model_varname %in% vars[j])
       if (length(ind) == 1L) {
-        vars[j] <- dictionary$eurostat_code[ind]
+        vars[j] <- dictionary$variable_code[ind]
         # add the NACE Sector to the eurostat code
         if (!is.na(dictionary$nace_r2[ind])) {vars[j] <- paste0(vars[j],"*",dictionary$nace_r2[ind])}
       }
@@ -85,10 +85,10 @@ translate_variables <- function(specification, dictionary = NULL) {
 
   # add the translated columns
   specification <- specification %>%
-    dplyr::mutate(dependent_eu = dep,
-                  independent_eu = indep) %>%
-    dplyr::relocate("dependent_eu", .after = "dependent") %>%
-    dplyr::relocate("independent_eu", .after = "independent")
+    dplyr::mutate(dependent_code = dep,
+                  independent_code = indep) %>%
+    dplyr::relocate("dependent_code", .after = "dependent") %>%
+    dplyr::relocate("independent_code", .after = "independent")
 
   return(specification)
 
