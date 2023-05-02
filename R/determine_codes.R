@@ -182,3 +182,46 @@ determine_eurocodes <- function(specification, dictionary = NULL) {
   return(out)
 
 }
+
+
+#' Determine which model variables need to be found
+#'
+#' Takes the specification and returns a dictionary-like data frame with the
+#' required model variables, their filters, and where they can be found.
+
+determine_variables <- function(specification, dictionary) {
+
+  # extract the codes used in the model
+  dep.set <- specification$dependent
+  indep <- specification$independent
+  indep.set <- NULL
+
+  for (i in seq_along(indep)) {
+    # each element of character vector may contain formula, e.g. "A + B", must split
+    vars <- strsplits(
+      indep[i],
+      c(" \\- ", " \\+ "))
+    indep.set <- union(indep.set, vars)
+  }
+  indep.set <- gsub(" ", "", indep.set)
+  codes.used <- union(dep.set, indep.set)
+
+  # some model variable might be aggregate level vars (e.g. TOTS)
+  # they are constructed by definition, so need to exclude them
+  # exclusion by is.na(database)
+
+  to_obtain <- dictionary %>%
+    dplyr::filter(model_varname %in% codes.used) %>%
+    dplyr::filter(!is.na(database)) %>%
+    dplyr::mutate(found = FALSE) # will keep track of whether found (download or local)
+
+  return(to_obtain)
+
+}
+
+
+
+
+
+
+
