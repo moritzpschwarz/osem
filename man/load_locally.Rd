@@ -9,9 +9,9 @@ load_locally(to_obtain, inputdata_directory, quiet)
 \arguments{
 \item{to_obtain}{A data.frame as returned by \code{\link[=determine_variables]{determine_variables()}}.}
 
-\item{inputdata_directory}{A path to .rds input files in which the data is
-stored. Can be \code{NULL}, in which case data is obtained via download if
-possible.}
+\item{inputdata_directory}{A path to .rds, .csv, or .xlsx input files in
+which the data is stored. Can be \code{NULL}, in which case data is obtained
+via download if possible.}
 
 \item{quiet}{Logical with default = \code{FALSE}. Should messages be displayed?
 These messages are intended to give more information about the estimation

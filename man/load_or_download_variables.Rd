@@ -27,9 +27,9 @@ id. When \code{NULL}, the \link[=dict]{default dictionary} is used.}
 required variables are first obtained from \code{"download"} and then
 \code{"local"}ly or vice versa.}
 
-\item{inputdata_directory}{A path to .rds input files in which the data is
-stored. Can be \code{NULL}, in which case data is obtained via download if
-possible.}
+\item{inputdata_directory}{A path to .rds, .csv, or .xlsx input files in
+which the data is stored. Can be \code{NULL}, in which case data is obtained
+via download if possible.}
 
 \item{save_to_disk}{A path to a directory where the final dataset will be
 saved, including file name and ending. Not saved when \code{NULL}.}

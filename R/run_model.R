@@ -102,13 +102,13 @@ run_model <- function(specification,
   }
 
   if(!all(specification$type %in% c("n","d"))){
-    stop("The type column in the Specification can only either be 'n' (for Definition i.e. modelled) or 'd' (for identity).")
+    stop("The type column in the Specification can only either be 'n' (for endogenous i.e. modelled) or 'd' (for identity/definition).")
   }
 
   if(missing(dictionary) | is.null(dictionary)){dictionary <- aggregate.model::dict}
 
   if(!all(c("variable_code", "model_varname", "full_name", "database", "dataset_id","var_col", "nace_r2", "freq", "geo", "unit", "s_adj") %in% colnames(dictionary))){
-    stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'eurostat_code', 'model_varname', 'full_name', 'dataset_id', 'var_col', 'nace_r2'.")
+    stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'variable_code', 'model_varname', 'full_name', 'database', 'dataset_id', 'var_col', 'nace_r2', 'freq', 'geo', 'unit', 's_adj'.")
   }
 
   if(any(duplicated(dictionary$model_varname))){stop("Dictionary cannot contain duplicated values for 'model_varname'.")}

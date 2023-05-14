@@ -13,9 +13,9 @@
 #' @param primary_source A character of length 1 determining whether the
 #' required variables are first obtained from \code{"download"} and then
 #' \code{"local"}ly or vice versa.
-#' @param inputdata_directory A path to .rds input files in which the data is
-#'   stored. Can be \code{NULL}, in which case data is obtained via download if
-#'    possible.
+#' @param inputdata_directory A path to .rds, .csv, or .xlsx input files in
+#' which the data is stored. Can be \code{NULL}, in which case data is obtained
+#' via download if possible.
 #' @param save_to_disk A path to a directory where the final dataset will be
 #'   saved, including file name and ending. Not saved when \code{NULL}.
 #' @param quiet Logical with default = \code{FALSE}. Should messages be displayed?
@@ -66,7 +66,7 @@ load_or_download_variables <- function(specification,
   # sources
   sources <- unique(to_obtain$database)
   if (length(setdiff(sources, c("eurostat", "edgar", "local"))) >= 1L) {
-    stop("Currently, only allow data bases 'eurostat', 'edgar', or local files.")
+    stop("Currently, only allow data bases 'eurostat', 'edgar', or 'local' files.")
   }
   if ("edgar" %in% sources) {
     if (!requireNamespace("readxl", quietly = TRUE)) {
