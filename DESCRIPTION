@@ -37,5 +37,8 @@ Suggests:
     testthat (>= 3.0.0),
     tidygraph,
     plotly,
-    purrr
+    purrr,
+    knitr,
+    rmarkdown
 Config/testthat/edition: 3
+VignetteBuilder: knitr
