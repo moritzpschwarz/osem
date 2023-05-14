@@ -386,7 +386,7 @@ download_edgar <- function(to_obtain, quiet) {
         sub <- tmp %>%
           dplyr::select(dplyr::all_of(columns)) %>%
           dplyr::filter(.data$Country_code_A3 == countrycode::countrycode(to_obtain$geo[j], "iso2c", "iso3c")) %>%
-          dplyr::rename(geo = .data$Country_code_A3) %>%
+          dplyr::rename(geo = "Country_code_A3") %>%
           dplyr::mutate(geo = to_obtain$geo[j])
         # shape into long format
         sub <- sub %>%
@@ -445,7 +445,7 @@ download_edgar <- function(to_obtain, quiet) {
         sub <- tmp %>%
           dplyr::select(dplyr::all_of(c(columns, "ipcc_code_2006_for_standard_report"))) %>%
           dplyr::filter(.data$Country_code_A3 == countrycode::countrycode(to_obtain$geo[j], "iso2c", "iso3c")) %>%
-          dplyr::rename(geo = .data$Country_code_A3) %>%
+          dplyr::rename(geo = "Country_code_A3") %>%
           dplyr::mutate(geo = to_obtain$geo[j])
         # shape into long format
         sub <- sub %>%
