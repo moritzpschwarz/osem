@@ -42,8 +42,7 @@ test_that("no errors when running very simple model", {
       specification = spec,
       dictionary = NULL,
       inputdata_directory = NULL,
-      filter_list = filter_list,
-      download = TRUE,
+      primary_source = "download",
       #save_to_disk = here::here("input_data/test.xlsx"),
       save_to_disk = NULL,
       present = FALSE,
@@ -102,8 +101,7 @@ test_that("no errors when running a slightly more complicated model", {
     specification = spec,
     dictionary = NULL,
     inputdata_directory = NULL,
-    filter_list = filter_list,
-    download = TRUE,
+    primary_source = "download",
     save_to_disk = NULL,
     present = FALSE,
     quiet = TRUE
@@ -164,8 +162,7 @@ test_that("no errors when running a slightly more complicated model", {
     specification = spec,
     dictionary = NULL,
     inputdata_directory = NULL,
-    filter_list = filter_list,
-    download = TRUE,
+    primary_source = "download",
     save_to_disk = NULL,
     present = FALSE
   ), "Table |Unbalanced panel")
@@ -174,28 +171,28 @@ test_that("no errors when running a slightly more complicated model", {
 
 
 
-#checking what happens when download is false and inputdata is also false
-  expect_error(b <- run_model(
-    specification = spec,
-    dictionary = NULL,
-    inputdata_directory = NULL,
-    filter_list = filter_list,
-    download = FALSE,
-    save_to_disk = NULL,
-    present = FALSE
-  ), "Must specify 'inputdata_directory'")
+  #checking what happens when download is false and inputdata is also false
+  # NOTE Jonas: since new download implementation, this is allowed and works now
+  # expect_error(b <- run_model(
+  #   specification = spec,
+  #   dictionary = NULL,
+  #   inputdata_directory = NULL,
+  #   primary_source = "local",
+  #   save_to_disk = NULL,
+  #   present = FALSE
+  # ), "Must specify 'inputdata_directory'")
 
 
   #checking what happens when download is false and inputdata is also false
-  expect_error(b <- run_model(
-    specification = spec,
-    dictionary = NULL,
-    inputdata_directory = NULL,
-    filter_list = filter_list,
-    download = FALSE,
-    save_to_disk = NULL,
-    present = FALSE
-  ), "Must specify 'inputdata_directory'")
+  # NOTE Jonas: since new download implementation, this is allowed and works now
+  # expect_error(b <- run_model(
+  #   specification = spec,
+  #   dictionary = NULL,
+  #   inputdata_directory = NULL,
+  #   primary_source = "local",
+  #   save_to_disk = NULL,
+  #   present = FALSE
+  # ), "Must specify 'inputdata_directory'")
 
 
   # Let's check that an ecm also works
@@ -203,8 +200,7 @@ test_that("no errors when running a slightly more complicated model", {
     specification = spec,
     dictionary = NULL,
     inputdata_directory = NULL,
-    filter_list = filter_list,
-    download = TRUE,
+    primary_source = "download",
     save_to_disk = NULL,
     ardl_or_ecm = "ecm"
   ), "Unbalanced panel")
@@ -265,8 +261,7 @@ test_that("Incorporate Emissions", {
     specification = spec,
     dictionary = NULL,
     inputdata_directory = NULL,
-    filter_list = filter_list,
-    download = TRUE,
+    primary_source = "download",
     save_to_disk = NULL,
     present = FALSE
   ), "Unbalanced panel")
@@ -327,58 +322,11 @@ test_that("Extensive Model", {
     )
   )
 
-  fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
-  fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-  fc <- list(geo = "AT", unit = "THS_T")
-  fd <- list(geo = "AT", s_adj = "SCA")
-  fe <- list(geo = "AT", s_adj = "SCA", unit = "I15")
-  ff <- list(geo = "AT", s_adj = "SCA", unit = "I16")
-
-  filter_list <- list(
-    "P7" = fa,
-    "YA0" = fb,
-    "P31_S14_S15" = fa,
-    "P5G" = fa,
-    "B1G" = fa,
-    "P3_S13" = fa,
-    "P6" = fa,
-    "GHG" = fc,
-    "B1GQ" = fa,
-    "PSQM" = fe,
-    "LM-LCI-TOT" = ff
-  )
-
-
-
-  # ab <- run_model(
-  #   specification = spec,
-  #   dictionary = dict.devel,
-  #   filter_list = filter_list,
-  #   save_to_disk = "data/use/Test3.xlsx",
-  #   download = TRUE,
-  #   present = FALSE
-  # )
-
-  # ab <- run_model(
-  #   specification = spec,
-  #   dictionary = dict.devel,
-  #   inputdata_directory = "data/use",
-  #   filter_list = filter_list,
-  #   download = FALSE,
-  #   present = FALSE,
-  #   saturation.tpval = 0.1
-  # )
-
-
-
-
-
   expect_warning(ab <- run_model(
     specification = spec,
     dictionary = dict,
     inputdata_directory = NULL,
-    filter_list = filter_list,
-    download = TRUE,
+    primary_source = "download",
     save_to_disk = NULL,
     present = FALSE,
     saturation.tpval = 0.1/NROW(clean_data)
@@ -387,10 +335,4 @@ test_that("Extensive Model", {
   abf <- forecast_model(ab)
   plot(abf, order.as.run = TRUE)
 
-
-
-
-
 })
-
-

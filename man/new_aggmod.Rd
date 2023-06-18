@@ -14,8 +14,7 @@ An object of class \code{"aggmod"}, which is a named list with four elements:
 \describe{
 \item{args}{A named list storing the user arguments for the aggregate
 model.}
-\item{module_order_eurostatvars}{The original specification with translated
-variable names to Eurostat codes and arranged in order of estimation.}
+\item{module_order}{The original but ordered specification.}
 \item{module_collection}{The above specification with two added columns
 that store the model object for each module and the dataset used for
 estimation, including fitted values for the dependent variable.}

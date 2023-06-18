@@ -103,7 +103,7 @@ server <- function(input, output) {
   output$test <- renderText(input$range_plot)
 
   output$files <- renderTable(input$upload)
-  output$spec <- DT::renderDT(aggmod()$module_order_eurostatvars)
+  output$spec <- DT::renderDT(aggmod()$module_order)
   output$plots <- renderPlot({
     sel() %>%
       filter(time >= as.Date(input$range_plot[1]) & time <= as.Date(input$range_plot[2])) %>%

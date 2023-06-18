@@ -1,0 +1,263 @@
+---
+title: "Example Workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Example Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=TRUE, warning=FALSE, message=FALSE}
+library(aggregate.model)
+library(dplyr)
+library(purrr)
+```
+
+# Setting up the Model
+
+## Dictionary
+
+In this illustration, we will rely on the default dictionary that is available
+from `dict`.
+
+```{r dictionary}
+dict %>% 
+  select(model_varname, database, dataset_id, variable_code, freq, geo) %>% 
+  head()
+dict %>% 
+  select(model_varname, database, dataset_id, variable_code, freq, geo) %>% 
+  tail()
+```
+
+## Specification
+
+We use a specification for illustrative purposes only. Our specification
+contains the following four modules/equations:
+
+```{r specification}
+specification <- dplyr::tibble(
+    type = c(
+      "d",
+      "d",
+      "n",
+      "n"
+    ),
+    dependent = c(
+      "StatDiscrep",
+      "TOTS",
+      "Import",
+      "EmiCO2Combustion"
+    ),
+    independent = c(
+      "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+      "GValueAdd + Import",
+      "FinConsExpHH + GCapitalForm",
+      "HDD + HICP_Energy + GValueAdd"
+    )
+  )
+print(specification)
+```
+
+The first two equations are simply accounting identities. The third equation
+models imports as a function of final consumption expenditure of households and
+gross capital formation. The fourth equation models carbon emissions from
+combustion activities, which includes energy industries, manufacturing and 
+construction, transport, and combustion activities in other sectors.The
+regressors are the number of heating degree days, the harmonised
+index of consumer prices for energy, and total gross value added.
+
+## Data
+
+We differentiate between where data can be obtained from *in principle* versus
+where it should be obtained from *actually* in a specific model run. For 
+example, a variable that is available on Eurostat can be downloaded from 
+Eurostat but might have been saved locally from a previous model run. In order
+to save time, the user might prefer that the local data is used rather than
+re-downloading the data.
+
+The dictionary specifies where the data for the different variables can be
+obtained *in principle*. The column `dict$database` may take one of four
+different values:
+
+* `eurostat` if the variable is available from Eurostat using 
+`eurostat::get_eurostat()`,
+* `edgar` if the (emissions) variable is available EDGAR using a link,
+* `local` if the variable is not available from the above two sources and is
+therefore provided as a local file by the user in the directory 
+`inputdata_directory`. This directory is searched for `.rds`, `.csv`,
+and `.xlsx` files, opens them consecutively, and searches for the variable.
+* `NA` if the variable is constructed as an identity/definition
+
+The argument `primary_source` in the main function `run_model()` governs how the
+data is *actually* obtained in this model run. Data that can in principle be
+downloaded from `eurostat` or `edgar` can also be loaded locally if it has been
+saved manually by the user or using the `save_to_disk` argument in `run_model()`
+in a previous model run. The argument `primary_source` can take either the value
+`"download"` or `"local"`, which governs whether download or local input takes
+precedence for `eurostat` and `edgar` variables.
+
+This gives rise to the following combinations of obtaining data:
+
+* variables with `dictionary$database == "local"` are always searched for among
+the local files of `inputdata_directory` and an error is raised if they cannot
+be found there
+* variables with `dictionary$database == "eurostat"` or 
+`dictionary$database == "egdar"`
+  * argument `primary_source == "download"` first downloads all the variables 
+  (potentially updating the values) and only searches the local directory if 
+  the variables cannot be obtained that way (e.g. if there were problems with 
+  the download)
+  * argument `primary_source == "local"` first searches the local directory and
+  only downloads those variables that could not be found locally
+
+Here, we use variables that can *in principle* all be obtained from either
+Eurostat or EDGAR but we use the local file `example-workflow-data.rds` to save
+time when compiling the vignette.
+
+```{r dictionary$database}
+vars <- c("StatDiscrep", "TOTS", "Import", "EmiCO2Combustion", "FinConsExpHH",
+          "FinConsExpGov", "GCapitalForm", "Export", "GValueAdd", "HDD",
+          "HICP_Energy")
+dict %>% 
+  filter(model_varname %in% vars) %>% 
+  pull(database)
+```
+To avoid downloading all those variables again, we will specify 
+`primary_source == "local"` and provide a `inputdata_directory` path to the
+local directory when calling `run_model()`.
+
+# Running the Model
+
+We are now ready to run the model and obtain an `"aggmod"` object.
+
+```{r run-model}
+model <- run_model(specification = specification,
+                   dictionary = dict,
+                   inputdata_directory = ".",
+                   primary_source = "local",
+                   save_to_disk = NULL,
+                   present = FALSE,
+                   quiet = FALSE)
+class(model)
+```
+We did not `quiet` the output, so we get some information about the estimation.
+
+We are told that local files are used, namely the file 
+`"example-workflow-data.rds"`, which can be found in our working directory 
+`"."` from where the vignette is created. Next, we obtain a warning that the 
+panel is unbalanced, which means that we have "ragged edges" that cause more
+than 20\% of the data to be discarded when limiting the sample to the time
+periods that are available for **all** variables.
+
+Finally, the estimation begins. The order of the modules is determined by how
+they are related to each other, starting with the modules that only depend on
+exogenous (unmodelled) variables and then gradually estimating the other modules
+in order to avoid any reverse dependencies.
+
+# Evaluating the Model
+
+Now, we can have a look at the model results.
+
+## Individual Module Results
+
+The different modules are stored in `model$module_collection`, which is a tibble
+that stores the datasets, independent and dependent variables, model arguments,
+and the model itself as an `"isat"` object.
+
+For example, taking a closer look at the estimated module for carbon emissions
+from combustion activities:
+
+```{r module emissions}
+# extract the isat model object
+co2module <- model$module_collection %>% 
+  filter(dependent == "EmiCO2Combustion") %>% 
+  pull(model) %>% 
+  pluck(1)
+class(co2module)
+# inspect the estimated equation
+print(co2module)
+```
+We find that the number of heating degree days (`HDD`) and gross value added
+(`GValueAdd`) are significant, while gets model selection dropped the harmonised
+consumer price index for energy. Both gross value added and heating degree days
+have a positive coefficient meaning that they increase emissions, as we would
+expect.
+
+Both diagnostic tests of no autocorrelation and no autoregressive conditional
+heteroskedasticity pass.
+
+## Module Network
+
+We can show the relationship between the different modules using the `network()`
+function.
+
+```{r network, fig.width=7, fig.height=5}
+network(model)
+```
+Each node represents a module and the different colours represent whether the
+variable is given by a definition/identity, whether it has been modelled as an
+endogenous variable depending on other models, and whether it is an exogenous
+variable input to the models.
+
+An solid line arrow means that the variable has been retained during model
+selection, while a dashed arrow means that the variable has been dropped during
+model selection. Note again that `HICP_Energy` was in the original specification
+but has been found to be insignificant.
+
+## Forecasts
+
+We can use our model to forecast the variables of our modules. This works for
+both the definition/identity modules and the endogenous modules. The user can
+either provide future values for the exogenous variables (e.g. corresponding to
+certain scenario assumptions) or use automatic AR models to forecast future
+values of the exogenous variables.
+
+```{r, forecast}
+forecast <- forecast_model(model = model,
+                           exog_predictions = NULL,
+                           plot.forecast = FALSE)
+class(forecast)
+```
+We did not specify paths for the exogenous regressors, so the output informs us
+that AR(4) processes were used to project their paths. The function returns an
+object of class `"aggmod.forecast"`, which can also be plotted.
+
+```{r, forecast-plot, fig.width=7, fig.height=5}
+plot(forecast)
+```
+
+## Diagnostics
+
+To obtain an overview of the diagnostic results for each endogenous module, we
+can use the command `diagnostics_model()`. This avoids having to look at all
+`"isat"` model objects manually.
+
+```{r, diagnostics}
+diagnostics_model(model)
+```
+
+The diagnostics pass for both modules: we neither have evidence for 
+autocorrelated errors nor for autoregressive conditional heteroskedasticity.
+
+The output also shows how many impulse indicators (representing outliers) and
+step indicators (representing structural breaks of the mean) have been retained
+in each module, both in absolute and as a share of the observations.
+
+## Shiny App
+
+Last but not least, we can get an overview and summary of the whole aggregate
+model results in a Shiny app, which can be opened using the `present_model()`
+command. The following code snippet is not executed:
+
+```{r, shiny, eval=FALSE}
+present_model(model)
+```
+
+
