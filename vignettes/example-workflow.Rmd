@@ -198,7 +198,7 @@ heteroskedasticity pass.
 We can show the relationship between the different modules using the `network()`
 function.
 
-```{r network, fig.width=7, fig.height=5}
+```{r network, fig.width=7, fig.height=5, eval = FALSE}
 network(model)
 ```
 Each node represents a module and the different colours represent whether the
