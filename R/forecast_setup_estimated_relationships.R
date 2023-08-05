@@ -1,4 +1,14 @@
+#' Internal function to set-up the forecasting of estimated relationships
+#'
 
+#' @param i Current module that is being cycled through
+#' @param exog_df_ready Outcome of forecast_exogenous_values() which is the set of forecasted exogenous values
+#' @param current_spec The current specification for the module being forecasted
+#' @param prediction_list The full list of all predictions. The results of the function will be saved in this list.
+#' @inheritParams forecast_model
+#'
+#' @return A list containing, among other elements, the data required to carry out the forecast for this estimated module.
+#'
 forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ahead, current_spec, prediction_list, uncertainty_sample) {
 
   # set up
@@ -165,6 +175,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
         dplyr::pull(all.estimates) %>%
         .[[1]] %>%
         dplyr::select(-"time") -> mvar_all.estimates
+
 
       mvar_euname <- model$module_collection %>%
         dplyr::filter(.data$index == mvar_model_index) %>%

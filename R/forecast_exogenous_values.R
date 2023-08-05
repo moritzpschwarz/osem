@@ -1,3 +1,10 @@
+#' Internal function to forecast exogenous variables
+#'
+#' @param exog_vars The set of exogenous variables to be forecasted.
+#' @inheritParams forecast_model
+#'
+#' @return A dataset containing the set of forecasted exogenous values.
+
 forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_fill_method, ar.fill.max, n.ahead){
 
 
