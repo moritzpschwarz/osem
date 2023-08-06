@@ -175,7 +175,9 @@ test_that("Test that forecasting works - with fixed data",{
       inputdata_directory = sample_input,
       filter_list = filter_list,
       download = FALSE,
-      quiet = TRUE
+      quiet = TRUE,
+      max.ar = 4,
+      max.dl = 4
     ))
 
   set.seed(123)

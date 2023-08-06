@@ -17,7 +17,7 @@ run_model(
   trend = TRUE,
   ardl_or_ecm = "ardl",
   max.ar = 4,
-  max.dl = 2,
+  max.dl = 4,
   saturation = c("IIS", "SIS"),
   saturation.tpval = 0.01,
   max.block.size = 20,

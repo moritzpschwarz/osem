@@ -142,44 +142,90 @@ forecast_model <- function(model,
       res_draws <- sample(as.numeric(isat_obj$residuals), size = uncertainty_sample*n.ahead, replace = TRUE)
       pred_draw_matrix <- as.vector(pred_obj$yhat) + matrix(res_draws,nrow = n.ahead)
 
+      ###
+      ### List Columns
+      ###
       # if there are any list columns then that means that a preceding variable has uncertainty
       # then the pred_draw_matrix is replaced with the uncertainty estimates
       if(chk_any_listcols){
-        preds_runs <- dplyr::tibble()
-        for(run in seq_along(1:uncertainty_sample)){
+        # first find the list columns - these indicate that there has been uncertainty in preceding variables
+        list_cols <- names(pred_df.all)[sapply(pred_df.all, "class")=="list"]
+        time_values <- current_pred_raw$time
 
-          pred_df.all %>%
-            dplyr::mutate(across(-c(dplyr::any_of("trend"),
-                                    dplyr::starts_with("q_"),
-                                    dplyr::starts_with("iis"),
-                                    dplyr::starts_with("sis")),
-                                 ~purrr::map(., function(x){
-                                   if(!is.null(ncol(x))){
-                                     dplyr::pull(x, run)
-                                   } else {
-                                     x
-                                   }})
-            )) %>%
-            tidyr::unnest(-c(dplyr::any_of("trend"), dplyr::starts_with("q_"),dplyr::starts_with("iis"), dplyr::starts_with("sis"))) %>%
-            utils::tail(., n.ahead) %>%
-            as.matrix -> pred_df_run
+        # in this following dataset we write the list columsn properly formatted
+        overall_listcols <- dplyr::tibble(time = time_values) %>%
+          dplyr::full_join(dplyr::tibble(run = 1:uncertainty_sample), by = character())
 
-          pred_obj_run <- gets::predict.isat(isat_obj, newmxreg = pred_df_run,
-                                             n.ahead = n.ahead, plot = FALSE,
-                                             ci.levels = ci.levels, n.sim = 1)
+        for(m in list_cols){
+          # m = list_cols[1]
 
-          dplyr::tibble(run = run,
-                        time = 1:n.ahead,
-                        pred = as.numeric(pred_obj_run$yhat)) %>%
-            dplyr::bind_rows(preds_runs, .) -> preds_runs
+          # we extract the list columns into individual lists
+          lapply(pred_df.all %>% dplyr::pull(m), FUN = function(x){
+            # if the value is just a number (must be due to it being a lagged observed value), then just take that value
+            if(is.numeric(x)){
+              x
+            } else if(is.data.frame(x)){
+              # if this is already a dataframe, then pivot it to longer
+              tidyr::pivot_longer(x, dplyr::everything(), names_to = "run") %>%
+                dplyr::mutate(run = as.numeric(grep("[0-9]+$",run)))
+            }
+          }) -> listcol_unformatted
+
+          # and now we reformat them to a long dataset
+          # now we combine the individual formatted list columns to one data frame
+          # for that, we cycle through each element of the formatted list columns
+          listcol_formatted <- dplyr::tibble()
+          for(l in 1:length(listcol_unformatted)){
+            if(is.numeric(listcol_unformatted[[l]])){
+              dplyr::tibble(time = time_values[l],
+                            run = 1:uncertainty_sample,
+                            value = listcol_unformatted[[l]]) %>%
+                dplyr::bind_rows(.,listcol_formatted) -> listcol_formatted
+            } else {
+              dplyr::tibble(time = time_values[l],
+                            listcol_unformatted[[l]]) %>%
+                dplyr::bind_rows(.,listcol_formatted) -> listcol_formatted
+            }
+          }
+          listcol_formatted <- dplyr::arrange(listcol_formatted, time, run)
+          names(listcol_formatted) <- c("time","run",m)
+
+          dplyr::full_join(overall_listcols, listcol_formatted, by = c("time","run")) -> overall_listcols
         }
-        # here pred only takes into account the uncertainty in the x-variables
-        # pred_draws combines the model residual uncertainty for y and the uncertainty of the x-variables
-        preds_runs %>%
-          dplyr::mutate(pred_draws = pred + res_draws) -> pred_runs_final
 
-        pred_runs_final %>%
-          dplyr::select(c("run","time","pred_draws")) %>%
+        # now that we have all list columns properly formatted in one dataset, we join them with the rest of the columns
+        pred_df.all_new <- pred_df.all %>%
+          dplyr::mutate(time = time_values) %>%
+          # we can delete the list_cols, because those will now be added in their formatted version
+          dplyr::select(-list_cols)  %>%
+          dplyr::full_join(overall_listcols,., by = "time")
+
+        pred_df.all_new %>%
+          # we nest all data so that each run is one line
+          tidyr::nest(data = c(everything(),-run)) %>%
+
+          # now for each run-row, we run predict.isat
+          dplyr::mutate(prediction = purrr::map(data, function(x){
+            gets::predict.isat(isat_obj, newmxreg = x %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)),
+                               n.ahead = n.ahead, plot = FALSE,
+                               ci.levels = ci.levels, n.sim = 1)
+
+          })) -> all_preds
+
+        all_preds %>%
+          # we get all predictions back into a row format
+          dplyr::mutate(prediction = purrr::map(prediction,dplyr::as_tibble)) %>%
+          tidyr::unnest(prediction) %>%
+          # we add the time dimension
+          dplyr::mutate(time = time_values, .by = run) %>%
+          dplyr::select(run,time,pred = yhat) %>%
+
+          # here pred only takes into account the uncertainty in the x-variables
+          # pred_draws combines the model residual uncertainty for y and the uncertainty of the x-variables
+          dplyr::mutate(pred_draws = pred + res_draws,
+                        pred = NULL) %>%
+
+          # now we get them into the final format to add them back to the overall list
           tidyr::pivot_wider(id_cols = "time", names_from = "run", values_from = "pred_draws") %>%
           dplyr::select(-"time") %>%
           as.matrix() -> pred_runs_final_matrix
@@ -188,9 +234,17 @@ forecast_model <- function(model,
 
         # now replace the pred_draw_matrix - this one only survives without being overwritten if there is no preceding uncertainty
         pred_draw_matrix <- pred_runs_final_matrix
-
       }
 
+      ###
+      ### End of list Columns
+      ###
+
+
+
+      ###
+      ### Prepare output
+      ###
       outvarname <- paste0(if (model$module_collection %>%
                                dplyr::filter(.data$order == i) %>%
                                .$model.args %>%
