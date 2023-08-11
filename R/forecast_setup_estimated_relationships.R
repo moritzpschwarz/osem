@@ -5,11 +5,12 @@
 #' @param exog_df_ready Outcome of forecast_exogenous_values() which is the set of forecasted exogenous values
 #' @param current_spec The current specification for the module being forecasted
 #' @param prediction_list The full list of all predictions. The results of the function will be saved in this list.
+#' @param nowcasted_data The full_data element of the model object resulting from the nowcasting() function. Used to substitute missing historical data.
 #' @inheritParams forecast_model
 #'
 #' @return A list containing, among other elements, the data required to carry out the forecast for this estimated module.
 #'
-forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ahead, current_spec, prediction_list, uncertainty_sample) {
+forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ahead, current_spec, prediction_list, uncertainty_sample, nowcasted_data) {
 
   # set up
   # get isat obj
@@ -17,7 +18,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
     dplyr::filter(.data$order == i) %>%
     dplyr::pull(.data$model) %>% .[[1]] -> isat_obj
 
-  # get data obj
+  # get data obj (that is the data that was used in the estimation)
   model$module_collection %>%
     dplyr::filter(.data$order == i) %>%
     dplyr::pull(.data$dataset) %>% .[[1]] -> data_obj
@@ -183,9 +184,6 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
       mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
 
-      # TODO: Here we can implement the forecast plume
-      # currently we are using 'yhat' below - but the mvar_model_obj has all values of the ci.levels
-
       # name all the individual estimates
       colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
 
@@ -205,11 +203,6 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
       # mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
       #   setNames(mvar_name)
 
-      # What I think I need to TODO for the forecast plume (uncertainty):
-      # look at how pred_df is created, find a way to check if it contains a list column with ".all"
-      # if so, do the following prediction across all columns
-      # the key is in the row that starts with dplyr::bind_rows(current_pred_raw %>%
-      # there, currently the .all columns are dropped
 
       if (!mvar_name %in% x_names_vec_nolag) {
         if (paste0("ln.",mvar_name) %in% x_names_vec_nolag) {
@@ -231,16 +224,60 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
   }
 
   data_obj %>%
-    dplyr::select("time", dplyr::all_of(x_names_vec_nolag)) %>%
+    dplyr::select("time", dplyr::all_of(x_names_vec_nolag)) -> historical_estimation_data
+
+  # in this section we check whether any of the missing values are present in nowcasted data
+  # we first check if there is even any historical data used (would not be true for e.g. AR models)
+  if(historical_estimation_data %>% select(-"time") %>% ncol()>0){
+
+    # then we check whether there are any lines in the historical data that are missing (often the case)
+    historical_estimation_data %>%
+      pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
+      filter(is.na(values)) -> missing_values_dataobj
+
+    # then we check whether any of the missing values in the historical data are present in nowcasted data
+    if (nrow(missing_values_dataobj) > 0 & !is.null(nowcasted_data)) {
+
+      missing_values_dataobj %>%
+        mutate(basename = gsub("ln.","",na_item)) %>%
+        inner_join(nowcasted_data %>%
+                     rename(basename = na_item,
+                            values_nowcast = values), by = c("time", "basename")) %>%
+
+        # where there are nowcast values but not original ones, take now the nowcast ones
+        # when doing this, we check first if we need to log them
+        mutate(values = case_when(!is.na(values_nowcast) & is.na(values) ~ values_nowcast, TRUE ~ values),
+               values = case_when(!is.na(values) & grepl("^ln.",na_item) ~ log(values), TRUE ~ values)) %>%
+
+        select(time, na_item, new_values = values) %>%
+        tidyr::drop_na() -> values_to_replace
+
+      # Then we take the historical data and add the nowcasted data
+      historical_estimation_data %>%
+        pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
+        full_join(values_to_replace, by = c("time","na_item")) %>%
+        mutate(values = case_when(is.na(values) & !is.na(new_values) ~ new_values, TRUE ~ values),
+               new_values = NULL) %>%
+        pivot_wider(id_cols = "time", names_from = "na_item",values_from = "values") -> historical_estimation_data_w_nowcast
+
+    } else {
+      historical_estimation_data_w_nowcast <- historical_estimation_data
+    }
+  } else {
+    historical_estimation_data_w_nowcast <- historical_estimation_data
+  }
+
+  historical_estimation_data_w_nowcast %>%
 
     ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
     # The drop_na below was used because for GCapitalForm the value for July 2022 was missing - while it was there for FinConsExpHH
     # Now the question is whether the drop_na messes up the timing
-    tidyr::drop_na() %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
+    #tidyr::drop_na() %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
 
     dplyr::bind_rows(current_pred_raw %>%
                        #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
-                       dplyr::select("time", dplyr::all_of(x_names_vec_nolag))) -> intermed
+                       dplyr::select("time", dplyr::all_of(x_names_vec_nolag))) %>%
+    dplyr::distinct() -> intermed
 
   # add the lagged x-variables
   if(ncol(intermed) > 1){
@@ -281,14 +318,15 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
   if(chk_any_listcols){
     ## repeat the above with all
-    data_obj %>%
-      dplyr::select(time, dplyr::all_of(x_names_vec_nolag)) %>%
+    #data_obj %>%
+     # dplyr::select(time, dplyr::all_of(x_names_vec_nolag)) %>%
+    historical_estimation_data_w_nowcast %>%
       dplyr::mutate(across(dplyr::all_of(x_names_vec_nolag), ~as.list(.))) %>%
 
       ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
       # The drop_na below was used because for GCapitalForm the value for July 2022 was missing - while it was there for FinConsExpHH
       # Now the question is whether the drop_na messes up the timing
-      tidyr::drop_na() %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
+      #tidyr::drop_na() %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
 
       dplyr::bind_rows(current_pred_raw_all %>%
                          #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
