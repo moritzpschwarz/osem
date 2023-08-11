@@ -13,7 +13,8 @@ forecast_model(
   ar.fill.max = 4,
   plot.forecast = TRUE,
   uncertainty_sample = 100,
-  seed = 1234
+  seed = 1234,
+  quiet = FALSE
 )
 }
 \arguments{

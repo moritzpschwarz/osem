@@ -11,7 +11,8 @@ forecast_setup_estimated_relationships(
   n.ahead,
   current_spec,
   prediction_list,
-  uncertainty_sample
+  uncertainty_sample,
+  nowcasted_data
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ forecast_setup_estimated_relationships(
 \item{prediction_list}{The full list of all predictions. The results of the function will be saved in this list.}
 
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
+
+\item{nowcasted_data}{The full_data element of the model object resulting from the nowcasting() function. Used to substitute missing historical data.}
 }
 \value{
 A list containing, among other elements, the data required to carry out the forecast for this estimated module.
