@@ -5,11 +5,14 @@
 #'
 #' @return A dataset containing the set of forecasted exogenous values.
 
-forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_fill_method, ar.fill.max, n.ahead){
+forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_fill_method, ar.fill.max, n.ahead, quiet){
 
 
   if (is.null(exog_predictions) & exog_fill_method == "last") {
-    message("No exogenous values provided. Model will use the last available value.\nAlternative is exog_fill_method = 'AR'.")
+    if(!quiet){
+      message("No exogenous values provided. Model will use the last available value.\nAlternative is exog_fill_method = 'AR'.")
+    }
+
     exog_df <- model$full_data %>%
       dplyr::filter(.data$na_item %in% exog_vars) %>%
       dplyr::group_by(.data$na_item) %>%
@@ -45,7 +48,10 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
   }
 
   if (is.null(exog_predictions) & exog_fill_method == "AR") {
-    message(paste0("No exogenous values provided. Model will forecast the exogenous values with an AR", ar.fill.max," process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').\nAlternative is exog_fill_method = 'last'."))
+    if(!quiet){
+      message(paste0("No exogenous values provided. Model will forecast the exogenous values with an AR", ar.fill.max," process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').\nAlternative is exog_fill_method = 'last'."))
+    }
+
 
     exog_df_intermed <- model$full_data %>%
       dplyr::filter(.data$na_item %in% exog_vars) %>%
@@ -143,10 +149,8 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
         if(!all(c("q_2", "q_3", "q_4") %in% colnames(new_cols_to_add))){
           new_col_name <- c("q_2", "q_3", "q_4")[!c("q_2", "q_3", "q_4") %in% colnames(new_cols_to_add)]
-          dplyr::tibble(x = rep(0,nrow(new_cols_to_add))) %>%
-            setNames(new_col_name) %>%
-            dplyr::bind_cols(new_cols_to_add) -> new_cols_to_add
-
+          matrix(0, nrow = nrow(new_cols_to_add), ncol = length(new_col_name), dimnames = list(NULL,new_col_name)) %>%
+              dplyr::bind_cols(new_cols_to_add) -> new_cols_to_add
         }
 
         new_cols_to_add[,!colnames(new_cols_to_add) %in% colnames(x_ar_predict_pred_df), drop = FALSE] %>%
@@ -156,7 +160,8 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       if (exists("iis_pred")) {rm(iis_pred)}
       if (exists("sis_pred")) {rm(sis_pred)}
 
-      gets::predict.isat(object = isat_ar_predict, n.ahead = n.ahead, newmxreg = x_ar_predict_pred_df) %>%
+      gets::predict.isat(object = isat_ar_predict, n.ahead = n.ahead,
+                         newmxreg = x_ar_predict_pred_df %>% dplyr::select(dplyr::any_of(isat_ar_predict$aux$mXnames))) %>%
         as.vector -> pred_values
 
       dplyr::tibble(data = pred_values) %>%
