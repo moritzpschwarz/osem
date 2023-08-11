@@ -44,7 +44,11 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     stop("Input object not of type aggmod.forecast. Run 'forecast_model' again and use the output of that function.")
   }
 
-  x$orig_model$full_data %>%
+  {if(!is.null(x$nowcast_data)){
+    x$nowcast_data
+  } else {
+    x$orig_model$full_data
+  }} %>%
     dplyr::mutate(var = .data$na_item,
                   na_item = gsub("\\.hat","",.data$na_item),
                   fit = as.character(stringr::str_detect(.data$var, ".hat"))) -> plot_df

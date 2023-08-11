@@ -43,7 +43,7 @@ nowcasting <- function(model){
       # define the prediction interval
       vars_not_full_analysis %>%
         dplyr::filter(.data$order == ord) %>%
-        pull(max_time) -> current_max_time
+        dplyr::pull(max_time) -> current_max_time
 
       # removing the first one in the sequence (using [-1]) as that would be the last available value
       cur_target_dates <- seq.Date(as.Date(current_max_time),as.Date(target_time), "q")[-1]
@@ -57,11 +57,11 @@ nowcasting <- function(model){
           dplyr::pull(indep) -> indep_vars_to_get
 
         model$processed_input_data %>%
-          filter(na_item %in% indep_vars_to_get) %>% # get the independent values
-          filter(time %in% cur_target_dates) %>% # for the appropriate interval
-          pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
-          mutate(q = lubridate::quarter(.data$time),
-                 q = factor(q, levels = c(1,2,3,4))) %>%
+          dplyr::filter(na_item %in% indep_vars_to_get) %>% # get the independent values
+          dplyr::filter(time %in% cur_target_dates) %>% # for the appropriate interval
+          tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
+          dplyr::mutate(q = lubridate::quarter(.data$time),
+                        q = factor(q, levels = c(1,2,3,4))) %>%
           dplyr::arrange("time") %>%
           fastDummies::dummy_cols(
             select_columns = "q", remove_first_dummy = FALSE,
@@ -115,70 +115,70 @@ nowcasting <- function(model){
 
 
         vars_not_full_analysis %>%
-          dplyr::filter(.data$order == ord) %>% pull(model.args) %>% first %>% .$use_logs -> log_use
+          dplyr::filter(.data$order == ord) %>% dplyr::pull(model.args) %>% dplyr::first() %>% .$use_logs -> log_use
 
         # add the data to the full data and the processed input data
         dplyr::tibble(time = as.Date(cur_target_dates), values = as.numeric(pred_obj)) %>%
-          dplyr::mutate(values = case_when(log_use == "both" | log_use == "y" ~ exp(values), TRUE ~ values),
+          dplyr::mutate(values = dplyr::case_when(log_use == "both" | log_use == "y" ~ exp(values), TRUE ~ values),
                         na_item = dep_var,.after = "time") -> data_to_add
 
         model$full_data %>%
-          filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-          bind_rows(.,data_to_add) %>%
-          arrange(desc(time), na_item) -> model$full_data
+          dplyr::filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+          dplyr::bind_rows(.,data_to_add) %>%
+          dplyr::arrange(dplyr::desc(time), na_item) -> model$full_data
 
         model$processed_input_data %>%
-          filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-          bind_rows(.,data_to_add) %>%
-          arrange(desc(time), na_item) -> model$processed_input_data
+          dplyr::filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+          dplyr::bind_rows(.,data_to_add) %>%
+          dplyr::arrange(dplyr::desc(time), na_item) -> model$processed_input_data
 
       }
 
       # Identities
-      if(vars_not_full_analysis %>% filter(.data$order == ord) %>% pull(type) == "d"){
+      if(vars_not_full_analysis %>% dplyr::filter(.data$order == ord) %>% dplyr::pull(type) == "d"){
 
 
         identity_data <- identify_module_data(data = model$full_data,
                                               classification = classify_variables(model$module_order_eurostatvars),
-                                              module = vars_not_full_analysis %>% filter(order == ord))
+                                              module = vars_not_full_analysis %>% dplyr::filter(order == ord))
 
         # we now look where we have historical or nowcasted data but not estimated (.hat) data
         # we would not want to use those for estimation but for nowcasting this makes sense
         # so we identify where in identity_data there is data NA for the dates that we are nowcasting
         # we then replace those with the historical data
         model$full_data %>%
-          rename(values_full = values) %>%
-          mutate(na_item = paste0(na_item,".hat")) %>%
-          inner_join(identity_data %>%
-                       filter(time %in% cur_target_dates) %>%
-                       filter(is.na(values)), by = join_by(time, na_item)) %>%
-          mutate(values = values_full,
-                 values_full = NULL) -> data_to_substitue
+          dplyr::rename(values_full = values) %>%
+          dplyr::mutate(na_item = paste0(na_item,".hat")) %>%
+          dplyr::inner_join(identity_data %>%
+                              dplyr::filter(time %in% cur_target_dates) %>%
+                              dplyr::filter(is.na(values)), by = c("time", "na_item")) %>%
+          dplyr::mutate(values = values_full,
+                        values_full = NULL) -> data_to_substitue
 
         identity_data %>%
-          filter(time %in% cur_target_dates) %>%
-          filter(!is.na(values)) %>%
-          bind_rows(data_to_substitue) -> identity_data_subst
+          dplyr::filter(time %in% cur_target_dates) %>%
+          dplyr::filter(!is.na(values)) %>%
+          dplyr::bind_rows(data_to_substitue) -> identity_data_subst
 
         identity_pred <- identity_module(data = identity_data_subst,
-                                         module = vars_not_full_analysis %>% filter(order == ord),
+                                         module = vars_not_full_analysis %>% dplyr::filter(order == ord),
                                          classification = classify_variables(model$module_order_eurostatvars))
 
         identity_pred %>%
-          select("time",starts_with(dep_var)) %>%
-          rename_with(.cols = dplyr::everything(), .fn = ~gsub(".level|.hat","",.)) %>%
+          dplyr::select("time",dplyr::starts_with(dep_var)) %>%
+          dplyr::rename_with(.cols = dplyr::everything(), .fn = ~gsub(".level|.hat","",.)) %>%
           tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") -> data_to_add
 
 
         model$full_data %>%
-          filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-          bind_rows(.,data_to_add) %>%
-          arrange(desc(time), na_item) -> model$full_data
+          dplyr::filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+          dplyr::bind_rows(.,data_to_add) %>%
+          dplyr::arrange(dplyr::desc(time), na_item) -> model$full_data
 
         model$processed_input_data %>%
-          filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-          bind_rows(.,data_to_add) %>%
-          arrange(desc(time), na_item) -> model$processed_input_data
+          dplyr::filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+          dplyr::bind_rows(.,data_to_add) %>%
+          dplyr::arrange(dplyr::desc(time), na_item) -> model$processed_input_data
       }
     }
 

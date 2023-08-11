@@ -318,6 +318,7 @@ forecast_model <- function(model,
   out$orig_model <- model
   out$dictionary <- model$dictionary
   out$exog_data <- exog_df_ready
+  out$nowcast_data <- nowcasted$nowcast_model$full_data
 
   class(out) <- "aggmod.forecast"
 

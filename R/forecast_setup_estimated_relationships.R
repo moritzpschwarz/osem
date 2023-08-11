@@ -228,37 +228,37 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
   # in this section we check whether any of the missing values are present in nowcasted data
   # we first check if there is even any historical data used (would not be true for e.g. AR models)
-  if(historical_estimation_data %>% select(-"time") %>% ncol()>0){
+  if(historical_estimation_data %>% dplyr::select(-"time") %>% ncol()>0){
 
     # then we check whether there are any lines in the historical data that are missing (often the case)
     historical_estimation_data %>%
-      pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
-      filter(is.na(values)) -> missing_values_dataobj
+      tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
+      dplyr::filter(is.na(values)) -> missing_values_dataobj
 
     # then we check whether any of the missing values in the historical data are present in nowcasted data
     if (nrow(missing_values_dataobj) > 0 & !is.null(nowcasted_data)) {
 
       missing_values_dataobj %>%
-        mutate(basename = gsub("ln.","",na_item)) %>%
-        inner_join(nowcasted_data %>%
-                     rename(basename = na_item,
-                            values_nowcast = values), by = c("time", "basename")) %>%
+        dplyr::mutate(basename = gsub("ln.","",na_item)) %>%
+        dplyr::inner_join(nowcasted_data %>%
+                            dplyr::rename(basename = na_item,
+                                          values_nowcast = values), by = c("time", "basename")) %>%
 
         # where there are nowcast values but not original ones, take now the nowcast ones
         # when doing this, we check first if we need to log them
-        mutate(values = case_when(!is.na(values_nowcast) & is.na(values) ~ values_nowcast, TRUE ~ values),
-               values = case_when(!is.na(values) & grepl("^ln.",na_item) ~ log(values), TRUE ~ values)) %>%
+        dplyr::mutate(values = dplyr::case_when(!is.na(values_nowcast) & is.na(values) ~ values_nowcast, TRUE ~ values),
+                      values = dplyr::case_when(!is.na(values) & grepl("^ln.",na_item) ~ log(values), TRUE ~ values)) %>%
 
-        select(time, na_item, new_values = values) %>%
+        dplyr::select(time, na_item, new_values = values) %>%
         tidyr::drop_na() -> values_to_replace
 
       # Then we take the historical data and add the nowcasted data
       historical_estimation_data %>%
-        pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
-        full_join(values_to_replace, by = c("time","na_item")) %>%
-        mutate(values = case_when(is.na(values) & !is.na(new_values) ~ new_values, TRUE ~ values),
-               new_values = NULL) %>%
-        pivot_wider(id_cols = "time", names_from = "na_item",values_from = "values") -> historical_estimation_data_w_nowcast
+        tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
+        dplyr::full_join(values_to_replace, by = c("time","na_item")) %>%
+        dplyr::mutate(values = dplyr::case_when(is.na(values) & !is.na(new_values) ~ new_values, TRUE ~ values),
+                      new_values = NULL) %>%
+        tidyr::pivot_wider(id_cols = "time", names_from = "na_item",values_from = "values") -> historical_estimation_data_w_nowcast
 
     } else {
       historical_estimation_data_w_nowcast <- historical_estimation_data
@@ -319,7 +319,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
   if(chk_any_listcols){
     ## repeat the above with all
     #data_obj %>%
-     # dplyr::select(time, dplyr::all_of(x_names_vec_nolag)) %>%
+    # dplyr::select(time, dplyr::all_of(x_names_vec_nolag)) %>%
     historical_estimation_data_w_nowcast %>%
       dplyr::mutate(across(dplyr::all_of(x_names_vec_nolag), ~as.list(.))) %>%
 
