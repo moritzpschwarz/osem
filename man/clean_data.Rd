@@ -4,7 +4,7 @@
 \alias{clean_data}
 \title{Prepare the clean dataframe for modelling}
 \usage{
-clean_data(raw_data, max.lag = 4, trend = TRUE)
+clean_data(raw_data, max.ar = 4, max.dl = 2, trend = TRUE)
 }
 \arguments{
 \item{raw_data}{A tibble or data.frame with the y variable and the x
@@ -12,8 +12,9 @@ variables. Needs to have a column called 'time', which is of class
 \code{\link[base:Dates]{Date}}. Variable names need to be in column
 'na_item', and values in column 'values'.}
 
-\item{max.lag}{Integer. The maximum number of lags to use for both the AR terms as
-well as for the independent variables.}
+\item{max.ar}{Integer. The maximum number of lags to use for the AR terms. as well as for the independent variables.}
+
+\item{max.dl}{Integer. The maximum number of lags to use for the independent variables (the distributed lags).}
 
 \item{trend}{Logical. Should a trend be added? Default is TRUE.}
 }

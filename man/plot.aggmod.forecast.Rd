@@ -4,7 +4,13 @@
 \alias{plot.aggmod.forecast}
 \title{Plot a Forecast Object of the Aggregate Model}
 \usage{
-\method{plot}{aggmod.forecast}(x, exclude.exogenous = TRUE, order.as.run = FALSE, ...)
+\method{plot}{aggmod.forecast}(
+  x,
+  exclude.exogenous = TRUE,
+  order.as.run = FALSE,
+  interactive = FALSE,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class aggmod.forecast, which is the output from the forecast_model function.}

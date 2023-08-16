@@ -173,6 +173,8 @@ test_that("Test that forecasting works - with fixed data",{
       specification = spec,
       dictionary = NULL,
       inputdata_directory = sample_input,
+      max.ar = 4,
+      max.dl = 4
       primary_source = "local",
       quiet = TRUE
     ))

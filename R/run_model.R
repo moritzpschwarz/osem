@@ -87,7 +87,8 @@ run_model <- function(specification,
                       use_logs = c("both", "y", "x"),
                       trend = TRUE,
                       ardl_or_ecm = "ardl",
-                      max.lag = 4,
+                      max.ar = 4,
+                      max.dl = 4,
                       saturation = c("IIS", "SIS"),
                       saturation.tpval = 0.01,
                       max.block.size = 20,
@@ -160,7 +161,8 @@ run_model <- function(specification,
       use_logs = use_logs,
       trend = trend,
       ardl_or_ecm = ardl_or_ecm,
-      max.lag = max.lag,
+      max.ar = max.ar,
+      max.dl = max.dl,
       saturation = saturation,
       saturation.tpval = saturation.tpval,
       max.block.size = max.block.size,
@@ -185,9 +187,19 @@ run_model <- function(specification,
   out$args <- list(specification = specification, dictionary = dictionary,
                    inputdata_directory = inputdata_directory,
                    primary_source = primary_source,
-                   save_to_disk = save_to_disk, present = present)
+                   save_to_disk = save_to_disk, present = present,
+                   
+                   trend = trend, max.ar = max.ar, max.dl = max.dl, use_logs = use_logs,
+                   ardl_or_ecm = ardl_or_ecm,
+                   saturation = saturation,
+                   saturation.tpval = saturation.tpval,
+                   max.block.size = max.block.size,
+                   gets_selection = gets_selection,
+                   selection.tpval = selection.tpval)
+ 
   out$module_order <- module_order
   out$module_collection <- module_collection
+  out$processed_input_data <- full_data
   out$full_data <- tmp_data
   out$dictionary <- dictionary
 

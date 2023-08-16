@@ -21,7 +21,7 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
 
   # not sure whether can solve without dropping these vars
   # could add back later but not necessary?
-  dat <- data %>% dplyr::select(-dplyr::all_of(c("unit","geo","s_adj")))
+  dat <- data %>% dplyr::select(-dplyr::any_of(c("unit","geo","s_adj")))
 
   for (i in 1:NROW(identities)) {
     identity <- identities[i, ]

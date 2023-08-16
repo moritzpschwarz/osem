@@ -62,6 +62,7 @@
 #'
 check_config_table <- function(config_table) {
 
+  # Define a strsplits function that is used below
   strsplits <- function(x, splits, ...) {
     for (split in splits)
     {
@@ -70,20 +71,23 @@ check_config_table <- function(config_table) {
     return(x[!x == ""]) # Remove empty values
   }
 
-  # check that there is no endogeneity
+  # check that there is no direct endogeneity (a RHS variable appears on the LHS in the same equation)
   config_table %>%
     dplyr::mutate(independent = gsub(" ", "", .data$independent)) %>%
     dplyr::rowwise() %>%
+    # use the splitvars function to separate the specification table into individual pieces in a list
     dplyr::mutate(splitvars = list(strsplits(
       .data$independent,
       c("\\-", "\\+")
     ))) %>%
     dplyr::ungroup() %>%
+    
+    # create a separate row for each element
     tidyr::unnest("splitvars", keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
     # dplyr::group_by(dependent) %>%
     # dplyr::rowwise() %>%
-    dplyr::mutate(direct_endog = dplyr::case_when(.data$dependent == .data$splitvars~TRUE,
-                                                  is.na(.data$splitvars)~FALSE,
+    dplyr::mutate(direct_endog = dplyr::case_when(.data$dependent == .data$splitvars ~ TRUE,
+                                                  is.na(.data$splitvars) ~ FALSE,
                                                   TRUE ~ FALSE)) -> direct_endog
 
   if (any(direct_endog$direct_endog)) {
@@ -94,6 +98,7 @@ check_config_table <- function(config_table) {
     )
   }
 
+  # check if there are any indirect endogeneities (i.e. a variable can only depend on another variable if that variable does not depend on the other)
   direct_endog %>%
     dplyr::rowwise() %>%
     dplyr::mutate(pairs = list(sort(c(.data$dependent, .data$splitvars)))) %>%
@@ -101,7 +106,7 @@ check_config_table <- function(config_table) {
     dplyr::filter(duplicated(.data$pairs)) %>%
     dplyr::pull(.data$pairs) -> indirect_endog
 
-
+  # if an indirect engodeneity is detected, print a detailed statement.
   if (!identical(indirect_endog, list())) {
     overall <- vector()
     for (i in 1:length(indirect_endog)) {
@@ -129,13 +134,17 @@ check_config_table <- function(config_table) {
       c("\\-", "\\+")
     ))) %>%
     dplyr::ungroup() %>%
+
     tidyr::unnest("splitvars", keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
+    # set endog = TRUE when one an x variable appears anywhere in the "dependent" column - this tells us whether an x-variable is ever estimated
     dplyr::mutate(endog = ifelse(.data$splitvars %in% .data$dependent, TRUE, FALSE)) -> config_table_endog_exog
 
+
+  # determine those relationships where all x-variables are exogenous - those can be estimated first
   config_table_endog_exog %>%
     dplyr::group_by(.data$dependent, .data$independent) %>%
-    dplyr::mutate(all_exog = dplyr::case_when(is.na(.data$splitvars)~FALSE,
-                                              !any(.data$endog)~TRUE,
+    dplyr::mutate(all_exog = dplyr::case_when(is.na(.data$splitvars) ~ FALSE, # this is the case for AR - means none are exog
+                                              !any(.data$endog) ~ TRUE, # if not all are endogenous there must be at least one exog
                                               TRUE ~ FALSE)) %>%
     dplyr::ungroup() %>%
     dplyr::distinct(dplyr::across(c("index", "type", "dependent", "independent", "all_exog"))) %>%
@@ -144,30 +153,39 @@ check_config_table <- function(config_table) {
     #dplyr::mutate(order = if_else(condition = (dplyr::n()>0),true = (1:dplyr::n()),false = NA_integer_)) -> order_exog
     {if (nrow(.) > 0) {dplyr::mutate(.,order = 1:dplyr::n())} else {dplyr::mutate(., order = NA_integer_)}} -> order_exog
 
+  # get the table of relationships where not all x-variables are exogenous - this is just the opposite of above
   config_table_endog_exog %>%
+
     dplyr::group_by(.data$dependent, .data$independent) %>%
-    dplyr::mutate(all_exog = dplyr::case_when(is.na(.data$splitvars)~FALSE,
-                                              !any(.data$endog)~TRUE,
+    dplyr::mutate(all_exog = dplyr::case_when(is.na(.data$splitvars) ~ FALSE, # this is the case for AR - means none are exog
+                                              !any(.data$endog) ~ TRUE, # if not all are endogenous there must be at least one exog
                                               TRUE ~ FALSE)) %>%
     dplyr::ungroup() %>%
     dplyr::filter(!.data$all_exog) -> not_exog
 
+  # in the following part, we are reducing the not_exog table down part by part
   while (nrow(not_exog) != 0) {
     not_exog %>%
+
+      # if a relationship is estimated elsewhere (endog = TRUE) and the x-variable is estimated previously then set already_estimated = TRUE
       dplyr::mutate(
         already_estimated = dplyr::case_when(
           .data$endog & (.data$splitvars %in% order_exog$dependent) ~ TRUE,
-          TRUE ~ FALSE
-        ),
-        endog = dplyr::case_when(
+          TRUE ~ FALSE)) %>% 
+        
+      # if a variable was earlier an endogeneous variable but has already been estimated, then we can set endog = FALSE
+      dplyr::mutate(endog = dplyr::case_when(
           .data$endog & .data$already_estimated ~ FALSE,
-          TRUE ~ .data$endog
-        )
-      ) %>%
+          TRUE ~ .data$endog)) %>%
+          
       dplyr::group_by(.data$index, .data$type) %>%
+      # get all relationships where no endogenous terms are left
       dplyr::filter(!any(.data$endog)) %>%
       dplyr::distinct(dplyr::across(c("index", "dependent", "independent"))) %>%
+
       dplyr::ungroup() %>%
+      
+      # give those relationships an order number - these should now be run after all those that are already in the order_exog tibble
       dplyr::mutate(
         order = 1:dplyr::n(),
         order = order + if (is.null(order_exog$order) | identical(integer(0),order_exog$order)) {0} else {max(order_exog$order)}
