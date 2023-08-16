@@ -28,8 +28,7 @@ test_that("no errors when running very simple model", {
       specification = spec,
       dictionary = NULL,
       inputdata_directory = NULL,
-      filter_list = filter_list,
-      download = TRUE,
+      primary_source = "download",
       save_to_disk = NULL,
       present = FALSE,
       quiet = TRUE

@@ -8,8 +8,7 @@ run_model(
   specification,
   dictionary = NULL,
   inputdata_directory = paste0(getwd(), "/data/raw"),
-  filter_list = NULL,
-  download = FALSE,
+  primary_source = c("download", "local"),
   save_to_disk = NULL,
   present = FALSE,
   quiet = FALSE,
@@ -41,13 +40,8 @@ If \code{download == TRUE} then the dictionary also requires a column named
 \item{inputdata_directory}{A path to .rds input files in which the data is
 stored. Can be \code{NULL} if \code{download == TRUE}.}
 
-\item{filter_list}{A named list with one entry per Eurostat code that
-specifies the filter that is applied to choose the correct data series,
-e.g. geographical restrictions or whether seasonally adjusted or not. See
-\link{load_or_download_variables} for details.}
-
-\item{download}{A logical value whether the data should be downloaded from
-Eurostat or will be provided directly via \code{inputdata_directory}.}
+\item{primary_source}{A string. Determines whether \code{"download"} or
+\code{"local"} data loading takes precedence.}
 
 \item{save_to_disk}{A path to a directory where the final dataset will be
 saved, including the file name and ending. Not saved when \code{NULL}.}
@@ -115,14 +109,9 @@ spec <- dplyr::tibble(
     "FinConsExpHH + GCapitalForm"
   )
 )
-
-fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
-fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa,
-"P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
 \donttest{
 a <- run_model(specification = spec, dictionary = NULL,
-inputdata_directory = NULL, filter_list = filter_list,
-download = TRUE, save_to_disk = NULL, present = FALSE)
+inputdata_directory = NULL, primary_source = "download",
+save_to_disk = NULL, present = FALSE)
 }
 }

@@ -14,12 +14,8 @@
 #'   \link[=dict]{default dictionary} is used.
 #' @param inputdata_directory A path to .rds input files in which the data is
 #'   stored. Can be \code{NULL} if \code{download == TRUE}.
-#' @param filter_list A named list with one entry per Eurostat code that
-#'   specifies the filter that is applied to choose the correct data series,
-#'   e.g. geographical restrictions or whether seasonally adjusted or not. See
-#'   \link{load_or_download_variables} for details.
-#' @param download A logical value whether the data should be downloaded from
-#'   Eurostat or will be provided directly via \code{inputdata_directory}.
+#' @param primary_source A string. Determines whether \code{"download"} or
+#' \code{"local"} data loading takes precedence.
 #' @param save_to_disk A path to a directory where the final dataset will be
 #'   saved, including the file name and ending. Not saved when \code{NULL}.
 #' @param present A logical value whether the final aggregate model output
@@ -64,15 +60,10 @@
 #'     "FinConsExpHH + GCapitalForm"
 #'   )
 #' )
-#'
-#' fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
-#' fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-#' filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa,
-#' "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
 #' \donttest{
 #' a <- run_model(specification = spec, dictionary = NULL,
-#' inputdata_directory = NULL, filter_list = filter_list,
-#' download = TRUE, save_to_disk = NULL, present = FALSE)
+#' inputdata_directory = NULL, primary_source = "download",
+#' save_to_disk = NULL, present = FALSE)
 #' }
 
 # config_table_small <- dplyr::tibble(
@@ -89,8 +80,7 @@
 run_model <- function(specification,
                       dictionary = NULL,
                       inputdata_directory = paste0(getwd(), "/data/raw"),
-                      filter_list = NULL,
-                      download = FALSE,
+                      primary_source = c("download", "local"),
                       save_to_disk = NULL,
                       present = FALSE,
                       quiet = FALSE,
@@ -106,18 +96,20 @@ run_model <- function(specification,
                       selection.tpval = 0.01
                       ) {
 
+  primary_source = match.arg(primary_source)
+
   if(!(is.data.frame(specification) | is.matrix(specification))){
     stop("'specification' must be a data.frame, tibble, or matrix object. Check the documentation how a specification object must look like.")
   }
 
   if(!all(specification$type %in% c("n","d"))){
-    stop("The type column in the Specification can only either be 'n' (for Definition i.e. modelled) or 'd' (for identity).")
+    stop("The type column in the Specification can only either be 'n' (for endogenous i.e. modelled) or 'd' (for identity/definition).")
   }
 
   if(missing(dictionary) | is.null(dictionary)){dictionary <- aggregate.model::dict}
 
-  if(!all(c("eurostat_code", "model_varname", "full_name", "dataset_id","var_col", "nace_r2") %in% colnames(dictionary))){
-    stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'eurostat_code', 'model_varname', 'full_name', 'dataset_id', 'var_col', 'nace_r2'.")
+  if(!all(c("variable_code", "model_varname", "full_name", "database", "dataset_id","var_col", "nace_r2", "freq", "geo", "unit", "s_adj") %in% colnames(dictionary))){
+    stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'variable_code', 'model_varname', 'full_name', 'database', 'dataset_id', 'var_col', 'nace_r2', 'freq', 'geo', 'unit', 's_adj'.")
   }
 
   if(any(duplicated(dictionary$model_varname))){stop("Dictionary cannot contain duplicated values for 'model_varname'.")}
@@ -128,42 +120,42 @@ run_model <- function(specification,
   module_order <- check_config_table(specification)
 
   # add columns that translate dependent and independent variables into Eurostat codes
-  module_order_eurostatvars <- translate_variables(specification = module_order,
-                                                   dictionary = dictionary)
+  # module_order_eurostatvars <- translate_variables(specification = module_order,
+  #                                                  dictionary = dictionary)
+
   # download or locally load the data necessary for the whole aggregate model
-  loaded_data <- load_or_download_variables(specification = module_order_eurostatvars,
-                                            filter_list = filter_list,
-                                            download = download,
+  loaded_data <- load_or_download_variables(specification = module_order,
                                             dictionary = dictionary,
+                                            primary_source = primary_source,
                                             inputdata_directory = inputdata_directory,
                                             save_to_disk = save_to_disk,
                                             quiet = quiet)
 
   # add data that is not directly available but can be calculated from identities
-  full_data <- calculate_identities(specification = module_order_eurostatvars, data = loaded_data, dictionary = dictionary)
+  full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
-  classification <- classify_variables(specification = module_order_eurostatvars)
+  classification <- classify_variables(specification = module_order)
 
   # initialise storage of estimation results
-  module_collection <- module_order_eurostatvars %>%
+  module_collection <- module_order %>%
     dplyr::mutate(dataset = list(NA_complex_),
                   model = list(NA_complex_))
 
   tmp_data <- full_data
   # loop through all modules
-  for (i in module_order_eurostatvars$order) {
+  for (i in module_order$order) {
 
     # print progress update
     if(!quiet){
       if(i == 1){cat("\n--- Estimation begins ---\n")}
-      if(module_order_eurostatvars$type[i] == "n") {cat(paste0("Estimating ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")}
-      if(module_order_eurostatvars$type[i] == "d") {cat(paste0("Constructing ", module_order_eurostatvars$dependent[i], " = ", module_order_eurostatvars$independent[i]), "\n")}
+      if(module_order$type[i] == "n") {cat(paste0("Estimating ", module_order$dependent[i], " = ", module_order$independent[i]), "\n")}
+      if(module_order$type[i] == "d") {cat(paste0("Constructing ", module_order$dependent[i], " = ", module_order$independent[i]), "\n")}
     }
 
     # estimate current module, using most up-to-date dataset including predicted values
     module_estimate <- run_module(
-      module = module_order_eurostatvars[module_order_eurostatvars$order == i, ],
+      module = module_order[module_order$order == i, ],
       data = tmp_data,
       classification = classification,
       use_logs = use_logs,
@@ -194,8 +186,9 @@ run_model <- function(specification,
   out <- list()
   out$args <- list(specification = specification, dictionary = dictionary,
                    inputdata_directory = inputdata_directory,
-                   filter_list = filter_list, download = download,
+                   primary_source = primary_source,
                    save_to_disk = save_to_disk, present = present,
+                   
                    trend = trend, max.ar = max.ar, max.dl = max.dl, use_logs = use_logs,
                    ardl_or_ecm = ardl_or_ecm,
                    saturation = saturation,
@@ -203,7 +196,8 @@ run_model <- function(specification,
                    max.block.size = max.block.size,
                    gets_selection = gets_selection,
                    selection.tpval = selection.tpval)
-  out$module_order_eurostatvars <- module_order_eurostatvars
+ 
+  out$module_order <- module_order
   out$module_collection <- module_collection
   out$processed_input_data <- full_data
   out$full_data <- tmp_data

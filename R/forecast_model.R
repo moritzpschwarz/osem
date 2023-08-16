@@ -61,7 +61,7 @@ forecast_model <- function(model,
 
   # 1. Determine Exogenous Variables and wrangle future values ---------------
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
-  classification <- classify_variables(specification = model$module_order_eurostatvars)
+  classification <- classify_variables(specification = model$module_order)
 
   classification %>%
     dplyr::filter(.data$class == "x") %>%
@@ -96,9 +96,9 @@ forecast_model <- function(model,
   # 2. Forecasting step by step according to model order ------------------------------------------------
   # set-up the prediction list that will collect all results
   prediction_list <- dplyr::tibble(
-    index = model$module_order_eurostatvars$index,
-    order = model$module_order_eurostatvars$order,
-    dep_var = model$module_order_eurostatvars$dependent,
+    index = model$module_order$index,
+    order = model$module_order$order,
+    dep_var = model$module_order$dependent,
     predict.isat_object = list(NA_complex_),
     data = list(NA_complex_),
     central.estimate = list(NA_complex_)
@@ -106,10 +106,10 @@ forecast_model <- function(model,
 
   ## 2a. Start of main loop ------------------------------------------------
   # cycling through each module
-  for(i in seq(model$module_order_eurostatvars$order)){
+  for(i in seq(model$module_order$order)){
     # i = 1
 
-    current_spec <- model$module_order_eurostatvars %>%
+    current_spec <- model$module_order %>%
       dplyr::filter(.data$order == i) %>%
 
       # save original form of independent col
@@ -128,8 +128,9 @@ forecast_model <- function(model,
       tidyr::drop_na("index") %>%
       dplyr::select("index","dependent","independent","independent_orig")
 
+
     ## 2b. Start of loop for estimated relationships  ------------------------------------------------
-    if(model$module_order_eurostatvars$type[model$module_order_eurostatvars$order == i] != "d"){
+    if(model$module_order$type[model$module_order$order == i] != "d"){
 
       pred_setup_list <- forecast_setup_estimated_relationships(model = model,
                                                                 i = i,
@@ -149,6 +150,7 @@ forecast_model <- function(model,
       if(!is.null(pred_setup_list$pred_df.all)){
         pred_df.all <- pred_setup_list$pred_df.all
       }
+
 
 
       ### 2b.i. Predict main estimate for estimated relationships  ------------------------------------------------
@@ -288,6 +290,7 @@ forecast_model <- function(model,
 
 
     } else {
+
       ## 2b. Start of loop for identities  ------------------------------------------------
 
       identity_setup <- forecast_identities(model = model,
