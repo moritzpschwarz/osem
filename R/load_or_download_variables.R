@@ -168,8 +168,8 @@ load_or_download_variables <- function(specification,
     }
     min_date <- max(availability$min_date) # highest minimum date
     max_date <- min(availability$max_date) # lowest maximum date
-    full <- full %>%
-      dplyr::filter(.data$time >= min_date & .data$time <= max_date)
+    # full <- full %>%
+    #   dplyr::filter(.data$time >= min_date & .data$time <= max_date)
     # might still not be balanced but beginning- & end-points are balanced
     # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
   }

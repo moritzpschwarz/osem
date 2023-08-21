@@ -4,7 +4,7 @@
 #'
 #' @return Returns a list with two full model objects. One contains the original model and one contains the nowcasted model.
 #'
-nowcasting <- function(model){
+nowcasting <- function(model, exog_df_ready){
 
   # save the original model without nowcasts as backup
   orig_model <- model
@@ -67,8 +67,26 @@ nowcasting <- function(model){
             select_columns = "q", remove_first_dummy = FALSE,
             remove_selected_columns = TRUE) -> exog_data_nowcasting
 
+        # here we check whether any of the exogenous values need to be replaced
+        # this can happen when co-variates were not available up to the final time
+        # this would mean that those values are not available for nowcasting
+        exog_data_nowcasting %>%
+          pivot_longer(-time, values_to = "values_historical") %>%
+          filter(is.na(values_historical)) %>%
+          left_join(exog_df_ready %>% pivot_longer(-time), by = c("time","name")) %>%
+          mutate(values_forecasted_exogenously = value) %>%
+          select(-"value", -"values_historical") -> exog_data_to_replace
 
-        current_spec <- model$module_order_eurostatvars %>%
+        if(nrow(exog_data_to_replace) > 0){
+          exog_data_nowcasting %>%
+            pivot_longer(-time) %>%
+            left_join(exog_data_to_replace, by = c("time","name")) %>%
+            mutate(value = case_when(is.na(value) & !is.na(values_forecasted_exogenously) ~ values_forecasted_exogenously, TRUE ~ value)) %>%
+            select(-"values_forecasted_exogenously") %>%
+            pivot_wider(id_cols = "time",names_from = "name", values_from = "value") -> exog_data_nowcasting
+        }
+
+        current_spec <- model$module_order %>%
           dplyr::filter(.data$order == ord) %>%
 
           # save original form of independent col
@@ -139,7 +157,7 @@ nowcasting <- function(model){
 
 
         identity_data <- identify_module_data(data = model$full_data,
-                                              classification = classify_variables(model$module_order_eurostatvars),
+                                              classification = classify_variables(model$module_order),
                                               module = vars_not_full_analysis %>% dplyr::filter(order == ord))
 
         # we now look where we have historical or nowcasted data but not estimated (.hat) data
@@ -148,24 +166,58 @@ nowcasting <- function(model){
         # we then replace those with the historical data
         model$full_data %>%
           dplyr::rename(values_full = values) %>%
-          dplyr::mutate(na_item = paste0(na_item,".hat")) %>%
-          dplyr::inner_join(identity_data %>%
-                              dplyr::filter(time %in% cur_target_dates) %>%
-                              dplyr::filter(is.na(values)), by = c("time", "na_item")) %>%
+          dplyr::filter(!grepl("\\.hat$",na_item)) %>%
+          #dplyr::mutate(na_item = paste0(na_item,".hat")) %>%
+          dplyr::left_join(identity_data %>%
+                             dplyr::filter(time %in% cur_target_dates) %>%
+                             dplyr::filter(is.na(values)), by = c("time", "na_item")) %>%
           dplyr::mutate(values = values_full,
                         values_full = NULL) -> data_to_substitue
+
+
+        # here we check whether any of the exogenous values need to be replaced
+        # this can happen when co-variates were not available up to the final time
+        # this would mean that those values are not available for nowcasting
+        data_to_substitue %>%
+          filter(is.na(values)) %>%
+          left_join(exog_df_ready %>% pivot_longer(-time, names_to = "na_item"), by = c("time","na_item")) %>%
+          mutate(values_forecasted_exogenously = value) %>%
+          select(-"value", -"values") -> exog_data_to_replace
+
+        if(nrow(exog_data_to_replace) > 0){
+          data_to_substitue %>%
+            left_join(exog_data_to_replace, by = c("time","na_item")) %>%
+            mutate(values = case_when(is.na(values) & !is.na(values_forecasted_exogenously) ~ values_forecasted_exogenously, TRUE ~ values)) %>%
+            select(-"values_forecasted_exogenously") -> data_to_substitue
+
+        }
 
         identity_data %>%
           dplyr::filter(time %in% cur_target_dates) %>%
           dplyr::filter(!is.na(values)) %>%
           dplyr::bind_rows(data_to_substitue) -> identity_data_subst
 
-        identity_pred <- identity_module(data = identity_data_subst,
+        identity_data %>%
+          distinct(na_item) %>%
+          rowwise() %>%
+          mutate(hat = grepl("\\.hat$",na_item),
+                 orig_name = na_item,
+                 na_item = gsub("\\.hat","",na_item)) -> identity_naming
+
+        # now get the naming with .hat right
+        identity_data_subst %>%
+          left_join(identity_naming, by = "na_item") %>%
+          rowwise %>%
+          mutate(na_item = case_when(hat ~ paste0(na_item,".hat"), TRUE ~ na_item)) %>%
+          select(-hat,-orig_name) -> identity_data_subst_ready
+
+        identity_pred <- identity_module(data = identity_data_subst_ready,
                                          module = vars_not_full_analysis %>% dplyr::filter(order == ord),
-                                         classification = classify_variables(model$module_order_eurostatvars))
+                                         classification = classify_variables(model$module_order))
 
         identity_pred %>%
           dplyr::select("time",dplyr::starts_with(dep_var)) %>%
+          dplyr::select("time", dplyr::ends_with(".hat")) %>%
           dplyr::rename_with(.cols = dplyr::everything(), .fn = ~gsub(".level|.hat","",.)) %>%
           tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") -> data_to_add
 

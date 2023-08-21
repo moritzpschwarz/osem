@@ -21,7 +21,7 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
   for(mvar in missing_vars){
     # mvar = "yf"
 
-    model$module_order_eurostatvars %>%
+    model$module_order %>%
       dplyr::filter(.data$dependent == mvar) %>%
       dplyr::pull(.data$index) -> mvar_model_index
 

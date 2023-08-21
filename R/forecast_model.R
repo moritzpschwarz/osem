@@ -77,11 +77,21 @@ forecast_model <- function(model,
 
 
 
-
-
   ## 1a. Nowcasting --------------------------------------------------------------------
 
-  nowcasted <- nowcasting(model)
+  nowcasted <- nowcasting(model, exog_df_ready = exog_df_ready)
+
+  # after we are done with nowcasting, we throw away the early values
+  exog_df_ready_full <- exog_df_ready
+  exog_df_ready <- exog_df_ready %>% tail(n.ahead)
+
+  nowcasted$nowcast_model$full_data %>%
+    left_join(exog_df_ready_full %>%
+                pivot_longer(-time,names_to = "na_item", values_to = "values_exog"),
+              by = c("time","na_item")) %>%
+    mutate(values = case_when(is.na(values) & !is.na(values_exog) ~ values_exog, TRUE ~ values)) %>%
+    select(-values_exog) -> nowcasted$nowcast_model$full_data
+
 
   # if(!is.null(nowcasted)){
   #   model <- nowcasted$nowcast_model
@@ -321,7 +331,9 @@ forecast_model <- function(model,
   out$orig_model <- model
   out$dictionary <- model$dictionary
   out$exog_data <- exog_df_ready
+  out$exog_data_nowcast <- exog_df_ready_full
   out$nowcast_data <- nowcasted$nowcast_model$full_data
+
 
   class(out) <- "aggmod.forecast"
 

@@ -39,8 +39,8 @@ forecast_insample <- function(model, seed = 1234, uncertainty_sample = 100, exog
 
       specification = model$args$specification,
       dictionary = model$args$dictionary,
-      filter_list =  model$args$filter_list,
       trend = model$args$trend,
+      primary_source = model$args$primary_source,
 
       max.ar = model$args$max.ar,
       max.dl = model$args$max.dl,
@@ -53,7 +53,6 @@ forecast_insample <- function(model, seed = 1234, uncertainty_sample = 100, exog
       gets_selection = model$args$gets_selection,
       selection.tpval = model$args$selection.tpval,
 
-      download = FALSE,
       present = FALSE,
       quiet = TRUE,
 
@@ -62,6 +61,7 @@ forecast_insample <- function(model, seed = 1234, uncertainty_sample = 100, exog
 
     if(exists("insample_model")){
       all_models[[j]] <- insample_model
+      rm(insample_model)
     }
   }
 

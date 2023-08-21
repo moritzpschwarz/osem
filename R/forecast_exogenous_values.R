@@ -52,7 +52,6 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       message(paste0("No exogenous values provided. Model will forecast the exogenous values with an AR", ar.fill.max," process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').\nAlternative is exog_fill_method = 'last'."))
     }
 
-
     exog_df_intermed <- model$full_data %>%
       dplyr::filter(.data$na_item %in% exog_vars) %>%
       dplyr::group_by(.data$na_item) %>%
@@ -71,6 +70,23 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
       # skip the time column
       if(col_to_forecast == 1){next}
+
+      # let's first figure out what time frame we need to predict:
+      model$full_data %>%
+        dplyr::filter(.data$na_item == names(exog_df_intermed)[col_to_forecast]) %>%
+        tidyr::drop_na() %>%
+        dplyr::filter(.data$time == max(.data$time)) %>%
+        dplyr::pull(time) -> col_to_forecast_max_time
+
+      model$full_data %>%
+        tidyr::drop_na() %>%
+        dplyr::summarise(time = max(time)) %>%
+        dplyr::pull(time) -> overall_max_time
+
+      diff_time_to_max <- length(seq.Date(from = col_to_forecast_max_time, to = overall_max_time, by = "3 months")[-1])
+      time_to_forecast <- seq.Date(col_to_forecast_max_time, length = n.ahead + (1 + diff_time_to_max), by = "3 months")[-1]
+
+      # now let's extract the data
       exog_df_intermed %>%
         dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
         fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = TRUE,remove_selected_columns = TRUE) %>%
@@ -84,7 +100,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
       isat_ar_predict <- tryCatch(gets::isat(y = y_ar_predict, mxreg = x_ar_predict,
                                              mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
-                                             print.searchinfo = FALSE, sis = TRUE, iis = TRUE),
+                                             print.searchinfo = FALSE, sis = FALSE, iis = TRUE),
                                   error = function(abcd){
                                     message(paste0("Exogneous forecasted values for ", names(exog_df_intermed)[col_to_forecast]," will only use SIS, not IIS as too many indicators retained.\n"))
                                     gets::isat(y = y_ar_predict, mxreg = x_ar_predict,
@@ -95,7 +111,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       # get iis dummies
       if(!is.null(gets::isatdates(isat_ar_predict)$iis)){
         iis_pred <- matrix(0,
-                           nrow = n.ahead,
+                           nrow = n.ahead + diff_time_to_max,
                            ncol = nrow(gets::isatdates(isat_ar_predict)$iis),
                            dimnames  = list(NULL,
                                             gets::isatdates(isat_ar_predict)$iis$breaks)) %>%
@@ -105,21 +121,15 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       # get sis dummies
       if(!is.null(gets::isatdates(isat_ar_predict)$sis)){
         sis_pred <- matrix(1,
-                           nrow = n.ahead,
+                           nrow = n.ahead + diff_time_to_max,
                            ncol = nrow(gets::isatdates(isat_ar_predict)$sis),
                            dimnames  = list(NULL,
                                             gets::isatdates(isat_ar_predict)$sis$breaks)) %>%
           dplyr::as_tibble()
       }
 
-      model$full_data %>%
-        dplyr::filter(.data$time == max(.data$time)) %>%
-        dplyr::distinct(dplyr::across("time")) %>%
-        dplyr::rowwise() %>%
-        dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
-        tidyr::unnest("time") %>%
-        dplyr::ungroup() %>%
 
+      dplyr::tibble(time = time_to_forecast) %>%
         dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
         fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = TRUE, remove_selected_columns = TRUE) %>%
 
@@ -130,16 +140,9 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
       if(!all(c("q_2", "q_3", "q_4") %in% colnames(x_ar_predict_pred_df))){
 
-        model$full_data %>%
-          dplyr::filter(.data$time == max(.data$time)) %>%
-          dplyr::distinct(dplyr::across("time")) %>%
-          dplyr::rowwise() %>%
-          dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
-          tidyr::unnest("time") %>%
-          dplyr::ungroup() %>%
-
+        dplyr::tibble(time = time_to_forecast) %>%
           dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
-          fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE, remove_selected_columns = TRUE) %>% # here is the difference
+          fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE, remove_selected_columns = TRUE) %>%# here is the difference
 
           {if (exists("iis_pred")) {dplyr::bind_cols(.,iis_pred)} else {.}} %>%
           {if (exists("sis_pred")) {dplyr::bind_cols(.,sis_pred)} else {.}} %>%
@@ -150,7 +153,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         if(!all(c("q_2", "q_3", "q_4") %in% colnames(new_cols_to_add))){
           new_col_name <- c("q_2", "q_3", "q_4")[!c("q_2", "q_3", "q_4") %in% colnames(new_cols_to_add)]
           matrix(0, nrow = nrow(new_cols_to_add), ncol = length(new_col_name), dimnames = list(NULL,new_col_name)) %>%
-              dplyr::bind_cols(new_cols_to_add) -> new_cols_to_add
+            dplyr::bind_cols(new_cols_to_add) -> new_cols_to_add
         }
 
         new_cols_to_add[,!colnames(new_cols_to_add) %in% colnames(x_ar_predict_pred_df), drop = FALSE] %>%
@@ -160,14 +163,15 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       if (exists("iis_pred")) {rm(iis_pred)}
       if (exists("sis_pred")) {rm(sis_pred)}
 
-      gets::predict.isat(object = isat_ar_predict, n.ahead = n.ahead,
+
+      gets::predict.isat(object = isat_ar_predict, n.ahead = n.ahead + diff_time_to_max,
                          newmxreg = x_ar_predict_pred_df %>% dplyr::select(dplyr::any_of(isat_ar_predict$aux$mXnames))) %>%
         as.vector -> pred_values
 
-      dplyr::tibble(data = pred_values) %>%
-        setNames(names(exog_df_intermed)[col_to_forecast]) %>%
-        dplyr::bind_cols(exog_df_forecast,.) -> exog_df_forecast
-
+      dplyr::tibble(time = time_to_forecast,
+                    data = pred_values) %>%
+        setNames(c("time",names(exog_df_intermed)[col_to_forecast])) %>%
+        dplyr::full_join(exog_df_forecast, by = "time") -> exog_df_forecast
     }
 
     exog_df_forecast %>%
@@ -182,9 +186,15 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       fastDummies::dummy_cols(
         select_columns = "q", remove_first_dummy = FALSE,
         remove_selected_columns = TRUE) %>%
-      tidyr::drop_na(time) -> exog_df_ready
+      tidyr::drop_na(time) %>%
+      arrange(time) -> exog_df_ready
   }
 
+
+
+  if(!is.null(exog_predictions)){
+    exog_df_ready <- exog_predictions
+  }
 
   # out <- list()
   # out$exog_df_ready <- exog_df_ready
