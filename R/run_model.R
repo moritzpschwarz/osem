@@ -116,6 +116,13 @@ run_model <- function(specification,
 
   if(any(grepl("\\-|\\+|\\*|\\/|\\^",dictionary$model_varname))){stop("The 'model_varname' column in the Dictionary cannot contain any of the following characters: + - / * ^")}
 
+  if(!is.null(save_to_disk)){
+    if(!is.character(save_to_disk)){stop("'save_to_disk' must be a path to a file as a character. For example 'data.csv'.")}
+    if(is.character(save_to_disk) & identical(strsplit(basename(save_to_disk), split="\\.")[[1]][-1],character(0))){stop("'save_to_disk' must be a path to a file. No file ending detected. Currently supporting RDS, rds, Rds, csv, xls, xlsx.")}
+  }
+
+
+
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
 
@@ -188,7 +195,7 @@ run_model <- function(specification,
                    inputdata_directory = inputdata_directory,
                    primary_source = primary_source,
                    save_to_disk = save_to_disk, present = present,
-                   
+
                    trend = trend, max.ar = max.ar, max.dl = max.dl, use_logs = use_logs,
                    ardl_or_ecm = ardl_or_ecm,
                    saturation = saturation,
@@ -196,7 +203,7 @@ run_model <- function(specification,
                    max.block.size = max.block.size,
                    gets_selection = gets_selection,
                    selection.tpval = selection.tpval)
- 
+
   out$module_order <- module_order
   out$module_collection <- module_collection
   out$processed_input_data <- full_data

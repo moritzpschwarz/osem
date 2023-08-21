@@ -156,7 +156,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
     for (mvar in missing_vars) {
       # mvar = "p5g"
-      model$module_order_eurostatvars %>%
+      model$module_order %>%
         dplyr::filter(.data$dependent == mvar) %>%
         dplyr::pull(.data$index) -> mvar_model_index
 

@@ -4,7 +4,7 @@
 \alias{nowcasting}
 \title{Nowcast missing data for forecasting}
 \usage{
-nowcasting(model)
+nowcasting(model, exog_df_ready)
 }
 \arguments{
 \item{model}{An aggregate model object of class 'aggmod'.}

@@ -16,10 +16,10 @@ ui <- fluidPage(
              )
     ),
     tabPanel("Graphs", fluid = TRUE,
-                dateRangeInput(inputId = "range_plot", label = "Date Range for Plots",
-                               start = as.Date("1960-01-01"), end = Sys.Date()),
+             dateRangeInput(inputId = "range_plot", label = "Date Range for Plots",
+                            start = as.Date("1960-01-01"), end = Sys.Date()),
              mainPanel(
-               plotOutput("plots")
+               plotOutput("plots", height = "600", width = "800")
              )
     ),
     tabPanel("Equations", fluid = TRUE,
@@ -59,17 +59,17 @@ server <- function(input, output) {
 
   wide <- reactive({
     aggmod()$full_data %>%
-      pivot_wider(names_from = na_item, values_from = values)
+      tidyr::pivot_wider(names_from = na_item, values_from = values)
   })
 
   sel <- reactive({
     f <- colnames(wide())[grep(colnames(wide()), pattern = "\\.hat")]
     basef <- sub("\\.hat*", "", f)
     sub <- wide() %>%
-      select(time, union(basef, f)) %>%
-      pivot_longer(cols = !time, names_to = c("variable", "type"), names_sep = "\\.", values_to = "value") %>%
-      mutate(type = case_when(is.na(type) ~ "observed",
-                              type == "hat" ~ "fitted"))
+      dplyr::select(time, union(basef, f)) %>%
+      tidyr::pivot_longer(cols = !time, names_to = c("variable", "type"), names_sep = "\\.", values_to = "value") %>%
+      dplyr::mutate(type = dplyr::case_when(is.na(type) ~ "observed",
+                                            type == "hat" ~ "fitted"))
     return(sub)
   })
 
@@ -107,9 +107,12 @@ server <- function(input, output) {
   output$plots <- renderPlot({
     sel() %>%
       filter(time >= as.Date(input$range_plot[1]) & time <= as.Date(input$range_plot[2])) %>%
-    ggplot2::ggplot(ggplot2::aes(x = time, y = value, color = type)) +
+      ggplot2::ggplot(ggplot2::aes(x = time, y = value, color = type)) +
       ggplot2::geom_line() +
-      ggplot2::facet_wrap(facets = "variable", scales = "free", nrow = length(unique(sel()$variable)))
+      ggplot2::facet_wrap(facets = "variable", scales = "free", nrow = length(unique(sel()$variable))) +
+      ggplot2::theme_minimal(base_size = 20) +
+      ggplot2::theme(panel.grid.minor = ggplot2::element_blank()) +
+      ggplot2::labs(x = NULL, y = NULL)
   })
   output$equations <- renderPrint(eq(), width = 1000)
   output$diag <- DT::renderDT({
@@ -121,7 +124,7 @@ server <- function(input, output) {
       DT::formatRound(columns = c("AR", "ARCH", "indicator_share"),
                       digits = 4)
 
-    })
+  })
   output$network <- renderPlot({
     req(aggmod())
     network(aggmod())

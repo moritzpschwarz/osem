@@ -9,6 +9,7 @@
   exclude.exogenous = TRUE,
   order.as.run = FALSE,
   interactive = FALSE,
+  first_value = NULL,
   ...
 )
 }
@@ -18,6 +19,8 @@
 \item{exclude.exogenous}{Logical. Should exogenous values be plotted? Default is FALSE.}
 
 \item{order.as.run}{Logical. Should the plots be arranged in the way that the model was run? Default FALSE.}
+
+\item{first_value}{Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.}
 
 \item{...}{Further arguments (currently not in use).}
 }

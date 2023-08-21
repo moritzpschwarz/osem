@@ -3,6 +3,7 @@
 #' @param x An object of class aggmod.forecast, which is the output from the forecast_model function.
 #' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.
 #' @param order.as.run Logical. Should the plots be arranged in the way that the model was run? Default FALSE.
+#' @param first_value Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
 #' @param ... Further arguments (currently not in use).
 #'
 #' @export
@@ -31,13 +32,14 @@
 #' save_to_disk = NULL, present = FALSE)
 #' plot(forecast_model(a))
 #'}
-plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, ...){
+plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_value = NULL, ...){
 
   #if(class(x) != "aggmod.forecast"){
   if(!isa(x, "aggmod.forecast")){
-
     stop("Input object not of type aggmod.forecast. Run 'forecast_model' again and use the output of that function.")
   }
+
+  if(!is.null(first_value)){if(!is.character(first_value) | !lubridate::is.Date(as.Date(first_value))){stop("When supplying 'first_value', the it must be a character and must be (able to be converted to) a Date.")}}
 
   {if(!is.null(x$nowcast_data)){
     x$nowcast_data
@@ -124,7 +126,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::mutate(value = dplyr::case_when(dep_var %in% to_exponentiate_tibble$all[to_exponentiate_tibble$expo == TRUE] ~ exp(value),
                                            TRUE ~ value)) %>%
     dplyr::rename(na_item = dep_var, values = value) %>%
-    dplyr::full_join(x$orig_model$module_order_eurostatvars %>%
+    dplyr::full_join(x$orig_model$module_order %>%
                        dplyr::select(dependent) %>%
                        dplyr::rename(na_item = dependent), by = "na_item") %>%
     dplyr::mutate(fit = "Forecast Uncertainty") -> all_forecasts_processed
@@ -172,7 +174,6 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     if (!exclude.exogenous) {ggplot2::geom_line(data = exog_forecasts, ggplot2::aes(x = time, y = values, color = fit))} else {NULL}
   )
 
-
   dplyr::bind_rows(forecasts_processed, last_hist_value) %>%
     dplyr::bind_rows(plot_df) %>%
 
@@ -181,7 +182,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
         tidyr::drop_na("na_item") %>%
         dplyr::arrange(.data$time, .data$na_item)} else {.}} %>%
 
-
+    {if(!is.null(first_value)){dplyr::filter(., time >= as.Date(first_value))} else {.}} %>%
 
 
     ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +

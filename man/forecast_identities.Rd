@@ -2,7 +2,7 @@
 % Please edit documentation in R/forecast_identities.R
 \name{forecast_identities}
 \alias{forecast_identities}
-\title{Title}
+\title{An internal function to forecast identities within forecast_model}
 \usage{
 forecast_identities(
   model,
@@ -21,5 +21,5 @@ forecast_identities(
 A list that is then used by forecast_model to set-up the final prediction obejct. The list contains the identity estimate.
 }
 \description{
-Title
+An internal function to forecast identities within forecast_model
 }
