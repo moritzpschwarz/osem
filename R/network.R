@@ -83,7 +83,11 @@ network <- function(model) {
   nonzero_after <- sum(adj != 0)
   stopifnot(nonzero_after == nonzero_before)
 
-  graph_df <- tidygraph::as_tbl_graph(adj)
+  graph_df <- adj %>%
+    igraph::graph_from_adjacency_matrix(weighted = TRUE) %>%
+    tidygraph::as_tbl_graph()
+  #graph_df <- tidygraph::as_tbl_graph(adj)
+
   graph_df <- graph_df %>%
     tidygraph::activate(!!as.symbol("nodes")) %>%
     dplyr::inner_join(y = class, by = c("name" = "var"))
