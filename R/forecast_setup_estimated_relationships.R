@@ -235,21 +235,30 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
       tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
       dplyr::filter(is.na(values)) -> missing_values_dataobj
 
-    # then we check whether any of the missing values in the historical data are present in nowcasted data
+    # then we check whether any of the missing values in the historical data are present in nowcasted or in the exog_df_ready data
     if (nrow(missing_values_dataobj) > 0 & !is.null(nowcasted_data)) {
 
       missing_values_dataobj %>%
         dplyr::mutate(basename = gsub("ln.","",na_item)) %>%
-        dplyr::inner_join(nowcasted_data %>%
-                            dplyr::rename(basename = na_item,
-                                          values_nowcast = values), by = c("time", "basename")) %>%
+        dplyr::left_join(nowcasted_data %>%
+                           dplyr::rename(basename = na_item,
+                                         values_nowcast = values), by = c("time", "basename")) %>%
+
+        dplyr::left_join(exog_df_ready %>%
+                           tidyr::pivot_longer(-"time",names_to = "basename",
+                                               values_to = "values_exog"), by = c("time", "basename")) %>%
 
         # where there are nowcast values but not original ones, take now the nowcast ones
         # when doing this, we check first if we need to log them
-        dplyr::mutate(values = dplyr::case_when(!is.na(values_nowcast) & is.na(values) ~ values_nowcast, TRUE ~ values),
-                      values = dplyr::case_when(!is.na(values) & grepl("^ln.",na_item) ~ log(values), TRUE ~ values)) %>%
+        dplyr::mutate(values = dplyr::case_when(!is.na(values_nowcast) & is.na(values) ~ values_nowcast, TRUE ~ values)) %>%
 
-        dplyr::select(time, na_item, new_values = values) %>%
+        # now do the same with exog values; where there are exog values but not original or nowcast ones, take now the exog ones
+        dplyr::mutate(values = dplyr::case_when(!is.na(values_exog) & is.na(values) ~ values_exog, TRUE ~ values)) %>%
+
+        # now we check first if we need to log them
+        dplyr::mutate(values = dplyr::case_when(!is.na(values) & grepl("^ln.",na_item) ~ log(values), TRUE ~ values)) %>%
+
+        dplyr::select("time", "na_item", new_values = .data$values) %>%
         tidyr::drop_na() -> values_to_replace
 
       # Then we take the historical data and add the nowcasted data
