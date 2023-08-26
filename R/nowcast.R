@@ -10,18 +10,21 @@ nowcasting <- function(model, exog_df_ready){
   orig_model <- model
 
   # let's first find the time that we need all data up to
+  # model$processed_input_data %>%
+  #   dplyr::filter(na_item %in% model$module_collection$dependent) %>%
+  #   tidyr::drop_na(values) %>%
+  #   dplyr::summarise(max_time = max(time)) %>%
+  #   dplyr::pull(max_time) -> target_time
   model$processed_input_data %>%
-    dplyr::filter(na_item %in% model$module_collection$dependent) %>%
-    tidyr::drop_na(values) %>%
-    dplyr::summarise(max_time = max(time)) %>%
-    dplyr::pull(max_time) -> target_time
+    dplyr::summarise(time = max(time)) %>%
+    dplyr::pull(time) -> target_time
 
   # we now figure out which variables do not fully extend to the final date in the database
   model$processed_input_data %>%
     dplyr::filter(na_item %in% model$module_collection$dependent) %>%
     tidyr::drop_na(values) %>%
     dplyr::summarise(max_time = max(time), .by = na_item) %>%
-    dplyr::filter(max_time != max(max_time)) -> vars_not_full
+    dplyr::filter(max_time != target_time) -> vars_not_full
 
   # if all are to the end, then we can skip
   if(nrow(vars_not_full) == 0){return(NULL)} else{
@@ -155,7 +158,6 @@ nowcasting <- function(model, exog_df_ready){
       # Identities
       if(vars_not_full_analysis %>% dplyr::filter(.data$order == ord) %>% dplyr::pull(type) == "d"){
 
-
         identity_data <- identify_module_data(data = model$full_data,
                                               classification = classify_variables(model$module_order),
                                               module = vars_not_full_analysis %>% dplyr::filter(order == ord))
@@ -206,10 +208,11 @@ nowcasting <- function(model, exog_df_ready){
 
         # now get the naming with .hat right
         identity_data_subst %>%
-          left_join(identity_naming, by = "na_item") %>%
-          rowwise %>%
-          mutate(na_item = case_when(hat ~ paste0(na_item,".hat"), TRUE ~ na_item)) %>%
-          select(-hat,-orig_name) -> identity_data_subst_ready
+          dplyr::left_join(identity_naming, by = "na_item") %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(na_item = dplyr::case_when(hat ~ paste0(na_item,".hat"), TRUE ~ na_item)) %>%
+          dplyr::select(-hat,-orig_name) %>%
+          dplyr::distinct() -> identity_data_subst_ready
 
         identity_pred <- identity_module(data = identity_data_subst_ready,
                                          module = vars_not_full_analysis %>% dplyr::filter(order == ord),
