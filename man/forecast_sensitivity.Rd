@@ -4,15 +4,17 @@
 \alias{forecast_sensitivity}
 \title{Evaluate the sensitivity of forecasts to varying exogenous values}
 \usage{
-forecast_sensitivity(model, size = 0.5, quiet = FALSE)
+forecast_sensitivity(model, size = 0.5, quiet = FALSE, impulse_response = TRUE)
 }
 \arguments{
 \item{model}{An aggregate model object of class 'aggmod'.}
 
 \item{size}{Numeric, must be larger than -1. The percentage value that the exogenous values will be multiplied with. Default is 0.5 (i.e. 50\%).}
+
+\item{impulse_response}{Logical. Should an impulse response function be calculated. Main reason to deactivate this might be improving the speed of this function.}
 }
 \value{
-A tibble with the original forecasts and the difference to the modified forecasts.
+A list that contains a tibble with the original forecasts and the difference to the modified forecasts as well as plot(s).
 }
 \description{
 Evaluate the sensitivity of forecasts to varying exogenous values

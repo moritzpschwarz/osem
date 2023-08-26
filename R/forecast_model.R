@@ -78,20 +78,20 @@ forecast_model <- function(model,
 
 
   ## 1a. Nowcasting --------------------------------------------------------------------
-
   nowcasted <- nowcasting(model, exog_df_ready = exog_df_ready)
 
   # after we are done with nowcasting, we throw away the early values
   exog_df_ready_full <- exog_df_ready
   exog_df_ready <- exog_df_ready %>% tail(n.ahead)
 
-  nowcasted$nowcast_model$full_data %>%
-    left_join(exog_df_ready_full %>%
-                pivot_longer(-time,names_to = "na_item", values_to = "values_exog"),
-              by = c("time","na_item")) %>%
-    mutate(values = case_when(is.na(values) & !is.na(values_exog) ~ values_exog, TRUE ~ values)) %>%
-    select(-values_exog) -> nowcasted$nowcast_model$full_data
-
+  if(!is.null(nowcasted$nowcast_model$full_data)){
+    nowcasted$nowcast_model$full_data %>%
+      dplyr::left_join(exog_df_ready_full %>%
+                         tidyr::pivot_longer(-time,names_to = "na_item", values_to = "values_exog"),
+                       by = c("time","na_item")) %>%
+      dplyr::mutate(values = case_when(is.na(values) & !is.na(values_exog) ~ values_exog, TRUE ~ values)) %>%
+      dplyr::select(-values_exog) -> nowcasted$nowcast_model$full_data
+  }
 
   # if(!is.null(nowcasted)){
   #   model <- nowcasted$nowcast_model
@@ -141,7 +141,6 @@ forecast_model <- function(model,
 
     ## 2b. Start of loop for estimated relationships  ------------------------------------------------
     if(model$module_order$type[model$module_order$order == i] != "d"){
-
       pred_setup_list <- forecast_setup_estimated_relationships(model = model,
                                                                 i = i,
                                                                 exog_df_ready = exog_df_ready,

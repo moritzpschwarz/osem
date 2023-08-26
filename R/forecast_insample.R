@@ -1,5 +1,5 @@
 #' Forecast model insample to evaluate forecasting performance
-#'
+#' @param sample_share Share of the sample that should be used for the insample forecasting. Must be a numeric and must be either 1 or smaller but larger than 0.
 #' @inheritParams forecast_model
 #'
 #' @return List element.
@@ -7,7 +7,7 @@
 #'
 #' @examples forecast_insample(model)
 #'
-forecast_insample <- function(model, seed = 1234, uncertainty_sample = 100, exog_fill_method = "AR", plot = TRUE) {
+forecast_insample <- function(model, sample_share = 0.5, seed = 1234, uncertainty_sample = 100, exog_fill_method = "AR", plot = TRUE) {
 
   # we first must identify the minimum sample across modules
   time_samples <- dplyr::tibble()
@@ -28,7 +28,7 @@ forecast_insample <- function(model, seed = 1234, uncertainty_sample = 100, exog
 
   # With those times, we can now find the halfway point
   all_times <- seq(time_minmax$min,time_minmax$max, by = "quarter")
-  time_to_use <- all_times[ceiling(length(all_times)/2):length(all_times)]
+  time_to_use <- all_times[ceiling(length(all_times)*sample_share):length(all_times)]
 
   all_models <- list()
   for(j in 1:length(time_to_use)){
@@ -116,7 +116,7 @@ forecast_insample <- function(model, seed = 1234, uncertainty_sample = 100, exog
   for(i in 1:length(forecasted_unknownexogvalues)){
     # i = 3
     if(is.null(forecasted_unknownexogvalues[[i]])){next}
-    print(i)
+    #print(i)
 
     #plot(forecasted_unknownexogvalues[[i]])
 
@@ -162,6 +162,22 @@ forecast_insample <- function(model, seed = 1234, uncertainty_sample = 100, exog
                   .data$time > min(overall_to_plot_central$start)) -> full_data
 
 
+  #add.months= function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
+  # bb_insample$central %>%
+  #   rowwise() %>%
+  #   mutate(forecast_len = add.months(start, 24)) %>%
+  #   ungroup() %>%
+  #   filter(!(time > forecast_len)) -> central
+  #
+  #
+  # bb_insample$uncertainty %>%
+  #   rowwise() %>%
+  #   mutate(forecast_len = add.months(start, 24)) %>%
+  #   ungroup() %>%
+  #   filter(!(time > forecast_len)) -> uncertainty
+  #
+
+
   overall_to_plot_central_exp %>%
     dplyr::filter(.data$start > min(overall_to_plot_central$start)) %>%
     ggplot2::ggplot() +
@@ -188,17 +204,20 @@ forecast_insample <- function(model, seed = 1234, uncertainty_sample = 100, exog
                        ggplot2::aes(x = time, y= values), color = "black", linewidth = 2) -> plt
 
 
-  plotly::ggplotly(plt)
+  #plotly::ggplotly(plt)
 
 
-  if(plot){
-    plt
-  }
+  # if(plot){
+  #   plt
+  # }
+
+
 
 
   out <- list()
   out$plot <- plt
   out$central <- overall_to_plot_central_exp
-  out$uncertainty <- overall_to_plot_alls_exp_q
+  out$uncertainty <- overall_to_plot_alls_exp
+  out$hist_data <- full_data
   return(out)
 }

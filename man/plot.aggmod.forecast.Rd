@@ -10,6 +10,7 @@
   order.as.run = FALSE,
   interactive = FALSE,
   first_value = NULL,
+  grepl_variables = NULL,
   ...
 )
 }
@@ -21,6 +22,8 @@
 \item{order.as.run}{Logical. Should the plots be arranged in the way that the model was run? Default FALSE.}
 
 \item{first_value}{Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.}
+
+\item{grepl_variables}{Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.}
 
 \item{...}{Further arguments (currently not in use).}
 }

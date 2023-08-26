@@ -11,7 +11,7 @@ ui <- fluidPage(
                h1("Specification"),
                DT::DTOutput("spec"),
                h1("Dependency"),
-               plotOutput("network")#,
+               plotOutput("network", height = "600", width = "800")#,
                #tableOutput(outputId = "test")
              )
     ),

@@ -187,7 +187,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         select_columns = "q", remove_first_dummy = FALSE,
         remove_selected_columns = TRUE) %>%
       tidyr::drop_na(time) %>%
-      arrange(time) -> exog_df_ready
+      dplyr::arrange(time) -> exog_df_ready
   }
 
 
