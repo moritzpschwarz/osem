@@ -101,9 +101,9 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     stringr::str_detect(., "^ln.") -> to_exponentiate
 
   x$forecast %>%
-    dplyr::select(dep_var, all.estimates) %>%
-    tidyr::unnest(all.estimates) %>%
-    tidyr::pivot_longer(-c(time, dep_var)) -> all_forecasts
+    dplyr::select("dep_var", "all.estimates") %>%
+    tidyr::unnest("all.estimates") %>%
+    tidyr::pivot_longer(-c("time", "dep_var")) -> all_forecasts
 
 
   # Dealing with uncertainty (all forecasts) --------
@@ -125,22 +125,22 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
 
   all_forecasts %>%
-    dplyr::mutate(value = dplyr::case_when(dep_var %in% to_exponentiate_tibble$all[to_exponentiate_tibble$expo == TRUE] ~ exp(value),
-                                           TRUE ~ value)) %>%
-    dplyr::rename(na_item = dep_var, values = value) %>%
+    dplyr::mutate(value = dplyr::case_when(.data$dep_var %in% to_exponentiate_tibble$all[to_exponentiate_tibble$expo == TRUE] ~ exp(.data$value),
+                                           TRUE ~ .data$value)) %>%
+    dplyr::rename(na_item = "dep_var", values = "value") %>%
     dplyr::full_join(x$orig_model$module_order %>%
-                       dplyr::select(dependent) %>%
-                       dplyr::rename(na_item = dependent), by = "na_item") %>%
+                       dplyr::select("dependent") %>%
+                       dplyr::rename(na_item = "dependent"), by = "na_item") %>%
     dplyr::mutate(fit = "Forecast Uncertainty") -> all_forecasts_processed
 
   all_forecasts_processed %>%
-    dplyr::group_by(na_item, time, fit) %>%
-    dplyr::summarise(max = max(values),
-                     min = min(values),
-                     p975 = quantile(values, probs = 0.975),
-                     p025 = quantile(values, probs = 0.025),
-                     p75 = quantile(values, probs = 0.75),
-                     p25 = quantile(values, probs = 0.25)) -> all_forecasts_processed_q
+    dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
+    dplyr::summarise(max = max(.data$values),
+                     min = min(.data$values),
+                     p975 = stats::quantile(.data$values, probs = 0.975),
+                     p025 = stats::quantile(.data$values, probs = 0.025),
+                     p75 = stats::quantile(.data$values, probs = 0.75),
+                     p25 = stats::quantile(.data$values, probs = 0.25)) -> all_forecasts_processed_q
 
 
   plot_df %>%
@@ -152,13 +152,13 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::mutate(fit = "forecast") -> last_hist_value
 
   last_hist_value %>%
-    dplyr::group_by(time,na_item) %>%
-    dplyr::summarise(max = values,
-                     min = values,
-                     p975 = values,
-                     p025 = values,
-                     p75 =  values,
-                     p25 =  values, .groups = "drop") %>%
+    dplyr::group_by(.data$time, .data$na_item) %>%
+    dplyr::summarise(max = .data$values,
+                     min = .data$values,
+                     p975 = .data$values,
+                     p025 = .data$values,
+                     p75 =  .data$values,
+                     p25 =  .data$values, .groups = "drop") %>%
     dplyr::mutate(fit = "Forecast Uncertainty") %>%
     dplyr::bind_rows(.,all_forecasts_processed_q) %>%
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} -> all_forecasts_processed_q
@@ -169,13 +169,13 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::select(-dplyr::any_of(c("q_1","q_2","q_3","q_4"))) %>%
     tidyr::pivot_longer(-"time", values_to = "values", names_to = "na_item") %>%
     dplyr::bind_rows(last_hist_value) %>%
-    dplyr::arrange(time) %>%
+    dplyr::arrange(.data$time) %>%
     dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") %>%
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} -> exog_forecasts
 
 
   ggplot_options <- list(
-    if (!exclude.exogenous) {ggplot2::geom_line(data = exog_forecasts, ggplot2::aes(x = time, y = values, color = fit))} else {NULL}
+    if (!exclude.exogenous) {ggplot2::geom_line(data = exog_forecasts, ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit))} else {NULL}
   )
 
   dplyr::bind_rows(forecasts_processed, last_hist_value) %>%
@@ -186,16 +186,16 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
         tidyr::drop_na("na_item") %>%
         dplyr::arrange(.data$time, .data$na_item)} else {.}} %>%
 
-    {if(!is.null(first_date)){dplyr::filter(., time >= as.Date(first_date))} else {.}} %>%
+    {if(!is.null(first_date)){dplyr::filter(., .data$time >= as.Date(first_date))} else {.}} %>%
 
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} %>%
 
 
     ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
 
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = min, x = time, ymax = max, fill = fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = p025, x = time, ymax = p975, fill = fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = p25, x = time, ymax = p75, fill = fit), linewidth = 0.1, alpha = 0.5, inherit.aes = FALSE, na.rm = TRUE) +
+    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$min, x = .data$time, ymax = .data$max, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
+    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
+    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = .data$fit), linewidth = 0.1, alpha = 0.5, inherit.aes = FALSE, na.rm = TRUE) +
 
     ggplot2::geom_line(linewidth = 1, na.rm = TRUE) +
 

@@ -41,7 +41,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       fastDummies::dummy_cols(
         select_columns = "q", remove_first_dummy = FALSE,
         remove_selected_columns = TRUE)  %>%
-      tidyr::drop_na(time) -> exog_df_ready
+      tidyr::drop_na("time") -> exog_df_ready
 
 
   }
@@ -75,16 +75,16 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         dplyr::filter(.data$na_item == names(exog_df_intermed)[col_to_forecast]) %>%
         tidyr::drop_na() %>%
         dplyr::filter(.data$time == max(.data$time)) %>%
-        dplyr::pull(time) -> col_to_forecast_max_time
+        dplyr::pull("time") -> col_to_forecast_max_time
 
       model$full_data %>%
         tidyr::drop_na() %>%
-        dplyr::summarise(time = max(time)) %>%
-        dplyr::pull(time) -> overall_max_time
+        dplyr::summarise(time = max(.data$time)) %>%
+        dplyr::pull("time") -> overall_max_time
 
       diff_time_to_max <- length(seq.Date(from = col_to_forecast_max_time, to = overall_max_time, by = "3 months")[-1])
-      time_to_forecast <- seq.Date(col_to_forecast_max_time, length = n.ahead + (1 + diff_time_to_max),
-                                   by = "3 months", length.out = NULL)[-1]
+      time_to_forecast <- seq.Date(col_to_forecast_max_time, length.out = n.ahead + (1 + diff_time_to_max),
+                                   by = "3 months")[-1]
 
       # now let's extract the data
       exog_df_intermed %>%
@@ -186,8 +186,8 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       fastDummies::dummy_cols(
         select_columns = "q", remove_first_dummy = FALSE,
         remove_selected_columns = TRUE) %>%
-      tidyr::drop_na(time) %>%
-      dplyr::arrange(time) -> exog_df_ready
+      tidyr::drop_na("time") %>%
+      dplyr::arrange(.data$time) -> exog_df_ready
   }
 
 

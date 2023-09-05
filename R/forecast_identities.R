@@ -28,7 +28,7 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
 
     prediction_list %>%
       dplyr::filter(.data$index == mvar_model_index) %>%
-      dplyr::pull(.data$predict.isat_object) %>%
+      dplyr::pull("predict.isat_object") %>%
       .[[1]] -> mvar_model_obj
 
     mvar_logs <- model$module_collection %>%
@@ -38,8 +38,8 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       .$use_logs
 
     prediction_list %>%
-      dplyr::filter(index == mvar_model_index) %>%
-      dplyr::pull(all.estimates) %>%
+      dplyr::filter(.data$index == mvar_model_index) %>%
+      dplyr::pull("all.estimates") %>%
       .[[1]] %>%
       dplyr::select(-"time") -> mvar_all.estimates
 
@@ -60,8 +60,8 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
     # get all the individual estimates into a column of a tibble
     mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
       dplyr::mutate(index = 1:dplyr::n()) %>%
-      tidyr::nest(data = -index) %>%
-      dplyr::select(-index) %>%
+      tidyr::nest(data = -"index") %>%
+      dplyr::select(-"index") %>%
       setNames(paste0(mvar_name,".all"))
 
 

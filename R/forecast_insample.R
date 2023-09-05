@@ -5,7 +5,6 @@
 #' @return List element.
 #' @export
 #'
-#' @examples forecast_insample(model)
 #'
 forecast_insample <- function(model, sample_share = 0.5, seed = 1234, uncertainty_sample = 100, exog_fill_method = "AR", plot.forecast = TRUE) {
 
@@ -130,19 +129,20 @@ forecast_insample <- function(model, sample_share = 0.5, seed = 1234, uncertaint
     forecasted_unknownexogvalues[[i]]$forecast %>%
       dplyr::select("dep_var","all.estimates") %>%
       dplyr::mutate(start = time_to_use[i]) %>%
-      dplyr::mutate(quantiles = purrr::map(all.estimates, function(x){
+      dplyr::mutate(quantiles = purrr::map(.data$all.estimates, function(x){
         tidyr::pivot_longer(x, -"time") %>%
-          dplyr::summarise(max = max(value),
-                           min = min(value),
-                           p975 = quantile(value, probs = 0.975),
-                           p025 = quantile(value, probs = 0.025),
-                           p75 = quantile(value, probs = 0.75),
-                           p25 = quantile(value, probs = 0.25), .by = time) %>%
+          dplyr::summarise(max = max("value"),
+                           min = min("value"),
+                           p975 = stats::quantile("value", probs = 0.975),
+                           p025 = stats::quantile("value", probs = 0.025),
+                           p75 = stats::quantile("value", probs = 0.75),
+                           p25 = stats::quantile("value", probs = 0.25), .by = .data$time) %>%
           tidyr::pivot_longer(-"time", names_to = "quantile")
       })) %>%
       dplyr::select(-"all.estimates") %>%
-      dplyr::full_join(centrals %>% dplyr::distinct(dep_var, name), by = "dep_var") %>%
-      tidyr::unnest(quantiles) -> alls
+      dplyr::full_join(centrals %>%
+                         dplyr::distinct("dep_var", "name"), by = "dep_var") %>%
+      tidyr::unnest("quantiles") -> alls
 
     dplyr::bind_rows(overall_to_plot_central, centrals) -> overall_to_plot_central
     dplyr::bind_rows(overall_to_plot_alls, alls) -> overall_to_plot_alls
@@ -183,12 +183,12 @@ forecast_insample <- function(model, sample_share = 0.5, seed = 1234, uncertaint
     ggplot2::ggplot() +
 
     ggplot2::facet_wrap(~dep_var, scales = "free") +
-    ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = min, x = time, ymax = max, fill = as.factor(start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
-    ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = p025, x = time, ymax = p975, fill = as.factor(start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
-    ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = p25, x = time, ymax = p75, fill = as.factor(start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
+    ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = .data$min, x = .data$time, ymax = .data$max, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
+    ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
+    ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
 
-    ggplot2::geom_line(ggplot2::aes(y = value, x = time, color = as.factor(start)), inherit.aes = FALSE) +
-    ggplot2::facet_wrap(~dep_var, scales = "free") +
+    ggplot2::geom_line(ggplot2::aes(y = .data$value, x = .data$time, color = as.factor(.data$start)), inherit.aes = FALSE) +
+    ggplot2::facet_wrap(~.data$dep_var, scales = "free") +
     #ggplot2::scale_color_brewer(palette = "PRGn") +
     ggplot2::scale_colour_viridis_d() +
     ggplot2::coord_cartesian(expand = TRUE) +
@@ -201,7 +201,7 @@ forecast_insample <- function(model, sample_share = 0.5, seed = 1234, uncertaint
                    panel.grid.minor.y = ggplot2::element_blank()) +
 
     ggplot2::geom_line(data = full_data,
-                       ggplot2::aes(x = time, y= values), color = "black", linewidth = 2) -> plt
+                       ggplot2::aes(x = .data$time, y = .data$values), color = "black", linewidth = 2) -> plt
 
 
   #plotly::ggplotly(plt)

@@ -17,15 +17,15 @@ nowcasting <- function(model, exog_df_ready){
   #   dplyr::summarise(max_time = max(time)) %>%
   #   dplyr::pull(max_time) -> target_time
   model$processed_input_data %>%
-    dplyr::summarise(time = max(time)) %>%
-    dplyr::pull(time) -> target_time
+    dplyr::summarise(time = max(.data$time)) %>%
+    dplyr::pull("time") -> target_time
 
   # we now figure out which variables do not fully extend to the final date in the database
   model$processed_input_data %>%
-    dplyr::filter(na_item %in% model$module_collection$dependent) %>%
-    tidyr::drop_na(values) %>%
-    dplyr::summarise(max_time = max(time), .by = na_item) %>%
-    dplyr::filter(max_time != target_time) -> vars_not_full
+    dplyr::filter(.data$na_item %in% model$module_collection$dependent) %>%
+    tidyr::drop_na("values") %>%
+    dplyr::summarise(max_time = max(.data$time), .by = "na_item") %>%
+    dplyr::filter(.data$max_time != target_time) -> vars_not_full
 
   # if all are to the end, then we can skip
   if(nrow(vars_not_full) == 0){return(NULL)} else{
@@ -47,25 +47,25 @@ nowcasting <- function(model, exog_df_ready){
       # define the prediction interval
       vars_not_full_analysis %>%
         dplyr::filter(.data$order == ord) %>%
-        dplyr::pull(max_time) -> current_max_time
+        dplyr::pull("max_time") -> current_max_time
 
       # removing the first one in the sequence (using [-1]) as that would be the last available value
-      cur_target_dates <- seq.Date(as.Date(current_max_time),as.Date(target_time), "q")[-1]
+      cur_target_dates <- seq.Date(as.Date(current_max_time), as.Date(target_time), "q")[-1]
 
-      if(vars_not_full_analysis %>% dplyr::filter(.data$order == ord) %>% dplyr::pull(type) == "n"){
+      if(vars_not_full_analysis %>% dplyr::filter(.data$order == ord) %>% dplyr::pull("type") == "n"){
 
         # find out which independent variables we need
         vars_not_full_analysis %>%
           dplyr::filter(.data$order == ord) %>%
-          tidyr::unnest(indep) %>%
-          dplyr::pull(indep) -> indep_vars_to_get
+          tidyr::unnest("indep") %>%
+          dplyr::pull("indep") -> indep_vars_to_get
 
         model$processed_input_data %>%
-          dplyr::filter(na_item %in% indep_vars_to_get) %>% # get the independent values
-          dplyr::filter(time %in% cur_target_dates) %>% # for the appropriate interval
+          dplyr::filter(.data$na_item %in% indep_vars_to_get) %>% # get the independent values
+          dplyr::filter(.data$time %in% cur_target_dates) %>% # for the appropriate interval
           tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
           dplyr::mutate(q = lubridate::quarter(.data$time),
-                        q = factor(q, levels = c(1,2,3,4))) %>%
+                        q = factor(.data$q, levels = c(1,2,3,4))) %>%
           dplyr::arrange("time") %>%
           fastDummies::dummy_cols(
             select_columns = "q", remove_first_dummy = FALSE,
@@ -76,18 +76,19 @@ nowcasting <- function(model, exog_df_ready){
         # this would mean that those values are not available for nowcasting
         exog_data_nowcasting %>%
           tidyr::pivot_longer(-"time", values_to = "values_historical") %>%
-          dplyr::filter(is.na(values_historical)) %>%
+          dplyr::filter(is.na(.data$values_historical)) %>%
           dplyr::left_join(exog_df_ready %>%
                              tidyr::pivot_longer(-"time"), by = c("time","name")) %>%
-          dplyr::mutate(values_forecasted_exogenously = value) %>%
+          dplyr::mutate(values_forecasted_exogenously = .data$value) %>%
           dplyr::select(-"value", -"values_historical") -> exog_data_to_replace
 
         if(nrow(exog_data_to_replace) > 0){
           exog_data_nowcasting %>%
-            tidyr::pivot_longer(-time) %>%
+            tidyr::pivot_longer(-"time") %>%
             dplyr::left_join(exog_data_to_replace, by = c("time","name")) %>%
             dplyr::mutate(value = dplyr::case_when(
-              is.na(value) & !is.na(values_forecasted_exogenously) ~ values_forecasted_exogenously, TRUE ~ value)) %>%
+              is.na(.data$value) & !is.na(.data$values_forecasted_exogenously) ~ .data$values_forecasted_exogenously,
+              TRUE ~ .data$value)) %>%
             dplyr::select(-"values_forecasted_exogenously") %>%
             tidyr::pivot_wider(id_cols = "time",names_from = "name", values_from = "value") -> exog_data_nowcasting
         }
@@ -139,44 +140,44 @@ nowcasting <- function(model, exog_df_ready){
 
 
         vars_not_full_analysis %>%
-          dplyr::filter(.data$order == ord) %>% dplyr::pull(model.args) %>% dplyr::first() %>% .$use_logs -> log_use
+          dplyr::filter(.data$order == ord) %>% dplyr::pull("model.args") %>% dplyr::first() %>% .$use_logs -> log_use
 
         # add the data to the full data and the processed input data
         dplyr::tibble(time = as.Date(cur_target_dates), values = as.numeric(pred_obj)) %>%
-          dplyr::mutate(values = dplyr::case_when(log_use == "both" | log_use == "y" ~ exp(values), TRUE ~ values),
+          dplyr::mutate(values = dplyr::case_when(log_use == "both" | log_use == "y" ~ exp(.data$values), TRUE ~ .data$values),
                         na_item = dep_var,.after = "time") -> data_to_add
 
         model$full_data %>%
-          dplyr::filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+          dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
           dplyr::bind_rows(.,data_to_add) %>%
-          dplyr::arrange(dplyr::desc(time), na_item) -> model$full_data
+          dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$full_data
 
         model$processed_input_data %>%
-          dplyr::filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+          dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
           dplyr::bind_rows(.,data_to_add) %>%
-          dplyr::arrange(dplyr::desc(time), na_item) -> model$processed_input_data
+          dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$processed_input_data
 
       }
 
       # Identities
-      if(vars_not_full_analysis %>% dplyr::filter(.data$order == ord) %>% dplyr::pull(type) == "d"){
+      if(vars_not_full_analysis %>% dplyr::filter(.data$order == ord) %>% dplyr::pull("type") == "d"){
 
         identity_data <- identify_module_data(data = model$full_data,
                                               classification = classify_variables(model$module_order),
-                                              module = vars_not_full_analysis %>% dplyr::filter(order == ord))
+                                              module = vars_not_full_analysis %>% dplyr::filter(.data$order == ord))
 
         # we now look where we have historical or nowcasted data but not estimated (.hat) data
         # we would not want to use those for estimation but for nowcasting this makes sense
         # so we identify where in identity_data there is data NA for the dates that we are nowcasting
         # we then replace those with the historical data
         model$full_data %>%
-          dplyr::rename(values_full = values) %>%
-          dplyr::filter(!grepl("\\.hat$",na_item)) %>%
+          dplyr::rename(values_full = .data$values) %>%
+          dplyr::filter(!grepl("\\.hat$",.data$na_item)) %>%
           #dplyr::mutate(na_item = paste0(na_item,".hat")) %>%
           dplyr::left_join(identity_data %>%
-                             dplyr::filter(time %in% cur_target_dates) %>%
-                             dplyr::filter(is.na(values)), by = c("time", "na_item")) %>%
-          dplyr::mutate(values = values_full,
+                             dplyr::filter(.data$time %in% cur_target_dates) %>%
+                             dplyr::filter(is.na(.data$values)), by = c("time", "na_item")) %>%
+          dplyr::mutate(values = .data$values_full,
                         values_full = NULL) -> data_to_substitue
 
 
@@ -184,41 +185,41 @@ nowcasting <- function(model, exog_df_ready){
         # this can happen when co-variates were not available up to the final time
         # this would mean that those values are not available for nowcasting
         data_to_substitue %>%
-          dplyr::filter(is.na(values)) %>%
+          dplyr::filter(is.na(.data$values)) %>%
           dplyr::left_join(exog_df_ready %>%
-                             tidyr::pivot_longer(-time, names_to = "na_item"), by = c("time","na_item")) %>%
-          dplyr::mutate(values_forecasted_exogenously = value) %>%
+                             tidyr::pivot_longer(-"time", names_to = "na_item"), by = c("time","na_item")) %>%
+          dplyr::mutate(values_forecasted_exogenously = .data$value) %>%
           dplyr::select(-"value", -"values") -> exog_data_to_replace
 
         if(nrow(exog_data_to_replace) > 0){
           data_to_substitue %>%
             dplyr::left_join(exog_data_to_replace, by = c("time","na_item")) %>%
             dplyr::mutate(values = dplyr::case_when(
-              is.na(values) &
-                !is.na(values_forecasted_exogenously) ~ values_forecasted_exogenously, TRUE ~ values)) %>%
+              is.na(.data$values) &
+                !is.na(values_forecasted_exogenously) ~ values_forecasted_exogenously, TRUE ~ .data$values)) %>%
             dplyr::select(-"values_forecasted_exogenously") -> data_to_substitue
 
         }
 
         identity_data %>%
-          dplyr::filter(time %in% cur_target_dates) %>%
-          dplyr::filter(!is.na(values)) %>%
+          dplyr::filter(.data$time %in% cur_target_dates) %>%
+          dplyr::filter(!is.na(.data$values)) %>%
           dplyr::bind_rows(data_to_substitue) -> identity_data_subst
 
         identity_data %>%
-          dplyr::distinct(na_item) %>%
+          dplyr::distinct(.data$na_item) %>%
           dplyr::rowwise() %>%
-          dplyr::mutate(hat = grepl("\\.hat$",na_item),
-                 orig_name = na_item,
-                 na_item = gsub("\\.hat","",na_item)) %>%
+          dplyr::mutate(hat = grepl("\\.hat$",.data$na_item),
+                        orig_name = .data$na_item,
+                        na_item = gsub("\\.hat","",.data$na_item)) %>%
           dplyr::ungroup() -> identity_naming
 
         # now get the naming with .hat right
         identity_data_subst %>%
           dplyr::left_join(identity_naming, by = "na_item") %>%
           dplyr::rowwise() %>%
-          dplyr::mutate(na_item = dplyr::case_when(hat ~ paste0(na_item,".hat"), TRUE ~ na_item)) %>%
-          dplyr::select(-hat,-orig_name) %>%
+          dplyr::mutate(na_item = dplyr::case_when(.data$hat ~ paste0(.data$na_item,".hat"), TRUE ~ .data$na_item)) %>%
+          dplyr::select(-"hat",-"orig_name") %>%
           dplyr::distinct() -> identity_data_subst_ready
 
         identity_pred <- identity_module(data = identity_data_subst_ready,
@@ -233,14 +234,14 @@ nowcasting <- function(model, exog_df_ready){
 
 
         model$full_data %>%
-          dplyr::filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+          dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
           dplyr::bind_rows(.,data_to_add) %>%
-          dplyr::arrange(dplyr::desc(time), na_item) -> model$full_data
+          dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$full_data
 
         model$processed_input_data %>%
-          dplyr::filter(!(na_item == dep_var & time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+          dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
           dplyr::bind_rows(.,data_to_add) %>%
-          dplyr::arrange(dplyr::desc(time), na_item) -> model$processed_input_data
+          dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$processed_input_data
       }
     }
 

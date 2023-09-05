@@ -76,28 +76,28 @@ forecast_sensitivity <- function(model, size = 0.5, quiet = FALSE, impulse_respo
 
   dplyr::tibble(modified = names(forecast_list),
                 forecasts = forecast_list) %>%
-    dplyr::mutate(forecasts_processed = purrr::map(forecasts, process_forecasts)) %>%
-    dplyr::select(-forecasts) %>%
-    tidyr::unnest(forecasts_processed) -> all_modified
+    dplyr::mutate(forecasts_processed = purrr::map(.data$forecasts, process_forecasts)) %>%
+    dplyr::select(-"forecasts") %>%
+    tidyr::unnest("forecasts_processed") -> all_modified
 
   dplyr::tibble(forecasts = list(inital_forecast)) %>%
-    dplyr::mutate(inital_forecast = purrr::map(forecasts, process_forecasts)) %>%
-    tidyr::unnest(inital_forecast) %>%
+    dplyr::mutate(inital_forecast = purrr::map(.data$forecasts, process_forecasts)) %>%
+    tidyr::unnest("inital_forecast") %>%
     dplyr::select(-"forecasts", -"fit") %>%
-    dplyr::rename(init = values) -> inital_forecast_tib
+    dplyr::rename(init = .data$values) -> inital_forecast_tib
 
 
   all_modified %>%
     dplyr::full_join(inital_forecast_tib, by = c("time","na_item")) %>%
-    dplyr::mutate(diff = (values - init)) -> final_forecast_sensitivity
+    dplyr::mutate(diff = (.data$values - .data$init)) -> final_forecast_sensitivity
 
   final_forecast_sensitivity %>%
 
-    ggplot2::ggplot(ggplot2::aes(x = time, y = diff, color = modified)) +
+    ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$diff, color = .data$modified)) +
     ggplot2::geom_hline(ggplot2::aes(yintercept = 0), colour = "black", linewidth = 1) +
     ggplot2::geom_line() +
 
-    ggplot2::facet_wrap(~na_item, scales = "free") +
+    ggplot2::facet_wrap(~.data$na_item, scales = "free") +
 
     ggplot2::scale_color_brewer(palette = "Spectral", name = "Exogenous Variable modified") +
     ggplot2::labs(title = paste0("Effect of modifying exogenous values by ",size*100,"%."),
@@ -115,18 +115,18 @@ forecast_sensitivity <- function(model, size = 0.5, quiet = FALSE, impulse_respo
   if(impulse_response){
     dplyr::tibble(modified = names(forecast_list_impulse),
                   forecasts = forecast_list_impulse) %>%
-      dplyr::mutate(forecasts_processed = purrr::map(forecasts, process_forecasts)) %>%
-      dplyr::select(-forecasts) %>%
-      tidyr::unnest(forecasts_processed) -> all_modified_impulse
+      dplyr::mutate(forecasts_processed = purrr::map(.data$forecasts, process_forecasts)) %>%
+      dplyr::select(-"forecasts") %>%
+      tidyr::unnest("forecasts_processed") -> all_modified_impulse
 
 
     all_modified_impulse %>%
       dplyr::full_join(inital_forecast_tib, by = c("time","na_item")) %>%
-      dplyr::mutate(diff = (values - init)) -> final_forecast_sensitivity_impulse
+      dplyr::mutate(diff = (.data$values - .data$init)) -> final_forecast_sensitivity_impulse
 
     final_forecast_sensitivity_impulse %>%
 
-      ggplot2::ggplot(ggplot2::aes(x = time, y = diff, color = modified)) +
+      ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$diff, color = .data$modified)) +
       ggplot2::geom_hline(ggplot2::aes(yintercept = 0), colour = "black", linewidth = 1) +
       ggplot2::geom_line() +
 

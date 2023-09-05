@@ -88,10 +88,10 @@ forecast_model <- function(model,
   if(!is.null(nowcasted$nowcast_model$full_data)){
     nowcasted$nowcast_model$full_data %>%
       dplyr::left_join(exog_df_ready_full %>%
-                         tidyr::pivot_longer(-time,names_to = "na_item", values_to = "values_exog"),
+                         tidyr::pivot_longer(-"time",names_to = "na_item", values_to = "values_exog"),
                        by = c("time","na_item")) %>%
-      dplyr::mutate(values = dplyr::case_when(is.na(values) & !is.na(values_exog) ~ values_exog, TRUE ~ values)) %>%
-      dplyr::select(-values_exog) -> nowcasted$nowcast_model$full_data
+      dplyr::mutate(values = dplyr::case_when(is.na(.data$values) & !is.na(.data$values_exog) ~ .data$values_exog, TRUE ~ values)) %>%
+      dplyr::select(-"values_exog") -> nowcasted$nowcast_model$full_data
   }
 
   # if(!is.null(nowcasted)){
@@ -202,7 +202,7 @@ forecast_model <- function(model,
             } else if(is.data.frame(x)){
               # if this is already a dataframe, then pivot it to longer
               tidyr::pivot_longer(x, dplyr::everything(), names_to = "run") %>%
-                dplyr::mutate(run = as.numeric(grep("[0-9]+$",run)))
+                dplyr::mutate(run = as.numeric(grep("[0-9]+$",.data$run)))
             }
           }) -> listcol_unformatted
 
@@ -222,8 +222,8 @@ forecast_model <- function(model,
                 dplyr::bind_rows(.,listcol_formatted) -> listcol_formatted
             }
           }
-          listcol_formatted <- dplyr::arrange(listcol_formatted, time, run)
-          names(listcol_formatted) <- c("time","run",m)
+          listcol_formatted <- dplyr::arrange(listcol_formatted, .data$time, .data$run)
+          names(listcol_formatted) <- c("time", "run", m)
 
           dplyr::full_join(overall_listcols, listcol_formatted, by = c("time","run")) -> overall_listcols
         }
@@ -237,10 +237,10 @@ forecast_model <- function(model,
 
         pred_df.all_new %>%
           # we nest all data so that each run is one line
-          tidyr::nest(data = c(everything(),-run)) %>%
+          tidyr::nest(data = c(dplyr::everything(),-.data$run)) %>%
 
           # now for each run-row, we run predict.isat
-          dplyr::mutate(prediction = purrr::map(data, function(x){
+          dplyr::mutate(prediction = purrr::map(.data$data, function(x){
             gets::predict.isat(isat_obj, newmxreg = x %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)),
                                n.ahead = n.ahead, plot = FALSE,
                                ci.levels = ci.levels, n.sim = 1)
@@ -249,15 +249,15 @@ forecast_model <- function(model,
 
         all_preds %>%
           # we get all predictions back into a row format
-          dplyr::mutate(prediction = purrr::map(prediction,dplyr::as_tibble)) %>%
-          tidyr::unnest(prediction) %>%
+          dplyr::mutate(prediction = purrr::map(.data$prediction,dplyr::as_tibble)) %>%
+          tidyr::unnest("prediction") %>%
           # we add the time dimension
-          dplyr::mutate(time = time_values, .by = run) %>%
-          dplyr::select(run,time,pred = yhat) %>%
+          dplyr::mutate(time = time_values, .by = .data$run) %>%
+          dplyr::select("run","time", pred = "yhat") %>%
 
           # here pred only takes into account the uncertainty in the x-variables
           # pred_draws combines the model residual uncertainty for y and the uncertainty of the x-variables
-          dplyr::mutate(pred_draws = pred + res_draws,
+          dplyr::mutate(pred_draws = .data$pred + res_draws,
                         pred = NULL) %>%
 
           # now we get them into the final format to add them back to the overall list

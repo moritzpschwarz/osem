@@ -158,7 +158,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
       # mvar = "p5g"
       model$module_order %>%
         dplyr::filter(.data$dependent == mvar) %>%
-        dplyr::pull(.data$index) -> mvar_model_index
+        dplyr::pull("index") -> mvar_model_index
 
       prediction_list %>%
         dplyr::filter(.data$index == mvar_model_index) %>%
@@ -172,8 +172,8 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
         .$use_logs
 
       prediction_list %>%
-        dplyr::filter(index == mvar_model_index) %>%
-        dplyr::pull(all.estimates) %>%
+        dplyr::filter(.data$index == mvar_model_index) %>%
+        dplyr::pull("all.estimates") %>%
         .[[1]] %>%
         dplyr::select(-"time") -> mvar_all.estimates
 
@@ -190,8 +190,8 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
       # get all the individual estimates into a column of a tibble
       mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
         dplyr::mutate(index = 1:dplyr::n()) %>%
-        tidyr::nest(data = -index) %>%
-        dplyr::select(-index) %>%
+        tidyr::nest(data = -"index") %>%
+        dplyr::select(-"index") %>%
         setNames(paste0(mvar_name,".all"))
 
       # add the mean yhat estimates and the all estimates together
@@ -233,16 +233,16 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
     # then we check whether there are any lines in the historical data that are missing (often the case)
     historical_estimation_data %>%
       tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
-      dplyr::filter(is.na(values)) -> missing_values_dataobj
+      dplyr::filter(is.na(.data$values)) -> missing_values_dataobj
 
     # then we check whether any of the missing values in the historical data are present in nowcasted or in the exog_df_ready data
     if (nrow(missing_values_dataobj) > 0 & !is.null(nowcasted_data)) {
 
       missing_values_dataobj %>%
-        dplyr::mutate(basename = gsub("ln.","",na_item)) %>%
+        dplyr::mutate(basename = gsub("ln.","",.data$na_item)) %>%
         dplyr::left_join(nowcasted_data %>%
-                           dplyr::rename(basename = na_item,
-                                         values_nowcast = values), by = c("time", "basename")) %>%
+                           dplyr::rename(basename = .data$na_item,
+                                         values_nowcast = .data$values), by = c("time", "basename")) %>%
 
         dplyr::left_join(exog_df_ready %>%
                            tidyr::pivot_longer(-"time",names_to = "basename",
@@ -250,13 +250,13 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
         # where there are nowcast values but not original ones, take now the nowcast ones
         # when doing this, we check first if we need to log them
-        dplyr::mutate(values = dplyr::case_when(!is.na(values_nowcast) & is.na(values) ~ values_nowcast, TRUE ~ values)) %>%
+        dplyr::mutate(values = dplyr::case_when(!is.na(.data$values_nowcast) & is.na(.data$values) ~ .data$values_nowcast, TRUE ~ .data$values)) %>%
 
         # now do the same with exog values; where there are exog values but not original or nowcast ones, take now the exog ones
-        dplyr::mutate(values = dplyr::case_when(!is.na(values_exog) & is.na(values) ~ values_exog, TRUE ~ values)) %>%
+        dplyr::mutate(values = dplyr::case_when(!is.na(.data$values_exog) & is.na(.data$values) ~ .data$values_exog, TRUE ~ .data$values)) %>%
 
         # now we check first if we need to log them
-        dplyr::mutate(values = dplyr::case_when(!is.na(values) & grepl("^ln.",na_item) ~ log(values), TRUE ~ values)) %>%
+        dplyr::mutate(values = dplyr::case_when(!is.na(.data$values) & grepl("^ln.",.data$na_item) ~ log(.data$values), TRUE ~ .data$values)) %>%
 
         dplyr::select("time", "na_item", new_values = .data$values) %>%
         tidyr::drop_na() -> values_to_replace
@@ -265,7 +265,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
       historical_estimation_data %>%
         tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
         dplyr::full_join(values_to_replace, by = c("time","na_item")) %>%
-        dplyr::mutate(values = dplyr::case_when(is.na(values) & !is.na(new_values) ~ new_values, TRUE ~ values),
+        dplyr::mutate(values = dplyr::case_when(is.na(.data$values) & !is.na(.data$new_values) ~ .data$new_values, TRUE ~ .data$values),
                       new_values = NULL) %>%
         tidyr::pivot_wider(id_cols = "time", names_from = "na_item",values_from = "values") -> historical_estimation_data_w_nowcast
 
@@ -294,8 +294,8 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
     for (j in ar_vec) {
       if(j == 0){next}
       intermed %>%
-        dplyr::mutate(dplyr::across(-time, ~dplyr::lag(., n = j))) %>%
-        dplyr::select(-time) -> inter_intermed
+        dplyr::mutate(dplyr::across(-"time", ~dplyr::lag(., n = j))) %>%
+        dplyr::select(-"time") -> inter_intermed
 
       inter_intermed %>%
         setNames(paste0("L", j, ".", names(inter_intermed))) %>%
@@ -320,10 +320,10 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
   # if necessary, repeat creating the pred_df with all estimates
   chk_any_listcols <- current_pred_raw_all %>%
     dplyr::summarise_all(class) %>%
-    tidyr::gather(variable, class) %>%
+    tidyr::gather("variable", "class") %>%
     dplyr::mutate(chk = class == "list") %>%
-    dplyr::summarise(chk = any(chk)) %>%
-    dplyr::pull(chk)
+    dplyr::summarise(chk = any(.data$chk)) %>%
+    dplyr::pull("chk")
 
   if(chk_any_listcols){
     ## repeat the above with all
@@ -341,15 +341,15 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
                          #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
                          dplyr::rename_with(dplyr::everything(), .fn = ~gsub(".all","",.)) %>%
                          dplyr::mutate(dplyr::across(-"time", .fn = ~as.list(.))) %>%
-                         dplyr::select(time, dplyr::all_of(paste0(x_names_vec_nolag)))) -> intermed.all
+                         dplyr::select("time", dplyr::all_of(paste0(x_names_vec_nolag)))) -> intermed.all
 
 
     # same for .all: add the lagged x-variables
     to_be_added.all <- dplyr::tibble(.rows = nrow(intermed.all))
     for (j in 1:max(ar_vec)) {
       intermed.all %>%
-        dplyr::mutate(dplyr::across(-time, ~dplyr::lag(., n = j))) %>%
-        dplyr::select(-time) -> inter_intermed.all
+        dplyr::mutate(dplyr::across(-"time", ~dplyr::lag(., n = j))) %>%
+        dplyr::select(-"time") -> inter_intermed.all
 
       inter_intermed.all %>%
         setNames(paste0("L", j, ".", names(inter_intermed.all))) %>%
@@ -358,11 +358,11 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
     dplyr::bind_cols(intermed.all, to_be_added.all) %>%
       dplyr::left_join(current_pred_raw_all %>%
-                         dplyr::select(time, dplyr::any_of("trend"), dplyr::starts_with("q_"),
+                         dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
                                        dplyr::starts_with("iis"), dplyr::starts_with("sis")),
                        by = "time") %>%
       tidyr::drop_na() %>%
-      dplyr::select(-time) %>%
+      dplyr::select(-"time") %>%
       dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
       return() -> pred_df.all
   }
