@@ -9,6 +9,7 @@
 #' @param plot.forecast Logical. Should the result be plotted? Default is TRUE.
 #' @param uncertainty_sample Integer. Number of draws to be made for the error bars. Default is 100.
 #' @param seed Integer. Seed for the uncertainty draws to be made. Default is 1234.
+#' @param quiet Logical. Should messages about the forecast procedure be suppressed?
 #'
 #' @return An object of class aggmod.forecast
 #' @export
@@ -89,7 +90,7 @@ forecast_model <- function(model,
       dplyr::left_join(exog_df_ready_full %>%
                          tidyr::pivot_longer(-time,names_to = "na_item", values_to = "values_exog"),
                        by = c("time","na_item")) %>%
-      dplyr::mutate(values = case_when(is.na(values) & !is.na(values_exog) ~ values_exog, TRUE ~ values)) %>%
+      dplyr::mutate(values = dplyr::case_when(is.na(values) & !is.na(values_exog) ~ values_exog, TRUE ~ values)) %>%
       dplyr::select(-values_exog) -> nowcasted$nowcast_model$full_data
   }
 
@@ -337,7 +338,7 @@ forecast_model <- function(model,
   class(out) <- "aggmod.forecast"
 
   if(plot.forecast){
-    plot.aggmod.forecast(out)
+    print(plot(out))
   }
 
   return(out)

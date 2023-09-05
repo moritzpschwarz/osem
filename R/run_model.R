@@ -23,6 +23,8 @@
 #' @param quiet Logical with default = FALSE. Should messages be displayed?
 #' These messages are intended to give more information about the estimation
 #' and data retrieval process.
+#' @param constrain.to.minimum.sample Logical. Should all data series be
+#' constrained to the minimum data series? Default is \code{TRUE}.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
 #'
@@ -93,7 +95,8 @@ run_model <- function(specification,
                       saturation.tpval = 0.01,
                       max.block.size = 20,
                       gets_selection = TRUE,
-                      selection.tpval = 0.01
+                      selection.tpval = 0.01,
+                      constrain.to.minimum.sample = TRUE
                       ) {
 
   primary_source = match.arg(primary_source)
@@ -136,7 +139,8 @@ run_model <- function(specification,
                                             primary_source = primary_source,
                                             inputdata_directory = inputdata_directory,
                                             save_to_disk = save_to_disk,
-                                            quiet = quiet)
+                                            quiet = quiet,
+                                            constrain.to.minimum.sample = constrain.to.minimum.sample)
 
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)

@@ -1,10 +1,11 @@
 #' An internal function to forecast identities within forecast_model
 #'
-#'
-#'
+#' @param exog_df_ready The outcome of \link[=forecast_exogenous_values]{forecast_exogenous_values} function (potentially modified by the \link[=nowcasting]{nowcasting} function)
+#' @param current_spec Current specification. Is defined within \link[=forecast_model]{forecast_model}.
+#' @param prediction_list Current List containing all predictions. Is defined within \link[=forecast_model]{forecast_model}.
 #'
 #' @inheritParams forecast_model
-#' @return A list that is then used by forecast_model to set-up the final prediction obejct. The list contains the identity estimate.
+#' @return A list that is then used by forecast_model to set-up the final prediction object. The list contains the identity estimate.
 #'
 forecast_identities <- function(model, exog_df_ready, current_spec, prediction_list, uncertainty_sample){
 

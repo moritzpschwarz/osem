@@ -3,7 +3,8 @@
 #' @param x An object of class aggmod.forecast, which is the output from the forecast_model function.
 #' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.
 #' @param order.as.run Logical. Should the plots be arranged in the way that the model was run? Default FALSE.
-#' @param first_value Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
+#' @param interactive Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).
+#' @param first_date Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
 #' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.
 #' @param ... Further arguments (currently not in use).
 #'
@@ -33,14 +34,14 @@
 #' save_to_disk = NULL, present = FALSE)
 #' plot(forecast_model(a))
 #'}
-plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_value = NULL, grepl_variables = NULL, ...){
+plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, ...){
 
   #if(class(x) != "aggmod.forecast"){
   if(!isa(x, "aggmod.forecast")){
     stop("Input object not of type aggmod.forecast. Run 'forecast_model' again and use the output of that function.")
   }
 
-  if(!is.null(first_value)){if(!is.character(first_value) | !lubridate::is.Date(as.Date(first_value))){stop("When supplying 'first_value', the it must be a character and must be (able to be converted to) a Date.")}}
+  if(!is.null(first_date)){if(!is.character(first_date) | !lubridate::is.Date(as.Date(first_date))){stop("When supplying 'first_date', the it must be a character and must be (able to be converted to) a Date.")}}
 
   {if(!is.null(x$nowcast_data)){
     x$nowcast_data
@@ -185,18 +186,18 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
         tidyr::drop_na("na_item") %>%
         dplyr::arrange(.data$time, .data$na_item)} else {.}} %>%
 
-    {if(!is.null(first_value)){dplyr::filter(., time >= as.Date(first_value))} else {.}} %>%
+    {if(!is.null(first_date)){dplyr::filter(., time >= as.Date(first_date))} else {.}} %>%
 
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} %>%
 
 
     ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
 
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = min, x = time, ymax = max, fill = fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE) +
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = p025, x = time, ymax = p975, fill = fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE) +
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = p25, x = time, ymax = p75, fill = fit), linewidth = 0.1, alpha = 0.5, inherit.aes = FALSE) +
+    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = min, x = time, ymax = max, fill = fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
+    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = p025, x = time, ymax = p975, fill = fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
+    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = p25, x = time, ymax = p75, fill = fit), linewidth = 0.1, alpha = 0.5, inherit.aes = FALSE, na.rm = TRUE) +
 
-    ggplot2::geom_line(linewidth = 1) +
+    ggplot2::geom_line(linewidth = 1, na.rm = TRUE) +
 
     ggplot_options +
 

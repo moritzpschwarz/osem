@@ -16,8 +16,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
     exog_df <- model$full_data %>%
       dplyr::filter(.data$na_item %in% exog_vars) %>%
       dplyr::group_by(.data$na_item) %>%
-      dplyr::filter(.data$time == max(.data$time)) #%>%
-    #dplyr::mutate(na_item = janitor::make_clean_names(na_item))
+      dplyr::filter(.data$time == max(.data$time))
 
     if(!all(exog_df$time == exog_df$time[1])){
       warning("Latest Exogenous Data is not available for all variables. For those where most recent data is not available, the period before that is used.")
@@ -84,7 +83,8 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         dplyr::pull(time) -> overall_max_time
 
       diff_time_to_max <- length(seq.Date(from = col_to_forecast_max_time, to = overall_max_time, by = "3 months")[-1])
-      time_to_forecast <- seq.Date(col_to_forecast_max_time, length = n.ahead + (1 + diff_time_to_max), by = "3 months")[-1]
+      time_to_forecast <- seq.Date(col_to_forecast_max_time, length = n.ahead + (1 + diff_time_to_max),
+                                   by = "3 months", length.out = NULL)[-1]
 
       # now let's extract the data
       exog_df_intermed %>%
@@ -100,7 +100,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
       isat_ar_predict <- tryCatch(gets::isat(y = y_ar_predict, mxreg = x_ar_predict,
                                              mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
-                                             print.searchinfo = FALSE, sis = FALSE, iis = TRUE),
+                                             print.searchinfo = FALSE, sis = TRUE, iis = TRUE),
                                   error = function(abcd){
                                     message(paste0("Exogneous forecasted values for ", names(exog_df_intermed)[col_to_forecast]," will only use SIS, not IIS as too many indicators retained.\n"))
                                     gets::isat(y = y_ar_predict, mxreg = x_ar_predict,

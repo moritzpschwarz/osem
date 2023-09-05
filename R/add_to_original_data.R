@@ -23,7 +23,7 @@
 #'   ), each = 2),
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
-#' sample_data_clean <- aggregate.model:::clean_data(sample_data, max.lag = 4)
+#' sample_data_clean <- aggregate.model:::clean_data(sample_data, max.ar = 4, max.dl = 4)
 #' estimation <- aggregate.model:::estimate_module(sample_data_clean, "yvar", "xvar")
 #' aggregate.model:::add_to_original_data(
 #'   sample_data_clean, estimation$best_model,

@@ -10,7 +10,7 @@
 #'
 forecast_sensitivity <- function(model, size = 0.5, quiet = FALSE, impulse_response = TRUE){
 
-  inital_forecast <- forecast_model(model, quiet = TRUE, exog_fill_method = "AR", plot = FALSE)
+  inital_forecast <- forecast_model(model, quiet = TRUE, exog_fill_method = "AR", plot.forecast = FALSE)
 
   forecast_list <- list()
   forecast_list_impulse <- list()
@@ -31,7 +31,7 @@ forecast_sensitivity <- function(model, size = 0.5, quiet = FALSE, impulse_respo
       dplyr::mutate(dplyr::across(dplyr::all_of(var), ~ . * (1 + size)))
 
     cur_forecast <- forecast_model(model, quiet = TRUE,
-                                   exog_predictions = exog_data_current, plot = FALSE)
+                                   exog_predictions = exog_data_current, plot.forecast = FALSE)
 
     forecast_list[[var]] <- cur_forecast
 
@@ -42,7 +42,7 @@ forecast_sensitivity <- function(model, size = 0.5, quiet = FALSE, impulse_respo
                                                                     TRUE ~ .)))
 
       cur_forecast_impulse <- forecast_model(model, quiet = TRUE,
-                                             exog_predictions = exog_data_impulse, plot = FALSE)
+                                             exog_predictions = exog_data_impulse, plot.forecast = FALSE)
 
       forecast_list_impulse[[var]] <- cur_forecast_impulse
     }

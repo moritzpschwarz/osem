@@ -1,5 +1,6 @@
 #' Nowcast missing data for forecasting
 #'
+#' @param exog_df_ready The outcome of the \link[=forecast_exogenous_values]{forecast_exogenous_values} function, as prepared by the \link[=forecast_model]{forecast_model} function..
 #' @inheritParams forecast_model
 #'
 #' @return Returns a list with two full model objects. One contains the original model and one contains the nowcasted model.
@@ -74,19 +75,21 @@ nowcasting <- function(model, exog_df_ready){
         # this can happen when co-variates were not available up to the final time
         # this would mean that those values are not available for nowcasting
         exog_data_nowcasting %>%
-          pivot_longer(-time, values_to = "values_historical") %>%
-          filter(is.na(values_historical)) %>%
-          left_join(exog_df_ready %>% pivot_longer(-time), by = c("time","name")) %>%
-          mutate(values_forecasted_exogenously = value) %>%
-          select(-"value", -"values_historical") -> exog_data_to_replace
+          tidyr::pivot_longer(-"time", values_to = "values_historical") %>%
+          dplyr::filter(is.na(values_historical)) %>%
+          dplyr::left_join(exog_df_ready %>%
+                             tidyr::pivot_longer(-"time"), by = c("time","name")) %>%
+          dplyr::mutate(values_forecasted_exogenously = value) %>%
+          dplyr::select(-"value", -"values_historical") -> exog_data_to_replace
 
         if(nrow(exog_data_to_replace) > 0){
           exog_data_nowcasting %>%
-            pivot_longer(-time) %>%
-            left_join(exog_data_to_replace, by = c("time","name")) %>%
-            mutate(value = case_when(is.na(value) & !is.na(values_forecasted_exogenously) ~ values_forecasted_exogenously, TRUE ~ value)) %>%
-            select(-"values_forecasted_exogenously") %>%
-            pivot_wider(id_cols = "time",names_from = "name", values_from = "value") -> exog_data_nowcasting
+            tidyr::pivot_longer(-time) %>%
+            dplyr::left_join(exog_data_to_replace, by = c("time","name")) %>%
+            dplyr::mutate(value = dplyr::case_when(
+              is.na(value) & !is.na(values_forecasted_exogenously) ~ values_forecasted_exogenously, TRUE ~ value)) %>%
+            dplyr::select(-"values_forecasted_exogenously") %>%
+            tidyr::pivot_wider(id_cols = "time",names_from = "name", values_from = "value") -> exog_data_nowcasting
         }
 
         current_spec <- model$module_order %>%
@@ -181,16 +184,19 @@ nowcasting <- function(model, exog_df_ready){
         # this can happen when co-variates were not available up to the final time
         # this would mean that those values are not available for nowcasting
         data_to_substitue %>%
-          filter(is.na(values)) %>%
-          left_join(exog_df_ready %>% pivot_longer(-time, names_to = "na_item"), by = c("time","na_item")) %>%
-          mutate(values_forecasted_exogenously = value) %>%
-          select(-"value", -"values") -> exog_data_to_replace
+          dplyr::filter(is.na(values)) %>%
+          dplyr::left_join(exog_df_ready %>%
+                             tidyr::pivot_longer(-time, names_to = "na_item"), by = c("time","na_item")) %>%
+          dplyr::mutate(values_forecasted_exogenously = value) %>%
+          dplyr::select(-"value", -"values") -> exog_data_to_replace
 
         if(nrow(exog_data_to_replace) > 0){
           data_to_substitue %>%
-            left_join(exog_data_to_replace, by = c("time","na_item")) %>%
-            mutate(values = case_when(is.na(values) & !is.na(values_forecasted_exogenously) ~ values_forecasted_exogenously, TRUE ~ values)) %>%
-            select(-"values_forecasted_exogenously") -> data_to_substitue
+            dplyr::left_join(exog_data_to_replace, by = c("time","na_item")) %>%
+            dplyr::mutate(values = dplyr::case_when(
+              is.na(values) &
+                !is.na(values_forecasted_exogenously) ~ values_forecasted_exogenously, TRUE ~ values)) %>%
+            dplyr::select(-"values_forecasted_exogenously") -> data_to_substitue
 
         }
 
@@ -200,11 +206,12 @@ nowcasting <- function(model, exog_df_ready){
           dplyr::bind_rows(data_to_substitue) -> identity_data_subst
 
         identity_data %>%
-          distinct(na_item) %>%
-          rowwise() %>%
-          mutate(hat = grepl("\\.hat$",na_item),
+          dplyr::distinct(na_item) %>%
+          dplyr::rowwise() %>%
+          dplyr::mutate(hat = grepl("\\.hat$",na_item),
                  orig_name = na_item,
-                 na_item = gsub("\\.hat","",na_item)) -> identity_naming
+                 na_item = gsub("\\.hat","",na_item)) %>%
+          dplyr::ungroup() -> identity_naming
 
         # now get the naming with .hat right
         identity_data_subst %>%
