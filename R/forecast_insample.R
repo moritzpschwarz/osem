@@ -23,7 +23,7 @@ forecast_insample <- function(model, sample_share = 0.5, seed = 1234, uncertaint
     dplyr::group_by(.data$dep_var) %>%
     dplyr::summarise(min = min(.data$time),
                      max = max(.data$time)) %>%
-    dplyr::distinct(across(c("max","min"))) -> time_minmax
+    dplyr::distinct(dplyr::across(c("max","min"))) -> time_minmax
 
 
   # With those times, we can now find the halfway point
@@ -69,7 +69,7 @@ forecast_insample <- function(model, sample_share = 0.5, seed = 1234, uncertaint
   #load("all_models_2.RData")
 
   model$processed_input_data %>%
-    dplyr::distinct(across("na_item")) %>%
+    dplyr::distinct(dplyr::across("na_item")) %>%
     dplyr::pull("na_item") -> all_data_vars
 
   exog_vars <- all_data_vars[!all_data_vars %in% model$module_collection$dependent]
@@ -164,17 +164,17 @@ forecast_insample <- function(model, sample_share = 0.5, seed = 1234, uncertaint
 
   #add.months= function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
   # bb_insample$central %>%
-  #   rowwise() %>%
-  #   mutate(forecast_len = add.months(start, 24)) %>%
-  #   ungroup() %>%
-  #   filter(!(time > forecast_len)) -> central
+  #   dplyr::rowwise() %>%
+  #   dplyr::mutate(forecast_len = add.months(start, 24)) %>%
+  #   dplyr::ungroup() %>%
+  #   dplyr::filter(!(time > forecast_len)) -> central
   #
   #
   # bb_insample$uncertainty %>%
-  #   rowwise() %>%
-  #   mutate(forecast_len = add.months(start, 24)) %>%
-  #   ungroup() %>%
-  #   filter(!(time > forecast_len)) -> uncertainty
+  #   dplyr::rowwise() %>%
+  #   dplyr::mutate(forecast_len = add.months(start, 24)) %>%
+  #   dplyr::ungroup() %>%
+  #   dplyr::filter(!(time > forecast_len)) -> uncertainty
   #
 
 

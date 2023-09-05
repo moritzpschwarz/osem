@@ -83,7 +83,7 @@ forecast_model <- function(model,
 
   # after we are done with nowcasting, we throw away the early values
   exog_df_ready_full <- exog_df_ready
-  exog_df_ready <- exog_df_ready %>% tail(n.ahead)
+  exog_df_ready <- exog_df_ready %>% utils::tail(n.ahead)
 
   if(!is.null(nowcasted$nowcast_model$full_data)){
     nowcasted$nowcast_model$full_data %>%

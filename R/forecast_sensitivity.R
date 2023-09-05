@@ -38,7 +38,7 @@ forecast_sensitivity <- function(model, size = 0.5, quiet = FALSE, impulse_respo
     # impulse response on the first exogenous value of the forecast horizon
     if(impulse_response){
       exog_data_impulse <- inital_forecast$exog_data_nowcast %>%
-        dplyr::mutate(dplyr::across(dplyr::all_of(var), ~ case_when(time == min(inital_forecast$exog_data$time) ~ . * (1 + size),
+        dplyr::mutate(dplyr::across(dplyr::all_of(var), ~ dplyr::case_when(time == min(inital_forecast$exog_data$time) ~ . * (1 + size),
                                                                     TRUE ~ .)))
 
       cur_forecast_impulse <- forecast_model(model, quiet = TRUE,
@@ -93,7 +93,7 @@ forecast_sensitivity <- function(model, size = 0.5, quiet = FALSE, impulse_respo
 
   final_forecast_sensitivity %>%
 
-    ggplot2::ggplot(aes(x = time, y = diff, color = modified)) +
+    ggplot2::ggplot(ggplot2::aes(x = time, y = diff, color = modified)) +
     ggplot2::geom_hline(ggplot2::aes(yintercept = 0), colour = "black", linewidth = 1) +
     ggplot2::geom_line() +
 
@@ -126,7 +126,7 @@ forecast_sensitivity <- function(model, size = 0.5, quiet = FALSE, impulse_respo
 
     final_forecast_sensitivity_impulse %>%
 
-      ggplot2::ggplot(aes(x = time, y = diff, color = modified)) +
+      ggplot2::ggplot(ggplot2::aes(x = time, y = diff, color = modified)) +
       ggplot2::geom_hline(ggplot2::aes(yintercept = 0), colour = "black", linewidth = 1) +
       ggplot2::geom_line() +
 

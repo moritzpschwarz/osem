@@ -330,7 +330,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
     #data_obj %>%
     # dplyr::select(time, dplyr::all_of(x_names_vec_nolag)) %>%
     historical_estimation_data_w_nowcast %>%
-      dplyr::mutate(across(dplyr::all_of(x_names_vec_nolag), ~as.list(.))) %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(x_names_vec_nolag), ~as.list(.))) %>%
 
       ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
       # The drop_na below was used because for GCapitalForm the value for July 2022 was missing - while it was there for FinConsExpHH
