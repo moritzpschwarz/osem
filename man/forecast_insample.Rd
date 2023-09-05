@@ -10,7 +10,7 @@ forecast_insample(
   seed = 1234,
   uncertainty_sample = 100,
   exog_fill_method = "AR",
-  plot = TRUE
+  plot.forecast = TRUE
 )
 }
 \arguments{
@@ -23,6 +23,8 @@ forecast_insample(
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
 
 \item{exog_fill_method}{Character, either 'AR' or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used.}
+
+\item{plot.forecast}{Logical. Should the result be plotted? Default is TRUE.}
 }
 \value{
 List element.

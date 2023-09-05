@@ -11,6 +11,8 @@ forecast_sensitivity(model, size = 0.5, quiet = FALSE, impulse_response = TRUE)
 
 \item{size}{Numeric, must be larger than -1. The percentage value that the exogenous values will be multiplied with. Default is 0.5 (i.e. 50\%).}
 
+\item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
+
 \item{impulse_response}{Logical. Should an impulse response function be calculated. Main reason to deactivate this might be improving the speed of this function.}
 }
 \value{

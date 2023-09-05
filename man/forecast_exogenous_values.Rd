@@ -26,6 +26,8 @@ forecast_exogenous_values(
 \item{ar.fill.max}{Integer. When no exogenous values have been provided, these must be inferred. If option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. This options determines the number of AR terms that should be used. Default is 4.}
 
 \item{n.ahead}{Periods to forecast ahead}
+
+\item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
 \value{
 A dataset containing the set of forecasted exogenous values.

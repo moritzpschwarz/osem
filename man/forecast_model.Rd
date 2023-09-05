@@ -35,6 +35,8 @@ forecast_model(
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
 
 \item{seed}{Integer. Seed for the uncertainty draws to be made. Default is 1234.}
+
+\item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
 \value{
 An object of class aggmod.forecast

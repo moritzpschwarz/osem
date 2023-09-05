@@ -15,10 +15,16 @@ forecast_identities(
 \arguments{
 \item{model}{An aggregate model object of class 'aggmod'.}
 
+\item{exog_df_ready}{The outcome of \link[=forecast_exogenous_values]{forecast_exogenous_values} function (potentially modified by the \link[=nowcasting]{nowcasting} function)}
+
+\item{current_spec}{Current specification. Is defined within \link[=forecast_model]{forecast_model}.}
+
+\item{prediction_list}{Current List containing all predictions. Is defined within \link[=forecast_model]{forecast_model}.}
+
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
 }
 \value{
-A list that is then used by forecast_model to set-up the final prediction obejct. The list contains the identity estimate.
+A list that is then used by forecast_model to set-up the final prediction object. The list contains the identity estimate.
 }
 \description{
 An internal function to forecast identities within forecast_model

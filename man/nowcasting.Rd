@@ -8,6 +8,8 @@ nowcasting(model, exog_df_ready)
 }
 \arguments{
 \item{model}{An aggregate model object of class 'aggmod'.}
+
+\item{exog_df_ready}{The outcome of the \link[=forecast_exogenous_values]{forecast_exogenous_values} function, as prepared by the \link[=forecast_model]{forecast_model} function..}
 }
 \value{
 Returns a list with two full model objects. One contains the original model and one contains the nowcasted model.
