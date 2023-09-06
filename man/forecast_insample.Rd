@@ -32,7 +32,3 @@ List element.
 \description{
 Forecast model insample to evaluate forecasting performance
 }
-\examples{
-forecast_insample(model)
-
-}
