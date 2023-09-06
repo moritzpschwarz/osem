@@ -171,7 +171,7 @@ nowcasting <- function(model, exog_df_ready){
         # so we identify where in identity_data there is data NA for the dates that we are nowcasting
         # we then replace those with the historical data
         model$full_data %>%
-          dplyr::rename(values_full = .data$values) %>%
+          dplyr::rename(values_full = "values") %>%
           dplyr::filter(!grepl("\\.hat$",.data$na_item)) %>%
           #dplyr::mutate(na_item = paste0(na_item,".hat")) %>%
           dplyr::left_join(identity_data %>%

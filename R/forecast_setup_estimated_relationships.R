@@ -241,8 +241,8 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
       missing_values_dataobj %>%
         dplyr::mutate(basename = gsub("ln.","",.data$na_item)) %>%
         dplyr::left_join(nowcasted_data %>%
-                           dplyr::rename(basename = .data$na_item,
-                                         values_nowcast = .data$values), by = c("time", "basename")) %>%
+                           dplyr::rename(basename = "na_item",
+                                         values_nowcast = "values"), by = c("time", "basename")) %>%
 
         dplyr::left_join(exog_df_ready %>%
                            tidyr::pivot_longer(-"time",names_to = "basename",
@@ -258,7 +258,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
         # now we check first if we need to log them
         dplyr::mutate(values = dplyr::case_when(!is.na(.data$values) & grepl("^ln.",.data$na_item) ~ log(.data$values), TRUE ~ .data$values)) %>%
 
-        dplyr::select("time", "na_item", new_values = .data$values) %>%
+        dplyr::select("time", "na_item", new_values = "values") %>%
         tidyr::drop_na() -> values_to_replace
 
       # Then we take the historical data and add the nowcasted data

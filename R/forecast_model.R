@@ -237,7 +237,7 @@ forecast_model <- function(model,
 
         pred_df.all_new %>%
           # we nest all data so that each run is one line
-          tidyr::nest(data = c(dplyr::everything(),-.data$run)) %>%
+          tidyr::nest(data = c(dplyr::everything(),-"run")) %>%
 
           # now for each run-row, we run predict.isat
           dplyr::mutate(prediction = purrr::map(.data$data, function(x){
@@ -252,7 +252,7 @@ forecast_model <- function(model,
           dplyr::mutate(prediction = purrr::map(.data$prediction,dplyr::as_tibble)) %>%
           tidyr::unnest("prediction") %>%
           # we add the time dimension
-          dplyr::mutate(time = time_values, .by = .data$run) %>%
+          dplyr::mutate(time = time_values, .by = "run") %>%
           dplyr::select("run","time", pred = "yhat") %>%
 
           # here pred only takes into account the uncertainty in the x-variables
