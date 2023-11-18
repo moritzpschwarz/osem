@@ -14,7 +14,6 @@
 #'
 
 calculate_identities <- function(specification, data, dictionary = NULL) {
-
   # identity must be given as a module (i.e. must be a dependent variable)
   identities <- specification %>%
     dplyr::filter(.$type == "d")
@@ -23,7 +22,7 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
   # could add back later but not necessary?
   dat <- data %>% dplyr::select(-dplyr::any_of(c("unit","geo","s_adj")))
 
-  for (i in 1:NROW(identities)) {
+  for (i in seq_len(nrow(identities))) {
     identity <- identities[i, ]
     dep <- identity$dependent
     #indep <- identity$independent_eu
@@ -43,6 +42,8 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
       tidyr::pivot_longer(cols = !"time", names_to = "na_item", values_to = "values") -> dat
   }
 
-  return(dat)
+
+  return(dat %>%
+           dplyr::select(-dplyr::any_of("nace_r2")))
 
 }

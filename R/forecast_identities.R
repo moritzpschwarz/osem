@@ -160,11 +160,18 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
                 value = as.numeric(identity_pred_final[,1])) %>%
     setNames(c("time",outvarname)) -> central_estimate
 
-  # just change the type of the object holding all estimates
-  identity_pred_final.all <- as.matrix(identity_pred_final.all)
-  colnames(identity_pred_final.all) <- paste0("run_",1:uncertainty_sample)
-  identity_pred_final.all <- dplyr::as_tibble(identity_pred_final.all) %>%
-    dplyr::bind_cols(dplyr::tibble(time = exog_df_ready$time), .)
+  # if there are uncertainties, then the columns must be larger than 1
+  # if not, it means that the one column coincides with the central estimate
+  if(ncol(identity_pred_final.all) > 1){
+    # just change the type of the object holding all estimates
+    identity_pred_final.all <- as.matrix(identity_pred_final.all)
+    colnames(identity_pred_final.all) <- paste0("run_",1:uncertainty_sample)
+    identity_pred_final.all <- dplyr::as_tibble(identity_pred_final.all) %>%
+      dplyr::bind_cols(dplyr::tibble(time = exog_df_ready$time), .)
+  } else {
+    identity_pred_final.all <- NULL
+  }
+
 
 
   out <- list()

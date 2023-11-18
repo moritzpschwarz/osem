@@ -110,7 +110,8 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
   dplyr::tibble(dep_var = names(central_forecasts),
                 expo = to_exponentiate,
-                all = c("time",unique(all_forecasts$dep_var))) -> to_exponentiate_tibble
+                #all = c("time",unique(all_forecasts$dep_var))) -> to_exponentiate_tibble
+                all = c("time",unique(x$forecast$dep_var))) -> to_exponentiate_tibble
 
   central_forecasts %>%
     dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
@@ -134,6 +135,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::mutate(fit = "Forecast Uncertainty") -> all_forecasts_processed
 
   all_forecasts_processed %>%
+    tidyr::drop_na("time") %>%
     dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
     dplyr::summarise(max = max(.data$values),
                      min = min(.data$values),

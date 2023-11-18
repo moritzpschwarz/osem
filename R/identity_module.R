@@ -26,8 +26,10 @@ identity_module <- function(module, data, classification) {
     dplyr::mutate(vartrans = paste0(.data$var, ".hat"))
 
   # translate
-  for (i in 1:NROW(trans)) {
-    rhs <- gsub(pattern = trans[i, "var"], replacement = trans[i, "vartrans"], x = rhs)
+  if(nrow(trans) > 0){
+    for (i in 1:NROW(trans)) {
+      rhs <- gsub(pattern = trans[i, "var"], replacement = trans[i, "vartrans"], x = rhs)
+    }
   }
 
   # calculate fitted values
