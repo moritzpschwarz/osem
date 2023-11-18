@@ -76,7 +76,7 @@ load_or_download_variables <- function(specification,
 
   # Save original timeout setting
   tmpmc <- options("timeout")
-  on.exit(options(tmpmc)) # set the old mc warning on exit
+  on.exit(options(tmpmc)) # set the old timeout setting on exit
   options(timeout = 1000)
 
   # data input
@@ -593,6 +593,10 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
         tmp <- readxl::read_excel(path = pth, guess_max = 1000000)
       }
 
+      # run a few checks on the loaded data
+      if(!"na_item" %in% names(tmp)){stop(paste0("Locally loaded data not the right format. No 'na_item' column found in file: ",pth,". Set quiet = FALSE to see which files are identified to be loaded." ))}
+      if(!"na_item" %in% names(tmp)){stop(paste0("Locally loaded data not the right format. No 'time' column found in file: ",pth,". Set quiet = FALSE to see which files are identified to be loaded." ))}
+
       # determine which codes were found in the dataset
       codes.found <- unique(tmp$na_item)
 
@@ -604,7 +608,7 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
       # subset the relevant data
       sub <- tmp %>%
         dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) %>% # choose the relevant ones
-      # ensure column "time" is a Date variable (Moritz had this)
+        # ensure column "time" is a Date variable (Moritz had this)
         dplyr::mutate(time = as.Date(.data$time))
 
       # add the relevant data
