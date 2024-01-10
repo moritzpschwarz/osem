@@ -6,6 +6,7 @@
 #' @param current_spec The current specification for the module being forecasted
 #' @param prediction_list The full list of all predictions. The results of the function will be saved in this list.
 #' @param nowcasted_data The full_data element of the model object resulting from the nowcasting() function. Used to substitute missing historical data.
+#' @param full_exog_predicted_data An argument to pass a larger data.frame to the function that can contain the entire exogenously predicted data. This is an argument that is needed in the nowcasting() function.
 #' @inheritParams forecast_model
 #'
 #' @return A list containing, among other elements, the data required to carry out the forecast for this estimated module.
