@@ -10,7 +10,7 @@
 #'
 #' @return A list containing, among other elements, the data required to carry out the forecast for this estimated module.
 #'
-forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ahead, current_spec, prediction_list, uncertainty_sample, nowcasted_data) {
+forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ahead, current_spec, prediction_list, uncertainty_sample, nowcasted_data, full_exog_predicted_data = NULL) {
 
   # set up
   # get isat obj
@@ -248,12 +248,28 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
                            tidyr::pivot_longer(-"time",names_to = "basename",
                                                values_to = "values_exog"), by = c("time", "basename")) %>%
 
+        {if(!is.null(full_exog_predicted_data)){
+          dplyr::left_join(.,full_exog_predicted_data %>%
+                             tidyr::pivot_longer(-"time",names_to = "basename",
+                                                 values_to = "values_exog_full"), by = c("time", "basename"))} else {.}} %>%
+
+
         # where there are nowcast values but not original ones, take now the nowcast ones
         # when doing this, we check first if we need to log them
         dplyr::mutate(values = dplyr::case_when(!is.na(.data$values_nowcast) & is.na(.data$values) ~ .data$values_nowcast, TRUE ~ .data$values)) %>%
 
         # now do the same with exog values; where there are exog values but not original or nowcast ones, take now the exog ones
         dplyr::mutate(values = dplyr::case_when(!is.na(.data$values_exog) & is.na(.data$values) ~ .data$values_exog, TRUE ~ .data$values)) %>%
+
+        {if(!is.null(full_exog_predicted_data)){
+          # we do the same for the case that this function is called within the nowcast() function.
+          # we need this particular line in the cases where a co-variate for nowcasting is missing in its lag.
+          # an example: nowcasting a = b + c for date t. For time t also b and c are missing, so have to be taken from the exogenously forecasted values.
+          # then, if everything is contemporaneous, a can be nowcasted
+          # however, if we e.g. need the first lag of c to nowcast a and that lag is missing, then we need to go back to the full dataset of exogenously forecasted values
+          # we then take that value as well.
+          dplyr::mutate(.,values = dplyr::case_when(!is.na(.data$values_exog_full) & is.na(.data$values) ~ .data$values_exog_full, TRUE ~ .data$values))
+        } else {.}} %>%
 
         # now we check first if we need to log them
         dplyr::mutate(values = dplyr::case_when(!is.na(.data$values) & grepl("^ln.",.data$na_item) ~ log(.data$values), TRUE ~ .data$values)) %>%

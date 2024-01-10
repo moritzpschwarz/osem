@@ -52,6 +52,7 @@ nowcasting <- function(model, exog_df_ready){
       # removing the first one in the sequence (using [-1]) as that would be the last available value
       cur_target_dates <- seq.Date(as.Date(current_max_time), as.Date(target_time), "q")[-1]
 
+      # if this relationship is an estimated relationship
       if(vars_not_full_analysis %>% dplyr::filter(.data$order == ord) %>% dplyr::pull("type") == "n"){
 
         # find out which independent variables we need
@@ -118,7 +119,8 @@ nowcasting <- function(model, exog_df_ready){
           exog_df_ready = exog_data_nowcasting,
           n.ahead = length(cur_target_dates),
           current_spec = current_spec,
-          nowcasted_data = model$full_data
+          nowcasted_data = model$full_data,
+          full_exog_predicted_data = exog_df_ready
         )
 
         final_i_data <- pred_setup_list$final_i_data
@@ -178,13 +180,13 @@ nowcasting <- function(model, exog_df_ready){
                              dplyr::filter(.data$time %in% cur_target_dates) %>%
                              dplyr::filter(is.na(.data$values)), by = c("time", "na_item")) %>%
           dplyr::mutate(values = .data$values_full,
-                        values_full = NULL) -> data_to_substitue
+                        values_full = NULL) -> data_to_substitute
 
 
         # here we check whether any of the exogenous values need to be replaced
         # this can happen when co-variates were not available up to the final time
         # this would mean that those values are not available for nowcasting
-        data_to_substitue %>%
+        data_to_substitute %>%
           dplyr::filter(is.na(.data$values)) %>%
           dplyr::left_join(exog_df_ready %>%
                              tidyr::pivot_longer(-"time", names_to = "na_item"), by = c("time","na_item")) %>%
@@ -192,19 +194,19 @@ nowcasting <- function(model, exog_df_ready){
           dplyr::select(-"value", -"values") -> exog_data_to_replace
 
         if(nrow(exog_data_to_replace) > 0){
-          data_to_substitue %>%
+          data_to_substitute %>%
             dplyr::left_join(exog_data_to_replace, by = c("time","na_item")) %>%
             dplyr::mutate(values = dplyr::case_when(
               is.na(.data$values) &
                 !is.na(values_forecasted_exogenously) ~ values_forecasted_exogenously, TRUE ~ .data$values)) %>%
-            dplyr::select(-"values_forecasted_exogenously") -> data_to_substitue
+            dplyr::select(-"values_forecasted_exogenously") -> data_to_substitute
 
         }
 
         identity_data %>%
           dplyr::filter(.data$time %in% cur_target_dates) %>%
           dplyr::filter(!is.na(.data$values)) %>%
-          dplyr::bind_rows(data_to_substitue) -> identity_data_subst
+          dplyr::bind_rows(data_to_substitute) -> identity_data_subst
 
         identity_data %>%
           dplyr::distinct(.data$na_item) %>%

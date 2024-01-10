@@ -242,9 +242,13 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
 
     # download dataset
     if(quiet){
-      suppressWarnings(suppressMessages(tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i])))
+      suppressWarnings(suppressMessages(tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i]) %>%
+                                          dplyr::rename(time = "TIME_PERIOD") %>%
+                                          dplyr::select(-dplyr::any_of("freq"))))
     } else {
-      tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i])
+      tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i]) %>%
+        dplyr::rename(time = "TIME_PERIOD") %>%
+        dplyr::select(-dplyr::any_of("freq"))
     }
     # check whether download worked
     if(is.null(tmp)) {
