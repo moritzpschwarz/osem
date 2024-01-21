@@ -7,7 +7,6 @@
 forecast_insample(
   model,
   sample_share = 0.5,
-  seed = 1234,
   uncertainty_sample = 100,
   exog_fill_method = "AR",
   plot.forecast = TRUE
@@ -17,8 +16,6 @@ forecast_insample(
 \item{model}{An aggregate model object of class 'aggmod'.}
 
 \item{sample_share}{Share of the sample that should be used for the insample forecasting. Must be a numeric and must be either 1 or smaller but larger than 0.}
-
-\item{seed}{Integer. Seed for the uncertainty draws to be made. Default is 1234.}
 
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
 

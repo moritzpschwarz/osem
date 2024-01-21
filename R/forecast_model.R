@@ -8,7 +8,6 @@
 #' @param exog_fill_method Character, either 'AR' or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used.
 #' @param plot.forecast Logical. Should the result be plotted? Default is TRUE.
 #' @param uncertainty_sample Integer. Number of draws to be made for the error bars. Default is 100.
-#' @param seed Integer. Seed for the uncertainty draws to be made. Default is 1234.
 #' @param quiet Logical. Should messages about the forecast procedure be suppressed?
 #'
 #' @return An object of class aggmod.forecast
@@ -53,7 +52,6 @@ forecast_model <- function(model,
                            ar.fill.max = 4,
                            plot.forecast = TRUE,
                            uncertainty_sample = 100,
-                           seed = 1234,
                            quiet = FALSE){
 
   if(!isa(model, "aggmod")){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
@@ -173,7 +171,6 @@ forecast_model <- function(model,
                                      ci.levels = ci.levels)
 
       # make samples from the model residuals and add them to the mean prediction
-      set.seed(seed)
       res_draws <- sample(as.numeric(isat_obj$residuals), size = uncertainty_sample*n.ahead, replace = TRUE)
       pred_draw_matrix <- as.vector(pred_obj$yhat) + matrix(res_draws,nrow = n.ahead)
 

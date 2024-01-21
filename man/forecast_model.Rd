@@ -13,7 +13,6 @@ forecast_model(
   ar.fill.max = 4,
   plot.forecast = TRUE,
   uncertainty_sample = 100,
-  seed = 1234,
   quiet = FALSE
 )
 }
@@ -33,8 +32,6 @@ forecast_model(
 \item{plot.forecast}{Logical. Should the result be plotted? Default is TRUE.}
 
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
-
-\item{seed}{Integer. Seed for the uncertainty draws to be made. Default is 1234.}
 
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
