@@ -4,7 +4,15 @@
 \alias{plot.aggmod.forecast}
 \title{Plot a Forecast Object of the Aggregate Model}
 \usage{
-\method{plot}{aggmod.forecast}(x, exclude.exogenous = TRUE, order.as.run = FALSE, ...)
+\method{plot}{aggmod.forecast}(
+  x,
+  exclude.exogenous = TRUE,
+  order.as.run = FALSE,
+  interactive = FALSE,
+  first_date = NULL,
+  grepl_variables = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class aggmod.forecast, which is the output from the forecast_model function.}
@@ -12,6 +20,12 @@
 \item{exclude.exogenous}{Logical. Should exogenous values be plotted? Default is FALSE.}
 
 \item{order.as.run}{Logical. Should the plots be arranged in the way that the model was run? Default FALSE.}
+
+\item{interactive}{Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).}
+
+\item{first_date}{Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.}
+
+\item{grepl_variables}{Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.}
 
 \item{...}{Further arguments (currently not in use).}
 }

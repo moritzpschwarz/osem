@@ -30,7 +30,8 @@ run_module <- function(
     use_logs = c("both", "y", "x"),
     trend = TRUE,
     ardl_or_ecm = "ardl",
-    max.lag = 4,
+    max.ar = 4,
+    max.dl = 2,
     saturation = c("IIS", "SIS"),
     saturation.tpval = 0.01,
     max.block.size = 20,
@@ -49,12 +50,12 @@ run_module <- function(
     out <- list(model = NULL,
                 data = moduledata,
                 args = NULL)#
-                  #list(use_logs = match.arg(use_logs)))
+    #list(use_logs = match.arg(use_logs)))
 
   } else if(module$type == "n") {
 
     # prepare data (create regressors)
-    clean_df <- clean_data(raw_data = raw_data, max.lag = max.lag, trend = trend)
+    clean_df <- clean_data(raw_data = raw_data, max.ar = max.ar, max.dl = max.dl, trend = trend)
 
     # extract base variable names (and convert to lower case because janitor::clean_names() does so)
     dep <- module$dependent
@@ -70,7 +71,8 @@ run_module <- function(
                                         use_logs = use_logs,
                                         trend = trend,
                                         ardl_or_ecm = ardl_or_ecm,
-                                        max.lag = max.lag,
+                                        max.ar = max.ar,
+                                        max.dl = max.dl,
                                         saturation = saturation,
                                         saturation.tpval = saturation.tpval,
                                         max.block.size = max.block.size,
@@ -80,7 +82,7 @@ run_module <- function(
     moduledata <- add_to_original_data(clean_data = clean_df,
                                        isat_object = estimated_module$best_model,
                                        dep_var_basename = dep,
-                                       ardl_or_ecm = estimated_module$args[[5]])
+                                       ardl_or_ecm = estimated_module$args$ardl_or_ecm)
 
     out <- list(model = estimated_module$best_model,
                 data = moduledata,

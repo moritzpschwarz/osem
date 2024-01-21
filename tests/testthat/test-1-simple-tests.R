@@ -20,23 +20,6 @@ test_that("no errors when running very simple model", {
     )
   )
 
-  fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
-  fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-  filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
-
-  # expect_message(
-  #   a <- run_model(
-  #     specification = spec,
-  #     dictionary = NULL,
-  #     inputdata_directory = NULL,
-  #     filter_list = filter_list,
-  #     download = TRUE,
-  #     #save_to_disk = here::here("input_data/test.xlsx"),
-  #     save_to_disk = NULL,
-  #     present = FALSE
-  #   ), regexp = NULL #regexp = "Reading cache file |trying URL| Table "
-  # )
-
   expect_silent(
     a <- run_model(
       specification = spec,
@@ -51,6 +34,37 @@ test_that("no errors when running very simple model", {
   )
 
   expect_output(print(a))
+
+
+  # Check that model with no identities works
+
+  spec <- dplyr::tibble(
+    type = c(
+      "n"
+    ),
+    dependent = c(
+      "Import"
+    ),
+    independent = c(
+      "FinConsExpHH + GCapitalForm"
+    )
+  )
+
+
+  expect_silent(
+    a <- run_model(
+      specification = spec,
+      dictionary = NULL,
+      inputdata_directory = NULL,
+      primary_source = "download",
+      save_to_disk = NULL,
+      present = FALSE,
+      quiet = TRUE
+    )
+  )
+
+  expect_output(print(a))
+
 
 })
 

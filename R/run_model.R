@@ -23,6 +23,8 @@
 #' @param quiet Logical with default = FALSE. Should messages be displayed?
 #' These messages are intended to give more information about the estimation
 #' and data retrieval process.
+#' @param constrain.to.minimum.sample Logical. Should all data series be
+#' constrained to the minimum data series? Default is \code{TRUE}.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
 #'
@@ -87,12 +89,14 @@ run_model <- function(specification,
                       use_logs = c("both", "y", "x"),
                       trend = TRUE,
                       ardl_or_ecm = "ardl",
-                      max.lag = 4,
+                      max.ar = 4,
+                      max.dl = 4,
                       saturation = c("IIS", "SIS"),
                       saturation.tpval = 0.01,
                       max.block.size = 20,
                       gets_selection = TRUE,
-                      selection.tpval = 0.01
+                      selection.tpval = 0.01,
+                      constrain.to.minimum.sample = TRUE
                       ) {
 
   primary_source = match.arg(primary_source)
@@ -115,6 +119,13 @@ run_model <- function(specification,
 
   if(any(grepl("\\-|\\+|\\*|\\/|\\^",dictionary$model_varname))){stop("The 'model_varname' column in the Dictionary cannot contain any of the following characters: + - / * ^")}
 
+  if(!is.null(save_to_disk)){
+    if(!is.character(save_to_disk)){stop("'save_to_disk' must be a path to a file as a character. For example 'data.csv'.")}
+    if(is.character(save_to_disk) & identical(strsplit(basename(save_to_disk), split="\\.")[[1]][-1],character(0))){stop("'save_to_disk' must be a path to a file. No file ending detected. Currently supporting RDS, rds, Rds, csv, xls, xlsx.")}
+  }
+
+
+
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
 
@@ -128,7 +139,8 @@ run_model <- function(specification,
                                             primary_source = primary_source,
                                             inputdata_directory = inputdata_directory,
                                             save_to_disk = save_to_disk,
-                                            quiet = quiet)
+                                            quiet = quiet,
+                                            constrain.to.minimum.sample = constrain.to.minimum.sample)
 
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
@@ -160,7 +172,8 @@ run_model <- function(specification,
       use_logs = use_logs,
       trend = trend,
       ardl_or_ecm = ardl_or_ecm,
-      max.lag = max.lag,
+      max.ar = max.ar,
+      max.dl = max.dl,
       saturation = saturation,
       saturation.tpval = saturation.tpval,
       max.block.size = max.block.size,
@@ -185,9 +198,19 @@ run_model <- function(specification,
   out$args <- list(specification = specification, dictionary = dictionary,
                    inputdata_directory = inputdata_directory,
                    primary_source = primary_source,
-                   save_to_disk = save_to_disk, present = present)
+                   save_to_disk = save_to_disk, present = present,
+
+                   trend = trend, max.ar = max.ar, max.dl = max.dl, use_logs = use_logs,
+                   ardl_or_ecm = ardl_or_ecm,
+                   saturation = saturation,
+                   saturation.tpval = saturation.tpval,
+                   max.block.size = max.block.size,
+                   gets_selection = gets_selection,
+                   selection.tpval = selection.tpval)
+
   out$module_order <- module_order
   out$module_collection <- module_collection
+  out$processed_input_data <- full_data
   out$full_data <- tmp_data
   out$dictionary <- dictionary
 

@@ -10,7 +10,11 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%",
+  fig.width = 7,
+  fig.height = 5,
+  dev = "png",
+  dpi = 600
 )
 ```
 
@@ -52,10 +56,8 @@ The we calibrate the model specification and save this in a tibble.
 Here the column names and the structure of the specification table must follow the basic structure below.
 
 ```{r set-up}
-spec <- tibble(
+spec <- dplyr::tibble(
   type = c(
-    "d",
-    "d",
     "n",
     "n",
     "n",
@@ -63,13 +65,10 @@ spec <- tibble(
     "d",
     "n",
     "n",
-    "d",
     "n",
     "n"
   ),
   dependent = c(
-    "StatDiscrep",
-    "TOTS",
     "Import",
     "FinConsExpHH",
     "GCapitalForm",
@@ -77,26 +76,20 @@ spec <- tibble(
     "GDP",
     "GValueAddGov", # as in NAM, technical relationship
     "GValueAddManuf", # more complicated in NAM, see 2.3.3 and 6.3.1
-    "DomDemand", # as in NAM
     "GValueAddConstr" ,
     "GValueAddWholesaletrade"
   ),
   independent = c(
-    "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
-    "GValueAdd + Import",
     "FinConsExpHH + GCapitalForm",
     "",
-    "FinConsExpGov",
-    "GDP",
+    "FinConsExpGov + FinConsExpHH",
+    "GDP + Export + GValueAddIndus",
     "GValueAddGov + GValueAddAgri + GValueAddIndus + GValueAddConstr + GValueAddWholesaletrade + GValueAddInfocom + GValueAddFinance + GValueAddRealest + GValueAddResearch + GValueAddArts",
     "FinConsExpGov", # as in NAM, technical relationship
-    "DomDemand + Export + LabCostManuf", # NAM uses 'export market indicator' not exports - unclear what this is, NAM uses unit labour cost in NOR manufacturing relative to the foreign price level - here is just total labour cost
-    "FinConsExpHH + FinConsExpGov + GCapitalForm",
-    "DomDemand + LabCostConstr + BuildingPermits", # in NAM some form of YFP2J = 0.3JBOL + 0.2JF P N + 0.3JO + 0.3JOIL. Unclear what this is. Using Building Permits instead
-    "DomDemand + Export + LabCostService"
-  )
-)
-
+    "Export + LabCostManuf", # NAM uses 'export market indicator' not exports - unclear what this is, NAM uses unit labour cost in NOR manufacturing relative to the foreign price level - here is just total labour cost
+    "LabCostConstr + BuildingPermits", # in NAM some form of YFP2J = 0.3JBOL + 0.2JF P N + 0.3JO + 0.3JOIL. Unclear what this is. Using Building Permits instead
+    "Export + LabCostService"
+  ))
 ```
 
 To summarise this, we can print out the specification table: 
@@ -134,17 +127,17 @@ fe <- list(geo = "AT", s_adj = "SCA", unit = "I15")
 ff <- list(geo = "AT", s_adj = "SCA", unit = "I16")
 
 filter_list <- list(
-  "P7" = fa,
-  "YA0" = fb,
-  "P31_S14_S15" = fa,
-  "P5G" = fa,
-  "B1G" = fa,
-  "P3_S13" = fa,
-  "P6" = fa,
-  "GHG" = fc,
-  "B1GQ" = fa,
-  "PSQM" = fe,
-  "LM-LCI-TOT" = ff
+"P7" = fa,
+"YA0" = fb,
+"P31_S14_S15" = fa,
+"P5G" = fa,
+"B1G" = fa,
+"P3_S13" = fa,
+"P6" = fa,
+"GHG" = fc,
+"B1GQ" = fa,
+"PSQM" = fe,
+"LM-LCI-TOT" = ff
 )
 ```
 

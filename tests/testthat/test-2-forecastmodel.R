@@ -67,68 +67,6 @@ expect_snapshot_plot <- function(name, code) {
   expect_snapshot_file(path, name)
 }
 
-
-# test_that("Test that forecasting works",{
-#
-#   ## Test AR1 and fully exogenous ----
-#
-#   spec <- dplyr::tibble(
-#     type = c(
-#       "d",
-#       "d",
-#       "n",
-#       "n",
-#       "n",
-#       "n",
-#       "n"
-#     ),
-#     dependent = c(
-#       "StatDiscrep",
-#       "TOTS",
-#       "Import",
-#       "FinConsExpHH",
-#       "GCapitalForm",
-#       "Emissions",
-#       "GDP"
-#     ),
-#     independent = c(
-#       "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
-#       "GValueAdd + Import",
-#       "FinConsExpHH + GCapitalForm",
-#       "FinConsExpGov",
-#       "Emissions",
-#       "GDP",
-#       ""
-#     )
-#   )
-#
-#   fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR", varcolumn = "na_item")
-#   fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR", varcolumn = "na_item")
-#   fc <- list(geo = "AT", unit = "THS_T", nace_r2 = "TOTAL_HH", varcolumn = "airpol")
-#   filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa, "GHG" = fc, "B1GQ" = fa)
-#
-#   expect_warning(
-#     b <- run_model(
-#       specification = spec,
-#       dictionary = NULL,
-#       inputdata_directory = NULL,
-#       filter_list = filter_list,
-#       download = TRUE,
-#       save_to_disk = NULL,
-#       present = FALSE,
-#       quiet = TRUE
-#     ))
-#
-#   set.seed(123)
-#   expect_message(forecast_model(b), regexp = "No exogenous values")
-#
-#   skip_on_ci()
-#   expect_snapshot_plot("Forecast_plot",plot(forecast_model(b)))
-#
-#
-# })
-
-
 test_that("Test that forecasting works - with fixed data",{
 
   ## Test AR1 and fully exogenous ----
@@ -162,17 +100,13 @@ test_that("Test that forecasting works - with fixed data",{
       ""
     )
   )
-
-  fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR", varcolumn = "na_item")
-  fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR", varcolumn = "na_item")
-  fc <- list(geo = "AT", unit = "THS_T", nace_r2 = "TOTAL_HH", varcolumn = "airpol")
-  filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa, "GHG" = fc, "B1GQ" = fa)
-
   expect_silent(
     b <- run_model(
       specification = spec,
       dictionary = NULL,
       inputdata_directory = sample_input,
+      max.ar = 4,
+      max.dl = 4,
       primary_source = "local",
       quiet = TRUE
     ))
@@ -182,4 +116,59 @@ test_that("Test that forecasting works - with fixed data",{
 
   skip_on_ci()
   expect_snapshot_plot("Forecast_plot",code = plot(bb))
+})
+
+#
+test_that("Testing nowcasting and dealing with ragged edges works with fixed data (EMCC Data)",{
+
+  cur_dict <- dict %>%
+    dplyr::bind_rows(dplyr::tibble(model_varname = "EmiGHGTotal",
+                                   full_name = "Total GHG Emissions from Edgar (not quite but combination from Industry, Combustion and a bit of non-CO2"))
+
+  # you can see, the first two
+  specification <- dplyr::tibble(
+    type = c(
+      "d",
+      "n",
+      "n",
+      "n",
+      "d",
+      "n"
+    ),
+    dependent = c(
+      "TOTS",
+      "Import",
+      "EmiCO2Combustion",
+      "EmiCO2Industry",
+      "EmiGHGTotal",
+      "GValueAddIndus"
+    ),
+    independent = c(
+      "GValueAdd + Import",
+      "FinConsExpHH + GCapitalForm",
+      "HDD + HICP_Gas + HICP_Electricity + GValueAdd",
+      "HICP_Gas + HICP_Electricity + GValueAddIndus",
+      "EmiCO2Combustion + EmiCO2Industry + EmiCH4Livestock + EmiN2OTotal",
+      "HICP_Gas + HICP_Electricity + Export + TOTS"
+    )
+  )
+
+
+  # Model Run for AT --------------------------------------------------------
+  expect_silent(
+    model <- run_model(specification = specification,
+                       dictionary = cur_dict,
+                       inputdata_directory = test_path("testdata", "ragged_edge"),
+                       primary_source = "local",
+                       present = FALSE,
+                       quiet = TRUE,
+                       constrain.to.minimum.sample = FALSE)
+
+  )
+
+  set.seed(123)
+  expect_message(bb <- forecast_model(model, plot.forecast = FALSE), regexp = "No exogenous values")
+
+  skip_on_ci()
+  expect_snapshot_plot("Forecast_plot_ragged",code = plot(bb))
 })

@@ -15,12 +15,14 @@ run_model(
   use_logs = c("both", "y", "x"),
   trend = TRUE,
   ardl_or_ecm = "ardl",
-  max.lag = 4,
+  max.ar = 4,
+  max.dl = 4,
   saturation = c("IIS", "SIS"),
   saturation.tpval = 0.01,
   max.block.size = 20,
   gets_selection = TRUE,
-  selection.tpval = 0.01
+  selection.tpval = 0.01,
+  constrain.to.minimum.sample = TRUE
 )
 }
 \arguments{
@@ -58,8 +60,9 @@ and data retrieval process.}
 
 \item{ardl_or_ecm}{Either 'ardl' or 'ecm' to determine whether to estimate the model as an Autoregressive Distributed Lag Function (ardl) or as an Equilibrium Correction Model (ecm).}
 
-\item{max.lag}{Integer. The maximum number of lags to use for both the AR terms as
-well as for the independent variables.}
+\item{max.ar}{Integer. The maximum number of lags to use for the AR terms. as well as for the independent variables.}
+
+\item{max.dl}{Integer. The maximum number of lags to use for the independent variables (the distributed lags).}
 
 \item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
 
@@ -70,6 +73,9 @@ well as for the independent variables.}
 \item{gets_selection}{Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.}
 
 \item{selection.tpval}{Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.}
+
+\item{constrain.to.minimum.sample}{Logical. Should all data series be
+constrained to the minimum data series? Default is \code{TRUE}.}
 }
 \value{
 An object of class \link[=new_aggmod]{aggmod}, which is a named list

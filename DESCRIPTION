@@ -37,6 +37,7 @@ Suggests:
     ggraph,
     testthat (>= 3.0.0),
     tidygraph,
+    igraph,
     plotly,
     purrr,
     knitr,
