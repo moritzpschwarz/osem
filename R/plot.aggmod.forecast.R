@@ -163,7 +163,8 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
                      p25 =  .data$values, .groups = "drop") %>%
     dplyr::mutate(fit = "Forecast Uncertainty") %>%
     dplyr::bind_rows(.,all_forecasts_processed_q) %>%
-    {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} -> all_forecasts_processed_q
+    {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} %>%
+    tidyr::drop_na() -> all_forecasts_processed_q
 
   # Exogenous forecasts --------
 
@@ -179,7 +180,6 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   ggplot_options <- list(
     if (!exclude.exogenous) {ggplot2::geom_line(data = exog_forecasts, ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit))} else {NULL}
   )
-
   dplyr::bind_rows(forecasts_processed, last_hist_value) %>%
     dplyr::bind_rows(plot_df) %>%
 
