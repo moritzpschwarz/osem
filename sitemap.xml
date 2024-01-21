@@ -13,6 +13,9 @@
     <loc>http://moritzschwarz.org/aggregate.model/articles/index.html</loc>
   </url>
   <url>
+    <loc>http://moritzschwarz.org/aggregate.model/articles/new_variable_to_dict.html</loc>
+  </url>
+  <url>
     <loc>http://moritzschwarz.org/aggregate.model/authors.html</loc>
   </url>
   <url>
@@ -61,7 +64,22 @@
     <loc>http://moritzschwarz.org/aggregate.model/reference/estimate_module.html</loc>
   </url>
   <url>
+    <loc>http://moritzschwarz.org/aggregate.model/reference/forecast_exogenous_values.html</loc>
+  </url>
+  <url>
+    <loc>http://moritzschwarz.org/aggregate.model/reference/forecast_identities.html</loc>
+  </url>
+  <url>
+    <loc>http://moritzschwarz.org/aggregate.model/reference/forecast_insample.html</loc>
+  </url>
+  <url>
     <loc>http://moritzschwarz.org/aggregate.model/reference/forecast_model.html</loc>
+  </url>
+  <url>
+    <loc>http://moritzschwarz.org/aggregate.model/reference/forecast_sensitivity.html</loc>
+  </url>
+  <url>
+    <loc>http://moritzschwarz.org/aggregate.model/reference/forecast_setup_estimated_relationships.html</loc>
   </url>
   <url>
     <loc>http://moritzschwarz.org/aggregate.model/reference/identify_module_data.html</loc>
@@ -83,6 +101,9 @@
   </url>
   <url>
     <loc>http://moritzschwarz.org/aggregate.model/reference/new_aggmod.html</loc>
+  </url>
+  <url>
+    <loc>http://moritzschwarz.org/aggregate.model/reference/nowcasting.html</loc>
   </url>
   <url>
     <loc>http://moritzschwarz.org/aggregate.model/reference/plot.aggmod.forecast.html</loc>
