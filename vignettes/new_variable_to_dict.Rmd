@@ -1,8 +1,8 @@
 ---
-title: "Adding a new variable to the Dictionary to use in the Aggregate Model"
+title: "Adding a new variable to the Dictionary"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Adding a new variable to the Dictionary to use in the Aggregate Model}
+  %\VignetteIndexEntry{Adding a new variable to the Dictionary}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
