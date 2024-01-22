@@ -77,15 +77,7 @@
 <p>This is an example which shows you how to run the model:</p>
 <p>First we load the package:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://moritzschwarz.org/getspanel/" class="external-link">aggregate.model</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: gets</span></span>
-<span><span class="co">#&gt; Loading required package: zoo</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Attaching package: 'zoo'</span></span>
-<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;     as.Date, as.Date.numeric</span></span>
-<span><span class="co">#&gt; Loading required package: parallel</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="http://moritzschwarz.org/getspanel/" class="external-link">aggregate.model</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="specify-the-model">Specify the model<a class="anchor" aria-label="anchor" href="#specify-the-model"></a>
 </h3>
@@ -243,13 +235,16 @@ Export + LabCostService
 <table class="table table lightable-paper" style='margin-left: auto; margin-right: auto; font-family: "Arial Narrow", arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;'>
 <thead><tr>
 <th style="text-align:left;">
-eurostat_code
-</th>
-<th style="text-align:left;">
 model_varname
 </th>
 <th style="text-align:left;">
 full_name
+</th>
+<th style="text-align:left;">
+database
+</th>
+<th style="text-align:left;">
+variable_code
 </th>
 <th style="text-align:left;">
 dataset_id
@@ -258,17 +253,32 @@ dataset_id
 var_col
 </th>
 <th style="text-align:left;">
+freq
+</th>
+<th style="text-align:left;">
+geo
+</th>
+<th style="text-align:left;">
+unit
+</th>
+<th style="text-align:left;">
+s_adj
+</th>
+<th style="text-align:left;">
 nace_r2
+</th>
+<th style="text-align:left;">
+ipcc_sector
 </th>
 <th style="text-align:left;">
 cpa2_1
 </th>
+<th style="text-align:left;">
+siec
+</th>
 </tr></thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-TOTS
-</td>
 <td style="text-align:left;">
 TOTS
 </td>
@@ -279,6 +289,30 @@ Total Supply
 NA
 </td>
 <td style="text-align:left;">
+TOTS
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
 NA
 </td>
 <td style="text-align:left;">
@@ -290,13 +324,16 @@ NA
 </tr>
 <tr>
 <td style="text-align:left;">
-B1GQ
-</td>
-<td style="text-align:left;">
 GDP
 </td>
 <td style="text-align:left;">
 Gross domestic product at market prices
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1GQ
 </td>
 <td style="text-align:left;">
 namq_10_gdp
@@ -305,6 +342,24 @@ namq_10_gdp
 na_item
 </td>
 <td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
 NA
 </td>
 <td style="text-align:left;">
@@ -313,13 +368,16 @@ NA
 </tr>
 <tr>
 <td style="text-align:left;">
-B1G
-</td>
-<td style="text-align:left;">
 GValueAdd
 </td>
 <td style="text-align:left;">
 Value added, gross
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
 </td>
 <td style="text-align:left;">
 namq_10_a10
@@ -328,16 +386,31 @@ namq_10_a10
 na_item
 </td>
 <td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
 TOTAL
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-P6
-</td>
 <td style="text-align:left;">
 Export
 </td>
@@ -345,10 +418,34 @@ Export
 Exports of goods and services
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+P6
+</td>
+<td style="text-align:left;">
 namq_10_gdp
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -358,9 +455,6 @@ NA
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-P7
-</td>
 <td style="text-align:left;">
 Import
 </td>
@@ -368,10 +462,34 @@ Import
 Imports of goods and services
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+P7
+</td>
+<td style="text-align:left;">
 namq_10_gdp
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -381,9 +499,6 @@ NA
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-P5G
-</td>
 <td style="text-align:left;">
 GCapitalForm
 </td>
@@ -391,10 +506,34 @@ GCapitalForm
 Gross capital formation
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+P5G
+</td>
+<td style="text-align:left;">
 namq_10_gdp
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -404,9 +543,6 @@ NA
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-P3
-</td>
 <td style="text-align:left;">
 FinConsExp
 </td>
@@ -414,10 +550,34 @@ FinConsExp
 Final consumption expenditure
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+P3
+</td>
+<td style="text-align:left;">
 namq_10_gdp
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -427,9 +587,6 @@ NA
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-P3_S13
-</td>
 <td style="text-align:left;">
 FinConsExpGov
 </td>
@@ -437,10 +594,34 @@ FinConsExpGov
 Final consumption expenditure of general government
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+P3_S13
+</td>
+<td style="text-align:left;">
 namq_10_gdp
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -450,9 +631,6 @@ NA
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-P31_S14_S15
-</td>
 <td style="text-align:left;">
 FinConsExpHH
 </td>
@@ -460,10 +638,34 @@ FinConsExpHH
 Household and NPISH final consumption expenditure
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+P31_S14_S15
+</td>
+<td style="text-align:left;">
 namq_10_gdp
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -473,9 +675,6 @@ NA
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-YA0
-</td>
 <td style="text-align:left;">
 StatDiscrep
 </td>
@@ -483,10 +682,34 @@ StatDiscrep
 Statistical discrepancy (expenditure approach)
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+YA0
+</td>
+<td style="text-align:left;">
 namq_10_gdp
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CP_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -497,13 +720,16 @@ NA
 </tr>
 <tr>
 <td style="text-align:left;">
-GHG
-</td>
-<td style="text-align:left;">
 Emissions
 </td>
 <td style="text-align:left;">
 Greenhouse Gas Emissions (All NACE and HH)
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+GHG
 </td>
 <td style="text-align:left;">
 env_ac_aigg_q
@@ -512,7 +738,25 @@ env_ac_aigg_q
 airpol
 </td>
 <td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+THS_T
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
 TOTAL_HH
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -520,13 +764,16 @@ NA
 </tr>
 <tr>
 <td style="text-align:left;">
-LM-LCI-TOT
-</td>
-<td style="text-align:left;">
 LabCostManuf
 </td>
 <td style="text-align:left;">
 Manufacturing Labour cost index - Total Labour Cost
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+LM-LCI-TOT
 </td>
 <td style="text-align:left;">
 ei_lmlc_q
@@ -535,16 +782,31 @@ ei_lmlc_q
 indic
 </td>
 <td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I20
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
 C
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-DomDemand
-</td>
 <td style="text-align:left;">
 DomDemand
 </td>
@@ -555,6 +817,30 @@ Domestic Demand
 NA
 </td>
 <td style="text-align:left;">
+DomDemand
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
 NA
 </td>
 <td style="text-align:left;">
@@ -565,9 +851,6 @@ NA
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddManuf
 </td>
@@ -575,10 +858,28 @@ GValueAddManuf
 Value added, gross Manufacturing
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
+</td>
+<td style="text-align:left;">
 namq_10_a10
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
 </td>
 <td style="text-align:left;">
 C
@@ -586,16 +887,25 @@ C
 <td style="text-align:left;">
 NA
 </td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddGov
 </td>
 <td style="text-align:left;">
 Value added, gross Government
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
 </td>
 <td style="text-align:left;">
 namq_10_a10
@@ -604,7 +914,25 @@ namq_10_a10
 na_item
 </td>
 <td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
 O-Q
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -612,13 +940,16 @@ NA
 </tr>
 <tr>
 <td style="text-align:left;">
-LM-LCI-TOT
-</td>
-<td style="text-align:left;">
 LabCostConstr
 </td>
 <td style="text-align:left;">
 Construction Labour cost index - Total Labour Cost
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+LM-LCI-TOT
 </td>
 <td style="text-align:left;">
 ei_lmlc_q
@@ -627,7 +958,25 @@ ei_lmlc_q
 indic
 </td>
 <td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I20
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
 F
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -635,13 +984,16 @@ NA
 </tr>
 <tr>
 <td style="text-align:left;">
-PSQM
-</td>
-<td style="text-align:left;">
 BuildingPermits
 </td>
 <td style="text-align:left;">
 Building permits - m^2 useful floorspace - Buildings
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+PSQM
 </td>
 <td style="text-align:left;">
 sts_cobp_q
@@ -650,21 +1002,42 @@ sts_cobp_q
 indic_bt
 </td>
 <td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I15
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
 F_CC1
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 CPA_F41001_41002
 </td>
+<td style="text-align:left;">
+NA
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-LM-LCI-TOT
-</td>
 <td style="text-align:left;">
 LabCostService
 </td>
 <td style="text-align:left;">
 Service Labour cost index - Total Labour Cost
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+LM-LCI-TOT
 </td>
 <td style="text-align:left;">
 ei_lmlc_q
@@ -673,16 +1046,31 @@ ei_lmlc_q
 indic
 </td>
 <td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I20
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
 G-N
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddConstr
 </td>
@@ -690,10 +1078,28 @@ GValueAddConstr
 Value added, gross Construction
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
+</td>
+<td style="text-align:left;">
 namq_10_a10
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
 </td>
 <td style="text-align:left;">
 F
@@ -701,11 +1107,14 @@ F
 <td style="text-align:left;">
 NA
 </td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddAgri
 </td>
@@ -713,10 +1122,28 @@ GValueAddAgri
 Value added, gross Agriculture
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
+</td>
+<td style="text-align:left;">
 namq_10_a10
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
 </td>
 <td style="text-align:left;">
 A
@@ -724,11 +1151,14 @@ A
 <td style="text-align:left;">
 NA
 </td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddIndus
 </td>
@@ -736,10 +1166,28 @@ GValueAddIndus
 Value added, gross Industry
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
+</td>
+<td style="text-align:left;">
 namq_10_a10
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
 </td>
 <td style="text-align:left;">
 B-E
@@ -747,11 +1195,14 @@ B-E
 <td style="text-align:left;">
 NA
 </td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddInfocom
 </td>
@@ -759,10 +1210,28 @@ GValueAddInfocom
 Value added, gross Information and Communication
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
+</td>
+<td style="text-align:left;">
 namq_10_a10
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
 </td>
 <td style="text-align:left;">
 J
@@ -770,11 +1239,14 @@ J
 <td style="text-align:left;">
 NA
 </td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddFinance
 </td>
@@ -782,10 +1254,28 @@ GValueAddFinance
 Value added, gross Financial Services
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
+</td>
+<td style="text-align:left;">
 namq_10_a10
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
 </td>
 <td style="text-align:left;">
 K
@@ -793,11 +1283,14 @@ K
 <td style="text-align:left;">
 NA
 </td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddRealest
 </td>
@@ -805,10 +1298,28 @@ GValueAddRealest
 Value added, gross Real Estate
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
+</td>
+<td style="text-align:left;">
 namq_10_a10
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
 </td>
 <td style="text-align:left;">
 L
@@ -816,11 +1327,14 @@ L
 <td style="text-align:left;">
 NA
 </td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddResearch
 </td>
@@ -828,10 +1342,28 @@ GValueAddResearch
 Value added, gross Scientific and Professional Services
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
+</td>
+<td style="text-align:left;">
 namq_10_a10
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
 </td>
 <td style="text-align:left;">
 M_N
@@ -839,11 +1371,14 @@ M_N
 <td style="text-align:left;">
 NA
 </td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddArts
 </td>
@@ -851,10 +1386,28 @@ GValueAddArts
 Value added, gross Arts and Entertainment
 </td>
 <td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
+</td>
+<td style="text-align:left;">
 namq_10_a10
 </td>
 <td style="text-align:left;">
 na_item
+</td>
+<td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
 </td>
 <td style="text-align:left;">
 R-U
@@ -862,16 +1415,25 @@ R-U
 <td style="text-align:left;">
 NA
 </td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-B1G
-</td>
 <td style="text-align:left;">
 GValueAddWholesaletrade
 </td>
 <td style="text-align:left;">
 Value added, gross Wholesale and retail trade and Tourism
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+B1G
 </td>
 <td style="text-align:left;">
 namq_10_a10
@@ -880,7 +1442,597 @@ namq_10_a10
 na_item
 </td>
 <td style="text-align:left;">
+q
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+CLV05_MEUR
+</td>
+<td style="text-align:left;">
+SCA
+</td>
+<td style="text-align:left;">
 G-I
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HICP
+</td>
+<td style="text-align:left;">
+Harmonised Index of Consumer Prices, all items, index 100 = 2015
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+CP00
+</td>
+<td style="text-align:left;">
+prc_hicp_midx
+</td>
+<td style="text-align:left;">
+coicop
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I15
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HICP_Energy
+</td>
+<td style="text-align:left;">
+Harmonised Index of Consumer Prices, Energy, index 100 = 2015
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+NRG
+</td>
+<td style="text-align:left;">
+prc_hicp_midx
+</td>
+<td style="text-align:left;">
+coicop
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I15
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HICP_Electricity
+</td>
+<td style="text-align:left;">
+Harmonised Index of Consumer Prices, Electricity, index 100 = 2015
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+CP0451
+</td>
+<td style="text-align:left;">
+prc_hicp_midx
+</td>
+<td style="text-align:left;">
+coicop
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I15
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HICP_Gas
+</td>
+<td style="text-align:left;">
+Harmonised Index of Consumer Prices, Gas, index 100 = 2015
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+CP0452
+</td>
+<td style="text-align:left;">
+prc_hicp_midx
+</td>
+<td style="text-align:left;">
+coicop
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I15
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HICP_Liquid_Fuels
+</td>
+<td style="text-align:left;">
+Harmonised Index of Consumer Prices, Liquid Fuels, index 100 = 2015
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+CP0453
+</td>
+<td style="text-align:left;">
+prc_hicp_midx
+</td>
+<td style="text-align:left;">
+coicop
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I15
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HICP_Solid_Fuels
+</td>
+<td style="text-align:left;">
+Harmonised Index of Consumer Prices, Solid Fuels, index 100 = 2015
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+CP0454
+</td>
+<td style="text-align:left;">
+prc_hicp_midx
+</td>
+<td style="text-align:left;">
+coicop
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I15
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HICP_Heat
+</td>
+<td style="text-align:left;">
+Harmonised Index of Consumer Prices, Heat Energy, index 100 = 2015
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+CP0455
+</td>
+<td style="text-align:left;">
+prc_hicp_midx
+</td>
+<td style="text-align:left;">
+coicop
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+I15
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+HDD
+</td>
+<td style="text-align:left;">
+Heating Degree Days
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+HDD
+</td>
+<td style="text-align:left;">
+nrg_chdd_m
+</td>
+<td style="text-align:left;">
+indic_nrg
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+NR
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CDD
+</td>
+<td style="text-align:left;">
+Cooling Degree Days
+</td>
+<td style="text-align:left;">
+eurostat
+</td>
+<td style="text-align:left;">
+CDD
+</td>
+<td style="text-align:left;">
+nrg_chdd_m
+</td>
+<td style="text-align:left;">
+indic_nrg
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+NR
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+EmiCH4Livestock
+</td>
+<td style="text-align:left;">
+Methane Emissions from Livestock
+</td>
+<td style="text-align:left;">
+edgar
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+<a href="https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CH4_m_2000_2021.zip" class="external-link uri">https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CH4_m_2000_2021.zip</a>
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+3.A
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+EmiCO2Industry
+</td>
+<td style="text-align:left;">
+Carbon Emissions from Industrial Processes and Product Use
+</td>
+<td style="text-align:left;">
+edgar
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+<a href="https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip" class="external-link uri">https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip</a>
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+2
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+EmiCO2Combustion
+</td>
+<td style="text-align:left;">
+Carbon Emissions from Fuel Combustion Activities
+</td>
+<td style="text-align:left;">
+edgar
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+<a href="https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip" class="external-link uri">https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip</a>
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+1.A
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+EmiN2OTotal
+</td>
+<td style="text-align:left;">
+Nitrous Oxide Emissions Total
+</td>
+<td style="text-align:left;">
+edgar
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+<a href="https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_N2O_m_2000_2021.zip" class="external-link uri">https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_N2O_m_2000_2021.zip</a>
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+m
+</td>
+<td style="text-align:left;">
+AT
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+TOTAL
+</td>
+<td style="text-align:left;">
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -888,51 +2040,38 @@ NA
 </tr>
 </tbody>
 </table>
-<p>The last step in specifying the model is to create a filter list that determines the country that we want to estimate this for and also which unit we need for each variable. This, for the moment, is quite tedious, but this will be improved in the future:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fa</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>geo <span class="op">=</span> <span class="st">"AT"</span>, s_adj <span class="op">=</span> <span class="st">"SCA"</span>, unit <span class="op">=</span> <span class="st">"CLV05_MEUR"</span><span class="op">)</span></span>
-<span><span class="va">fb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>geo <span class="op">=</span> <span class="st">"AT"</span>, s_adj <span class="op">=</span> <span class="st">"SCA"</span>, unit <span class="op">=</span> <span class="st">"CP_MEUR"</span><span class="op">)</span></span>
-<span><span class="va">fc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>geo <span class="op">=</span> <span class="st">"AT"</span>, unit <span class="op">=</span> <span class="st">"THS_T"</span><span class="op">)</span></span>
-<span><span class="va">fd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>geo <span class="op">=</span> <span class="st">"AT"</span>, s_adj <span class="op">=</span> <span class="st">"SCA"</span><span class="op">)</span></span>
-<span><span class="va">fe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>geo <span class="op">=</span> <span class="st">"AT"</span>, s_adj <span class="op">=</span> <span class="st">"SCA"</span>, unit <span class="op">=</span> <span class="st">"I15"</span><span class="op">)</span></span>
-<span><span class="va">ff</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>geo <span class="op">=</span> <span class="st">"AT"</span>, s_adj <span class="op">=</span> <span class="st">"SCA"</span>, unit <span class="op">=</span> <span class="st">"I16"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">filter_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span><span class="st">"P7"</span> <span class="op">=</span> <span class="va">fa</span>,</span>
-<span><span class="st">"YA0"</span> <span class="op">=</span> <span class="va">fb</span>,</span>
-<span><span class="st">"P31_S14_S15"</span> <span class="op">=</span> <span class="va">fa</span>,</span>
-<span><span class="st">"P5G"</span> <span class="op">=</span> <span class="va">fa</span>,</span>
-<span><span class="st">"B1G"</span> <span class="op">=</span> <span class="va">fa</span>,</span>
-<span><span class="st">"P3_S13"</span> <span class="op">=</span> <span class="va">fa</span>,</span>
-<span><span class="st">"P6"</span> <span class="op">=</span> <span class="va">fa</span>,</span>
-<span><span class="st">"GHG"</span> <span class="op">=</span> <span class="va">fc</span>,</span>
-<span><span class="st">"B1GQ"</span> <span class="op">=</span> <span class="va">fa</span>,</span>
-<span><span class="st">"PSQM"</span> <span class="op">=</span> <span class="va">fe</span>,</span>
-<span><span class="st">"LM-LCI-TOT"</span> <span class="op">=</span> <span class="va">ff</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<!-- The last step in specifying the model is to create a filter list that determines the country that we want to estimate this for and also which unit we need for each variable. This, for the moment, is quite tedious, but this will be improved in the future: --><!-- ```{r} --><!-- fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR") --><!-- fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR") --><!-- fc <- list(geo = "AT", unit = "THS_T") --><!-- fd <- list(geo = "AT", s_adj = "SCA") --><!-- fe <- list(geo = "AT", s_adj = "SCA", unit = "I15") --><!-- ff <- list(geo = "AT", s_adj = "SCA", unit = "I16") --><!-- filter_list <- list( --><!-- "P7" = fa, --><!-- "YA0" = fb, --><!-- "P31_S14_S15" = fa, --><!-- "P5G" = fa, --><!-- "B1G" = fa, --><!-- "P3_S13" = fa, --><!-- "P6" = fa, --><!-- "GHG" = fc, --><!-- "B1GQ" = fa, --><!-- "PSQM" = fe, --><!-- "LM-LCI-TOT" = ff --><!-- ) --><!-- ``` -->
 </div>
 <div class="section level3">
 <h3 id="running-the-model">Running the model<a class="anchor" aria-label="anchor" href="#running-the-model"></a>
 </h3>
 <p>Now we are ready to run the model with the <code><a href="reference/run_model.html">run_model()</a></code> function:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/run_model.html">run_model</a></span><span class="op">(</span></span>
 <span>  specification <span class="op">=</span> <span class="va">spec</span>,</span>
-<span>  filter_list <span class="op">=</span> <span class="va">filter_list</span>,</span>
 <span>  save_to_disk <span class="op">=</span> <span class="st">"inst/extdata/InputData.xlsx"</span>,</span>
-<span>  download <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  primary_source <span class="op">=</span> <span class="st">"download"</span>,</span>
 <span>  trend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  max.lag <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  saturation.tpval <span class="op">=</span> <span class="fl">0.1</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">NROW</a></span><span class="op">(</span><span class="va">clean_data</span><span class="op">)</span></span>
+<span>  saturation.tpval <span class="op">=</span> <span class="fl">0.01</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Table namq_10_a10 cached at C:\Users\morit\AppData\Local\Temp\Rtmpmwe6Vh/eurostat/namq_10_a10_date_code_FF.rds</span></span>
-<span><span class="co">#&gt; Table namq_10_gdp cached at C:\Users\morit\AppData\Local\Temp\Rtmpmwe6Vh/eurostat/namq_10_gdp_date_code_FF.rds</span></span>
-<span><span class="co">#&gt; Table env_ac_aigg_q cached at C:\Users\morit\AppData\Local\Temp\Rtmpmwe6Vh/eurostat/env_ac_aigg_q_date_code_FF.rds</span></span>
-<span><span class="co">#&gt; Table ei_lmlc_q cached at C:\Users\morit\AppData\Local\Temp\Rtmpmwe6Vh/eurostat/ei_lmlc_q_date_code_FF.rds</span></span>
-<span><span class="co">#&gt; Table sts_cobp_q cached at C:\Users\morit\AppData\Local\Temp\Rtmpmwe6Vh/eurostat/sts_cobp_q_date_code_FF.rds</span></span>
-<span><span class="co">#&gt; Warning in load_or_download_variables(specification =</span></span>
-<span><span class="co">#&gt; module_order_eurostatvars, : Unbalanced panel, will lose more than 20\% of data</span></span>
-<span><span class="co">#&gt; when making balanced</span></span>
+<span><span class="co">#&gt; Dataset query already saved in cache_list.json...</span></span>
+<span><span class="co">#&gt; Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpAHxT8m/eurostat/d63eb01c350ec7f1bc8d8a8748cbaf1c.rds</span></span>
+<span><span class="co">#&gt; Table  namq_10_gdp  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpAHxT8m/eurostat/d63eb01c350ec7f1bc8d8a8748cbaf1c.rds</span></span>
+<span><span class="co">#&gt; Dataset query already saved in cache_list.json...</span></span>
+<span><span class="co">#&gt; Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpAHxT8m/eurostat/70233871602d11a16e54c9ad5a1c57c1.rds</span></span>
+<span><span class="co">#&gt; Table  env_ac_aigg_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpAHxT8m/eurostat/70233871602d11a16e54c9ad5a1c57c1.rds</span></span>
+<span><span class="co">#&gt; Dataset query already saved in cache_list.json...</span></span>
+<span><span class="co">#&gt; Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpAHxT8m/eurostat/4081fb052bac8868b67123e3066ec6a0.rds</span></span>
+<span><span class="co">#&gt; Table  ei_lmlc_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpAHxT8m/eurostat/4081fb052bac8868b67123e3066ec6a0.rds</span></span>
+<span><span class="co">#&gt; Dataset query already saved in cache_list.json...</span></span>
+<span><span class="co">#&gt; Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpAHxT8m/eurostat/0ce900d1db16519a6a4802bf61a2de80.rds</span></span>
+<span><span class="co">#&gt; Table  namq_10_a10  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpAHxT8m/eurostat/0ce900d1db16519a6a4802bf61a2de80.rds</span></span>
+<span><span class="co">#&gt; Dataset query already saved in cache_list.json...</span></span>
+<span><span class="co">#&gt; Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpAHxT8m/eurostat/8c5d516c94180cbe8c02ed2720aaf9b7.rds</span></span>
+<span><span class="co">#&gt; Table  sts_cobp_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpAHxT8m/eurostat/8c5d516c94180cbe8c02ed2720aaf9b7.rds</span></span>
+<span><span class="co">#&gt; Warning in load_or_download_variables(specification = module_order, dictionary</span></span>
+<span><span class="co">#&gt; = dictionary, : Unbalanced panel, will lose more than 20\% of data when making</span></span>
+<span><span class="co">#&gt; balanced</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; --- Estimation begins ---</span></span>
 <span><span class="co">#&gt; Estimating GValueAddGov = FinConsExpGov </span></span>
@@ -946,30 +2085,27 @@ NA
 <span><span class="co">#&gt; Estimating Import = FinConsExpHH + GCapitalForm</span></span></code></pre></div>
 <p>The first time that we run this, all data will be downloaded and saved in the folder <code>data/use/InputData.xlsx</code>.</p>
 <p>The next time that we run the same model, we can save some time and just load the data from our earlier run:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/run_model.html">run_model</a></span><span class="op">(</span></span>
 <span>  specification <span class="op">=</span> <span class="va">spec</span>,</span>
-<span>  filter_list <span class="op">=</span> <span class="va">filter_list</span>,</span>
-<span>  download <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  primary_source <span class="op">=</span> <span class="st">"local"</span>,</span>
 <span>  inputdata_directory <span class="op">=</span> <span class="st">"inst/extdata"</span>,</span>
 <span>  trend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  max.lag <span class="op">=</span> <span class="fl">4</span>,</span>
-<span>  saturation.tpval <span class="op">=</span> <span class="fl">0.1</span><span class="op">/</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">NROW</a></span><span class="op">(</span><span class="va">clean_data</span><span class="op">)</span></span>
+<span>  saturation.tpval <span class="op">=</span> <span class="fl">0.01</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="forecasting-the-model">Forecasting the model<a class="anchor" aria-label="anchor" href="#forecasting-the-model"></a>
 </h3>
 <p>Now that we have run the model, we can forecast the model (here using an AR process for the exogenous values and for 10 time periods):</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model_forecast</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/forecast_model.html">forecast_model</a></span><span class="op">(</span><span class="va">model_result</span>, n.ahead <span class="op">=</span> <span class="fl">10</span>, exog_fill_method <span class="op">=</span> <span class="st">"AR"</span>, plot.forecast <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; No exogenous values provided. Model will forecast the exogenous values with an AR4 process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').</span></span>
 <span><span class="co">#&gt; Alternative is exog_fill_method = 'last'.</span></span></code></pre></div>
 <p>Once we are done, we can plot the forecast:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">model_forecast</span>, order.as.run <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: Removed 2 rows containing missing values (`geom_line()`).</span></span></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-10-1.png" width="100%"></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">model_forecast</span>, order.as.run <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-9-1.png" width="100%"></p>
 </div>
 </div>
 </div>
