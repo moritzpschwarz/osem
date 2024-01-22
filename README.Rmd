@@ -116,30 +116,30 @@ kable(aggregate.model::dict) %>%
   kable_paper()
 ```
 
-The last step in specifying the model is to create a filter list that determines the country that we want to estimate this for and also which unit we need for each variable. This, for the moment, is quite tedious, but this will be improved in the future:
+<!-- The last step in specifying the model is to create a filter list that determines the country that we want to estimate this for and also which unit we need for each variable. This, for the moment, is quite tedious, but this will be improved in the future: -->
 
-```{r}
-fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
-fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-fc <- list(geo = "AT", unit = "THS_T")
-fd <- list(geo = "AT", s_adj = "SCA")
-fe <- list(geo = "AT", s_adj = "SCA", unit = "I15")
-ff <- list(geo = "AT", s_adj = "SCA", unit = "I16")
+<!-- ```{r} -->
+<!-- fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR") -->
+<!-- fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR") -->
+<!-- fc <- list(geo = "AT", unit = "THS_T") -->
+<!-- fd <- list(geo = "AT", s_adj = "SCA") -->
+<!-- fe <- list(geo = "AT", s_adj = "SCA", unit = "I15") -->
+<!-- ff <- list(geo = "AT", s_adj = "SCA", unit = "I16") -->
 
-filter_list <- list(
-"P7" = fa,
-"YA0" = fb,
-"P31_S14_S15" = fa,
-"P5G" = fa,
-"B1G" = fa,
-"P3_S13" = fa,
-"P6" = fa,
-"GHG" = fc,
-"B1GQ" = fa,
-"PSQM" = fe,
-"LM-LCI-TOT" = ff
-)
-```
+<!-- filter_list <- list( -->
+<!-- "P7" = fa, -->
+<!-- "YA0" = fb, -->
+<!-- "P31_S14_S15" = fa, -->
+<!-- "P5G" = fa, -->
+<!-- "B1G" = fa, -->
+<!-- "P3_S13" = fa, -->
+<!-- "P6" = fa, -->
+<!-- "GHG" = fc, -->
+<!-- "B1GQ" = fa, -->
+<!-- "PSQM" = fe, -->
+<!-- "LM-LCI-TOT" = ff -->
+<!-- ) -->
+<!-- ``` -->
 
 
 ### Running the model
@@ -149,12 +149,10 @@ Now we are ready to run the model with the `run_model()` function:
 ```{r}
 model_result <- run_model(
   specification = spec,
-  filter_list = filter_list,
   save_to_disk = "inst/extdata/InputData.xlsx",
-  download = TRUE,
+  primary_source = "download",
   trend = TRUE,
-  max.lag = 4,
-  saturation.tpval = 0.1/NROW(clean_data)
+  saturation.tpval = 0.01
 )
 ```
 
@@ -164,12 +162,10 @@ The next time that we run the same model, we can save some time and just load th
 ```{r, eval=FALSE}
 model_result <- run_model(
   specification = spec,
-  filter_list = filter_list,
-  download = FALSE,
+  primary_source = "local",
   inputdata_directory = "inst/extdata",
   trend = TRUE,
-  max.lag = 4,
-  saturation.tpval = 0.1/NROW(clean_data)
+  saturation.tpval = 0.01
 )
 ```
 
