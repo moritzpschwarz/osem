@@ -189,7 +189,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   x$exog_data %>%
     dplyr::select(-dplyr::any_of(c("q_1","q_2","q_3","q_4"))) %>%
     tidyr::pivot_longer(-"time", values_to = "values", names_to = "na_item") %>%
-    dplyr::bind_rows(last_hist_value %>% mutate(fit = "Forecast/Assumption of\nExogenous Variables")) %>%
+    dplyr::bind_rows(last_hist_value %>% dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables")) %>%
     dplyr::arrange(.data$time) %>%
     dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") %>%
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} -> exog_forecasts

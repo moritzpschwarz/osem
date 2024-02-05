@@ -113,6 +113,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
   for(i in 1:length(forecasted_unknownexogvalues)){
     # i = 3
+
     if(is.null(forecasted_unknownexogvalues[[i]])){next}
     #print(i)
 
@@ -130,17 +131,17 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
       dplyr::mutate(start = time_to_use[i]) %>%
       dplyr::mutate(quantiles = purrr::map(.data$all.estimates, function(x){
         tidyr::pivot_longer(x, -"time") %>%
-          dplyr::summarise(max = max("value"),
-                           min = min("value"),
-                           p975 = stats::quantile("value", probs = 0.975),
-                           p025 = stats::quantile("value", probs = 0.025),
-                           p75 = stats::quantile("value", probs = 0.75),
-                           p25 = stats::quantile("value", probs = 0.25), .by = .data$time) %>%
+          dplyr::summarise(max = max(.data$value),
+                           min = min(.data$value),
+                           p975 = stats::quantile(.data$value, probs = 0.975),
+                           p025 = stats::quantile(.data$value, probs = 0.025),
+                           p75 = stats::quantile(.data$value, probs = 0.75),
+                           p25 = stats::quantile(.data$value, probs = 0.25), .by = .data$time) %>%
           tidyr::pivot_longer(-"time", names_to = "quantile")
       })) %>%
       dplyr::select(-"all.estimates") %>%
       dplyr::full_join(centrals %>%
-                         dplyr::distinct("dep_var", "name"), by = "dep_var") %>%
+                         dplyr::distinct(.data$dep_var, .data$name), by = "dep_var") %>%
       tidyr::unnest("quantiles") -> alls
 
     dplyr::bind_rows(overall_to_plot_central, centrals) -> overall_to_plot_central
