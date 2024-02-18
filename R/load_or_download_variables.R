@@ -162,17 +162,7 @@ load_or_download_variables <- function(specification,
     ) %>%
     dplyr::ungroup()
 
-  if (constrain.to.minimum.sample) {
-    if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
-      warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
-    }
-    min_date <- max(availability$min_date) # highest minimum date
-    max_date <- min(availability$max_date) # lowest maximum date
-    full <- full %>%
-      dplyr::filter(.data$time >= min_date & .data$time <= max_date)
-    # might still not be balanced but beginning- & end-points are balanced
-    # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
-  }
+
 
   if (!is.null(save_to_disk)) {
 
@@ -200,6 +190,19 @@ load_or_download_variables <- function(specification,
       warning(paste0("File ending currently chosen in 'save_to_disk' is ", ending, ", which is not yet implemented. Please choose one of RDS, rds, Rds, csv, xls, xlsx."))
     }
 
+  }
+
+  # This must come after saving
+  if (constrain.to.minimum.sample) {
+    if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
+      warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+    }
+    min_date <- max(availability$min_date) # highest minimum date
+    max_date <- min(availability$max_date) # lowest maximum date
+    full <- full %>%
+      dplyr::filter(.data$time >= min_date & .data$time <= max_date)
+    # might still not be balanced but beginning- & end-points are balanced
+    # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
   }
 
   return(full)
