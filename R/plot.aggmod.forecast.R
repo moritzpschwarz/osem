@@ -6,6 +6,7 @@
 #' @param interactive Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).
 #' @param first_date Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
 #' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.
+#' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
 #' @param ... Further arguments (currently not in use).
 #'
 #' @export
@@ -34,7 +35,7 @@
 #' save_to_disk = NULL, present = FALSE)
 #' plot(forecast_model(a))
 #'}
-plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, ...){
+plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
 
   if(!isa(x, "aggmod.forecast")){
     stop("Input object not of type aggmod.forecast. Run 'forecast_model' again and use the output of that function.")
@@ -237,15 +238,16 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
                    panel.grid.minor.x = ggplot2::element_blank(),
                    panel.grid.minor.y = ggplot2::element_blank()) -> p
 
-  if(interactive){
-    plotly::ggplotly(p)
+
+  if(return.data){
+    return(plotting_df_ready %>% dplyr::bind_rows(exog_forecasts) %>% dplyr::select(-"var"))
   } else {
-    suppressWarnings(suppressMessages(print(p)))
+    if(interactive){
+      plotly::ggplotly(p)
+    } else {
+      suppressWarnings(suppressMessages(print(p)))
+    }
   }
-
-
-
-
 
 
 

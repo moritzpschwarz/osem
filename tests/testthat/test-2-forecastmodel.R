@@ -169,6 +169,10 @@ test_that("Testing nowcasting and dealing with ragged edges works with fixed dat
   set.seed(123)
   expect_message(bb <- forecast_model(model, plot.forecast = FALSE), regexp = "No exogenous values")
 
+  # check that a dataframe can be returned
+  expect_s3_class(plot(bb, return.data = TRUE), class = "tbl_df")
+
+
   skip_on_ci()
   expect_snapshot_plot("Forecast_plot_ragged",code = plot(bb))
 })
