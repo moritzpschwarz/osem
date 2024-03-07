@@ -2,38 +2,14 @@
 
 test_that("Checking some earlier nowcasting issues",{
 
-  dict %>%
-    dplyr::bind_rows(dplyr::tibble(
-      model_varname = "IndProd", # this is free to choose but must be unique
-      full_name = "An index of Industrial Production",
-      database  = "eurostat",
-      variable_code = "PROD", # in this case use the bt_indicator information here
-      dataset_id = "sts_inpr_q",
-      var_col = "indic_bt", # here we specify what the column with the variables is called
-      freq = "q", # for quarterly data, 'm' would be monthly
-      geo = "AT",
-      unit = "I15", # for index of 2015 = 100
-      s_adj = "NSA", # not seasonally adjusted
-      nace_r2 = "B-D")) -> new_dict
-
-
   specification <- dplyr::tibble(
     type = c(
-      #"n",
-      #"n",
-      #"n",
       "n"
     ),
     dependent = c(
-      #"EmiCO2Industry",
-      #"EmiCO2Combustion",
-      #"EmiCH4Livestock",
       "FinConsExpHH"
     ),
     independent = c(
-      #"HICP_Gas + HICP_Electricity + IndProd + Export",
-      #"FinConsExpHH + HICP_Electricity + EmiCO2Industry",
-      #"FinConsExpHH + Export + GValueAddAgri",
       "FinConsExpGov + HICP_Gas"
     )
   )
@@ -57,7 +33,7 @@ test_that("Checking some earlier nowcasting issues",{
 
 
   expect_silent(model <- run_model(specification = specification,
-                                   dictionary = new_dict,
+                                   dictionary = dict,
                                    inputdata_directory = testdata_modified_long,
                                    primary_source = "local",
                                    present = FALSE,
