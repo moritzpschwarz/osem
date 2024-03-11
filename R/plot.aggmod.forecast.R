@@ -58,7 +58,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     exclude.exogenous <- TRUE
   }
   if(exclude.exogenous){
-    # determine which variables to exclude, when we are not including exogenous varibles
+    # determine which variables to exclude, when we are not including exogenous variables
     plot_df %>%
       dplyr::distinct(dplyr::across(c("na_item", "fit"))) %>%
       dplyr::mutate(fit = as.logical(.data$fit)) %>%
@@ -170,8 +170,6 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::select(-"var") %>%
     dplyr::mutate(fit = "forecast") -> last_hist_value
 
-
-
   last_fitted_value %>%
     dplyr::group_by(.data$time, .data$na_item) %>%
     dplyr::summarise(max = .data$values,
@@ -213,7 +211,6 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}}
 
 
-
   plotting_df_ready %>%
     ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
 
@@ -238,9 +235,21 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
                    panel.grid.minor.x = ggplot2::element_blank(),
                    panel.grid.minor.y = ggplot2::element_blank()) -> p
 
-
   if(return.data){
-    return(plotting_df_ready %>% dplyr::bind_rows(exog_forecasts) %>% dplyr::select(-"var"))
+    # prepare a nice dataset to be spit out
+    plotting_df_ready %>%
+      {if(!exclude.exogenous){dplyr::bind_rows(.,exog_forecasts %>%
+                                                 dplyr::mutate(fit = "Exogenous Forecast"))} else {.}} %>%
+    dplyr::select(-"var") %>%
+      dplyr::full_join(all_forecasts_processed_q %>%
+                         dplyr::select(-"fit"), by = dplyr::join_by("time", "na_item")) %>%
+      dplyr::mutate(fit = dplyr::case_when(fit == "forecast" ~ "Endogenous Forecast",
+                                           fit == "TRUE" ~ "Insample Fit",
+                                           fit == "FALSE" ~ "Observation",
+                                           TRUE ~ fit)) %>%
+      dplyr::rename(type = "fit") %>%
+      dplyr::arrange(dplyr::desc(.data$time), .data$na_item, .data$type) %>%
+      return()
   } else {
     if(interactive){
       plotly::ggplotly(p)

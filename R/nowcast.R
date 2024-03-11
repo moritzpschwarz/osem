@@ -68,7 +68,7 @@ nowcasting <- function(model, exog_df_ready){
             remove_selected_columns = TRUE) -> exog_data_nowcasting
 
         # we check whether all relevant variables are even in this subset
-        # we need to do this as sometimes the approrpriate interval that we filtered for
+        # we need to do this as sometimes the appropriate interval that we filtered for
         # above will mean that one variable is not included in the exog_data_nowcasting at all
         if(!all(indep_vars_to_get %in% names(exog_data_nowcasting))){
           vars_missing <- indep_vars_to_get[!indep_vars_to_get %in% names(exog_data_nowcasting)]
@@ -77,9 +77,8 @@ nowcasting <- function(model, exog_df_ready){
                  ncol = length(vars_missing), dimnames = list(NULL, vars_missing)) %>%
             dplyr::as_tibble() %>%
             dplyr::bind_cols(exog_data_nowcasting,.) %>%
-            dplyr::relocate("time",indep_vars_to_get) -> exog_data_nowcasting
+            dplyr::relocate("time",all_of(indep_vars_to_get)) -> exog_data_nowcasting
         }
-
 
         # here we check whether any of the exogenous values need to be replaced
         # this can happen when co-variates were not available up to the final time
@@ -91,6 +90,16 @@ nowcasting <- function(model, exog_df_ready){
                              tidyr::pivot_longer(-"time"), by = c("time","name")) %>%
           dplyr::mutate(values_forecasted_exogenously = .data$value) %>%
           dplyr::select(-"value", -"values_historical") -> exog_data_to_replace
+
+        if(!identical(exog_data_to_replace$values_forecasted_exogenously,numeric(0)) & all(is.na(exog_data_to_replace$values_forecasted_exogenously))){
+          stop(paste0("Forecasting has failed, likely due to a nowcasting issue. ",
+                      "This typcially happens when exogenous values are provided using the 'exog_predictions' option of 'forecast_model()'. ",
+                      "There the source of this error is likely that the provided values do not cover values for the situation that there is a need to nowcast some values. ",
+                      "The most reliable process to avoid this is to use: ",
+                      "result <- run_model(specification); ",
+                      "forecast <- forecast_model(result); ",
+                      "modified_exog_data <- forecast$exog_data_nowcast * some_kind_of_change(e.g. multiplying by 1.05 to increase by 5%); ",
+                      "forecast_adapted <- forecast_model(result, exog_predictions = modified_exog_data)", collapse = "\n"))}
 
         if(nrow(exog_data_to_replace) > 0){
           exog_data_nowcasting %>%
