@@ -367,9 +367,14 @@ download_edgar <- function(to_obtain, quiet) {
     zipfilename <- stringr::str_extract(string = edgar_dataset_ids[i], pattern = "(CO2|CH4|N2O)(.)+(\\.zip$)")
     # extract GHG name
     ghg <- stringr::str_extract(string = zipfilename, pattern = "(CO2|CH4|N2O)")
+
     # assume that will continue to be able to remove "_m" and replace ".zip" by ".xlsx
-    filename <- stringr::str_remove(string = zipfilename, pattern = "_m")
+    # commented out by Moritz 13.03.2024 due to update of file convention by EDGAR for v8
+    #filename <- stringr::str_remove(string = zipfilename, pattern = "_m")
+    # this now matches everything from the last /
+    filename <- stringr::str_extract(string = edgar_dataset_ids[i], pattern = "([^/]+$)")
     filename <- stringr::str_replace(string = filename, pattern = ".zip", replacement = ".xlsx")
+
     # unzip the .xlsx file into temporary directory
     utils::unzip(zipfile = tmp_download, files = filename, exdir = tmp_extract)
 
@@ -442,7 +447,8 @@ download_edgar <- function(to_obtain, quiet) {
 
     if (length(indices_sector) > 0L) {
       tmp <- readxl::read_excel(path = file.path(tmp_extract, filename),
-                                sheet = paste0(ghg, "_IPCC2006"),
+                                #sheet = paste0(ghg, "_IPCC2006"),
+                                sheet = "IPCC 2006",
                                 skip = 9)
       # quick sanity check
       stopifnot(unique(tmp$Substance) == ghg)
