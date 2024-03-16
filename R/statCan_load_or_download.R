@@ -99,9 +99,36 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
       }
 
 
+      # if have monthly data, need to aggregate to quarterly
+      if (to_obtain$freq[idx] == "m") {
+        # need to aggregate across all filters
+        columns <- colnames(subset_of_data)
+        unique_columns <- setdiff(columns, "values") # should be unique across these
+        stopifnot(sum(duplicated(subset_of_data[, unique_columns])) == 0L) # sanity check
+        groupby_columns <- union(c("year", "quarter"), setdiff(unique_columns, "REF_DATE")) # want to group_by year-quarter, so exclude time column
+        subset_of_data <- subset_of_data %>%
+          dplyr::mutate(year = lubridate::year(.data$REF_DATE),
+                        quarter = lubridate::quarter(.data$REF_DATE)) %>%
+          dplyr::group_by(dplyr::across(dplyr::all_of(groupby_columns))) %>%
+          dplyr::summarise(values = sum(.data$VALUE),
+                           n = dplyr::n(), # record how many months are available in each quarter
+                           time = min(.data$REF_DATE)) %>%
+          dplyr::ungroup() %>%
+          # drop "incomplete" quarters
+          dplyr::filter(.data$n == 3L) %>%
+          dplyr::select(-"year", -"quarter", -"n")
+      }
+      # previous if statement turns statCan col REF_DATE into time
+      # since data is given in quarerly values we need to still rename the table name
+      else {
+        subset_of_data <- subset_of_data %>% dplyr::rename("time" = "REF_DATE")
+
+      }
+
       # ensure column "time" is a Date variable (Moritz had this)
       subset_of_data <- subset_of_data %>%
-        dplyr::mutate(time = as.Date(.data$REF_DATE))
+        dplyr::mutate(time = as.Date(.data$time))
+
       df_statcan <- dplyr::bind_rows(df_statcan, subset_of_data)
       print(head(subset_of_data,2))
     }
