@@ -37,9 +37,23 @@ dict_statCan <- tibble::tribble(
 
 
 dict_statCan <- as.data.frame(dict_statCan)
-dictionary <- as.data.frame(dict_statCan)
 
-download_statcan <- function(to_obtain, additional_filters, quiet) {
+
+#' Download StatCan
+#'
+#' Downloads StatCan data given a data.frame of required variables
+#'
+#' @inheritParams load_or_download_variables
+#' @param to_obtain A data.frame as returned by [determine_variables()].
+#' @param column_filters A character vector storing the column names of
+#' filters. Length 0 if not present.
+#'
+#' @return Returns a list with two named elements: \code{$df} stores the
+#' downloaded data and \code{$to_obtain} the updated data.frame tracking which
+#' variables still need to be obtained.
+
+download_statcan <- function(to_obtain, column_filters, quiet) {
+
 
   # initialise empty df
   df_statcan <- data.frame()
@@ -61,30 +75,35 @@ download_statcan <- function(to_obtain, additional_filters, quiet) {
     #get the dictionary coordinates that use the following dataset_id
     indices <- which(to_obtain$database == "statcan" & to_obtain$dataset_id == id)
 
-
-    #generate list for additional_filters
     #look through the rows of the dictionary based on the coordinates for the id
     for (idx in indices) {
       subset_of_data <- df
-      #iterate through all the filters of the particular dictionary row to build filtered dataframe
-      for (k in seq_along(additional_filters)) {
-        filtername <- as.character(additional_filters[k])
+
+      #iterate through all the column filter names of the particular dictionary row to build filtered dataframe
+      for (k in seq_along(column_filters)) {
+        filtername <- as.character(column_filters[k])
 
         # print(names(subset_of_data))
         if (filtername %in% names(subset_of_data)) {
-          print(filtername)
-          print(typeof(filtername))
-          print(to_obtain[idx,filtername])
 
           subset_of_data <- subset_of_data %>% dplyr::filter(.,.[[filtername]] == to_obtain[idx,filtername])
           print(head(subset_of_data,2))
         }
-
-        df_statcan <- dplyr::bind_rows(df_statcan, subset_of_data)
-
-        #subset_of_data <- subset_of_data %>%
-        #  {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[idx, filtername])}else{.}}
       }
+
+      # if after filtering "sub" is not empty, we found the variable and can mark it as such
+      if (NROW(subset_of_data) == 0L) {
+        stop(paste0("For model variable '", to_obtain[idx,1], "', the dataset is empty after applying filters. Check whether the dictionary and the data source for changes and errors (i.e. name of units, etc.)"))
+      } else {
+        to_obtain[idx, "found"] <- TRUE
+      }
+
+
+      # ensure column "time" is a Date variable (Moritz had this)
+      subset_of_data <- subset_of_data %>%
+        dplyr::mutate(time = as.Date(.data$REF_DATE))
+      df_statcan <- dplyr::bind_rows(df_statcan, subset_of_data)
+      print(head(subset_of_data,2))
     }
 
 
@@ -114,8 +133,8 @@ to_obtain <- determine_variables(specification=spec,dictionary=dictionary)
 
 #build the list of dataframes
 
-#for test we just set additional_filters as default cols of database
-additional_filters <- actual_cols
-download_statcan(to_obtain, additional_filters, FALSE)
+#for test we just set column_filters as default cols of database
+column_filters <- actual_cols
+download_statcan(to_obtain, column_filters, FALSE)
 
 
