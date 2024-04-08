@@ -125,7 +125,7 @@ run_model <- function(specification,
   }
 
   if(!is.logical(gets_selection)){stop("'gets_selection' must be logical  (so either TRUE or FALSE).")}
-  if(!is.logical(saturation)){stop("'saturation' must be logical  (so either TRUE or FALSE).")}
+  if(!is.null(saturation) & !all(saturation %in% c("IIS","SIS","TIS"))){stop("'saturation' must be either NULL to disable Indicator Saturation or a character vector that can take the values 'IIS', 'SIS', or 'TIS'. These can also be combined e.g. c('IIS', 'TIS').")}
 
 
   # check whether aggregate model is well-specified
