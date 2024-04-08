@@ -124,6 +124,8 @@ run_model <- function(specification,
     if(is.character(save_to_disk) & identical(strsplit(basename(save_to_disk), split="\\.")[[1]][-1],character(0))){stop("'save_to_disk' must be a path to a file. No file ending detected. Currently supporting RDS, rds, Rds, csv, xls, xlsx.")}
   }
 
+  if(!is.logical(gets_selection)){stop("'gets_selection' must be logical  (so either TRUE or FALSE).")}
+  if(!is.logical(saturation)){stop("'saturation' must be logical  (so either TRUE or FALSE).")}
 
 
   # check whether aggregate model is well-specified
