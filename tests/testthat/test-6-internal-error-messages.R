@@ -1,6 +1,6 @@
 
 
-test_that("Error messages are working",{
+test_that("Error messages for saturation, selection",{
 
   specification <- dplyr::tibble(
     type = c(
@@ -20,18 +20,6 @@ test_that("Error messages are working",{
                             HICP_Gas = rnorm(mean = 200, n = length(time)),
                             FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.2))
 
-  # now modify this to simluate the effect of an exogenous variable just not existing for the period that we
-  # need nowcasting for
-  # so first we set FinConsExpHH to NA to necessitate nowcasting
-  # then we remove an exogenous independet variable on the last date
-  # this used to produce an error - should be fixed now
-  testdata %>%
-    dplyr::mutate(FinConsExpHH = dplyr::case_when(time == as.Date("2023-10-01") ~ NA,
-                                                  TRUE ~ FinConsExpHH)) %>%
-    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
-    dplyr::filter(!(time == as.Date("2023-10-01") & na_item == "FinConsExpGov")) -> testdata_modified_long
-
-
   expect_error(run_model(specification = specification, gets_selection = NULL), "must be logical")
   expect_error(run_model(specification = specification, gets_selection = "NULL"), "must be logical")
   expect_error(run_model(specification = specification, gets_selection = 1), "must be logical")
@@ -40,21 +28,31 @@ test_that("Error messages are working",{
   expect_error(run_model(specification = specification, saturation = "MIS"), "character vector that can take the values 'IIS', 'SIS', or 'TIS'")
   expect_error(run_model(specification = specification, saturation = 0.5), "character vector that can take the values 'IIS', 'SIS', or 'TIS'")
 
-  expect_silent(run_model(specification = specification,
-                          dictionary = dict,
-                          inputdata_directory = testdata_modified_long,
-                          primary_source = "local",
-                          present = FALSE,
-                          quiet = TRUE, saturation = "IIS"))
 
-  expect_silent(run_model(specification = specification,
-                          dictionary = dict,
-                          inputdata_directory = testdata_modified_long,
-                          primary_source = "local",
-                          present = FALSE,
-                          quiet = TRUE, saturation = c("SIS", "TIS")))
+  expect_error(run_model(specification = specification, saturation.tpval = "A"), "saturation.tpval' must be either NULL or numeric between 0 and 1")
+  expect_error(run_model(specification = specification, saturation.tpval = 2), "saturation.tpval' must be either NULL or numeric between 0 and 1")
+  expect_error(run_model(specification = specification, saturation.tpval = -2), "saturation.tpval' must be either NULL or numeric between 0 and 1")
+
+  expect_error(run_model(specification = specification, selection.tpval = "A"), "selection.tpval' must be either NULL or numeric between 0 and 1")
+  expect_error(run_model(specification = specification, selection.tpval = 2), "selection.tpval' must be either NULL or numeric between 0 and 1")
+  expect_error(run_model(specification = specification, selection.tpval = -2), "selection.tpval' must be either NULL or numeric between 0 and 1")
 
 
+  run_model(specification = specification,
+            dictionary = dict,
+            inputdata_directory = testdata %>%
+              tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values"),
+            primary_source = "local",
+            present = FALSE,
+            quiet = TRUE, saturation = "IIS")
 
+
+  run_model(specification = specification,
+            dictionary = dict,
+            inputdata_directory = testdata %>%
+              tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values"),
+            primary_source = "local",
+            present = FALSE,
+            quiet = TRUE, saturation = c("SIS","TIS"))
 
 })
