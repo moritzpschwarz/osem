@@ -86,7 +86,7 @@ run_model <- function(specification,
                       save_to_disk = NULL,
                       present = FALSE,
                       quiet = FALSE,
-                      use_logs = c("both", "y", "x"),
+                      use_logs = "both",
                       trend = TRUE,
                       ardl_or_ecm = "ardl",
                       max.ar = 4,
@@ -124,6 +124,7 @@ run_model <- function(specification,
     if(is.character(save_to_disk) & identical(strsplit(basename(save_to_disk), split="\\.")[[1]][-1],character(0))){stop("'save_to_disk' must be a path to a file. No file ending detected. Currently supporting RDS, rds, Rds, csv, xls, xlsx.")}
   }
 
+  # Checking saturation and selection options
   if(!is.logical(gets_selection)){stop("'gets_selection' must be logical  (so either TRUE or FALSE).")}
   if(!is.null(saturation) & !all(saturation %in% c("IIS","SIS","TIS"))){stop("'saturation' must be either NULL to disable Indicator Saturation or a character vector that can take the values 'IIS', 'SIS', or 'TIS'. These can also be combined e.g. c('IIS', 'TIS').")}
 
@@ -132,6 +133,12 @@ run_model <- function(specification,
   if(!is.numeric(selection.tpval) & !is.null(selection.tpval)){stop("'selection.tpval' must be either NULL or numeric between 0 and 1.")}
   if(is.numeric(selection.tpval) & (selection.tpval > 1 | selection.tpval < 0 )){stop("'selection.tpval' must be either NULL or numeric between 0 and 1.")}
 
+  # Checking log specifications
+  if(length(use_logs) > 1 | !is.character(use_logs) | !all(use_logs %in% c("y","x","both","none"))){stop("The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'.")}
+
+  # Checking ardl_or_ecm specification
+  #if(length(ardl_or_ecm) > 1 | !is.character(ardl_or_ecm) | !all(use_logs %in% c("y","x","both","none"))){stop("The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'.")}
+  if(is.null(ardl_or_ecm) | (!identical(ardl_or_ecm, "ardl") & !identical(ardl_or_ecm, "ecm"))){stop("The argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'.")}
 
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
@@ -151,6 +158,25 @@ run_model <- function(specification,
 
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
+
+  # check the frequencies of the full data
+  frequency <- full_data %>%
+    dplyr::distinct(.data$time) %>%
+    dplyr::mutate(diff_num = c(NA,diff(.data$time)),
+                  diff = dplyr::case_when(.data$diff_num == 1 ~ "day",
+                                          .data$diff_num %in% c(28:31) ~ "month",
+                                          .data$diff_num %in% c(90:92) ~ "3 months",
+                                          .data$diff_num %in% c(365:366) ~ "year")) %>%
+    tidyr::drop_na(diff) %>%
+    dplyr::distinct(diff) %>%
+    dplyr::pull(diff)
+
+  if(length(frequency) > 1){
+    # | frequency == "month" | frequency == "day"){
+    stop("Mixed frequency models are not yet implemented. Please check to make sure that all data that you supply to the model (incl. in the dictionary) has the same frequency.")
+    }
+
+
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order)

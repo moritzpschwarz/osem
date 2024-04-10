@@ -32,7 +32,7 @@ Eurostat variable code and 'class' the classification code (one of
 endogenous by modelling, endogenous by identity/definition, or exogenous.
 As returned by \link{classify_variables}.}
 
-\item{use_logs}{Character vector. Either "both", "x", or "y" to decide whether to use logs.}
+\item{use_logs}{To decide whether to log any variables. Must be one of 'both', 'y', 'x', or 'none'. Default is 'both'.}
 
 \item{trend}{Logical. Should a trend be added? Default is TRUE.}
 
@@ -42,7 +42,7 @@ As returned by \link{classify_variables}.}
 
 \item{max.dl}{Integer. The maximum number of lags to use for the independent variables (the distributed lags).}
 
-\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
+\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needs a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
 
 \item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
 

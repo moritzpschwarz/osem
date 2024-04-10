@@ -12,7 +12,7 @@ run_model(
   save_to_disk = NULL,
   present = FALSE,
   quiet = FALSE,
-  use_logs = c("both", "y", "x"),
+  use_logs = "both",
   trend = TRUE,
   ardl_or_ecm = "ardl",
   max.ar = 4,
@@ -54,7 +54,7 @@ should be presented or not. NOTE: not implemented yet.}
 These messages are intended to give more information about the estimation
 and data retrieval process.}
 
-\item{use_logs}{To decide whether to log any variables. Must be one of "both", "y", or "x". Default is "both".}
+\item{use_logs}{To decide whether to log any variables. Must be one of 'both', 'y', 'x', or 'none'. Default is 'both'.}
 
 \item{trend}{Logical. Should a trend be added? Default is TRUE.}
 
@@ -64,7 +64,7 @@ and data retrieval process.}
 
 \item{max.dl}{Integer. The maximum number of lags to use for the independent variables (the distributed lags).}
 
-\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
+\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needs a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
 
 \item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
 

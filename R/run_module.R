@@ -6,7 +6,6 @@
 #' @param module A row of the specification table.
 #' @param data A tibble or data.frame containing the full data for the aggregate
 #'   model.
-#' @param use_logs Character vector. Either "both", "x", or "y" to decide whether to use logs.
 #' @inheritParams identify_module_data
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
