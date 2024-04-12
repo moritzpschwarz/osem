@@ -3,12 +3,12 @@
 #' @param clean_data An input data.frame or tibble. Must be the output of clean_data() to fit all requirements.
 #' @param dep_var_basename A character string of the name of the dependent variable as contained in clean_data() in a level form (i.e. no ln or D in front of the name).
 #' @param x_vars_basename A character vector of the name(s) of the independent variable(s) as contained in clean_data() in a level form (i.e. no ln or D in front of the name).
-#' @param use_logs To decide whether to log any variables. Must be one of "both", "y", or "x". Default is "both".
+#' @param use_logs To decide whether to log any variables. Must be one of 'both', 'y', 'x', or 'none'. Default is 'both'.
 #' @param trend Logical. To determine whether a trend should be added. Default is TRUE.
 #' @param ardl_or_ecm Either 'ardl' or 'ecm' to determine whether to estimate the model as an Autoregressive Distributed Lag Function (ardl) or as an Equilibrium Correction Model (ecm).
 #' @param max.ar Integer. The maximum number of lags to use for the AR terms. as well as for the independent variables.
 #' @param max.dl Integer. The maximum number of lags to use for the independent variables (the distributed lags).
-#' @param saturation Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.
+#' @param saturation Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needs a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.
 #' @param saturation.tpval The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.
 #' @param max.block.size Integer. Maximum size of block of variables to be selected over, default = 20.
 #' @param gets_selection Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.
@@ -30,12 +30,9 @@
 #' aggregate.model:::estimate_module(sample_data_clean, "yvar", "xvar")
 #'
 estimate_module <- function(clean_data,
-                            dep_var_basename = "imports_of_goods_and_services",
-                            x_vars_basename = c(
-                              "gross_capital_formation",
-                              "household_and_npish_final_consumption_expenditure"
-                            ),
-                            use_logs = c("both", "y", "x"),
+                            dep_var_basename,
+                            x_vars_basename,
+                            use_logs = "both",
                             trend = TRUE,
                             ardl_or_ecm = "ardl",
                             max.ar = 4,
@@ -45,10 +42,10 @@ estimate_module <- function(clean_data,
                             max.block.size = 20,
                             gets_selection = TRUE,
                             selection.tpval = 0.01) {
-  log_opts <- match.arg(use_logs)
+  log_opts <- use_logs
 
   if (!ardl_or_ecm %in% c("ardl", "ecm")) {
-    stop("The variable 'ardl_or_ecm' in the 'estimate_module' function must be either 'ecm' or 'ardl'. You have supplied a different value.")
+    stop("The variable 'ardl_or_ecm' in the 'estimate_module()' or the 'run_model()' function must be either 'ecm' or 'ardl'. You have supplied a different value.")
   }
 
   isat_list <- dplyr::tibble(
@@ -61,16 +58,11 @@ estimate_module <- function(clean_data,
 
       # first check whether there is an x variable that is relevant (or whether it is an AR only model)
       if(!identical(x_vars_basename, character(0))){
-        if (log_opts %in% c("both", "x")) {
-          xvars_names <- grep("L[0-9]\\.ln",
-                              grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
-                              value = TRUE
-          )
-        } else {
-          xvars_names <- grep("L[0-9]\\.",
-                              grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
-                              value = TRUE
-          )
+        xvars_names <- grep("^L[0-9]\\.",
+                            grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
+                            value = TRUE)
+        if (log_opts %in% c("y", "none")) {
+          xvars_names <- xvars_names[!grepl("ln\\.",xvars_names)]
         }
       } else {
         # if it is an AR only model
@@ -100,7 +92,7 @@ estimate_module <- function(clean_data,
         dplyr::pull()
 
 
-      # TO DO: Check log specification and check when model is AR only
+      # TODO: Check log specification and check when model is AR only
       if(!identical(x_vars_basename, character(0))){
         xvars_names <- grep("L[0-9]\\.D.",
                             grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
@@ -148,8 +140,9 @@ estimate_module <- function(clean_data,
         },
         plot = FALSE,
         print.searchinfo = FALSE,
-        iis = TRUE,
-        sis = TRUE,
+        iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
+        sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
+        tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
         t.pval = saturation.tpval,
         max.block.size = maxblocksize
       )
@@ -194,8 +187,9 @@ estimate_module <- function(clean_data,
                                                 mxreg = retained.xvars,
                                                 plot = FALSE,
                                                 print.searchinfo = FALSE,
-                                                iis = TRUE,
-                                                sis = TRUE,
+                                                iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
+                                                sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
+                                                tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
                                                 t.pval = saturation.tpval)
   }
 
@@ -211,7 +205,7 @@ estimate_module <- function(clean_data,
   out$args <- list(clean_data = clean_data,
                    dep_var_basename = dep_var_basename,
                    x_vars_basename = x_vars_basename,
-                   use_logs = match.arg(use_logs),
+                   use_logs = use_logs,
                    ardl_or_ecm = ardl_or_ecm,
                    max.ar = max.ar,
                    max.dl = max.dl)

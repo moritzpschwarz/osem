@@ -7,6 +7,19 @@
 
 forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_fill_method, ar.fill.max, n.ahead, quiet){
 
+  frequency <- model$full_data %>%
+    dplyr::distinct(.data$time) %>%
+    dplyr::mutate(diff_num = c(NA,diff(.data$time)),
+                  diff = dplyr::case_when(.data$diff_num == 1 ~ "day",
+                                          .data$diff_num %in% c(28:31) ~ "month",
+                                          .data$diff_num %in% c(90:92) ~ "3 months",
+                                          .data$diff_num %in% c(365:366) ~ "year")) %>%
+    tidyr::drop_na(diff) %>%
+    dplyr::distinct(diff) %>%
+    dplyr::pull(diff)
+
+  if(length(frequency) > 1 | frequency == "month" | frequency == "day"){stop("Mixed frequency forecasts or forecasts with daily or monthly data are not yet implemented.")}
+
   if (is.null(exog_predictions) & exog_fill_method == "last") {
     if(!quiet){
       message("No exogenous values provided. Model will use the last available value.\nAlternative is exog_fill_method = 'AR'.")
@@ -24,7 +37,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
     exog_df %>%
       dplyr::group_by(.data$na_item) %>%
       dplyr::rowwise() %>%
-      dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
+      dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = frequency)[1:n.ahead + 1])) %>%
       tidyr::unnest("time") %>%
       dplyr::ungroup() %>%
       dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
@@ -59,7 +72,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       dplyr::filter(.data$time == max(.data$time)) %>%
       dplyr::distinct(dplyr::across("time")) %>%
       dplyr::rowwise() %>%
-      dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
+      dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = frequency)[1:n.ahead + 1])) %>%
       tidyr::unnest("time") %>%
       dplyr::ungroup()
 
@@ -81,9 +94,9 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         dplyr::summarise(time = max(.data$time)) %>%
         dplyr::pull("time") -> overall_max_time
 
-      diff_time_to_max <- length(seq.Date(from = col_to_forecast_max_time, to = overall_max_time, by = "3 months")[-1])
+      diff_time_to_max <- length(seq.Date(from = col_to_forecast_max_time, to = overall_max_time, by = frequency)[-1])
       time_to_forecast <- seq.Date(col_to_forecast_max_time, length.out = n.ahead + (1 + diff_time_to_max),
-                                   by = "3 months")[-1]
+                                   by = frequency)[-1]
 
       # now let's extract the data
       exog_df_intermed %>%
@@ -95,14 +108,17 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         dplyr::pull(col_to_forecast) -> y_ar_predict
 
       to_ar_predict %>%
-        dplyr::select("q_2", "q_3", "q_4") -> x_ar_predict
+        dplyr::select(dplyr::any_of(c("q_2", "q_3", "q_4"))) -> x_ar_predict
 
-      isat_ar_predict <- tryCatch(gets::isat(y = y_ar_predict, mxreg = as.matrix(x_ar_predict),
+      isat_ar_predict <- tryCatch(gets::isat(y = y_ar_predict,
+                                             mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+
                                              mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
                                              print.searchinfo = FALSE, sis = TRUE, iis = TRUE),
                                   error = function(abcd){
                                     message(paste0("Exogneous forecasted values for ", names(exog_df_intermed)[col_to_forecast]," will only use SIS, not IIS as too many indicators retained.\n"))
-                                    gets::isat(y = y_ar_predict, mxreg = as.matrix(x_ar_predict),
+                                    gets::isat(y = y_ar_predict,
+                                               mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
                                                mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
                                                print.searchinfo = FALSE, sis = TRUE, iis = FALSE)
                                   })
@@ -203,7 +219,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       dplyr::filter(.data$time == max(.data$time)) %>%
       dplyr::distinct(dplyr::across("time")) %>%
       dplyr::rowwise() %>%
-      dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = "3 months")[1:n.ahead + 1])) %>%
+      dplyr::mutate(time = list(seq(.data$time, length = n.ahead + 1, by = frequency)[1:n.ahead + 1])) %>%
       tidyr::unnest("time") %>%
       dplyr::ungroup()
 
@@ -225,9 +241,9 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         dplyr::summarise(time = max(.data$time)) %>%
         dplyr::pull("time") -> overall_max_time
 
-      diff_time_to_max <- length(seq.Date(from = col_to_forecast_max_time, to = overall_max_time, by = "3 months")[-1])
+      diff_time_to_max <- length(seq.Date(from = col_to_forecast_max_time, to = overall_max_time, by = frequency)[-1])
       time_to_forecast <- seq.Date(col_to_forecast_max_time, length.out = n.ahead + (1 + diff_time_to_max),
-                                   by = "3 months")[-1]
+                                   by = frequency)[-1]
 
       # now let's extract the data
       exog_df_intermed %>%
