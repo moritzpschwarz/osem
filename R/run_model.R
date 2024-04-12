@@ -161,6 +161,7 @@ run_model <- function(specification,
 
   # check the frequencies of the full data
   frequency <- full_data %>%
+    dplyr::arrange(.data$na_item, .data$time) %>%
     dplyr::group_by(.data$na_item) %>%
     dplyr::distinct(.data$time) %>%
     dplyr::mutate(diff_num = c(NA,diff(.data$time)),

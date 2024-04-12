@@ -8,12 +8,15 @@
 forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_fill_method, ar.fill.max, n.ahead, quiet){
 
   frequency <- model$full_data %>%
+    dplyr::arrange(.data$na_item, .data$time) %>%
+    dplyr::group_by(.data$na_item) %>%
     dplyr::distinct(.data$time) %>%
     dplyr::mutate(diff_num = c(NA,diff(.data$time)),
                   diff = dplyr::case_when(.data$diff_num == 1 ~ "day",
                                           .data$diff_num %in% c(28:31) ~ "month",
                                           .data$diff_num %in% c(90:92) ~ "3 months",
                                           .data$diff_num %in% c(365:366) ~ "year")) %>%
+    dplyr::ungroup() %>%
     tidyr::drop_na(diff) %>%
     dplyr::distinct(diff) %>%
     dplyr::pull(diff)
