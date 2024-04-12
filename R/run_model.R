@@ -97,7 +97,7 @@ run_model <- function(specification,
                       gets_selection = TRUE,
                       selection.tpval = 0.01,
                       constrain.to.minimum.sample = TRUE
-                      ) {
+) {
 
   primary_source = match.arg(primary_source)
 
@@ -161,22 +161,32 @@ run_model <- function(specification,
 
   # check the frequencies of the full data
   frequency <- full_data %>%
+    dplyr::group_by(.data$na_item) %>%
     dplyr::distinct(.data$time) %>%
     dplyr::mutate(diff_num = c(NA,diff(.data$time)),
                   diff = dplyr::case_when(.data$diff_num == 1 ~ "day",
                                           .data$diff_num %in% c(28:31) ~ "month",
                                           .data$diff_num %in% c(90:92) ~ "3 months",
                                           .data$diff_num %in% c(365:366) ~ "year")) %>%
+    dplyr::ungroup() %>%
     tidyr::drop_na(diff) %>%
     dplyr::distinct(diff) %>%
     dplyr::pull(diff)
 
   if(length(frequency) > 1){
-    # | frequency == "month" | frequency == "day"){
-    stop("Mixed frequency models are not yet implemented. Please check to make sure that all data that you supply to the model (incl. in the dictionary) has the same frequency.")
+
+    if(all(c("year","3 months") %in% frequency)){
+      full_data %>%
+        dplyr::mutate(year = lubridate::year(time),
+                      quarter = lubridate::quarter(time)) %>%
+        dplyr::mutate(values = sum(values, na.rm = TRUE), .by = c(na_item,year)) %>%
+        dplyr::filter(quarter == 1) %>%
+        dplyr::select(-all_of(c("year", "quarter"))) -> full_data
+    } else {
+      # frequency == "month" | frequency == "day")
+      stop("Mixed frequency models are not yet implemented. Please check to make sure that all data that you supply to the model (incl. in the dictionary) has the same frequency.")
     }
-
-
+  }
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order)

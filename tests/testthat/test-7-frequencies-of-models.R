@@ -15,6 +15,9 @@ specification <- dplyr::tibble(
 time_to_sim <- 30
 
 
+# Simulated Data ----------------------------------------------------------
+
+
 set.seed(123)
 daily <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "day"),
                        FinConsExpGov = rnorm(mean = 100, n = length(time)),
@@ -101,5 +104,44 @@ test_that("Test the reaction of the model for different frequencies",{
 
   expect_equal(fc_q$forecast$data[[1]]$time, structure(c(15522, 15614, 15706, 15796, 15887, 15979, 16071, 16161, 16252, 16344), class = "Date"))
   expect_equal(fc_a$forecast$data[[1]]$time, structure(c(12784, 13149, 13514, 13879, 14245, 14610, 14975, 15340, 15706, 16071, 16436, 16801, 17167, 17532, 17897, 18262, 18628, 18993, 19358, 19723, 20089, 20454, 20819, 21184, 21550, 21915, 22280, 22645, 23011, 23376, 23741, 24106, 24472, 24837, 25202, 25567, 25933, 26298, 26663, 27028), class = "Date"))
+
+})
+
+
+
+# Real Data ---------------------------------------------------------------
+
+test_that("Annual Models run with EUROSTAT data",{
+
+
+  specification <- dplyr::tibble(
+    type = c(
+      "n"
+    ),
+    dependent = c(
+      "EmiCO2Combustion"
+    ),
+    independent = c(
+      "FinConsExpHH + GCapitalForm"
+    )
+  )
+
+  aggregate.model::dict %>%
+    mutate(dataset_id = case_when(model_varname == "FinConsExpHH" ~ "nama_10_gdp",
+                                  model_varname == "GCapitalForm" ~ "nama_10_gdp",
+                                  TRUE ~ dataset_id)) -> dict_new
+
+  test <- run_model(specification = specification,
+                    dictionary = dict_new,
+                    save_to_disk = "data-raw/test/test.xlsx",
+                    primary_source = "local",
+                    inputdata_directory = "data-raw/test",
+                    max.ar = 1, # for annual models, would not go beyond 1 (otherwise sample is too short)
+                    max.dl = 1, # for annual models, would not go beyond 1 (otherwise sample is too short)
+                    max.block.size = 5,
+                    use_logs = "none")
+
+  test_fc <- forecast_model(test, plot.forecast = FALSE)
+  plot(test_fc, exclude.exogenous = FALSE)
 
 })

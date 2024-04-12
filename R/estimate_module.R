@@ -55,14 +55,23 @@ estimate_module <- function(clean_data,
   )
   for (i in 0:max.dl) {
     if (ardl_or_ecm == "ardl") {
-
       # first check whether there is an x variable that is relevant (or whether it is an AR only model)
       if(!identical(x_vars_basename, character(0))){
+
+        # grab all starting with a lag (the contemporaneous are added below)
         xvars_names <- grep("^L[0-9]\\.",
                             grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
                             value = TRUE)
+        # remove all differences
+        xvars_names <- xvars_names[!grepl("^L[0-9]\\.D\\.",xvars_names)]
+
+        # check log specification
         if (log_opts %in% c("y", "none")) {
+          # remove all log variables
           xvars_names <- xvars_names[!grepl("ln\\.",xvars_names)]
+        } else {
+          # grab only the log variables
+          xvars_names <- xvars_names[grepl("ln\\.",xvars_names)]
         }
       } else {
         # if it is an AR only model
