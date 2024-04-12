@@ -17,9 +17,9 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
                                           .data$diff_num %in% c(90:92) ~ "3 months",
                                           .data$diff_num %in% c(365:366) ~ "year")) %>%
     dplyr::ungroup() %>%
-    tidyr::drop_na(diff) %>%
-    dplyr::distinct(diff) %>%
-    dplyr::pull(diff)
+    tidyr::drop_na(.data$diff) %>%
+    dplyr::distinct(.data$diff) %>%
+    dplyr::pull(.data$diff)
 
   if(length(frequency) > 1 | frequency == "month" | frequency == "day"){stop("Mixed frequency forecasts or forecasts with daily or monthly data are not yet implemented.")}
 

@@ -170,19 +170,19 @@ run_model <- function(specification,
                                           .data$diff_num %in% c(90:92) ~ "3 months",
                                           .data$diff_num %in% c(365:366) ~ "year")) %>%
     dplyr::ungroup() %>%
-    tidyr::drop_na(diff) %>%
-    dplyr::distinct(diff) %>%
-    dplyr::pull(diff)
+    tidyr::drop_na(.data$diff) %>%
+    dplyr::distinct(.data$diff) %>%
+    dplyr::pull(.data$diff)
 
   if(length(frequency) > 1){
 
     if(all(c("year","3 months") %in% frequency)){
       full_data %>%
-        dplyr::mutate(year = lubridate::year(time),
-                      quarter = lubridate::quarter(time)) %>%
-        dplyr::mutate(values = sum(values, na.rm = TRUE), .by = c(na_item,year)) %>%
-        dplyr::filter(quarter == 1) %>%
-        dplyr::select(-all_of(c("year", "quarter"))) -> full_data
+        dplyr::mutate(year = lubridate::year(.data$time),
+                      quarter = lubridate::quarter(.data$time)) %>%
+        dplyr::mutate(values = sum(values, na.rm = TRUE), .by = c("na_item","year")) %>%
+        dplyr::filter(.data$quarter == 1) %>%
+        dplyr::select(-dplyr::all_of(c("year", "quarter"))) -> full_data
     } else {
       # frequency == "month" | frequency == "day")
       stop("Mixed frequency models are not yet implemented. Please check to make sure that all data that you supply to the model (incl. in the dictionary) has the same frequency.")
