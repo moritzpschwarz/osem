@@ -160,6 +160,7 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
                 value = as.numeric(identity_pred_final[,1])) %>%
     setNames(c("time",outvarname)) -> central_estimate
 
+  browser()
   # if there are uncertainties, then the columns must be larger than 1
   # if not, it means that the one column coincides with the central estimate
   if(ncol(identity_pred_final.all) > 1){
@@ -169,9 +170,8 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
     identity_pred_final.all <- dplyr::as_tibble(identity_pred_final.all) %>%
       dplyr::bind_cols(dplyr::tibble(time = exog_df_ready$time), .)
   } else {
-    identity_pred_final.all <- NULL
+    identity_pred_final.all <- central_estimate### NULL since it coincides with central estimate does that make it equal to central estimate?
   }
-
 
 
   out <- list()

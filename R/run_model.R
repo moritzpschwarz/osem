@@ -125,7 +125,6 @@ run_model <- function(specification,
   }
 
 
-
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
 
@@ -141,9 +140,12 @@ run_model <- function(specification,
                                             save_to_disk = save_to_disk,
                                             quiet = quiet,
                                             constrain.to.minimum.sample = constrain.to.minimum.sample)
-
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
+
+  #if there are NA values pad with 0
+  full_data %>% replace(is.na(.), 0) -> full_data
+
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order)

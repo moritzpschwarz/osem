@@ -101,7 +101,6 @@ load_or_download_variables <- function(specification,
       to_obtain <- step2$to_obtain
       full <- dplyr::bind_rows(full, step2$df)
     }
-
     not_loaded_statcan <- which(to_obtain$database == "statcan" & to_obtain$found == FALSE)
     if (length(not_loaded_statcan) > 0L) {
       step3 <- download_statcan(to_obtain = to_obtain,

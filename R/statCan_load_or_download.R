@@ -97,7 +97,15 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
       subset_of_data <- subset_of_data %>%
         dplyr::mutate(time = as.Date(.data$time))
 
+      #rename column headers so they are consistent with the headers used through out the rest of the system
       subset_of_data <- subset_of_data %>% dplyr::rename("values" = "VALUE")
+      if ("North American Industry Classification System (NAICS)" %in% names(subset_of_data)){
+        subset_of_data <- subset_of_data %>% dplyr::rename("nace_rs" = "North American Industry Classification System (NAICS)")
+      }
+      if("Seasonal adjustment" %in% names(subset_of_data)){
+      subset_of_data <- subset_of_data %>% dplyr::rename("s_adj" = "Seasonal adjustment")
+      }
+
 
       df_statcan <- dplyr::bind_rows(df_statcan, subset_of_data)
       #write.csv(df_statcan, "/Users/geoffreyharper/Desktop/file.csv", row.names=FALSE)

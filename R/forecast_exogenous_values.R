@@ -86,17 +86,23 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       time_to_forecast <- seq.Date(col_to_forecast_max_time, length.out = n.ahead + (1 + diff_time_to_max),
                                    by = "3 months")[-1]
 
+      ##If data contains NA then we fill with zero
+      # exog_df_intermed %>% replace(is.na(.), 0) -> exog_df_intermed
+
       # now let's extract the data
       exog_df_intermed %>%
         dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
         fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = TRUE,remove_selected_columns = TRUE) %>%
         dplyr::arrange(.data$time) -> to_ar_predict
 
+
       to_ar_predict %>%
         dplyr::pull(col_to_forecast) -> y_ar_predict
 
       to_ar_predict %>%
         dplyr::select("q_2", "q_3", "q_4") -> x_ar_predict
+
+
 
       isat_ar_predict <- tryCatch(gets::isat(y = y_ar_predict, mxreg = x_ar_predict,
                                              mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
