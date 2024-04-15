@@ -143,10 +143,6 @@ run_model <- function(specification,
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
 
-  #if there are NA values pad with 0
-  full_data %>% replace(is.na(.), 0) -> full_data
-
-
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order)
 
