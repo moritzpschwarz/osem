@@ -30,8 +30,14 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
     dat %>%
       tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") -> dat_tmp
 
+
+    #REMOVE THIS BECASUE THIS CASE SHOULD not occur
     #if there are NA values pad with 0
-    dat_tmp %>% replace(is.na(.), 0) -> dat_tmp
+    dat %>% replace(is.na(.), 0) -> dat
+
+    #drop rows with NA values
+
+    #dat_tmp %>% drop_na() -> dat_tmp
 
     #dat_tmp_names <- names(dat_tmp)
     # make sure the column names are not using * as denominator for NACE codes

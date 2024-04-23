@@ -17,6 +17,9 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
   # initialise empty df
   df_statcan <- data.frame()
 
+  #get the eurodict colnames
+  euro_dict = colnames(aggregate.model::dict)
+
   #pulls dataframe of unique database ids
   dataset_id <- to_obtain %>% dplyr::filter(.data$database == "statcan" &
                                                 .data$found == FALSE) %>%
@@ -67,31 +70,30 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
       #   dplyr::rename_with(.cols = dplyr::all_of(varcolname), .fn = ~paste0("na_item")) %>%
       #   dplyr::mutate(na_item = to_obtain$model_varname[j])
 
+      browser()
       # if have monthly data, need to aggregate to quarterly
       if (to_obtain$freq[idx] == "m") {
         # need to aggregate across all filters
         columns <- colnames(subset_of_data)
-        unique_columns <- setdiff(columns, "values") # should be unique across these
+        unique_columns <- setdiff(columns, "VALUE") # should be unique across these
         stopifnot(sum(duplicated(subset_of_data[, unique_columns])) == 0L) # sanity check
         groupby_columns <- union(c("year", "quarter"), setdiff(unique_columns, "REF_DATE")) # want to group_by year-quarter, so exclude time column
         subset_of_data <- subset_of_data %>%
           dplyr::mutate(year = lubridate::year(.data$REF_DATE),
                         quarter = lubridate::quarter(.data$REF_DATE)) %>%
           dplyr::group_by(dplyr::across(dplyr::all_of(groupby_columns))) %>%
-          dplyr::summarise(values = sum(.data$VALUE),
+          dplyr::summarise(VALUE = sum(.data$VALUE),
                            n = dplyr::n(), # record how many months are available in each quarter
-                           time = min(.data$REF_DATE)) %>%
-          dplyr::ungroup() %>%
+                           REF_DATE = min(.data$REF_DATE)) %>%
+          dplyr::ungroup()  #%>%
           # drop "incomplete" quarters
-          dplyr::filter(.data$n == 3L) %>%
+          subset_of_data <- subset_of_data %>% dplyr::filter(.data$n == 3L) %>%
           dplyr::select(-"year", -"quarter", -"n")
-      }
-      # previous if statement turns statCan col REF_DATE into time
-      # since data is given in quarerly values we need to still rename the table name
-      else {
-        subset_of_data <- subset_of_data %>% dplyr::rename("time" = "REF_DATE")
 
       }
+
+      #rename REF_DATE to time
+      subset_of_data <- subset_of_data %>% dplyr::rename("time" = "REF_DATE")
 
       # ensure column "time" is a Date variable (Moritz had this)
       subset_of_data <- subset_of_data %>%
@@ -100,15 +102,26 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
       #rename column headers so they are consistent with the headers used through out the rest of the system
       subset_of_data <- subset_of_data %>% dplyr::rename("values" = "VALUE")
       if ("North American Industry Classification System (NAICS)" %in% names(subset_of_data)){
-        subset_of_data <- subset_of_data %>% dplyr::rename("nace_rs" = "North American Industry Classification System (NAICS)")
+        subset_of_data <- subset_of_data %>% dplyr::rename("nace_r2" = "North American Industry Classification System (NAICS)")
       }
       if("Seasonal adjustment" %in% names(subset_of_data)){
       subset_of_data <- subset_of_data %>% dplyr::rename("s_adj" = "Seasonal adjustment")
       }
+      if("GEO" %in% names(subset_of_data)){
+        subset_of_data <- subset_of_data %>% dplyr::rename("geo" = "GEO")
+      }
+
+      #get the columns that we need to drop that will no longer be used in later calculations
+      #this is to keep data frame consistent with how the eurostat frames are processed
+
+      cols_to_remove <- setdiff(colnames(subset_of_data),c(euro_dict,"time","values","na_item","nace_r2"))
+
+      #drop columns that we will not be using
+      subset_of_data <- subset_of_data %>% dplyr::select(.,-c(cols_to_remove))
 
 
       df_statcan <- dplyr::bind_rows(df_statcan, subset_of_data)
-      #write.csv(df_statcan, "/Users/geoffreyharper/Desktop/file.csv", row.names=FALSE)
+      #write.csv(df_statcan, "/Users/geoffreyharper/Desktop/statcan_data.csv", row.names=FALSE)
       #print(head(subset_of_data,2))
     }
   }
