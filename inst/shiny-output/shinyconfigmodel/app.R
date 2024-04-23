@@ -72,7 +72,9 @@ ui <- fluidPage(
   tabsetPanel( id = "SettingsTab",
                tabPanel(
                  "Specification",
+                 div(style = "margin-top: 10px"),
                  fileInput("spec", "Upload Specification (CSV)", accept = ".csv"),
+                 div(style = "margin-top: -30px"),
                  DT::dataTableOutput("specification_table"),
                  fluidRow(actionLink("addRow", "Add Row"), " - ",
                           actionLink("deleteRows", "Delete selected rows"), "(Rows can be selected by clicking)",
@@ -81,7 +83,7 @@ ui <- fluidPage(
                ),
                tabPanel(
                  "Input Data",
-                 fileInput("data", "Upload Input Data (CSV, from 'Save Processed Input data')", accept = ".csv"),
+                 fileInput("data", "Upload Input Data (CSV, from 'Save Processed Input data')", accept = ".csv"), # file input scrolls up page; this is an unresolved shiny issue - https://github.com/rstudio/shiny/issues/3327 - the fixes in the discussion could be considered, but are rather messy, so leaving them out currently
                  DT::dataTableOutput("input_data_table")
                ),
                tabPanel(
@@ -211,14 +213,15 @@ ui <- fluidPage(
   tabsetPanel(id = "OutputTab",
     tabPanel(title = "Model Results", value = "results",
              shinycssloaders::withSpinner(
-               DT::DTOutput("model_output"),
-               proxy.height = "800px"
+               tableOutput("model_output")
              ),
              tags$head(tags$style("#model_output{min-height: 400px;}")) # since I don't have linebreaks in placeholder and no progress indicator yet
     ),
     tabPanel(title = "Model Forecasts", value = "forecast",
-             dateRangeInput(inputId = "range_plot", label = "Date Range for Plots",
-                            start = as.Date("1960-01-01"), end = Sys.Date()),
+             #dateRangeInput(inputId = "range_plot", label = "Date Range for Plots", # used to be a range
+             #              start = as.Date("1960-01-01"), end = Sys.Date()),
+             dateInput(inputId = "startdate_plot", label = "Start date for plots",
+                       value = as.Date("1960-01-01")),
              plotOutput("forecast_output")
     ),
     tabPanel("Diagnostics", #fluid = TRUE,
@@ -226,7 +229,7 @@ ui <- fluidPage(
                DT::DTOutput("diag")
              )
     ),
-    tabPanel("Dependency Network Graph", #fluid = TRUE,
+    tabPanel("Dependency Network Graph", #fluid = TRUE,x^
              mainPanel(
                plotOutput("network", height = "600", width = "800")
              )
@@ -266,8 +269,8 @@ default_input <- aggregate.model::sample_input
 
 
 
-as.lm.custom <- function(object) {
-  print(typeof(object))
+as.lm.custom <- function(object) { # same as the version from the package, just with a check for type removed as this was causing errors
+  #print(typeof(object))
   y <- object$aux$y
   x <- object$aux$mX
   colnames(x) <- object$aux$mXnames
@@ -341,6 +344,23 @@ server <- function(input, output, session) {
     {rv$specification <- rv$specification %>% rbind(c("n", "", ""))}
   )
 
+
+
+
+  #idea for preset
+
+  preset <- list()
+  preset$trend <- TRUE
+
+  observeEvent(
+    input$preset, {
+      print("Todo: update ALL RVs and Inputs with a tibble of values")
+      print("Current preset (to be used for if-statements, but might better auto-generate from list:")
+      print(input$preset)
+      updateCheckboxInput(session, "trend", value = preset$trend)
+    }, ignoreInit = TRUE
+  )
+
   observeEvent(
     input$deleteRows, {
       if (!is.null(input$specification_table_rows_selected)) {
@@ -373,6 +393,8 @@ server <- function(input, output, session) {
     rv$inputdata[row, col] <- value
   })
 
+
+
   # Update the reactive values object with the edited dictionary table
   observeEvent(input$dictionary_table_cell_edit, {
     info <- input$dictionary_table_cell_edit
@@ -400,6 +422,7 @@ server <- function(input, output, session) {
 
   # Function to run the model
   run_model_shiny <- function() {
+    withProgress(message = 'Estimationg Running... ', value = 0, { # the update is being sent from within run_model.R
     print(reactiveValuesToList(rv)) # to display reactive variables at time of function call
     model_output <- aggregate.model::run_model(specification = rv$specification,
                                                dictionary = rv$dictionary,
@@ -422,7 +445,7 @@ server <- function(input, output, session) {
 
     # # Print or process the model output as needed
     #print(unlist(model_output))
-    return(model_output)
+    return(model_output)})
   }
 
   # Function to forecast the model
@@ -450,15 +473,26 @@ server <- function(input, output, session) {
     rv$table_output <- NULL
     rv$model_output <- NULL # needed for progress indicator package to work
 
-    showNotification("Estimation is currently running... (might take up to 5 minutes on first run)", type = "message") # could update? Or we figure out updating placeholder text
+    showNotification("Estimation running. This might take long due to data download. To speed up estimation, use \"Upload Input Data\" in the Input Data tab after first download.", type = "message") # could update? Or we figure out updating placeholder text
     updateTabsetPanel(session, "OutputTab",
                       selected = "results") # only updates after the whole function ran, with final values. Can this be paced manually?
     rv$model_output <- run_model_shiny()
 
 
+    # old solution, code below is clearer
+    #rv$model_output_notnull <- rv$model_output$module_collection$model[-which(sapply(rv$model_output$module_collection$model, is.null))]
+    #rv$model_list <- lapply(rv$model_output_notnull, as.lm.custom)
 
-    rv$model_output_notnull <- rv$model_output$module_collection$model[-which(sapply(rv$model_output$module_collection$model, is.null))]
-    rv$model_list <- lapply(rv$model_output_notnull, as.lm.custom)
+    rv$model_list <- lapply(rv$model_output$module_collection$model, function(x){
+      if(!is.null(x)) {
+        as.lm.custom(x)
+      } else{
+        NULL # if it is an identity, it shows as NULL in the collection; thus, no lm conversion can take place
+      }})
+
+    # removing NULLs, which are identity equations in the specification, so only estimated models are put out in the table
+    rv$model_list <- rv$model_list[-which(sapply(rv$model_list, is.null))]
+
     rv$table_output <- modelsummary::modelsummary(
       rv$model_list,
       coef_omit = "iis|sis",
@@ -466,9 +500,20 @@ server <- function(input, output, session) {
       title = "Final models run for each sub-module.",
       notes = "Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.", # depending on settings
       stars = TRUE,
-      output = "data.frame" # could later be output more beautifully but
+      #output = "data.frame" # could later be output more beautifully but
+      output = "data.frame"
     )
-    rv$table_output <- DT::datatable(rv$table_output, options = list(pageLength = 50))
+
+    # this replaces every 2nd element of the term column for estimates in table_output with an empty string, for better looking display
+    # should probably be done
+    rv$table_output[rv$table_output$part == "estimates",]$term[seq_along(
+      rv$table_output[rv$table_output$part != "gof",]$term
+      ) %% 2 == 0] <- ""
+
+    # this removes the columns not nessecary for display
+    rv$table_output <- rv$table_output[,setdiff(names(rv$table_output), c("part", "statistic"))]
+
+    #rv$table_output <- DT::datatable(rv$table_output, options = list(pageLength = 50))
 
 
   })
@@ -478,11 +523,16 @@ server <- function(input, output, session) {
     showNotification("Forecasting is currently running...", type = "message")
     updateTabsetPanel(session, "OutputTab",
                       selected = "forecast") # only updates after the whole function ran, with final values. Can this be paced manually?
-    rv$forecast_output <- plot(forecast_model_shiny())
+    rv$forecast_data <- forecast_model_shiny()
+  })
+
+  observeEvent(list(input$startdate_plot, rv$forecast_data), { # updates plot on calculation or on date change
+    req(rv$forecast_data)
+    rv$forecast_output <- plot(rv$forecast_data, first_date = as.character(input$startdate_plot))
   })
 
   # Display the model output
-  output$model_output <- DT::renderDT(rv$table_output)
+  output$model_output <- renderTable(rv$table_output)
   #   renderPrint({
   #   if (is.null(rv$model_output)) { # to fix the placeholder text mismatch (starts as string, but model result is list.)
   #     return(cat("Model results will appear here"))
