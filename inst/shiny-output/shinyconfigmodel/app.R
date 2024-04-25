@@ -1,10 +1,17 @@
 # devtools::load_all()
 library(shiny)
 library(DT)
+# library(bslib)
 library(shinycssloaders) # possibly still a good idea to pass through more specific info along the steps of the estimation
 
 # Define UI for app
 ui <- fluidPage(
+
+  # theme = bs_theme(
+  #   bootswatch = "cerulean",  # this or materia would work, but other elements would have to be styled accordingly, so leading default for now. See https://bootswatch.com/cerulean/.
+  #   base_font = font_google("Inter"),
+  #   navbar_bg = "#25443B"
+  # ),
 
   tags$head(
     # set smooth scrolling for scroll links
@@ -65,7 +72,7 @@ ui <- fluidPage(
 
   fluidRow(
     column(12, align="left",
-           selectInput("preset", label = NULL, choices = c("Choose preset model..." = "", "Custom", "Placeholder1", "Placeholder2"))
+           selectInput("presets_selector", label = NULL, choices = c("Choose preset model..." = "", "Custom")) # content of the selector is updated in server
     )
   ),
 
@@ -74,11 +81,11 @@ ui <- fluidPage(
                  "Specification",
                  div(style = "margin-top: 10px"),
                  fileInput("spec", "Upload Specification (CSV)", accept = ".csv"),
-                 div(style = "margin-top: -30px"),
+                 div(style = "margin-top: -30px"),  # margins manually set for better-looking display
                  DT::dataTableOutput("specification_table"),
                  fluidRow(actionLink("addRow", "Add Row"), " - ",
                           actionLink("deleteRows", "Delete selected rows"), "(Rows can be selected by clicking)",
-                          class = 'rightAlign'
+                          class = 'rightAlign' # defined above, to put interaction links on right side of table
                  )
                ),
                tabPanel(
@@ -86,7 +93,7 @@ ui <- fluidPage(
                  fileInput("data", "Upload Input Data (CSV, from 'Save Processed Input data')", accept = ".csv"), # file input scrolls up page; this is an unresolved shiny issue - https://github.com/rstudio/shiny/issues/3327 - the fixes in the discussion could be considered, but are rather messy, so leaving them out currently
                  DT::dataTableOutput("input_data_table")
                ),
-               tabPanel(
+               tabPanel( # default values and how these settings are passed on should be checked
 
                  "Settings",
                  fluidRow(
@@ -215,14 +222,12 @@ ui <- fluidPage(
              shinycssloaders::withSpinner(
                tableOutput("model_output")
              ),
-             tags$head(tags$style("#model_output{min-height: 400px;}")) # since I don't have linebreaks in placeholder and no progress indicator yet
+             tags$head(tags$style("#model_output{min-height: 400px;}")) # manual placeholder height
     ),
     tabPanel(title = "Model Forecasts", value = "forecast",
-             #dateRangeInput(inputId = "range_plot", label = "Date Range for Plots", # used to be a range
-             #              start = as.Date("1960-01-01"), end = Sys.Date()),
              dateInput(inputId = "startdate_plot", label = "Start date for plots",
-                       value = as.Date("1960-01-01")),
-             plotOutput("forecast_output")
+                       value = as.Date("2000-01-01")),
+             plotOutput("forecast_output")   # should more forecast outputs be displayed (printed?)
     ),
     tabPanel("Diagnostics", #fluid = TRUE,
              mainPanel(
@@ -265,11 +270,12 @@ default_spec <- dplyr::tibble(
   )
 )
 
-default_input <- aggregate.model::sample_input
+
+default_input <- aggregate.model::sample_input          # should this be processed_inputdata if availible?
 
 
 
-as.lm.custom <- function(object) { # same as the version from the package, just with a check for type removed as this was causing errors
+as.lm.custom <- function(object) { # same as the version from the package, just with a check for type removed as this was causing errors. This is a workaround but why it occurs should be checked in the package (class of aggmod object does not match expectation, but the function still works)
   #print(typeof(object))
   y <- object$aux$y
   x <- object$aux$mX
@@ -287,7 +293,7 @@ server <- function(input, output, session) {
 
   # Define a reactive values object to store the user's input data, dictionary, and specification
   rv <- reactiveValues(
-    inputdata = default_input,
+    inputdata = default_input,     # should this be processed_inputdata if availible?
     dictionary = default_dict,
     specification = default_spec,
     save_file = "",
@@ -295,8 +301,7 @@ server <- function(input, output, session) {
     model_list = NULL
   )
 
-  #is it nessecary to do rv <- input for all the variables? I am keeping the implementation but have to ask Moritz
-  observe({ # should the varnames rather be the same in both lists or are some different on purpose?
+  observe({ # varnames should probably be the same between input and rv, but works for now
     rv$max_ar <- input$max_ar
     rv$max_dl <- input$max_dl
 
@@ -339,26 +344,10 @@ server <- function(input, output, session) {
     rv$specification <- readr::read_csv(input$spec$datapath, show_col_types = FALSE)
   })
 
+  # handles adding and deleting of rows
   observeEvent(
     input$addRow,
     {rv$specification <- rv$specification %>% rbind(c("n", "", ""))}
-  )
-
-
-
-
-  #idea for preset
-
-  preset <- list()
-  preset$trend <- TRUE
-
-  observeEvent(
-    input$preset, {
-      print("Todo: update ALL RVs and Inputs with a tibble of values")
-      print("Current preset (to be used for if-statements, but might better auto-generate from list:")
-      print(input$preset)
-      updateCheckboxInput(session, "trend", value = preset$trend)
-    }, ignoreInit = TRUE
   )
 
   observeEvent(
@@ -366,7 +355,87 @@ server <- function(input, output, session) {
       if (!is.null(input$specification_table_rows_selected)) {
         rv$specification <- rv$specification[-as.numeric(input$specification_table_rows_selected), ]
       }
+    })
+
+
+
+
+  # presets currently formatted as list; using yaml::write_yaml(presets, "presets.yaml") (or jsonlite::write_json), it could be saved externally in a human-readable format and separated out from the main script to be loaded here
+
+  presets <- list(
+    trendtrue = list(
+      name = "Trend True and 3 lines in spec",
+      trend = TRUE,
+      spec = dplyr::tibble(
+        type = c(
+          "d",
+          "n",
+          "n" ),
+        dependent = c(
+          "TOTS",
+          "Import",
+          "EmiCO2Combustion"),
+        independent = c(
+          "GValueAdd + Import",
+          "FinConsExpHH + GCapitalForm",
+          "HDD + HICP_Gas + HICP_Electricity + GValueAdd")
+      )
+    ),
+    trendfalse = list(
+      name = "Trend False and 2 lines in spec",
+      trend = FALSE,
+      spec = dplyr::tibble(
+        type = c(
+          "d",
+          "n"),
+        dependent = c(
+          "TOTS",
+          "Import"),
+        independent = c(
+          "GValueAdd + Import",
+          "FinConsExpHH + GCapitalForm"
+        )
+      )
+    )
+  )
+
+  # this extracts the preset names for the UI
+  preset_names <- unlist(lapply(presets, function(x) x$name), use.names = FALSE)
+
+  # update the preset selector to contain preset values
+  observe({
+    updateSelectInput(session,"presets_selector",
+                      choices = c("Choose preset model..." = "",
+                                            "No Preset",
+                                            preset_names # along with the placeholder and the default "No Preset" choice, it adds the names element of the elements of the presets list as options
+                                  )
+                      )
   })
+
+  # if the presets selector is used, update inputs and rvs based on chosen preset
+  observeEvent(
+    input$presets_selector, {
+      if (input$presets_selector %in% preset_names) {
+
+        current_preset <- presets[grepl(input$presets_selector, presets)][[1]] # searches for the preset with the name element matching the preset selector and assigns this as current_preset. [[1]] is nessecary to return just internal list.
+
+        # this can be extended for the preset to be able to change any setting (input) or rv
+        rv$specification <- current_preset$spec
+        updateCheckboxInput(session, "trend", value = current_preset$trend) # this could be extended to change all types of inputs and RVs,
+
+        print(current_preset)
+
+
+      } else {
+        # the "No Preset" option is not supposed to change anything
+        print("no preset selected")
+      }
+    }, ignoreInit = TRUE
+  )
+
+
+
+
 
   # Render the input data table
   output$input_data_table <- renderDT({
@@ -454,7 +523,7 @@ server <- function(input, output, session) {
     aggregate.model::forecast_model(
       model = rv$model_output,
 
-      ## implement the additional options ##
+      ## exog_predicitins asnd ci.levels as of yet unimplemented ##
 
       #exog_predictions = NULL,
       n.ahead = rv$n_ahead,
@@ -465,7 +534,6 @@ server <- function(input, output, session) {
       uncertainty_sample = rv$uncertainty.sample,
       #quiet = FALSE
     )
-    # Add code to handle forecasting
   }
 
   # Run model when "Run Model" button is clicked
@@ -473,26 +541,23 @@ server <- function(input, output, session) {
     rv$table_output <- NULL
     rv$model_output <- NULL # needed for progress indicator package to work
 
-    showNotification("Estimation running. This might take long due to data download. To speed up estimation, use \"Upload Input Data\" in the Input Data tab after first download.", type = "message") # could update? Or we figure out updating placeholder text
+    showNotification("Estimation running. This might take long due to data download. To speed up estimation, use \"Upload Input Data\" in the Input Data tab after first download.", type = "message", duration = 10)
     updateTabsetPanel(session, "OutputTab",
                       selected = "results") # only updates after the whole function ran, with final values. Can this be paced manually?
     rv$model_output <- run_model_shiny()
 
 
-    # old solution, code below is clearer
-    #rv$model_output_notnull <- rv$model_output$module_collection$model[-which(sapply(rv$model_output$module_collection$model, is.null))]
-    #rv$model_list <- lapply(rv$model_output_notnull, as.lm.custom)
-
     rv$model_list <- lapply(rv$model_output$module_collection$model, function(x){
       if(!is.null(x)) {
         as.lm.custom(x)
       } else{
-        NULL # if it is an identity, it shows as NULL in the collection; thus, no lm conversion can take place
+        NULL # if it is an identity in the specification, it shows as NULL in the collection; thus, no lm conversion can take place
       }})
 
     # removing NULLs, which are identity equations in the specification, so only estimated models are put out in the table
     rv$model_list <- rv$model_list[-which(sapply(rv$model_list, is.null))]
 
+    # converts the list of results from run_model to a data.frame of estimates and coefficients
     rv$table_output <- modelsummary::modelsummary(
       rv$model_list,
       coef_omit = "iis|sis",
@@ -500,21 +565,14 @@ server <- function(input, output, session) {
       title = "Final models run for each sub-module.",
       notes = "Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.", # depending on settings
       stars = TRUE,
-      #output = "data.frame" # could later be output more beautifully but
       output = "data.frame"
     )
 
-    # this replaces every 2nd element of the term column for estimates in table_output with an empty string, for better looking display
-    # should probably be done
-    rv$table_output[rv$table_output$part == "estimates",]$term[seq_along(
-      rv$table_output[rv$table_output$part != "gof",]$term
-      ) %% 2 == 0] <- ""
+    # this removes the variable name for rows with std errors for better-looking display
+    rv$table_output[rv$table_output$statistic == "std.error",]$term <- ""
 
-    # this removes the columns not nessecary for display
+    # this removes the columns not necessary for display
     rv$table_output <- rv$table_output[,setdiff(names(rv$table_output), c("part", "statistic"))]
-
-    #rv$table_output <- DT::datatable(rv$table_output, options = list(pageLength = 50))
-
 
   })
 
@@ -524,6 +582,9 @@ server <- function(input, output, session) {
     updateTabsetPanel(session, "OutputTab",
                       selected = "forecast") # only updates after the whole function ran, with final values. Can this be paced manually?
     rv$forecast_data <- forecast_model_shiny()
+
+    # is there a way to print more details on forecast result?
+
   })
 
   observeEvent(list(input$startdate_plot, rv$forecast_data), { # updates plot on calculation or on date change
@@ -533,13 +594,6 @@ server <- function(input, output, session) {
 
   # Display the model output
   output$model_output <- renderTable(rv$table_output)
-  #   renderPrint({
-  #   if (is.null(rv$model_output)) { # to fix the placeholder text mismatch (starts as string, but model result is list.)
-  #     return(cat("Model results will appear here"))
-  #   } else {
-  #     rv$model_output
-  #   }
-  # })
 
   # Display the forecast output
   output$forecast_output <- renderPlot({rv$forecast_output})
