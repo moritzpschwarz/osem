@@ -240,7 +240,12 @@ ui <- fluidPage(
              )
     )
 
-  )
+  ),
+  fluidRow(
+    column(4, textInput("exportname", label = "Export File Name", value = "export.R")),
+    column(8, actionButton("export", "Export replication file"))
+  ),
+  tags$style(type='text/css', "#export { margin-top: 25px;}")
 )
 
 # Default dictionary
@@ -491,7 +496,7 @@ server <- function(input, output, session) {
 
   # Function to run the model
   run_model_shiny <- function() {
-    withProgress(message = 'Estimationg Running... ', value = 0, { # the update is being sent from within run_model.R
+    withProgress(message = 'Estimation Running... ', value = 0, { # the update is being sent from within run_model.R
     print(reactiveValuesToList(rv)) # to display reactive variables at time of function call
     model_output <- aggregate.model::run_model(specification = rv$specification,
                                                dictionary = rv$dictionary,
@@ -614,6 +619,67 @@ server <- function(input, output, session) {
   output$network <- renderPlot({
     req(rv$model_output)
     network(rv$model_output)
+  })
+
+  # Export a reproduction file as an R script
+  observeEvent(input$export, {
+    path <- input$exportname
+    path <- tools::file_path_sans_ext(path)
+
+    write.csv(rv$specification, paste0("export/", path, "_spec.csv"))
+    write.csv(rv$dictionary, paste0("export/", path, "_dict.csv"))
+
+    script <- paste0(
+      '
+  library(aggregate.model)
+  setwd("', getwd(), '")
+
+  spec <- readr::read_csv("', "export/", path, "_spec.csv" ,'")
+  spec <- spec[,-1]
+  dict <- readr::read_csv("', "export/", path, "_dict.csv" ,'")
+  dict <- dict[,-1]
+
+  model <- aggregate.model::run_model(specification = spec,
+                                      dictionary = dict,
+                                      inputdata_directory = "' , if (is.null(rv$inputdirectory)) { NULL } else { dirname(input$data$datapath) }, '", # this is not working correctly yet with local data, but I was not able to find the issue. Download works as intended.
+                                      primary_source = "', if (is.null(rv$inputdirectory)) { "download" } else { "local" }, '",
+                                      save_to_disk = "', rv$save_file, '",
+                                      present = FALSE,
+                                      quiet = FALSE,
+                                      use_logs = "', rv$use.logs, '",
+                                      trend = ', rv$trend, ',
+                                      ardl_or_ecm = "', rv$ardl.or.ecm, '",
+                                      max.ar = ', rv$max_ar, ',
+                                      max.dl = ', rv$max_dl, ',
+                                      saturation = ', rv$saturation, ',
+                                      saturation.tpval = ', rv$ind_sat_pval, ',
+                                      max.block.size = ', rv$max_block_size, ',
+                                      gets_selection = ', rv$gets_select, ',
+                                      selection.tpval = ', rv$gets_pval, ',
+                                      constrain.to.minimum.sample = ', rv$constrain_to_minimum_sample, ')
+
+      print(model)
+      aggregate.model::forecast_model(
+        model = model,
+        #exog_predictions = NULL,
+        n.ahead =', rv$n_ahead, ',
+        #ci.levels = c(0.5, 0.66, 0.95),
+        exog_fill_method = "', rv$exog.fill.method, '",
+        ar.fill.max = "', rv$ar.fill.max, '",
+        plot.forecast = TRUE,
+        uncertainty_sample = ', rv$uncertainty.sample, ',
+        #quiet = FALSE
+  )
+  '
+    )
+
+
+    #cat(script)
+    print(paste0("Exporting to export/", input$exportname))
+
+    fileConn<-file(paste0("export/", input$exportname))
+    writeLines(script, fileConn)
+    close(fileConn)
   })
 }
 
