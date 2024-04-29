@@ -243,13 +243,23 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
   # loop through required datasets
   for (i in seq_along(eurostat_dataset_ids)) {
 
+    # check the right frequency for the dataset
+    # TODO write unit tests for this
+    to_obtain %>%
+      dplyr::filter(.data$database == "eurostat" & .data$found == FALSE) %>%
+      dplyr::filter(dataset_id == eurostat_dataset_ids[i]) %>%
+      dplyr::pull(.data$freq) %>%
+      unique() -> freq_dataset
+
+    if(length(freq_dataset)>1){stop("You are downloading the same dataset in two different frequencies. Check your dictionary and there check that all 'freq' are equal for each individual 'dataset_id'.")}
+
     # download dataset
     if(quiet){
-      suppressWarnings(suppressMessages(tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i]) %>%
+      suppressWarnings(suppressMessages(tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i], select_time = toupper(freq_dataset)) %>%
                                           dplyr::rename(time = "TIME_PERIOD") %>%
                                           dplyr::select(-dplyr::any_of("freq"))))
     } else {
-      tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i]) %>%
+      tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i], select_time = toupper(freq_dataset)) %>%
         dplyr::rename(time = "TIME_PERIOD") %>%
         dplyr::select(-dplyr::any_of("freq"))
     }
