@@ -17,6 +17,7 @@ nowcasting <- function(model, exog_df_ready){
 
   # we now figure out which variables do not fully extend to the final date in the database
   model$processed_input_data %>%
+    dplyr::as_tibble() %>%
     dplyr::filter(.data$na_item %in% model$module_collection$dependent) %>%
     tidyr::drop_na("values") %>%
     dplyr::summarise(max_time = max(.data$time), .by = "na_item") %>%
@@ -63,13 +64,34 @@ nowcasting <- function(model, exog_df_ready){
           dplyr::mutate(q = lubridate::quarter(.data$time),
                         q = factor(.data$q, levels = c(1,2,3,4))) %>%
           dplyr::arrange("time") %>%
-          fastDummies::dummy_cols(
-            select_columns = "q", remove_first_dummy = FALSE,
-            remove_selected_columns = TRUE) -> exog_data_nowcasting
+          {if(nrow(.) > 0){
+            fastDummies::dummy_cols(.,
+                                    select_columns = "q", remove_first_dummy = FALSE,
+                                    remove_selected_columns = TRUE)} else {.}} -> exog_data_nowcasting
+        # fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE,
+        #                         remove_selected_columns = TRUE) -> exog_data_nowcasting
+
+        # if there are no variables available, we just record them as NA (needed for below)
+        if(nrow(exog_data_nowcasting)==0){
+
+          vars_missing <- indep_vars_to_get
+          matrix(NA_integer_,
+                 nrow = length(cur_target_dates),
+                 ncol = length(vars_missing), dimnames = list(NULL, vars_missing)) %>%
+            dplyr::as_tibble() %>%
+            dplyr::mutate(time = cur_target_dates) %>%
+            dplyr::mutate(q = lubridate::quarter(.data$time),
+                          q = factor(.data$q, levels = c(1,2,3,4))) %>%
+            dplyr::arrange("time") %>%
+            dplyr::relocate("time") %>%
+            fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE,
+                                    remove_selected_columns = TRUE) -> exog_data_nowcasting
+        }
+
 
         # we check whether all relevant variables are even in this subset
         # we need to do this as sometimes the appropriate interval that we filtered for
-        # above will mean that one variable is not included in the exog_data_nowcasting at all
+        # above will mean that one (or more) variable(s) is not included in the exog_data_nowcasting at all
         if(!all(indep_vars_to_get %in% names(exog_data_nowcasting))){
           vars_missing <- indep_vars_to_get[!indep_vars_to_get %in% names(exog_data_nowcasting)]
           matrix(NA_integer_,
@@ -80,7 +102,8 @@ nowcasting <- function(model, exog_df_ready){
             dplyr::relocate("time",all_of(indep_vars_to_get)) -> exog_data_nowcasting
         }
 
-        # here we check whether any of the exogenous values need to be replaced
+        # above we made sure that all variables appear in the exog_data_nowcasting
+        # here we check whether any of the exogenous values are NA and need to be replaced
         # this can happen when co-variates were not available up to the final time
         # this would mean that those values are not available for nowcasting
         exog_data_nowcasting %>%

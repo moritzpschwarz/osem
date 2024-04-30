@@ -44,6 +44,7 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
 
 
   return(dat %>%
+           dplyr::as_tibble() %>%
            dplyr::select(-dplyr::any_of("nace_r2")))
 
 }
