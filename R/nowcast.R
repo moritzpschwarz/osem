@@ -88,7 +88,6 @@ nowcasting <- function(model, exog_df_ready){
                                     remove_selected_columns = TRUE) -> exog_data_nowcasting
         }
 
-
         # we check whether all relevant variables are even in this subset
         # we need to do this as sometimes the appropriate interval that we filtered for
         # above will mean that one (or more) variable(s) is not included in the exog_data_nowcasting at all
@@ -99,6 +98,26 @@ nowcasting <- function(model, exog_df_ready){
                  ncol = length(vars_missing), dimnames = list(NULL, vars_missing)) %>%
             dplyr::as_tibble() %>%
             dplyr::bind_cols(exog_data_nowcasting,.) %>%
+            dplyr::relocate("time",all_of(indep_vars_to_get)) -> exog_data_nowcasting
+        }
+
+        # we check whether all relevant time periods are even in this subset
+        # we need to do this as sometimes the appropriate interval that we filtered for
+        # above will mean that one (or more) time period(s) is not included in the exog_data_nowcasting at all
+        if(!all(cur_target_dates %in% exog_data_nowcasting$time)){
+          target_dates_missing <- cur_target_dates[!cur_target_dates %in% exog_data_nowcasting$time]
+          matrix(NA_integer_,
+                 nrow = length(target_dates_missing),
+                 ncol = ncol(exog_data_nowcasting), dimnames = list(target_dates_missing, names(exog_data_nowcasting))) %>%
+            dplyr::as_tibble() %>%
+            dplyr::mutate(time = target_dates_missing) %>%
+            dplyr::mutate(q = lubridate::quarter(.data$time),
+                          q = factor(.data$q, levels = c(1,2,3,4))) %>%
+            dplyr::arrange("time") %>%
+            dplyr::relocate("time") %>%
+            fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE,
+                                    remove_selected_columns = TRUE) %>%
+            dplyr::bind_rows(exog_data_nowcasting,.) %>%
             dplyr::relocate("time",all_of(indep_vars_to_get)) -> exog_data_nowcasting
         }
 
