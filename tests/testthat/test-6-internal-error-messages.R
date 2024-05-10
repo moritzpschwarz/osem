@@ -95,6 +95,6 @@ test_that("Check that all variables are in the dictionary",{
                                    present = FALSE,
                                    quiet = TRUE,
                                    selection.tpval = 0.001,
-                                   constrain.to.minimum.sample = FALSE), regexp = "Cannot find all required variables in the data")
+                                   constrain.to.minimum.sample = FALSE), regexp = "Not all model variables found in the dictionary")
 
 })
