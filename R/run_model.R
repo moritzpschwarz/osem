@@ -118,6 +118,8 @@ run_model <- function(specification,
   if(any(duplicated(dictionary$model_varname))){stop("Dictionary cannot contain duplicated values for 'model_varname'.")}
 
   if(any(grepl("\\-|\\+|\\*|\\/|\\^",dictionary$model_varname))){stop("The 'model_varname' column in the Dictionary cannot contain any of the following characters: + - / * ^")}
+  if(any(grepl("\\-|\\+|\\*|\\/|\\^",specification$dependent))){stop("The 'dependent' column in the specification cannot contain any of the following characters: + - / * ^")}
+
 
   if(!is.null(save_to_disk)){
     if(!is.character(save_to_disk)){stop("'save_to_disk' must be a path to a file as a character. For example 'data.csv'.")}
@@ -151,6 +153,24 @@ run_model <- function(specification,
 
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
+
+  # check for duplicates in the data
+  if(full_data %>%
+     dplyr::select("na_item", "time") %>%
+     dplyr::filter(duplicated(.)) %>%
+     nrow() > 0){
+
+    full_data %>%
+      dplyr::select("na_item", "time") %>%
+      dplyr::filter(duplicated(.)) %>%
+      dplyr::distinct(.data$na_item) %>%
+      dplyr::pull("na_item") -> duplicated_variables
+
+    stop(paste0("The data contains duplicates. Please remove them.",
+                "This might be related to an additional filter that is necessary for the eurostat data (e.g. need to select nace_2 for the right value for the sector).\n",
+                "Variables that contain duplicates: ",duplicated_variables))
+  }
+
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order)

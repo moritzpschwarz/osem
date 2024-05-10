@@ -138,6 +138,7 @@ load_or_download_variables <- function(specification,
       to_obtain <- step2$to_obtain
       full <- dplyr::bind_rows(full, step2$df)
     }
+
     not_loaded_edgar <- which(to_obtain$database == "edgar" & to_obtain$found == FALSE)
     if (length(not_loaded_edgar) > 0L) {
       step3 <- download_edgar(to_obtain = to_obtain, quiet = quiet)
@@ -280,7 +281,10 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
         {if(dplyr::select(., dplyr::any_of("nace_r2")) %>% ncol == 1){dplyr::filter(., .data$nace_r2 == to_obtain$nace_r2[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("ipcc_sector")) %>% ncol == 1){dplyr::filter(., .data$ipcc_sector == to_obtain$ipcc_sector[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(., .data$cpa2_1 == to_obtain$cpa2_1[j])}else{.}} %>%
-        {if(dplyr::select(., dplyr::any_of("siec")) %>% ncol == 1){dplyr::filter(., .data$siec == to_obtain$siec[j])}else{.}}
+        {if(dplyr::select(., dplyr::any_of("siec")) %>% ncol == 1){dplyr::filter(., .data$siec == to_obtain$siec[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("mean")) %>% ncol == 1){dplyr::filter(., .data$meat == to_obtain$meat[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("p_adj")) %>% ncol == 1){dplyr::filter(., .data$p_adj == to_obtain$p_adj[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("tra_oper")) %>% ncol == 1){dplyr::filter(., .data$tra_oper == to_obtain$tra_oper[j])}else{.}}
       # if user specified additional filters, apply them now
       for (k in seq_along(additional_filters)) {
         filtername <- additional_filters[k]
@@ -319,7 +323,10 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
       }
       # ensure column "time" is a Date variable (Moritz had this)
       sub <- sub %>%
-        dplyr::mutate(time = as.Date(.data$time))
+        dplyr::mutate(time = as.Date(.data$time)) %>%
+        # added by MORITZ on 10.05.2024 because lots of filters would add new filters
+        # those would then be kept throughout the model
+        dplyr::select("geo","time", "na_item", "values")
       # add subset to df_eurostat, final dataset
       df_eurostat <- dplyr::bind_rows(df_eurostat, sub)
     } # end for variables
@@ -384,6 +391,7 @@ download_edgar <- function(to_obtain, quiet) {
     # this now matches everything from the last /
     filename <- stringr::str_extract(string = edgar_dataset_ids[i], pattern = "([^/]+$)")
     filename <- stringr::str_replace(string = filename, pattern = ".zip", replacement = ".xlsx")
+    filename <- stringr::str_replace(string = filename, pattern = "b.xlsx", replacement = ".xlsx")
 
     # unzip the .xlsx file into temporary directory
     utils::unzip(zipfile = tmp_download, files = filename, exdir = tmp_extract)
