@@ -100,7 +100,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     names %>%
     stringr::str_detect(., "^ln.") -> to_exponentiate
 
-  browser()
+  #browser()
   x$forecast %>%
     dplyr::select("dep_var", "all.estimates") %>%
     tidyr::unnest("all.estimates") %>%

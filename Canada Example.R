@@ -10,25 +10,37 @@ spec <- dplyr::tibble(
     "n"
   ),
   dependent = c(
-    "TOTS",
-    "GDP"
+    "EmiCO2Industry",
+    "IndProdGDP"
   ),
   independent = c(
-    "GDP - Debt",
-    "EmiCO2Combustion"
+    "HICP_GAS + HICP_Energy + IndProdGDP",
+    "GAS"
+
   )
 )
 
 #toy dictionary for example
 
 dict_statCan <- tibble::tribble(
-  ~model_varname, ~full_name, ~database, ~dataset_id, ~freq, ~var_col, ~found, ~`North American Industry Classification System (NAICS)`, ~unit,  ~geo, ~`Seasonal adjustment`, ~Prices, ~nace_r2,~s_adj,~`Central government debt`, ~ipcc_sector,
-  "GDP", "Gross domestic product", "statcan", "36-10-0434-02", "m", "na_item", TRUE, "All industries [T001]", "millions", "Canada", "Seasonally adjusted at annual rates", "2017 constant prices",NA,NA,NA,NA,
-  "Debt", "Central Government Debt", "statcan", "10-10-0002-01","m", "na_item", TRUE, NA, "millions", "Canada", NA, NA,NA,NA,"A. Federal debt (accumulated deficit), (B - E)",NA,
-  "EmiCO2Combustion", "Carbon Emissions from Fuel Combustion Activities", "edgar", "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip", "m", "na_item", TRUE, NA, NA,"AT",NA, NA, NA, NA, NA, "1.A"
+  ~model_varname, ~full_name, ~database, ~variable_code, ~dataset_id, ~var_col ,~freq, ~GEO, ~geo, ~unit, ~s_adj, ~`Seasonal adjustment`, ~nace_r2, ~`North American Industry Classification System (NAICS)`, ~`North American Product Classification System (NAPCS)`,~Prices, ~`Type of fuel`, ~`Products and product groups`,~found, ~ipcc_sector, ~cpa2_1, ~siec,
+  "HICP_Energy", "Harmonised Index of Consumer Prices, Energy, index 100 = 2002", "statcan", NA,"18-10-0004-01","na_item","m","Canada", NA, "units", NA, NA, NA, NA, NA, NA, NA, "Energy", NA, NA, NA, NA,
+  "HICP_GAS", "Harmonised Index of Consumer Prices, Gas, index 100 = 2002", "statcan", NA, "18-10-0004-01", "na_item", "m", "Canada", NA, "units", NA, NA, NA, NA, NA, NA, NA, "Gasoline", NA, NA, NA, NA,
+  "GAS", "Monthly Average Retail Price for gas", "statcan", NA, "18-10-0001-01", "na_item", "m", "Canada", NA, NA, NA, NA, NA, NA, NA, NA, "Regular unleaded gasoline at self service filling stations", NA, NA, NA, NA, NA,
+  "IndProdGDP", "Industrial production [T010] in 2017 constant prices", "statcan", NA, "36-10-0434-01", "na_item" ,"m", "Canada", NA, NA, NA, "Seasonally adjusted at annual rates", NA, "Industrial production [T010]", NA, "2017 constant prices", NA, NA, NA, NA, NA, NA,
+  "IndProd", "Total, Industrial product price index (IPPI)", "statcan", NA, "18-10-0266-01", "na_item", "m", "Canada", NA, NA, NA, NA, NA, NA, "Total, Industrial product price index (IPPI)", NA, NA, NA, NA, NA, NA, NA
+
+
+
+
+
+
+
+
+
 
 )
-dict_statCan$variable_code <- NA
+#dict_statCan$variable_code <- NA
 dict_statCan <- as.data.frame(dict_statCan)
 
 
@@ -52,6 +64,13 @@ model_forecast <- forecast_model(model_result, n.ahead = 10, exog_fill_method = 
 
 plot <- plot.aggmod.forecast(model_forecast,order.as.run = TRUE)
 
+hind_cast <- forecast_insample(
+  model_result,
+  sample_share = 0.5,
+  uncertainty_sample = 100,
+  exog_fill_method = "AR",
+  plot.forecast = TRUE
+)
 
 
 

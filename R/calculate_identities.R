@@ -33,7 +33,7 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
 
     #REMOVE THIS BECASUE THIS CASE SHOULD not occur
     #if there are NA values pad with 0
-    dat %>% replace(is.na(.), 0) -> dat
+    #dat %>% replace(is.na(.), 0) -> dat
 
     #drop rows with NA values
 
@@ -50,6 +50,9 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
       dplyr::select(-dplyr::any_of("nace_r2")) %>%
       tidyr::pivot_longer(cols = !"time", names_to = "na_item", values_to = "values") -> dat
   }
+
+  #This was for testing when the data set was not in qaurterly or annual values
+  #dat %>% replace(is.na(.), 0) -> dat
 
 
   return(dat %>%
