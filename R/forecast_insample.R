@@ -125,6 +125,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
       tidyr::pivot_longer(-c("dep_var", "start", "time")) %>%
       tidyr::drop_na("value") -> centrals
 
+    browser()
     forecasted_unknownexogvalues[[i]]$forecast %>%
       dplyr::select("dep_var","all.estimates") %>%
       dplyr::mutate(start = time_to_use[i]) %>%

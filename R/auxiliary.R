@@ -98,8 +98,10 @@ update_data <- function(orig_data, new_data) {
 
   # combine
   final_wide <- dplyr::full_join(x = orig_data_wide, y = add, by = "time")
+  #browser()
 
   # pivot longer again b/c is how clean_data() and identify_module_data() work
+
   final <- tidyr::pivot_longer(final_wide, cols = !"time", names_to = "na_item", values_to = "values")
 
   return(final)
