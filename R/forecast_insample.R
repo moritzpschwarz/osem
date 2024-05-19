@@ -6,7 +6,7 @@
 #' @export
 #'
 #'
-forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 100, exog_fill_method = "AR", plot.forecast = TRUE) {
+forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 100, exog_fill_method = "AR", plot.forecast = TRUE, quiet = FALSE) {
 
   # we first must identify the minimum sample across modules
   time_samples <- dplyr::tibble()
@@ -31,7 +31,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
   all_models <- list()
   for(j in 1:length(time_to_use)){
-    print(time_to_use[j])
+    if(!quiet){print(paste0("Model Run ",j," up to ",time_to_use[j]))}
     # now let's prepare the model object
 
     try(insample_model <- run_model(
@@ -39,7 +39,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
       specification = model$args$specification,
       dictionary = model$args$dictionary,
       trend = model$args$trend,
-      primary_source = model$args$primary_source,
+      primary_source = "local",
 
       max.ar = model$args$max.ar,
       max.dl = model$args$max.dl,
@@ -64,8 +64,6 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     }
   }
 
-  #save(all_models, file = "all_models_3.RData")
-  #load("all_models_2.RData")
 
   model$processed_input_data %>%
     dplyr::distinct(dplyr::across("na_item")) %>%
@@ -90,7 +88,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     nsteps <- length(seq.Date(from = as.Date(start), to = as.Date(end), by = "quarter"))
 
 
-    print(paste0("Forecast ", i, " from ", start, " to ", end))
+    if(!quiet){print(paste0("Forecast ", i, " from ", start, " to ", end))}
 
     forecasted_unknownexogvalues[[i]] <- forecast_model(model = all_models[[i]],
                                                         n.ahead = nsteps,
@@ -125,23 +123,22 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
       tidyr::pivot_longer(-c("dep_var", "start", "time")) %>%
       tidyr::drop_na("value") -> centrals
 
-    browser()
     forecasted_unknownexogvalues[[i]]$forecast %>%
       dplyr::select("dep_var","all.estimates") %>%
       dplyr::mutate(start = time_to_use[i]) %>%
       dplyr::mutate(quantiles = purrr::map(.data$all.estimates, function(x){
         tidyr::pivot_longer(x, -"time") %>%
-          dplyr::summarise(max = max("value"),
-                           min = min("value"),
-                           p975 = stats::quantile("value", probs = 0.975),
-                           p025 = stats::quantile("value", probs = 0.025),
-                           p75 = stats::quantile("value", probs = 0.75),
-                           p25 = stats::quantile("value", probs = 0.25), .by = .data$time) %>%
+          dplyr::summarise(max = max(.data$value),
+                           min = min(.data$value),
+                           p975 = stats::quantile(.data$value, probs = 0.975),
+                           p025 = stats::quantile(.data$value, probs = 0.025),
+                           p75 = stats::quantile(.data$value, probs = 0.75),
+                           p25 = stats::quantile(.data$value, probs = 0.25), .by = .data$time) %>%
           tidyr::pivot_longer(-"time", names_to = "quantile")
       })) %>%
       dplyr::select(-"all.estimates") %>%
       dplyr::full_join(centrals %>%
-                         dplyr::distinct("dep_var", "name"), by = "dep_var") %>%
+                         dplyr::distinct(.data$dep_var, .data$name), by = "dep_var") %>%
       tidyr::unnest("quantiles") -> alls
 
     dplyr::bind_rows(overall_to_plot_central, centrals) -> overall_to_plot_central
