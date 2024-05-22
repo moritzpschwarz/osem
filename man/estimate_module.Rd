@@ -6,9 +6,8 @@
 \usage{
 estimate_module(
   clean_data,
-  dep_var_basename = "imports_of_goods_and_services",
-  x_vars_basename = c("gross_capital_formation",
-    "household_and_npish_final_consumption_expenditure"),
+  dep_var_basename,
+  x_vars_basename,
   use_logs = c("both", "y", "x"),
   trend = TRUE,
   ardl_or_ecm = "ardl",

@@ -30,11 +30,8 @@
 #' aggregate.model:::estimate_module(sample_data_clean, "yvar", "xvar")
 #'
 estimate_module <- function(clean_data,
-                            dep_var_basename = "imports_of_goods_and_services",
-                            x_vars_basename = c(
-                              "gross_capital_formation",
-                              "household_and_npish_final_consumption_expenditure"
-                            ),
+                            dep_var_basename,
+                            x_vars_basename,
                             use_logs = c("both", "y", "x"),
                             trend = TRUE,
                             ardl_or_ecm = "ardl",
@@ -45,6 +42,11 @@ estimate_module <- function(clean_data,
                             max.block.size = 20,
                             gets_selection = TRUE,
                             selection.tpval = 0.01) {
+
+
+  # Set-up ------------------------------------------------------------------
+
+
   log_opts <- match.arg(use_logs)
 
   if (!ardl_or_ecm %in% c("ardl", "ecm")) {
@@ -124,6 +126,7 @@ estimate_module <- function(clean_data,
         )
     }
 
+    # ISAT modelling ----------------------------------------------------------
 
     if (!is.null(saturation)) {
       # debug_list <- list(yvar = yvar, xvars = xvars,i = i,saturation.tpval = saturation.tpval)
@@ -159,6 +162,15 @@ estimate_module <- function(clean_data,
         max.block.size = maxblocksize
       ), silent = TRUE)
     } else {
+
+      # ARX Modelling -----------------------------------------------------------
+      # Save original arx mc warning setting and disable it here
+      tmpmc <- options("mc.warning")
+      on.exit(options(tmpmc)) # set the old mc warning on exit
+
+      options(mc.warning = FALSE)
+
+
       intermed.model <- gets::arx(
         y = yvar,
         mxreg = as.matrix(xvars),
@@ -201,7 +213,9 @@ estimate_module <- function(clean_data,
     dplyr::pull(dplyr::all_of("isat_object")) %>%
     dplyr::first()
 
-  ## gets selection on the best model ------------
+  # gets selection on the best model ----------------------------------------
+
+
   if(gets_selection){
     best_isat_model.selected <- gets::gets(best_isat_model,
                                            print.searchinfo = FALSE,
@@ -225,6 +239,7 @@ estimate_module <- function(clean_data,
   }
 
 
+  # Output ------------------------------------------------------------------
   out <- list()
   out$isat_list <- isat_list
   #out$best_model <- isat_list %>%
