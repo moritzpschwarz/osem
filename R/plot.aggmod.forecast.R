@@ -144,12 +144,13 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   all_forecasts_processed %>%
     tidyr::drop_na("time") %>%
     dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
-    dplyr::summarise(max = max(.data$values),
-                     min = min(.data$values),
-                     p975 = stats::quantile(.data$values, probs = 0.975),
-                     p025 = stats::quantile(.data$values, probs = 0.025),
-                     p75 = stats::quantile(.data$values, probs = 0.75),
-                     p25 = stats::quantile(.data$values, probs = 0.25)) -> all_forecasts_processed_q
+    dplyr::summarise(
+      p95 = stats::quantile(.data$values, probs = 0.95),
+      p05 = stats::quantile(.data$values, probs = 0.05),
+      p975 = stats::quantile(.data$values, probs = 0.975),
+      p025 = stats::quantile(.data$values, probs = 0.025),
+      p75 = stats::quantile(.data$values, probs = 0.75),
+      p25 = stats::quantile(.data$values, probs = 0.25)) -> all_forecasts_processed_q
 
 
   # here we get the last fitted value
@@ -172,8 +173,8 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
 
   last_fitted_value %>%
     dplyr::group_by(.data$time, .data$na_item) %>%
-    dplyr::summarise(max = .data$values,
-                     min = .data$values,
+    dplyr::summarise(p95 = .data$values,
+                     p05 = .data$values,
                      p975 = .data$values,
                      p025 = .data$values,
                      p75 =  .data$values,
@@ -214,7 +215,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   plotting_df_ready %>%
     ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
 
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$min, x = .data$time, ymax = .data$max, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
+    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p05, x = .data$time, ymax = .data$p95, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
     ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
     ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = .data$fit), linewidth = 0.1, alpha = 0.5, inherit.aes = FALSE, na.rm = TRUE) +
 
@@ -240,7 +241,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     plotting_df_ready %>%
       {if(!exclude.exogenous){dplyr::bind_rows(.,exog_forecasts %>%
                                                  dplyr::mutate(fit = "Exogenous Forecast"))} else {.}} %>%
-    dplyr::select(-"var") %>%
+      dplyr::select(-"var") %>%
       dplyr::full_join(all_forecasts_processed_q %>%
                          dplyr::select(-"fit"), by = dplyr::join_by("time", "na_item")) %>%
       dplyr::mutate(fit = dplyr::case_when(fit == "forecast" ~ "Endogenous Forecast",

@@ -148,3 +148,45 @@ test_that("Error messages for ecm/ardl", {
   expect_error(run_model(specification = specification, ardl_or_ecm = c("ardl","ecm")), "argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'")
 
 })
+
+
+test_that("Check that all variables are in the dictionary",{
+
+
+  specification <- dplyr::tibble(
+    type = c(
+      "n",
+      "n"
+    ),
+    dependent = c(
+      "FinConsExpHH",
+      "y"
+    ),
+    independent = c(
+      "FinConsExpGov + HICP_Gas",
+      "x1 + x2"
+    )
+  )
+
+  set.seed(123)
+  dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
+                            FinConsExpGov = rnorm(mean = 100, n = length(time)),
+                            HICP_Gas = rnorm(mean = 200, n = length(time)),
+                            FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.2),
+                            x1 = rnorm(mean = 10, n = length(time)),
+                            x2 = rnorm(mean = 20, n = length(time)),
+                            y = 0.5 - 0.2*x1 + 0.6 * x2 + rnorm(length(time),mean = 0, sd = 0.3)) %>%
+    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") -> testdata_modified_long
+
+
+
+  expect_error(model <- run_model(specification = specification,
+                                   dictionary = dict,
+                                   inputdata_directory = testdata_modified_long,
+                                   primary_source = "local",
+                                   present = FALSE,
+                                   quiet = TRUE,
+                                   selection.tpval = 0.001,
+                                   constrain.to.minimum.sample = FALSE), regexp = "Not all model variables found in the dictionary")
+
+})

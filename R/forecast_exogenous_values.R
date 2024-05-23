@@ -240,7 +240,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         dplyr::pull("time") -> col_to_forecast_max_time
 
       model$full_data %>%
-        tidyr::drop_na() %>%
+        #tidyr::drop_na() %>%
         dplyr::summarise(time = max(.data$time)) %>%
         dplyr::pull("time") -> overall_max_time
 

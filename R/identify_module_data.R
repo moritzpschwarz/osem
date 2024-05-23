@@ -45,7 +45,8 @@ identify_module_data <- function(module, classification, data) {
 
   # check whether necessary variables are in dataset
   if (!(all(vars.need %in% unique(data$na_item)))) {
-    stop(paste0("Cannot find all required variables in the data for module ", module$order, "."))
+    stop(paste0("Cannot find all required variables in the data for module ", module$order, ".\n",
+                 "Missing variables: ", paste(setdiff(vars.need, unique(data$na_item)), collapse = ", ")))
   }
 
   # extract the necessary data

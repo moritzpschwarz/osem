@@ -6,7 +6,7 @@
 #' @export
 #'
 #'
-forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 100, exog_fill_method = "AR", plot.forecast = TRUE) {
+forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 100, exog_fill_method = "AR", plot.forecast = TRUE, quiet = FALSE) {
 
   # we first must identify the minimum sample across modules
   time_samples <- dplyr::tibble()
@@ -19,11 +19,10 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   }
 
   time_samples %>%
-    dplyr::group_by(.data$dep_var) %>%
+    #dplyr::group_by(.data$dep_var) %>%
     dplyr::summarise(min = min(.data$time),
                      max = max(.data$time)) %>%
     dplyr::distinct(dplyr::across(c("max","min"))) -> time_minmax
-
 
   # With those times, we can now find the share to forecast
   all_times <- seq(time_minmax$min,time_minmax$max, by = "quarter")
@@ -31,7 +30,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
   all_models <- list()
   for(j in 1:length(time_to_use)){
-    print(time_to_use[j])
+    if(!quiet){print(paste0("Model Run ",j," up to ",time_to_use[j]))}
     # now let's prepare the model object
     suppressWarnings(
       try(insample_model <- run_model(
@@ -39,7 +38,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
         specification = model$args$specification,
         dictionary = model$args$dictionary,
         trend = model$args$trend,
-        primary_source = model$args$primary_source,
+        primary_source = "local",
 
         max.ar = model$args$max.ar,
         max.dl = model$args$max.dl,
@@ -64,8 +63,6 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     }
   }
 
-  #save(all_models, file = "all_models_3.RData")
-  #load("all_models_2.RData")
 
   model$processed_input_data %>%
     dplyr::distinct(dplyr::across("na_item")) %>%
@@ -90,7 +87,8 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     nsteps <- length(seq.Date(from = as.Date(start), to = as.Date(end), by = "quarter"))
 
 
-    print(paste0("Forecast ", i, " from ", start, " to ", end))
+    if(!quiet){print(paste0("Forecast ", i, " from ", start, " to ", end))}
+
     forecasted_unknownexogvalues[[i]] <- forecast_model(model = all_models[[i]],
                                                         n.ahead = nsteps,
                                                         uncertainty_sample = uncertainty_sample,
@@ -179,6 +177,8 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   # With those times, we can now find the share to forecast
   share_to_show <- 1-(ifelse((1-sample_share)*2<=1,(1-sample_share)*2, 1))
   time_to_show <- all_times[ceiling(length(all_times)*share_to_show):length(all_times)]
+
+  extract_dep_vars <- unique(centrals$dep_var)
 
   ggplot2::ggplot() +
     ggplot2::geom_line(data = model$full_data %>%

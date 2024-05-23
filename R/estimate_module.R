@@ -42,7 +42,9 @@ estimate_module <- function(clean_data,
                             max.block.size = 20,
                             gets_selection = TRUE,
                             selection.tpval = 0.01) {
-  log_opts <- use_logs
+  # Set-up ------------------------------------------------------------------
+
+  log_opts <- match.arg(use_logs)
 
   if (!ardl_or_ecm %in% c("ardl", "ecm")) {
     stop("The variable 'ardl_or_ecm' in the 'estimate_module()' or the 'run_model()' function must be either 'ecm' or 'ardl'. You have supplied a different value.")
@@ -94,6 +96,11 @@ estimate_module <- function(clean_data,
           },
           dplyr::any_of(c("q_2", "q_3", "q_4"))
         )
+
+      if(i == 0){
+        xvars_initial <- xvars
+      }
+
     }
     if (ardl_or_ecm == "ecm") {
       yvar <- clean_data %>%
@@ -123,7 +130,12 @@ estimate_module <- function(clean_data,
           },
           dplyr::any_of(c("q_2", "q_3", "q_4"))
         )
+      if(i == 0){
+        xvars_initial <- xvars
+      }
     }
+
+    # ISAT modelling ----------------------------------------------------------
 
     if (!is.null(saturation)) {
       # debug_list <- list(yvar = yvar, xvars = xvars,i = i,saturation.tpval = saturation.tpval)
@@ -135,11 +147,15 @@ estimate_module <- function(clean_data,
       } else {maxblocksize <- max.block.size}
 
       if(maxblocksize < 1){
-        warning(paste0("Specification not valid - the sample for estiamting the module with the dependent variable ",dep_var_basename," is not extensive enough to be estimated with lag ",i,".\n Specification skipped."))
+        warning(paste0("Specification not valid - the sample for estimating the module with the dependent variable ",dep_var_basename," is not extensive enough to be estimated with lag ",i,".\n Specification skipped."))
         next
       }
 
-      intermed.model <- gets::isat(
+      if(tidyr::drop_na(cbind(yvar,xvars)) %>% nrow == 0){
+        next
+      }
+
+      try(intermed.model <- gets::isat(
         y = yvar,
         mxreg = as.matrix(xvars),
         ar = if (i != 0) {
@@ -154,8 +170,17 @@ estimate_module <- function(clean_data,
         tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
         t.pval = saturation.tpval,
         max.block.size = maxblocksize
-      )
+      ), silent = TRUE)
     } else {
+
+      # ARX Modelling -----------------------------------------------------------
+      # Save original arx mc warning setting and disable it here
+      tmpmc <- options("mc.warning")
+      on.exit(options(tmpmc)) # set the old mc warning on exit
+
+      options(mc.warning = FALSE)
+
+
       intermed.model <- gets::arx(
         y = yvar,
         mxreg = as.matrix(xvars),
@@ -169,16 +194,38 @@ estimate_module <- function(clean_data,
     }
 
 
-    isat_list[i + 1, "BIC"] <- stats::BIC(intermed.model)
-    isat_list[i + 1, "isat_object"] <- dplyr::tibble(isat_object = list(intermed.model))
+    isat_list[i + 1, "BIC"] <- if(exists("intermed.model")){stats::BIC(intermed.model)}else{NA}
+    isat_list[i + 1, "isat_object"] <- if(exists("intermed.model")){dplyr::tibble(isat_object = list(intermed.model))}else{NA}
+    if(exists("intermed.model")){rm(intermed.model)}
+  }
+
+  if (all(is.na(isat_list$BIC))){
+    dplyr::tibble(time = clean_data$time,
+                  y = yvar,
+                  xvars_initial) %>%
+      dplyr::rename_with(.cols = "y",.fn = ~paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename)) %>%
+      dplyr::select(-c(any_of(c("q_1", "q_2", "q_3", "q_4", "trend")))) %>%
+      tidyr::pivot_longer(-c("time")) %>%
+      ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$value, color = .data$name)) +
+      ggplot2::geom_line(na.rm = TRUE) +
+      ggplot2::facet_wrap(~.data$name, scales = "free_y", ncol = 1) +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(legend.position = "none") -> p
+    print(p)
+
+    stop(paste0("No model could be estimated for the module for ",dep_var_basename,
+                ".\n Check the equation set-up and the data. Check also if there are missing variables that might lead to an empty sample.\n",
+                "For debugging, a plot for this module has been produced - check if there are enough overlapping sample periods."))
   }
 
   best_isat_model <- isat_list %>%
-    dplyr::filter(BIC == min(isat_list$BIC)) %>%
+    dplyr::filter(BIC == min(isat_list$BIC, na.rm = TRUE)) %>%
     dplyr::pull(dplyr::all_of("isat_object")) %>%
     dplyr::first()
 
-  ## gets selection on the best model ------------
+  # gets selection on the best model ----------------------------------------
+
+
   if(gets_selection){
     best_isat_model.selected <- gets::gets(best_isat_model,
                                            print.searchinfo = FALSE,
@@ -203,6 +250,7 @@ estimate_module <- function(clean_data,
   }
 
 
+  # Output ------------------------------------------------------------------
   out <- list()
   out$isat_list <- isat_list
   #out$best_model <- isat_list %>%

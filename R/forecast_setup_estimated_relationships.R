@@ -66,6 +66,8 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
   # identify any ar terms in the estimated data
   pred_ar_needed <- colnames(isat_obj$aux$mX)[grepl("ar[0-9]+",colnames(isat_obj$aux$mX))]
+  # identify any dl terms in the estimated data
+  pred_dl_needed <- colnames(isat_obj$aux$mX)[grepl("^L[0-9]+",colnames(isat_obj$aux$mX))]
 
   # this condition checks whether there are any ar terms that need to be created
   if (!is.null(pred_ar_needed) & !identical(character(0),pred_ar_needed)) {
@@ -85,13 +87,8 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
   # TODO: check whether the AR vector is the correct one for the x variables
   if (!identical(character(0),x_vars_basename)) {
-    x_names_vec <- c()
-    for (ar in ar_vec) {
-      # ar = 0
-      x_names_vec <- c(x_names_vec,paste0(paste0(ifelse(ar == 0,"",paste0("L",ar,"."))),ifelse(ylog,"ln.",""),x_vars_basename))
-    }
-
     x_names_vec_nolag <- paste0(ifelse(xlog,"ln.",""),x_vars_basename)
+    x_names_vec <- c(x_names_vec_nolag, pred_dl_needed)
   } else {
     x_names_vec <- NULL
     x_names_vec_nolag <- NULL
@@ -309,14 +306,11 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
   # add the lagged x-variables
   if(ncol(intermed) > 1){
     to_be_added <- dplyr::tibble(.rows = nrow(intermed))
-    for (j in ar_vec) {
+    for (j in pred_dl_needed) {
       if(j == 0){next}
       intermed %>%
-        dplyr::mutate(dplyr::across(-"time", ~dplyr::lag(., n = j))) %>%
-        dplyr::select(-"time") -> inter_intermed
-
-      inter_intermed %>%
-        setNames(paste0("L", j, ".", names(inter_intermed))) %>%
+        dplyr::transmute(dplyr::across(dplyr::all_of(gsub("L[0-9]+\\.","",j)), ~dplyr::lag(., n = as.numeric(stringr::str_extract(j, "[0-9]+"))))) %>%
+        setNames(j) %>%
         dplyr::bind_cols(to_be_added, .) -> to_be_added
     }
     intermed <- dplyr::bind_cols(intermed, to_be_added)
