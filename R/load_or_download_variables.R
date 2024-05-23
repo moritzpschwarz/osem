@@ -66,7 +66,7 @@ load_or_download_variables <- function(specification,
   # sources
   sources <- unique(to_obtain$database)
   if (length(setdiff(sources, c("eurostat", "edgar", "local"))) >= 1L) {
-    stop("Currently, only allow data bases 'eurostat', 'edgar', or 'local' files.")
+    stop("Currently, only allow databases 'eurostat', 'edgar', or 'local' files.")
   }
   if ("edgar" %in% sources) {
     if (!requireNamespace("readxl", quietly = TRUE)) {

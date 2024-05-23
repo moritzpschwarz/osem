@@ -1,24 +1,26 @@
+specification <- dplyr::tibble(
+  type = c(
+    "n"
+  ),
+  dependent = c(
+    "FinConsExpHH"
+  ),
+  independent = c(
+    "FinConsExpGov + HICP_Gas"
+  )
+)
+
+set.seed(123)
+testdata <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
+                          FinConsExpGov = rnorm(mean = 100, n = length(time)),
+                          HICP_Gas = rnorm(mean = 200, n = length(time)),
+                          FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time), mean = 0, sd = 0.2))
+testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
+
+
 
 
 test_that("Error messages for saturation, selection",{
-
-  specification <- dplyr::tibble(
-    type = c(
-      "n"
-    ),
-    dependent = c(
-      "FinConsExpHH"
-    ),
-    independent = c(
-      "FinConsExpGov + HICP_Gas"
-    )
-  )
-
-  set.seed(123)
-  testdata <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
-                            FinConsExpGov = rnorm(mean = 100, n = length(time)),
-                            HICP_Gas = rnorm(mean = 200, n = length(time)),
-                            FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.2))
 
   expect_error(run_model(specification = specification, gets_selection = NULL), "must be logical")
   expect_error(run_model(specification = specification, gets_selection = "NULL"), "must be logical")
@@ -38,22 +40,112 @@ test_that("Error messages for saturation, selection",{
   expect_error(run_model(specification = specification, selection.tpval = -2), "selection.tpval' must be either NULL or numeric between 0 and 1")
 
 
-  run_model(specification = specification,
-            dictionary = dict,
-            inputdata_directory = testdata %>%
-              tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values"),
-            primary_source = "local",
-            present = FALSE,
-            quiet = TRUE, saturation = "IIS")
+  expect_silent(mod <- run_model(specification = specification,
+                                 dictionary = dict,
+                                 inputdata_directory = testdata,
+                                 primary_source = "local",
+                                 present = FALSE,
+                                 quiet = TRUE, saturation = "IIS"))
+  expect_equal(nrow(mod$module_order), 1)
+  expect_equal(mod$module_collection$model[[1]]$ISnames, "iis12")
 
 
-  run_model(specification = specification,
-            dictionary = dict,
-            inputdata_directory = testdata %>%
-              tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values"),
-            primary_source = "local",
-            present = FALSE,
-            quiet = TRUE, saturation = c("SIS","TIS"))
+  expect_silent(mod <- run_model(specification = specification,
+                                 dictionary = dict,
+                                 inputdata_directory = testdata,
+                                 primary_source = "local",
+                                 present = FALSE,
+                                 quiet = TRUE, saturation = c("SIS","TIS")))
+
+  expect_equal(nrow(mod$module_order), 1)
+  expect_equal(mod$module_collection$model[[1]]$ISnames, c("sis12", "sis13"))
+
+})
+
+
+test_that("Error messages for log specifications", {
+
+  expect_error(run_model(specification = specification, use_logs = "abc"), "The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'")
+  expect_error(run_model(specification = specification, use_logs = 0), "The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'")
+  expect_error(run_model(specification = specification, use_logs = NULL), "The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'")
+  expect_error(run_model(specification = specification, use_logs = c("both", "none")), "The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'")
+
+  mod <- run_model(specification = specification,
+                   dictionary = dict,
+                   inputdata_directory = testdata,
+                   primary_source = "local",
+                   present = FALSE,
+                   quiet = TRUE,
+                   use_logs = "both",
+                   gets_selection = FALSE,
+                   max.ar = 0,
+                   max.dl = 0)
+
+  expect_true(all(c("ln.FinConsExpGov", "ln.HICP_Gas") %in% colnames(mod$module_collection$model[[1]]$aux$mX)))
+  expect_true(all(log(testdata$values[testdata$na_item == "FinConsExpGov"]) == mod$module_collection$model[[1]]$aux$mX[,"ln.FinConsExpGov"]))
+  expect_true(all(log(testdata$values[testdata$na_item == "HICP_Gas"]) == mod$module_collection$model[[1]]$aux$mX[,"ln.HICP_Gas"]))
+  expect_true(all(log(testdata$values[testdata$na_item == "FinConsExpHH"]) == mod$module_collection$model[[1]]$aux$y))
+
+  mod <- run_model(specification = specification,
+                   dictionary = dict,
+                   inputdata_directory = testdata,
+                   primary_source = "local",
+                   present = FALSE,
+                   quiet = TRUE,
+                   use_logs = "x",
+                   gets_selection = FALSE,
+                   max.ar = 0,
+                   max.dl = 0)
+
+
+  expect_true(all(c("ln.FinConsExpGov", "ln.HICP_Gas") %in% colnames(mod$module_collection$model[[1]]$aux$mX)))
+  expect_true(all(log(testdata$values[testdata$na_item == "FinConsExpGov"]) == mod$module_collection$model[[1]]$aux$mX[,"ln.FinConsExpGov"]))
+  expect_true(all(log(testdata$values[testdata$na_item == "HICP_Gas"]) == mod$module_collection$model[[1]]$aux$mX[,"ln.HICP_Gas"]))
+  expect_true(all(testdata$values[testdata$na_item == "FinConsExpHH"] == mod$module_collection$model[[1]]$aux$y))
+
+  mod <- run_model(specification = specification,
+                   dictionary = dict,
+                   inputdata_directory = testdata,
+                   primary_source = "local",
+                   present = FALSE,
+                   quiet = TRUE,
+                   use_logs = "y",
+                   gets_selection = FALSE,
+                   max.ar = 0,
+                   max.dl = 0)
+
+
+  expect_true(all(c("FinConsExpGov", "HICP_Gas") %in% colnames(mod$module_collection$model[[1]]$aux$mX)))
+  expect_true(all(testdata$values[testdata$na_item == "FinConsExpGov"] == mod$module_collection$model[[1]]$aux$mX[,"FinConsExpGov"]))
+  expect_true(all(testdata$values[testdata$na_item == "HICP_Gas"] == mod$module_collection$model[[1]]$aux$mX[,"HICP_Gas"]))
+  expect_true(all(log(testdata$values[testdata$na_item == "FinConsExpHH"]) == mod$module_collection$model[[1]]$aux$y))
+
+
+  mod <- run_model(specification = specification,
+                   dictionary = dict,
+                   inputdata_directory = testdata,
+                   primary_source = "local",
+                   present = FALSE,
+                   quiet = TRUE,
+                   use_logs = "none",
+                   gets_selection = FALSE,
+                   max.ar = 0,
+                   max.dl = 0)
+
+  expect_true(all(c("FinConsExpGov", "HICP_Gas") %in% colnames(mod$module_collection$model[[1]]$aux$mX)))
+  expect_true(all(testdata$values[testdata$na_item == "FinConsExpGov"] == mod$module_collection$model[[1]]$aux$mX[,"FinConsExpGov"]))
+  expect_true(all(testdata$values[testdata$na_item == "HICP_Gas"] == mod$module_collection$model[[1]]$aux$mX[,"HICP_Gas"]))
+  expect_true(all(testdata$values[testdata$na_item == "FinConsExpHH"] == mod$module_collection$model[[1]]$aux$y))
+
+})
+
+
+test_that("Error messages for ecm/ardl", {
+
+  expect_error(run_model(specification = specification, ardl_or_ecm = "abc"), "argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'")
+  expect_error(run_model(specification = specification, ardl_or_ecm = 0), "argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'")
+  expect_error(run_model(specification = specification, ardl_or_ecm = NULL), "argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'")
+  expect_error(run_model(specification = specification, ardl_or_ecm = c("ardl","ecm")), "argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'")
 
 })
 

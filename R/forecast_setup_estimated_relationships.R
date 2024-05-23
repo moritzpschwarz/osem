@@ -85,6 +85,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
     ar_vec <- 0
   }
 
+  # TODO: check whether the AR vector is the correct one for the x variables
   if (!identical(character(0),x_vars_basename)) {
     x_names_vec_nolag <- paste0(ifelse(xlog,"ln.",""),x_vars_basename)
     x_names_vec <- c(x_names_vec_nolag, pred_dl_needed)
