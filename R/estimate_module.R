@@ -13,6 +13,7 @@
 #' @param max.block.size Integer. Maximum size of block of variables to be selected over, default = 20.
 #' @param gets_selection Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.
 #' @param selection.tpval Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.
+#' @inheritParams forecast_model
 #'
 #' @return A list containing all estimated models, with the model with the smallest BIC under 'best_model'.
 #'
@@ -41,10 +42,10 @@ estimate_module <- function(clean_data,
                             saturation.tpval = 0.01,
                             max.block.size = 20,
                             gets_selection = TRUE,
-                            selection.tpval = 0.01) {
+                            selection.tpval = 0.01,
+                            quiet) {
   # Set-up ------------------------------------------------------------------
-
-  log_opts <- match.arg(use_logs)
+  log_opts <- use_logs
 
   if (!ardl_or_ecm %in% c("ardl", "ecm")) {
     stop("The variable 'ardl_or_ecm' in the 'estimate_module()' or the 'run_model()' function must be either 'ecm' or 'ardl'. You have supplied a different value.")
@@ -155,14 +156,12 @@ estimate_module <- function(clean_data,
         next
       }
 
+      ar_opts_isat <- if(i != 0){1:i} else {NULL}
+
       try(intermed.model <- gets::isat(
         y = yvar,
         mxreg = as.matrix(xvars),
-        ar = if (i != 0) {
-          1:i
-        } else {
-          NULL
-        },
+        ar = ar_opts_isat,
         plot = FALSE,
         print.searchinfo = FALSE,
         iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
@@ -171,6 +170,9 @@ estimate_module <- function(clean_data,
         t.pval = saturation.tpval,
         max.block.size = maxblocksize
       ), silent = TRUE)
+
+      # TODO necessary to add the tis argument to the call due to error in gets package
+      if(exists("intermed.model")){intermed.model$call$tis <- intermed.model$aux$args$tis}
     } else {
 
       # ARX Modelling -----------------------------------------------------------
@@ -204,7 +206,7 @@ estimate_module <- function(clean_data,
                   y = yvar,
                   xvars_initial) %>%
       dplyr::rename_with(.cols = "y",.fn = ~paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename)) %>%
-      dplyr::select(-c(any_of(c("q_1", "q_2", "q_3", "q_4", "trend")))) %>%
+      dplyr::select(-c(dplyr::any_of(c("q_1", "q_2", "q_3", "q_4", "trend")))) %>%
       tidyr::pivot_longer(-c("time")) %>%
       ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$value, color = .data$name)) +
       ggplot2::geom_line(na.rm = TRUE) +
@@ -227,9 +229,15 @@ estimate_module <- function(clean_data,
 
 
   if(gets_selection){
-    best_isat_model.selected <- gets::gets(best_isat_model,
+
+    try(best_isat_model.selected <- gets::gets(best_isat_model,
                                            print.searchinfo = FALSE,
-                                           t.pval = selection.tpval)
+                                           t.pval = selection.tpval))
+
+    if(!exists("best_isat_model.selected")){
+      if(!quiet){warning("Model selection with 'gets' failed. The best model is the one with the lowest BIC. Disable warning with 'quiet = TRUE'.")}
+      best_isat_model.selected <- best_isat_model
+    }
 
     retained.coefs <- row.names(best_isat_model.selected$mean.results)
     retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]

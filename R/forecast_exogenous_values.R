@@ -17,7 +17,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
                                           .data$diff_num %in% c(90:92) ~ "3 months",
                                           .data$diff_num %in% c(365:366) ~ "year")) %>%
     dplyr::ungroup() %>%
-    tidyr::drop_na(.data$diff) %>%
+    tidyr::drop_na("diff") %>%
     dplyr::distinct(.data$diff) %>%
     dplyr::pull(.data$diff)
 
@@ -290,9 +290,10 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
     exog_df_ready <- exog_predictions
   }
 
-  # out <- list()
-  # out$exog_df_ready <- exog_df_ready
+  out <- list()
+  out$exog_df_ready <- exog_df_ready
+  out$frequency <- frequency
 
-  return(exog_df_ready)
+  return(out)
 
 }

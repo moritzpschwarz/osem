@@ -1,11 +1,12 @@
 #' Nowcast missing data for forecasting
 #'
 #' @param exog_df_ready The outcome of the \link[=forecast_exogenous_values]{forecast_exogenous_values} function, as prepared by the \link[=forecast_model]{forecast_model} function..
+#' @param frequency Character string that indicates the frequency of the model. Must be compatible with the 'by' argument in \code{seq.Date()}.
 #' @inheritParams forecast_model
 #'
 #' @return Returns a list with two full model objects. One contains the original model and one contains the nowcasted model.
 #'
-nowcasting <- function(model, exog_df_ready){
+nowcasting <- function(model, exog_df_ready, frequency){
 
   # save the original model without nowcasts as backup
   orig_model <- model
@@ -46,7 +47,7 @@ nowcasting <- function(model, exog_df_ready){
         dplyr::pull("max_time") -> current_max_time
 
       # removing the first one in the sequence (using [-1]) as that would be the last available value
-      cur_target_dates <- seq.Date(as.Date(current_max_time), as.Date(target_time), "q")[-1]
+      cur_target_dates <- seq.Date(as.Date(current_max_time), as.Date(target_time), by = frequency)[-1]
 
       # if this relationship is an estimated relationship
       if(vars_not_full_analysis %>% dplyr::filter(.data$order == ord) %>% dplyr::pull("type") == "n"){
@@ -98,7 +99,7 @@ nowcasting <- function(model, exog_df_ready){
                  ncol = length(vars_missing), dimnames = list(NULL, vars_missing)) %>%
             dplyr::as_tibble() %>%
             dplyr::bind_cols(exog_data_nowcasting,.) %>%
-            dplyr::relocate("time",all_of(indep_vars_to_get)) -> exog_data_nowcasting
+            dplyr::relocate("time",dplyr::all_of(indep_vars_to_get)) -> exog_data_nowcasting
         }
 
         # we check whether all relevant time periods are even in this subset
@@ -118,7 +119,7 @@ nowcasting <- function(model, exog_df_ready){
             fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE,
                                     remove_selected_columns = TRUE) %>%
             dplyr::bind_rows(exog_data_nowcasting,.) %>%
-            dplyr::relocate("time",all_of(indep_vars_to_get)) -> exog_data_nowcasting
+            dplyr::relocate("time",dplyr::all_of(indep_vars_to_get)) -> exog_data_nowcasting
         }
 
         # above we made sure that all variables appear in the exog_data_nowcasting

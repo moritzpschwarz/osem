@@ -173,7 +173,7 @@ run_model <- function(specification,
                                           .data$diff_num %in% c(90:92) ~ "3 months",
                                           .data$diff_num %in% c(365:366) ~ "year")) %>%
     dplyr::ungroup() %>%
-    tidyr::drop_na(.data$diff) %>%
+    tidyr::drop_na("diff") %>%
     dplyr::distinct(.data$diff) %>%
     dplyr::pull(.data$diff)
 
@@ -183,7 +183,7 @@ run_model <- function(specification,
       full_data %>%
         dplyr::mutate(year = lubridate::year(.data$time),
                       quarter = lubridate::quarter(.data$time)) %>%
-        dplyr::mutate(values = sum(values, na.rm = TRUE), .by = c("na_item","year")) %>%
+        dplyr::mutate(values = sum(.data$values, na.rm = TRUE), .by = c("na_item","year")) %>%
         dplyr::filter(.data$quarter == 1) %>%
         dplyr::select(-dplyr::all_of(c("year", "quarter"))) -> full_data
     } else {
@@ -245,7 +245,8 @@ run_model <- function(specification,
       saturation.tpval = saturation.tpval,
       max.block.size = max.block.size,
       gets_selection = gets_selection,
-      selection.tpval = selection.tpval
+      selection.tpval = selection.tpval,
+      quiet = quiet
     )
 
     # store module estimates dataset, including fitted values

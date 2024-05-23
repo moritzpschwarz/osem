@@ -66,7 +66,7 @@ forecast_model <- function(model,
     dplyr::filter(.data$class == "x") %>%
     dplyr::pull(.data$var) -> exog_vars
 
-  exog_df_ready <- forecast_exogenous_values(model = model,
+  exog_forecast_list <- forecast_exogenous_values(model = model,
                                              exog_vars = exog_vars,
                                              exog_predictions = exog_predictions,
                                              exog_fill_method = exog_fill_method,
@@ -74,8 +74,10 @@ forecast_model <- function(model,
                                              n.ahead = n.ahead,
                                              quiet = quiet)
 
+  exog_df_ready <- exog_forecast_list$exog_df_ready
+
   ## 1a. Nowcasting --------------------------------------------------------------------
-  nowcasted <- nowcasting(model, exog_df_ready = exog_df_ready)
+  nowcasted <- nowcasting(model, exog_df_ready = exog_df_ready, frequency = exog_forecast_list$frequency)
 
   # after we are done with nowcasting, we throw away the early values
   exog_df_ready_full <- exog_df_ready

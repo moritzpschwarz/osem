@@ -248,7 +248,7 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
     # TODO write unit tests for this
     to_obtain %>%
       dplyr::filter(.data$database == "eurostat" & .data$found == FALSE) %>%
-      dplyr::filter(dataset_id == eurostat_dataset_ids[i]) %>%
+      dplyr::filter(.data$dataset_id == eurostat_dataset_ids[i]) %>%
       dplyr::pull(.data$freq) %>%
       unique() -> freq_dataset
 

@@ -35,7 +35,8 @@ run_module <- function(
     saturation.tpval = 0.01,
     max.block.size = 20,
     gets_selection = TRUE,
-    selection.tpval = 0.01) {
+    selection.tpval = 0.01,
+    quiet) {
 
   raw_data <- identify_module_data(module, classification, data)
 
@@ -76,7 +77,8 @@ run_module <- function(
                                         saturation.tpval = saturation.tpval,
                                         max.block.size = max.block.size,
                                         gets_selection = gets_selection,
-                                        selection.tpval = selection.tpval)
+                                        selection.tpval = selection.tpval,
+                                        quiet = quiet)
 
     moduledata <- add_to_original_data(clean_data = clean_df,
                                        isat_object = estimated_module$best_model,
