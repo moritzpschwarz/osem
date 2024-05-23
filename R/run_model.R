@@ -97,7 +97,7 @@ run_model <- function(specification,
                       gets_selection = TRUE,
                       selection.tpval = 0.01,
                       constrain.to.minimum.sample = TRUE
-                      ) {
+) {
 
   primary_source = match.arg(primary_source)
 
@@ -166,9 +166,9 @@ run_model <- function(specification,
       dplyr::distinct(.data$na_item) %>%
       dplyr::pull("na_item") -> duplicated_variables
 
-    stop(paste0("The data contains duplicates. Please remove them.",
+    stop(paste0("The data contains duplicates. Please remove them. ",
                 "This might be related to an additional filter that is necessary for the eurostat data (e.g. need to select nace_2 for the right value for the sector).\n",
-                "Variables that contain duplicates: ",duplicated_variables))
+                "Variables that contain duplicates: ",paste0(duplicated_variables, collapse = ", ")))
   }
 
 

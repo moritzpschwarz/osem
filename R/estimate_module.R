@@ -95,6 +95,11 @@ estimate_module <- function(clean_data,
           },
           dplyr::any_of(c("q_2", "q_3", "q_4"))
         )
+
+      if(i == 0){
+        xvars_initial <- xvars
+      }
+
     }
     if (ardl_or_ecm == "ecm") {
       yvar <- clean_data %>%
@@ -124,6 +129,9 @@ estimate_module <- function(clean_data,
           },
           dplyr::any_of(c("q_2", "q_3", "q_4"))
         )
+      if(i == 0){
+        xvars_initial <- xvars
+      }
     }
 
     # ISAT modelling ----------------------------------------------------------
@@ -192,7 +200,7 @@ estimate_module <- function(clean_data,
   if (all(is.na(isat_list$BIC))){
     dplyr::tibble(time = clean_data$time,
                   y = yvar,
-                  xvars) %>%
+                  xvars_initial) %>%
       dplyr::rename_with(.cols = "y",.fn = ~paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename)) %>%
       dplyr::select(-c(any_of(c("q_1", "q_2", "q_3", "q_4", "trend")))) %>%
       tidyr::pivot_longer(-c("time")) %>%
