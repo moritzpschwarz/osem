@@ -85,6 +85,8 @@ estimate_module <- function(clean_data,
         dplyr::select(dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename))) %>%
         dplyr::pull()
 
+      y.name <- paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename)
+
       xvars <- clean_data %>%
 
         dplyr::select(
@@ -108,6 +110,7 @@ estimate_module <- function(clean_data,
         dplyr::select(dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename))) %>%
         dplyr::pull()
 
+      y.name <- paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename)
 
       # TODO: Check log specification and check when model is AR only
       if(!identical(x_vars_basename, character(0))){
@@ -173,6 +176,7 @@ estimate_module <- function(clean_data,
 
       # TODO necessary to add the tis argument to the call due to error in gets package
       if(exists("intermed.model")){intermed.model$call$tis <- intermed.model$aux$args$tis}
+      if(exists("intermed.model")){intermed.model$aux$y.name <- y.name}
     } else {
 
       # ARX Modelling -----------------------------------------------------------
@@ -231,8 +235,8 @@ estimate_module <- function(clean_data,
   if(gets_selection){
 
     try(best_isat_model.selected <- gets::gets(best_isat_model,
-                                           print.searchinfo = FALSE,
-                                           t.pval = selection.tpval))
+                                               print.searchinfo = FALSE,
+                                               t.pval = selection.tpval), silent = TRUE)
 
     if(!exists("best_isat_model.selected")){
       if(!quiet){warning("Model selection with 'gets' failed. The best model is the one with the lowest BIC. Disable warning with 'quiet = TRUE'.")}
@@ -255,6 +259,9 @@ estimate_module <- function(clean_data,
                                                 sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
                                                 tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
                                                 t.pval = saturation.tpval)
+
+    if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$call$tis <- best_isat_model.selected.isat$aux$args$tis}
+    if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$aux$y.name <- y.name}
   }
 
 
