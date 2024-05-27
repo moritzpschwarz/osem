@@ -52,9 +52,9 @@ classify_variables <- function(specification) {
   # output
   classification <- data.frame(var = vars.all) %>%
     dplyr::mutate(class = dplyr::case_when(var %in% vars.x ~ "x",
-                             var %in% vars.n ~ "n",
-                             var %in% vars.d ~ "d",
-                             TRUE ~ NA_character_)
+                                           var %in% vars.n ~ "n",
+                                           var %in% vars.d ~ "d",
+                                           TRUE ~ NA_character_)
     )
 
   return(classification)
@@ -73,7 +73,7 @@ update_data <- function(orig_data, new_data) {
 
   # which values to add (always add fitted level)
   add <- new_data %>%
-    dplyr::select(dplyr::contains(c("time", ".level.hat")))
+    dplyr::select("time",dplyr::contains(c(".level.hat")))
 
   # change name to make consistent with identify_module_data()
   cnames <- colnames(add)
