@@ -45,22 +45,6 @@ annualy <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), length.ou
 
 
 
-mixed_freq <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "year"),
-                            FinConsExpGov = rnorm(mean = 100, n = length(time)),
-                            HICP_Gas = rnorm(mean = 200, n = length(time)),
-                            FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.1)) %>%
-  tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values")
-
-# modify frequency for HICP_Gas
-mixed_freq <- mixed_freq %>%
-  dplyr::filter(na_item != "HICP_Gas") %>%
-  dplyr::bind_rows(mixed_freq %>%
-                     dplyr::filter(na_item == "HICP_Gas") %>%
-                     dplyr::mutate(time = seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "day")))
-
-
-
-
 
 test_that("Test the reaction of the model for different frequencies",{
 
@@ -87,15 +71,6 @@ test_that("Test the reaction of the model for different frequencies",{
                        primary_source = "local",
                        max.ar = 1, max.dl = 0,
                        quiet = TRUE)
-
-  expect_error(
-    model_mf <- run_model(specification = specification,
-                          inputdata_directory = mixed_freq,
-                          primary_source = "local",
-                          max.ar = 1, max.dl = 0,
-                          constrain.to.minimum.sample = FALSE,
-                          quiet = TRUE),
-    regexp = "Mixed frequency models are not yet implemented.")
 
   expect_error(forecast_model(model_d),regexp = "Mixed frequency forecasts or forecasts with daily or monthly data are not yet implemented.")
   expect_error(forecast_model(model_m),regexp = "Mixed frequency forecasts or forecasts with daily or monthly data are not yet implemented.")
@@ -380,7 +355,188 @@ test_that("Annual Models run with EUROSTAT data",{
   test_fc <- forecast_model(test, plot.forecast = FALSE)
 
   expect_equal(test_fc$forecast$central.estimate[[1]]$time, structure(c(19723, 20089, 20454, 20819, 21184, 21550, 21915,
-                                                                       22280, 22645, 23011), class = "Date"))
+                                                                        22280, 22645, 23011), class = "Date"))
   plot(test_fc, exclude.exogenous = TRUE)
 
 })
+
+
+
+
+
+
+# Mixed Frequency ---------------------------------------------------------
+
+test_that("Mixed Frequency across variables (different variables have different mixed frequencies)",{
+
+  mixed_freq <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "year"),
+                              FinConsExpGov = rnorm(mean = 100, n = length(time)),
+                              HICP_Gas = rnorm(mean = 200, n = length(time)),
+                              FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.1)) %>%
+    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values")
+
+  # modify frequency for HICP_Gas
+  mixed_freq <- mixed_freq %>%
+    dplyr::filter(na_item != "HICP_Gas") %>%
+    dplyr::bind_rows(mixed_freq %>%
+                       dplyr::filter(na_item == "HICP_Gas") %>%
+                       dplyr::mutate(time = seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "day")))
+
+  expect_error(
+    model_mf <- run_model(specification = specification,
+                          inputdata_directory = mixed_freq,
+                          primary_source = "local",
+                          max.ar = 1, max.dl = 0,
+                          constrain.to.minimum.sample = FALSE,
+                          quiet = TRUE),
+    regexp = "Mixed frequency models are not yet implemented.")
+
+})
+
+
+
+test_that("Mixed Frequency within variable (same variables has different mixed frequencies)",{
+
+  mixed_freq_orig <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "3 months"),
+                                   FinConsExpGov = rnorm(mean = 100, n = length(time)),
+                                   HICP_Gas = rnorm(mean = 200, n = length(time)),
+                                   FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.1)) %>%
+    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values")
+
+  ###
+  # simplest case: add a single annual observation to the start of an otherwise quarterly series
+  ###
+
+  # modify frequency for HICP_Gas
+  mixed_freq <- mixed_freq_orig %>%
+    dplyr::bind_rows(
+      dplyr::tibble(na_item = "HICP_Gas",
+                    time = as.Date("2004-01-01")) %>%
+        dplyr::mutate(values = rnorm(dplyr::n()))
+    ) %>%
+    dplyr::arrange(na_item, time)
+
+  expect_silent(model_mf1 <- run_model(specification = specification,
+                                       inputdata_directory = mixed_freq,
+                                       primary_source = "local",
+                                       max.ar = 1, max.dl = 0,
+                                       constrain.to.minimum.sample = FALSE,
+                                       quiet = TRUE))
+
+  # expect the 2004-01-01 to be dropped
+  model_mf1_times <- model_mf1$full_data %>% dplyr::filter(na_item == "HICP_Gas") %>% dplyr::pull(time)
+  expect_false("2004-01-01" %in% model_mf1_times)
+  # expect all other observations to be there
+  expect_equal(seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "3 months"), model_mf1_times)
+
+
+
+  ###
+  # add three annual observations to the start of an otherwise quarterly series
+  ###
+
+  # modify frequency for HICP_Gas
+  mixed_freq <- mixed_freq_orig %>%
+    dplyr::bind_rows(
+      dplyr::tibble(na_item = "HICP_Gas",
+                    time = c(as.Date("2002-01-01"),as.Date("2003-01-01"),as.Date("2004-01-01"))) %>%
+        dplyr::mutate(values = rnorm(dplyr::n()))
+    ) %>%
+    dplyr::arrange(na_item, time)
+
+  expect_silent(model_mf2 <- run_model(specification = specification,
+                                       inputdata_directory = mixed_freq,
+                                       primary_source = "local",
+                                       max.ar = 1, max.dl = 0,
+                                       constrain.to.minimum.sample = FALSE,
+                                       quiet = TRUE))
+
+
+  ###
+  # add 15 annual observations to the start of an otherwise quarterly series
+  # this should result in a warning
+  ###
+
+  mixed_freq <- mixed_freq_orig %>%
+    dplyr::bind_rows(
+      dplyr::tibble(na_item = "HICP_Gas",
+                    time = c(seq.Date(from = as.Date("1990-01-01"), length.out = 15, by = "year"))) %>%
+        dplyr::mutate(values = rnorm(dplyr::n()))
+    ) %>%
+    dplyr::arrange(na_item, time)
+
+  expect_warning(
+    suppressMessages(
+      model_mf2 <- run_model(specification = specification,
+                             inputdata_directory = mixed_freq,
+                             primary_source = "local",
+                             max.ar = 1, max.dl = 0,
+                             constrain.to.minimum.sample = FALSE,
+                             quiet = FALSE)),
+    regexp = "Some observations were removed from the data due to different frequencies")
+  #regexp = "Variable provided as 'inputdata_directory' seems to be a data.frame type. Used as data source"),
+
+
+  # expect the annual observations to be dropped
+  model_mf2_times <- model_mf2$full_data %>% dplyr::filter(na_item == "HICP_Gas") %>% dplyr::pull(time)
+  expect_false(any(seq.Date(from = as.Date("1990-01-01"), length.out = 15, by = "year") %in% model_mf1_times))
+  # expect all other observations to be there
+  expect_equal(seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "3 months"), model_mf2_times)
+
+
+
+
+  ###
+  # slightly more complex case: add a single annual observation to the end of an otherwise quarterly series
+  # should fail as the final observations always takes the difference from the second-to-last observations
+  # this will be different than all others (will be annual rather than quarterly)
+  # hence the model will fail
+  ###
+
+  # modify frequency for HICP_Gas
+  mixed_freq <- mixed_freq_orig %>%
+    dplyr::bind_rows(
+      dplyr::tibble(na_item = "HICP_Gas",
+                    time = as.Date("2013-01-01")) %>%
+        dplyr::mutate(values = rnorm(dplyr::n()))
+    ) %>%
+    dplyr::arrange(na_item, time)
+
+  expect_error(model_mf2 <- run_model(specification = specification,
+                                      inputdata_directory = mixed_freq,
+                                      primary_source = "local",
+                                      max.ar = 1, max.dl = 0,
+                                      constrain.to.minimum.sample = FALSE,
+                                      quiet = TRUE), regexp = "Mixed frequency models are not yet implemented.")
+
+
+
+
+
+  ###
+  # slightly more complex case: add a second annual observation in the middle of an otherwise quarterly series (so will create a duplicate)
+  # should fail as duplicates will be detected
+  ###
+
+  # modify frequency for HICP_Gas
+  mixed_freq <- mixed_freq_orig %>%
+    dplyr::bind_rows(
+      dplyr::tibble(na_item = "HICP_Gas",
+                    time = as.Date("2010-01-01")) %>%
+        dplyr::mutate(values = rnorm(dplyr::n()))
+    ) %>%
+    dplyr::arrange(na_item, time)
+
+  expect_error(
+    model_mf <- run_model(specification = specification,
+                          inputdata_directory = mixed_freq,
+                          primary_source = "local",
+                          max.ar = 1, max.dl = 0,
+                          constrain.to.minimum.sample = FALSE,
+                          quiet = TRUE),
+    regexp = "The data contains duplicates. Please remove them.")
+
+})
+
+
+

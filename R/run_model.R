@@ -161,36 +161,10 @@ run_model <- function(specification,
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
 
-
-  # check the frequencies of the full data
-  frequency <- full_data %>%
-    dplyr::arrange(.data$na_item, .data$time) %>%
-    dplyr::group_by(.data$na_item) %>%
-    dplyr::distinct(.data$time) %>%
-    dplyr::mutate(diff_num = c(NA,diff(.data$time)),
-                  diff = dplyr::case_when(.data$diff_num == 1 ~ "day",
-                                          .data$diff_num %in% c(28:31) ~ "month",
-                                          .data$diff_num %in% c(90:92) ~ "3 months",
-                                          .data$diff_num %in% c(365:366) ~ "year")) %>%
-    dplyr::ungroup() %>%
-    tidyr::drop_na("diff") %>%
-    dplyr::distinct(.data$diff) %>%
-    dplyr::pull(.data$diff)
-
-  if(length(frequency) > 1){
-
-    if(all(c("year","3 months") %in% frequency)){
-      full_data %>%
-        dplyr::mutate(year = lubridate::year(.data$time),
-                      quarter = lubridate::quarter(.data$time)) %>%
-        dplyr::mutate(values = sum(.data$values, na.rm = TRUE), .by = c("na_item","year")) %>%
-        dplyr::filter(.data$quarter == 1) %>%
-        dplyr::select(-dplyr::all_of(c("year", "quarter"))) -> full_data
-    } else {
-      # frequency == "month" | frequency == "day")
-      stop("Mixed frequency models are not yet implemented. Please check to make sure that all data that you supply to the model (incl. in the dictionary) has the same frequency.")
-    }
-  }
+  # check the frequencies of the full data and if necessary aggregate
+  freq_output <- check_frequencies(full_data, quiet = quiet)
+  full_data <- freq_output$full_data
+  frequency <- freq_output$frequency
 
 
   # check for duplicates in the data
