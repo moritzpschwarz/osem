@@ -11,10 +11,10 @@ spec <- dplyr::tibble(
   ),
   dependent = c(
     "EmiCO2Industry",
-    "IndProdGDP"
+    "IndProd"
   ),
   independent = c(
-    "HICP_GAS + HICP_Energy + IndProdGDP",
+    "HICP_GAS + HICP_Energy + IndProd",
     "GAS"
 
   )
@@ -50,12 +50,13 @@ browser()
 #extract variables, so that we can search for them in the statsCan database
 to_obtain <- determine_variables(specification=spec,dictionary=dictionary)
 
-
+browser()
 model_result <- run_model(specification = spec, dictionary = dict_statCan, primary_source = "download")
 browser()
 model_forecast <- forecast_model(model_result, n.ahead = 10, exog_fill_method = "AR", plot.forecast = FALSE)
 
 plot <- plot.aggmod.forecast(model_forecast,order.as.run = TRUE)
+
 
 hind_cast <- forecast_insample(
   model_result,

@@ -1,0 +1,55 @@
+---
+title: "modelling-with-statcan-workflow"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{modelling-with-statcan-workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  dpi = 300
+)
+```
+
+```{r setup, message=FALSE}
+library(aggregate.model)
+library(dplyr)
+library(statcanR)
+library(ggplot2)
+```
+This is a vignette to describe the process of how to run the model, create forecasts, and create hindcasts using data from Statistics Canada via the implemented statcan dictionary within aggregate.model.
+
+## Specification
+
+We use a specification for illustrative purposes only. Our specification
+contains the following four modules/equations:
+
+```{r specification}
+specification <- dplyr::tibble(
+    type = c(
+      "d",
+      "n"
+    ),
+    dependent = c(
+      "EmiCO2Industry",
+      "IndProd"
+    ),
+    independent = c(
+      "HICP_GAS + HICP_Energy + IndProd",
+      "GAS"
+
+    )
+  )
+print(specification)
+```
+
+##Load statcan dictionary
+
+```{r dictionary}
+dictionary <- aggregate.model::statcan_dict
+```

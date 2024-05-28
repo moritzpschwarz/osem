@@ -11,6 +11,8 @@
 #' downloaded data and \code{$to_obtain} the updated data.frame tracking which
 #' variables still need to be obtained.
 
+#library(statcanR)
+
 download_statcan <- function(to_obtain, column_filters, quiet) {
 
 
@@ -32,7 +34,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
 
     #download data table according to data_base_id
     id <- dataset_id[i,1]
-    df <- statcan_data(id,"eng")
+    df <- statcanR::statcan_data(id,"eng")
     df <- as.data.frame(df)
 
     #get the dictionary coordinates that use the following dataset_id

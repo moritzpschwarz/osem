@@ -28,7 +28,8 @@ Imports:
     stringr,
     utils,
     ggplot2,
-    scales
+    scales,
+    statcanR
 LazyData: true
 Suggests: 
     shiny,
