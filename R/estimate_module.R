@@ -196,6 +196,10 @@ estimate_module <- function(clean_data,
         },
         plot = FALSE
       )
+
+      colnames(intermed.model$aux$mX) <- intermed.model$aux$mXnames
+      intermed.model$aux$args$ar <- i
+      intermed.model$aux$y.name <- y.name
     }
 
 
@@ -228,17 +232,28 @@ estimate_module <- function(clean_data,
     dplyr::pull(dplyr::all_of("isat_object")) %>%
     dplyr::first()
 
+
   # gets selection on the best model ----------------------------------------
-
   if(gets_selection){
-
     try(best_isat_model.selected <- gets::gets(best_isat_model,
                                                print.searchinfo = FALSE,
-                                               t.pval = selection.tpval), silent = TRUE)
+                                               t.pval = selection.tpval,
+                                               ar.LjungB = NULL,
+                                               arch.LjungB = NULL), silent = TRUE)
 
     if(!exists("best_isat_model.selected")){
       if(!quiet){warning("Model selection with 'gets' failed. The best model is the one with the lowest BIC. Disable warning with 'quiet = TRUE'.")}
       best_isat_model.selected <- best_isat_model
+    }
+
+    colnames(best_isat_model.selected$aux$mX) <- best_isat_model.selected$aux$mXnames
+
+    # make sure the ar values are retained correction
+    ar_retained <- grep("^ar[0-9]+",best_isat_model.selected$aux$mXnames, value = TRUE)
+    if(!identical(ar_retained, character(0))){
+      best_isat_model.selected$aux$args$ar <- as.numeric(gsub("ar","",ar_retained))
+    } else {
+      best_isat_model.selected$aux$args$ar <- 0
     }
 
     retained.coefs <- row.names(best_isat_model.selected$mean.results)
@@ -249,8 +264,10 @@ estimate_module <- function(clean_data,
 
     if (!is.null(saturation)) {
       best_isat_model.selected.isat <- gets::isat(y = yvar,
-                                                  ar = best_isat_model$aux$args$ar,
-                                                  mc = best_isat_model$aux$args$mc,
+                                                  #ar = best_isat_model$aux$args$ar,
+                                                  ar = ifelse(identical(ar_retained,character(0)),0,as.numeric(gsub("ar","",ar_retained))),
+                                                  #mc = best_isat_model$aux$args$mc,
+                                                  mc = any(grepl("mconst",best_isat_model.selected$aux$mXnames)),
                                                   mxreg = retained.xvars,
                                                   plot = FALSE,
                                                   print.searchinfo = FALSE,
