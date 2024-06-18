@@ -30,7 +30,6 @@ test_that("Error messages for saturation, selection",{
   expect_error(run_model(specification = specification, saturation = "MIS"), "character vector that can take the values 'IIS', 'SIS', or 'TIS'")
   expect_error(run_model(specification = specification, saturation = 0.5), "character vector that can take the values 'IIS', 'SIS', or 'TIS'")
 
-
   expect_error(run_model(specification = specification, saturation.tpval = "A"), "saturation.tpval' must be either NULL or numeric between 0 and 1")
   expect_error(run_model(specification = specification, saturation.tpval = 2), "saturation.tpval' must be either NULL or numeric between 0 and 1")
   expect_error(run_model(specification = specification, saturation.tpval = -2), "saturation.tpval' must be either NULL or numeric between 0 and 1")
@@ -59,6 +58,30 @@ test_that("Error messages for saturation, selection",{
 
   expect_equal(nrow(mod$module_order), 1)
   expect_equal(mod$module_collection$model[[1]]$ISnames, c("sis12", "sis13"))
+
+  # check that saturation = NULL works
+  expect_silent(mod <- run_model(specification = specification,
+                                 dictionary = dict,
+                                 inputdata_directory = testdata,
+                                 primary_source = "local",
+                                 present = FALSE,
+                                 quiet = TRUE, saturation = NULL))
+
+  # check that saturation = NULL and gets_selection = NULL works
+  expect_silent(mod <- run_model(specification = specification,
+                                 dictionary = dict,
+                                 inputdata_directory = testdata,
+                                 primary_source = "local",
+                                 present = FALSE,
+                                 quiet = TRUE,
+
+                                 saturation = NULL,
+                                 gets_selection = FALSE))
+
+
+
+
+
 
 })
 

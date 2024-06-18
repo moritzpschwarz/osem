@@ -140,7 +140,6 @@ estimate_module <- function(clean_data,
     }
 
     # ISAT modelling ----------------------------------------------------------
-
     if (!is.null(saturation)) {
       # debug_list <- list(yvar = yvar, xvars = xvars,i = i,saturation.tpval = saturation.tpval)
       # save(debug_list, file = "debug_list.RData")
@@ -231,7 +230,6 @@ estimate_module <- function(clean_data,
 
   # gets selection on the best model ----------------------------------------
 
-
   if(gets_selection){
 
     try(best_isat_model.selected <- gets::gets(best_isat_model,
@@ -249,19 +247,21 @@ estimate_module <- function(clean_data,
 
     retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
 
-    best_isat_model.selected.isat <- gets::isat(y = yvar,
-                                                ar = best_isat_model$aux$args$ar,
-                                                mc = best_isat_model$aux$args$mc,
-                                                mxreg = retained.xvars,
-                                                plot = FALSE,
-                                                print.searchinfo = FALSE,
-                                                iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
-                                                sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
-                                                tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
-                                                t.pval = saturation.tpval)
+    if (!is.null(saturation)) {
+      best_isat_model.selected.isat <- gets::isat(y = yvar,
+                                                  ar = best_isat_model$aux$args$ar,
+                                                  mc = best_isat_model$aux$args$mc,
+                                                  mxreg = retained.xvars,
+                                                  plot = FALSE,
+                                                  print.searchinfo = FALSE,
+                                                  iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
+                                                  sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
+                                                  tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
+                                                  t.pval = saturation.tpval)
 
-    if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$call$tis <- best_isat_model.selected.isat$aux$args$tis}
-    if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$aux$y.name <- y.name}
+      if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$call$tis <- best_isat_model.selected.isat$aux$args$tis}
+      if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$aux$y.name <- y.name}
+    }
   }
 
 
@@ -272,7 +272,15 @@ estimate_module <- function(clean_data,
   #  dplyr::filter(BIC == min(BIC)) %>%
   #  dplyr::pull(dplyr::all_of("isat_object")) %>%
   #  dplyr::first()
-  out$best_model <- if(gets_selection){best_isat_model.selected.isat} else {best_isat_model}
+  out$best_model <- if(gets_selection) {
+    if (!is.null(saturation)) {
+      best_isat_model.selected.isat
+    } else {
+      best_isat_model.selected
+    }
+  } else {
+    best_isat_model
+  }
 
   out$args <- list(clean_data = clean_data,
                    dep_var_basename = dep_var_basename,
