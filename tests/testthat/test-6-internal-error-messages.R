@@ -59,6 +59,11 @@ test_that("Error messages for saturation, selection",{
   expect_equal(nrow(mod$module_order), 1)
   expect_equal(mod$module_collection$model[[1]]$ISnames, c("sis12", "sis13"))
 
+})
+
+
+test_that("Check that arx estimation works (i.e. saturation = NULL)",{
+
   # check that saturation = NULL works
   expect_silent(mod <- run_model(specification = specification,
                                  dictionary = dict,
@@ -66,6 +71,12 @@ test_that("Error messages for saturation, selection",{
                                  primary_source = "local",
                                  present = FALSE,
                                  quiet = TRUE, saturation = NULL))
+
+  # check that all elements of mod$module_collection$model[[1]]$aux$mX have column names
+  expect_true(!is.null(colnames(mod$module_collection$model[[1]]$aux$mX)))
+
+  # check that ar argument is contained in mod$module_collection$model[[1]]$aux$args
+  expect_true(!is.null(mod$module_collection$model[[1]]$aux$args$ar))
 
   # check that saturation = NULL and gets_selection = NULL works
   expect_silent(mod <- run_model(specification = specification,
@@ -78,12 +89,8 @@ test_that("Error messages for saturation, selection",{
                                  saturation = NULL,
                                  gets_selection = FALSE))
 
-
-
-
-
-
 })
+
 
 
 test_that("Error messages for log specifications", {
@@ -160,6 +167,30 @@ test_that("Error messages for log specifications", {
   expect_true(all(testdata$values[testdata$na_item == "HICP_Gas"] == mod$module_collection$model[[1]]$aux$mX[,"HICP_Gas"]))
   expect_true(all(testdata$values[testdata$na_item == "FinConsExpHH"] == mod$module_collection$model[[1]]$aux$y))
 
+
+  # test that the log transformation is correctly applied to the dependent variable
+  # even when saturation = NULL (i.e. arx is used)
+
+  mod <- run_model(specification = specification,
+                   dictionary = dict,
+                   inputdata_directory = testdata,
+                   primary_source = "local",
+                   present = FALSE,
+                   quiet = TRUE,
+                   gets_selection = FALSE,
+                   saturation = NULL,
+                   max.ar = 0,
+                   max.dl = 0)
+  # forecast_model(mod, plot.forecast = TRUE)
+
+  mod$full_data %>%
+    dplyr::filter(grepl("FinConsExpHH", na_item), time == as.Date("2005-01-01")) %>%
+    dplyr::pull(values) %>%
+    round(3) -> dat_not_logged
+
+  #expect_identical(dat_not_logged, c(80.37, 4.39)) # this used to be case
+  expect_identical(dat_not_logged, c(80.369, 80.366)) # now estimated and predicted are nearly equal
+
 })
 
 
@@ -213,3 +244,6 @@ test_that("Check that all variables are in the dictionary",{
                                    constrain.to.minimum.sample = FALSE), regexp = "Not all model variables found in the dictionary")
 
 })
+
+
+

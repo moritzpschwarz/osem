@@ -54,7 +54,7 @@ check_frequencies <- function(full_data, quiet){
 
     temp_df_backup <- temp_df
 
-    while(any(temp_df %>% tidyr::drop_na(.data$freq_rank) %>% dplyr::pull(.data$freq_rank) < max(temp_df$freq_rank, na.rm = TRUE))){
+    while(any(temp_df %>% tidyr::drop_na("freq_rank") %>% dplyr::pull(.data$freq_rank) < max(temp_df$freq_rank, na.rm = TRUE))){
       temp_df %>%
         # the last observation will never have a freq_rank (as it does not have a next_t)
         # we just use the one from the period before that

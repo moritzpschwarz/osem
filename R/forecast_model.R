@@ -67,12 +67,12 @@ forecast_model <- function(model,
     dplyr::pull(.data$var) -> exog_vars
 
   exog_forecast_list <- forecast_exogenous_values(model = model,
-                                             exog_vars = exog_vars,
-                                             exog_predictions = exog_predictions,
-                                             exog_fill_method = exog_fill_method,
-                                             ar.fill.max = ar.fill.max,
-                                             n.ahead = n.ahead,
-                                             quiet = quiet)
+                                                  exog_vars = exog_vars,
+                                                  exog_predictions = exog_predictions,
+                                                  exog_fill_method = exog_fill_method,
+                                                  ar.fill.max = ar.fill.max,
+                                                  n.ahead = n.ahead,
+                                                  quiet = quiet)
 
   exog_df_ready <- exog_forecast_list$exog_df_ready
 
@@ -239,7 +239,10 @@ forecast_model <- function(model,
 
           # now for each run-row, we run predict.isat
           dplyr::mutate(prediction = purrr::map(.data$data, function(x){
-            gets::predict.isat(isat_obj, newmxreg = x %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)) %>% as.matrix,
+            gets::predict.isat(isat_obj,
+                               newmxreg = x %>%
+                                 dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)) %>%
+                                 as.matrix,
                                n.ahead = n.ahead, plot = FALSE,
                                ci.levels = ci.levels, n.sim = 1)
 
