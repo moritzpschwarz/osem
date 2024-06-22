@@ -76,7 +76,7 @@ test_that("Check that arx estimation works (i.e. saturation = NULL)",{
   expect_true(!is.null(colnames(mod$module_collection$model[[1]]$aux$mX)))
 
   # check that ar argument is contained in mod$module_collection$model[[1]]$aux$args
-  expect_true(!is.null(mod$module_collection$model[[1]]$aux$args$ar))
+  expect_true("ar" %in% names(mod$module_collection$model[[1]]$aux$args))
 
   # check that saturation = NULL and gets_selection = NULL works
   expect_silent(mod <- run_model(specification = specification,

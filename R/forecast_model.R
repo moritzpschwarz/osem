@@ -140,6 +140,7 @@ forecast_model <- function(model,
 
     ## 2b. Start of loop for estimated relationships  ------------------------------------------------
     if(model$module_order$type[model$module_order$order == i] != "d"){
+
       pred_setup_list <- forecast_setup_estimated_relationships(model = model,
                                                                 i = i,
                                                                 exog_df_ready = exog_df_ready,
@@ -335,8 +336,9 @@ forecast_model <- function(model,
   out$exog_data_nowcast <- exog_df_ready_full
   out$nowcast_data <- nowcasted$nowcast_model$full_data
 
-
   class(out) <- "aggmod.forecast"
+
+  out$full_forecast_data <- plot(out, return.data = TRUE)
 
   if(plot.forecast){
     print(plot(out))

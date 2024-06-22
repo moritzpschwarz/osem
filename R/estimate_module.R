@@ -198,7 +198,7 @@ estimate_module <- function(clean_data,
       )
 
       colnames(intermed.model$aux$mX) <- intermed.model$aux$mXnames
-      intermed.model$aux$args$ar <- i
+      intermed.model$aux$args <- if(i != 0){list(ar = 1:i)} else {list(ar = NULL)}
       intermed.model$aux$y.name <- y.name
     }
 
@@ -253,8 +253,9 @@ estimate_module <- function(clean_data,
     if(!identical(ar_retained, character(0))){
       best_isat_model.selected$aux$args$ar <- as.numeric(gsub("ar","",ar_retained))
     } else {
-      best_isat_model.selected$aux$args$ar <- 0
+      best_isat_model.selected$aux$args <- list(ar = NULL)
     }
+    ar_retained_num <- if(identical(ar_retained,character(0))){NULL}else{as.numeric(gsub("ar","",ar_retained))}
 
     retained.coefs <- row.names(best_isat_model.selected$mean.results)
     retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
@@ -264,9 +265,9 @@ estimate_module <- function(clean_data,
 
     if (!is.null(saturation)) {
       best_isat_model.selected.isat <- gets::isat(y = yvar,
-                                                  #ar = best_isat_model$aux$args$ar,
-                                                  ar = ifelse(identical(ar_retained,character(0)),0,as.numeric(gsub("ar","",ar_retained))),
-                                                  #mc = best_isat_model$aux$args$mc,
+                                                  # ar = best_isat_model$aux$args$ar,
+                                                  # mc = best_isat_model$aux$args$mc,
+                                                  ar = ar_retained_num,
                                                   mc = any(grepl("mconst",best_isat_model.selected$aux$mXnames)),
                                                   mxreg = retained.xvars,
                                                   plot = FALSE,

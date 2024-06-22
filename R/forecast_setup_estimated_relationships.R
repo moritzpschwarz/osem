@@ -326,7 +326,11 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
                        dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
                                      dplyr::starts_with("iis"), dplyr::starts_with("sis")),
                      by = "time") %>%
-    tidyr::drop_na() %>%
+    # tidyr::drop_na() %>%
+
+    # only retain the final n.ahead observations
+    dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
+
     dplyr::select(-"time") %>%
     dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
     return() -> pred_df
@@ -391,11 +395,17 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
   final_i_data <- dplyr::tibble(
     data = list(intermed %>%
-                  dplyr::left_join(current_pred_raw %>% dplyr::select("time", dplyr::starts_with("q_"),
-                                                                      dplyr::starts_with("iis"),
-                                                                      dplyr::starts_with("sis")),
+                  dplyr::left_join(current_pred_raw %>%
+                                     dplyr::select("time", dplyr::starts_with("q_"),
+                                                   dplyr::starts_with("iis"),
+                                                   dplyr::starts_with("sis")),
                                    by = "time") %>%
-                  tidyr::drop_na()))
+                  #tidyr::drop_na()))
+                  # only retain the final n.ahead observations
+                  dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n()))
+    )
+  )
+
 
   out <- list()
   out$pred_df <- pred_df
