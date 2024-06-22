@@ -14,7 +14,7 @@ check_frequencies <- function(full_data, quiet){
     #filter(na_item == "Unemployment") %>%
     dplyr::arrange(.data$na_item, .data$time) %>%
     dplyr::mutate(next_t = dplyr::lead(.data$time),
-                  diff_num = as.numeric(.data$next_t-time),
+                  diff_num = as.numeric(.data$next_t - .data$time),
                   diff = dplyr::case_when(.data$diff_num == 1 ~ "day",
                                           .data$diff_num %in% c(28:31) ~ "month",
                                           .data$diff_num %in% c(90:92) ~ "3 months",
@@ -69,7 +69,7 @@ check_frequencies <- function(full_data, quiet){
       dplyr::filter(.data$index %in% temp_df$index) -> temp_df_final
 
     frq_df %>%
-      dplyr::filter(na_item != i) %>%
+      dplyr::filter(.data$na_item != i) %>%
       dplyr::bind_rows(temp_df_final %>% dplyr::select(-c("index","freq_rank"))) %>%
       dplyr::arrange(.data$na_item,.data$time) -> frq_df
   }
@@ -107,11 +107,11 @@ check_frequencies <- function(full_data, quiet){
       }
     }
     temp_ids <- frq_df %>%
-      dplyr::mutate(id = paste0(time, na_item)) %>%
-      dplyr::pull(id)
+      dplyr::mutate(id = paste0(.data$time, .data$na_item)) %>%
+      dplyr::pull(.data$id)
 
     full_data %>%
-      dplyr::mutate(id = paste0(time, na_item)) %>%
+      dplyr::mutate(id = paste0(.data$time, .data$na_item)) %>%
       dplyr::filter(.data$id %in% temp_ids) %>%
       dplyr::select(-"id") -> full_data
   }
