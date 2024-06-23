@@ -6,7 +6,7 @@
 #' @export
 #'
 #'
-forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 100, exog_fill_method = "AR", plot.forecast = TRUE) {
+forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 100, exog_fill_method = "AR", plot.forecast = TRUE, quiet = FALSE) {
 
   # we first must identify the minimum sample across modules
   time_samples <- dplyr::tibble()
@@ -19,44 +19,43 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   }
 
   time_samples %>%
-    dplyr::group_by(.data$dep_var) %>%
+    #dplyr::group_by(.data$dep_var) %>%
     dplyr::summarise(min = min(.data$time),
                      max = max(.data$time)) %>%
     dplyr::distinct(dplyr::across(c("max","min"))) -> time_minmax
 
-
-  # With those times, we can now find the halfway point
+  # With those times, we can now find the share to forecast
   all_times <- seq(time_minmax$min,time_minmax$max, by = "quarter")
   time_to_use <- all_times[ceiling(length(all_times)*sample_share):length(all_times)]
 
   all_models <- list()
   for(j in 1:length(time_to_use)){
-    print(time_to_use[j])
+    if(!quiet){print(paste0("Model Run ",j," up to ",time_to_use[j]))}
     # now let's prepare the model object
+    suppressWarnings(
+      try(insample_model <- run_model(
 
-    try(insample_model <- run_model(
+        specification = model$args$specification,
+        dictionary = model$args$dictionary,
+        trend = model$args$trend,
+        primary_source = "local",
 
-      specification = model$args$specification,
-      dictionary = model$args$dictionary,
-      trend = model$args$trend,
-      primary_source = model$args$primary_source,
+        max.ar = model$args$max.ar,
+        max.dl = model$args$max.dl,
+        max.block.size = model$args$max.block.size,
 
-      max.ar = model$args$max.ar,
-      max.dl = model$args$max.dl,
-      max.block.size = model$args$max.block.size,
+        ardl_or_ecm = model$args$ardl_or_ecm,
+        use_logs = model$args$use_logs,
+        saturation = model$args$saturation,
+        saturation.tpval = model$args$saturation.tpval,
+        gets_selection = model$args$gets_selection,
+        selection.tpval = model$args$selection.tpval,
 
-      ardl_or_ecm = model$args$ardl_or_ecm,
-      use_logs = model$args$use_logs,
-      saturation = model$args$saturation,
-      saturation.tpval = model$args$saturation.tpval,
-      gets_selection = model$args$gets_selection,
-      selection.tpval = model$args$selection.tpval,
+        present = FALSE,
+        quiet = TRUE,
 
-      present = FALSE,
-      quiet = TRUE,
-
-      inputdata_directory = model$processed_input_data %>% dplyr::filter(.data$time <= as.Date(time_to_use[j]))
-    ), silent = TRUE)
+        inputdata_directory = model$processed_input_data %>% dplyr::filter(.data$time <= as.Date(time_to_use[j]))
+      ), silent = TRUE))
 
     if(exists("insample_model")){
       all_models[[j]] <- insample_model
@@ -64,8 +63,6 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     }
   }
 
-  #save(all_models, file = "all_models_3.RData")
-  #load("all_models_2.RData")
 
   model$processed_input_data %>%
     dplyr::distinct(dplyr::across("na_item")) %>%
@@ -90,7 +87,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     nsteps <- length(seq.Date(from = as.Date(start), to = as.Date(end), by = "quarter"))
 
 
-    print(paste0("Forecast ", i, " from ", start, " to ", end))
+    if(!quiet){print(paste0("Forecast ", i, " from ", start, " to ", end))}
 
     forecasted_unknownexogvalues[[i]] <- forecast_model(model = all_models[[i]],
                                                         n.ahead = nsteps,
@@ -113,6 +110,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
   for(i in 1:length(forecasted_unknownexogvalues)){
     # i = 3
+
     if(is.null(forecasted_unknownexogvalues[[i]])){next}
     #print(i)
 
@@ -130,17 +128,17 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
       dplyr::mutate(start = time_to_use[i]) %>%
       dplyr::mutate(quantiles = purrr::map(.data$all.estimates, function(x){
         tidyr::pivot_longer(x, -"time") %>%
-          dplyr::summarise(max = max("value"),
-                           min = min("value"),
-                           p975 = stats::quantile("value", probs = 0.975),
-                           p025 = stats::quantile("value", probs = 0.025),
-                           p75 = stats::quantile("value", probs = 0.75),
-                           p25 = stats::quantile("value", probs = 0.25), .by = .data$time) %>%
+          dplyr::summarise(max = max(.data$value),
+                           min = min(.data$value),
+                           p975 = stats::quantile(.data$value, probs = 0.975),
+                           p025 = stats::quantile(.data$value, probs = 0.025),
+                           p75 = stats::quantile(.data$value, probs = 0.75),
+                           p25 = stats::quantile(.data$value, probs = 0.25), .by = .data$time) %>%
           tidyr::pivot_longer(-"time", names_to = "quantile")
       })) %>%
       dplyr::select(-"all.estimates") %>%
       dplyr::full_join(centrals %>%
-                         dplyr::distinct("dep_var", "name"), by = "dep_var") %>%
+                         dplyr::distinct(.data$dep_var, .data$name), by = "dep_var") %>%
       tidyr::unnest("quantiles") -> alls
 
     dplyr::bind_rows(overall_to_plot_central, centrals) -> overall_to_plot_central
@@ -176,31 +174,37 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   #   dplyr::filter(!(time > forecast_len)) -> uncertainty
   #
 
+  # With those times, we can now find the share to forecast
+  share_to_show <- 1-(ifelse((1-sample_share)*2<=1,(1-sample_share)*2, 1))
+  time_to_show <- all_times[ceiling(length(all_times)*share_to_show):length(all_times)]
 
-  overall_to_plot_central_exp %>%
-    dplyr::filter(.data$start > min(overall_to_plot_central$start)) %>%
-    ggplot2::ggplot() +
+  extract_dep_vars <- unique(centrals$dep_var)
+
+  ggplot2::ggplot() +
+    ggplot2::geom_line(data = model$full_data %>%
+                         dplyr::rename(dep_var = "na_item") %>%
+                         dplyr::filter(.data$dep_var %in% extract_dep_vars,
+                                       .data$time %in% time_to_show),
+                       #.data$time > as.Date("2010-01-01")),
+                       ggplot2::aes(x = .data$time, y = .data$values), linewidth = 1) +
 
     ggplot2::facet_wrap(~dep_var, scales = "free") +
     ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = .data$min, x = .data$time, ymax = .data$max, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
     ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
     ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
 
-    ggplot2::geom_line(ggplot2::aes(y = .data$value, x = .data$time, color = as.factor(.data$start)), inherit.aes = FALSE) +
+    ggplot2::geom_line(data = overall_to_plot_central_exp, ggplot2::aes(y = .data$value, x = .data$time, color = as.factor(.data$start)), inherit.aes = FALSE) +
     ggplot2::facet_wrap(~.data$dep_var, scales = "free") +
     #ggplot2::scale_color_brewer(palette = "PRGn") +
     ggplot2::scale_colour_viridis_d() +
     ggplot2::coord_cartesian(expand = TRUE) +
 
-    ggplot2::labs(x = NULL) +
+    ggplot2::labs(x = NULL, y = NULL, title = "Automatic Forecasting Hindcasts") +
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "none",
                    panel.grid.major.x = ggplot2::element_blank(),
                    panel.grid.minor.x = ggplot2::element_blank(),
-                   panel.grid.minor.y = ggplot2::element_blank()) +
-
-    ggplot2::geom_line(data = full_data,
-                       ggplot2::aes(x = .data$time, y = .data$values), color = "black", linewidth = 2) -> plt
+                   panel.grid.minor.y = ggplot2::element_blank()) -> plt
 
 
   #plotly::ggplotly(plt)

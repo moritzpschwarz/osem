@@ -86,7 +86,7 @@ run_model <- function(specification,
                       save_to_disk = NULL,
                       present = FALSE,
                       quiet = FALSE,
-                      use_logs = c("both", "y", "x"),
+                      use_logs = "both",
                       trend = TRUE,
                       ardl_or_ecm = "ardl",
                       max.ar = 4,
@@ -97,7 +97,7 @@ run_model <- function(specification,
                       gets_selection = TRUE,
                       selection.tpval = 0.01,
                       constrain.to.minimum.sample = TRUE
-                      ) {
+) {
 
   primary_source = match.arg(primary_source)
 
@@ -118,13 +118,29 @@ run_model <- function(specification,
   if(any(duplicated(dictionary$model_varname))){stop("Dictionary cannot contain duplicated values for 'model_varname'.")}
 
   if(any(grepl("\\-|\\+|\\*|\\/|\\^",dictionary$model_varname))){stop("The 'model_varname' column in the Dictionary cannot contain any of the following characters: + - / * ^")}
+  if(any(grepl("\\-|\\+|\\*|\\/|\\^",specification$dependent))){stop("The 'dependent' column in the specification cannot contain any of the following characters: + - / * ^")}
+
 
   if(!is.null(save_to_disk)){
     if(!is.character(save_to_disk)){stop("'save_to_disk' must be a path to a file as a character. For example 'data.csv'.")}
     if(is.character(save_to_disk) & identical(strsplit(basename(save_to_disk), split="\\.")[[1]][-1],character(0))){stop("'save_to_disk' must be a path to a file. No file ending detected. Currently supporting RDS, rds, Rds, csv, xls, xlsx.")}
   }
 
+  # Checking saturation and selection options
+  if(!is.logical(gets_selection)){stop("'gets_selection' must be logical  (so either TRUE or FALSE).")}
+  if(!is.null(saturation) & !all(saturation %in% c("IIS","SIS","TIS"))){stop("'saturation' must be either NULL to disable Indicator Saturation or a character vector that can take the values 'IIS', 'SIS', or 'TIS'. These can also be combined e.g. c('IIS', 'TIS').")}
 
+  if(!is.numeric(saturation.tpval) & !is.null(saturation.tpval)){stop("'saturation.tpval' must be either NULL or numeric between 0 and 1.")}
+  if(is.numeric(saturation.tpval) & (saturation.tpval > 1 | saturation.tpval < 0 )){stop("'saturation.tpval' must be either NULL or numeric between 0 and 1.")}
+  if(!is.numeric(selection.tpval) & !is.null(selection.tpval)){stop("'selection.tpval' must be either NULL or numeric between 0 and 1.")}
+  if(is.numeric(selection.tpval) & (selection.tpval > 1 | selection.tpval < 0 )){stop("'selection.tpval' must be either NULL or numeric between 0 and 1.")}
+
+  # Checking log specifications
+  if(length(use_logs) > 1 | !is.character(use_logs) | !all(use_logs %in% c("y","x","both","none"))){stop("The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'.")}
+
+  # Checking ardl_or_ecm specification
+  #if(length(ardl_or_ecm) > 1 | !is.character(ardl_or_ecm) | !all(use_logs %in% c("y","x","both","none"))){stop("The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'.")}
+  if(is.null(ardl_or_ecm) | (!identical(ardl_or_ecm, "ardl") & !identical(ardl_or_ecm, "ecm"))){stop("The argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'.")}
 
   # check whether aggregate model is well-specified
   module_order <- check_config_table(specification)
@@ -144,6 +160,31 @@ run_model <- function(specification,
 
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
+
+  # check the frequencies of the full data and if necessary aggregate
+  freq_output <- check_frequencies(full_data, quiet = quiet)
+  full_data <- freq_output$full_data
+  frequency <- freq_output$frequency
+
+
+  # check for duplicates in the data
+  if(full_data %>%
+     dplyr::select("na_item", "time") %>%
+     dplyr::filter(duplicated(.)) %>%
+     nrow() > 0){
+
+    full_data %>%
+      dplyr::select("na_item", "time") %>%
+      dplyr::filter(duplicated(.)) %>%
+      dplyr::distinct(.data$na_item) %>%
+      dplyr::pull("na_item") -> duplicated_variables
+
+    stop(paste0("The data contains duplicates. Please remove them. ",
+                "This might be related to an additional filter that is necessary for the eurostat data (e.g. need to select nace_2 for the right value for the sector).\n",
+                "Variables that contain duplicates: ",paste0(duplicated_variables, collapse = ", ")))
+  }
+
+
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order)
@@ -178,7 +219,8 @@ run_model <- function(specification,
       saturation.tpval = saturation.tpval,
       max.block.size = max.block.size,
       gets_selection = gets_selection,
-      selection.tpval = selection.tpval
+      selection.tpval = selection.tpval,
+      quiet = quiet
     )
 
     # store module estimates dataset, including fitted values
@@ -206,7 +248,8 @@ run_model <- function(specification,
                    saturation.tpval = saturation.tpval,
                    max.block.size = max.block.size,
                    gets_selection = gets_selection,
-                   selection.tpval = selection.tpval)
+                   selection.tpval = selection.tpval,
+                   constrain.to.minimum.sample = constrain.to.minimum.sample)
 
   out$module_order <- module_order
   out$module_collection <- module_collection

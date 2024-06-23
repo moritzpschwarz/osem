@@ -13,7 +13,7 @@
 #'
 forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ahead, current_spec, prediction_list, uncertainty_sample, nowcasted_data, full_exog_predicted_data = NULL) {
 
-  # set up
+  # set up -----------
   # get isat obj
   model$module_collection %>%
     dplyr::filter(.data$order == i) %>%
@@ -66,6 +66,8 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
   # identify any ar terms in the estimated data
   pred_ar_needed <- colnames(isat_obj$aux$mX)[grepl("ar[0-9]+",colnames(isat_obj$aux$mX))]
+  # identify any dl terms in the estimated data
+  pred_dl_needed <- colnames(isat_obj$aux$mX)[grepl("^L[0-9]+",colnames(isat_obj$aux$mX))]
 
   # this condition checks whether there are any ar terms that need to be created
   if (!is.null(pred_ar_needed) & !identical(character(0),pred_ar_needed)) {
@@ -83,14 +85,10 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
     ar_vec <- 0
   }
 
+  # TODO: check whether the AR vector is the correct one for the x variables
   if (!identical(character(0),x_vars_basename)) {
-    x_names_vec <- c()
-    for (ar in ar_vec) {
-      # ar = 0
-      x_names_vec <- c(x_names_vec,paste0(paste0(ifelse(ar == 0,"",paste0("L",ar,"."))),ifelse(ylog,"ln.",""),x_vars_basename))
-    }
-
-    x_names_vec_nolag <- paste0(ifelse(ylog,"ln.",""),x_vars_basename)
+    x_names_vec_nolag <- paste0(ifelse(xlog,"ln.",""),x_vars_basename)
+    x_names_vec <- c(x_names_vec_nolag, pred_dl_needed)
   } else {
     x_names_vec <- NULL
     x_names_vec_nolag <- NULL
@@ -121,6 +119,8 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
   }
 
 
+  # adding together all variables apart from x-variables (so IIS, SIS, trends, etc.)  -------------------------------
+
   exog_df_ready %>%
 
     # select the relevant variables
@@ -150,7 +150,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
   current_pred_raw_all <- current_pred_raw
 
-  # Deal with current_spec not being fully exogenous
+  # Deal with current_spec not being fully exogenous --------
   if (!all(current_spec$independent %in% names(exog_df_ready)) && !all(is.na(current_spec$independent))) {
 
     missing_vars <- current_spec$independent[!current_spec$independent %in% names(exog_df_ready)]
@@ -224,12 +224,14 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
     }
   }
 
+  # checking the data for nowcasted data --------
+
   data_obj %>%
     dplyr::select("time", dplyr::all_of(x_names_vec_nolag)) -> historical_estimation_data
 
   # in this section we check whether any of the missing values are present in nowcasted data
   # we first check if there is even any historical data used (would not be true for e.g. AR models)
-  if(historical_estimation_data %>% dplyr::select(-"time") %>% ncol()>0){
+  if(historical_estimation_data %>% dplyr::select(-"time") %>% ncol() > 0){
 
     # then we check whether there are any lines in the historical data that are missing (often the case)
     historical_estimation_data %>%
@@ -293,6 +295,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
     historical_estimation_data_w_nowcast <- historical_estimation_data
   }
 
+  # merging nowcasted data with non-x variables (IIS, SIS, etc.) --------
   historical_estimation_data_w_nowcast %>%
 
     ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
@@ -308,14 +311,11 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
   # add the lagged x-variables
   if(ncol(intermed) > 1){
     to_be_added <- dplyr::tibble(.rows = nrow(intermed))
-    for (j in ar_vec) {
+    for (j in pred_dl_needed) {
       if(j == 0){next}
       intermed %>%
-        dplyr::mutate(dplyr::across(-"time", ~dplyr::lag(., n = j))) %>%
-        dplyr::select(-"time") -> inter_intermed
-
-      inter_intermed %>%
-        setNames(paste0("L", j, ".", names(inter_intermed))) %>%
+        dplyr::transmute(dplyr::across(dplyr::all_of(gsub("L[0-9]+\\.","",j)), ~dplyr::lag(., n = as.numeric(stringr::str_extract(j, "[0-9]+"))))) %>%
+        setNames(j) %>%
         dplyr::bind_cols(to_be_added, .) -> to_be_added
     }
     intermed <- dplyr::bind_cols(intermed, to_be_added)
@@ -326,14 +326,19 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
                        dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
                                      dplyr::starts_with("iis"), dplyr::starts_with("sis")),
                      by = "time") %>%
-    tidyr::drop_na() %>%
+    # tidyr::drop_na() %>%
+
+    # only retain the final n.ahead observations
+    dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
+
     dplyr::select(-"time") %>%
     dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
     return() -> pred_df
 
   #print(pred_df)
 
-  ########
+  # doing the same for all uncertainty samples -------
+
   # if necessary, repeat creating the pred_df with all estimates
   chk_any_listcols <- current_pred_raw_all %>%
     dplyr::summarise_all(class) %>%
@@ -363,13 +368,12 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
     # same for .all: add the lagged x-variables
     to_be_added.all <- dplyr::tibble(.rows = nrow(intermed.all))
-    for (j in 1:max(ar_vec)) {
-      intermed.all %>%
-        dplyr::mutate(dplyr::across(-"time", ~dplyr::lag(., n = j))) %>%
-        dplyr::select(-"time") -> inter_intermed.all
 
-      inter_intermed.all %>%
-        setNames(paste0("L", j, ".", names(inter_intermed.all))) %>%
+    for (j in pred_dl_needed) {
+      if(j == 0){next}
+      intermed.all %>%
+        dplyr::transmute(dplyr::across(dplyr::all_of(gsub("L[0-9]+\\.","",j)), ~dplyr::lag(., n = as.numeric(stringr::str_extract(j, "[0-9]+"))))) %>%
+        setNames(j) %>%
         dplyr::bind_cols(to_be_added.all, .) -> to_be_added.all
     }
 
@@ -385,13 +389,23 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
   }
 
 
+  # Final output data -------------------------------------------------------
+
+
+
   final_i_data <- dplyr::tibble(
     data = list(intermed %>%
-                  dplyr::left_join(current_pred_raw %>% dplyr::select("time", dplyr::starts_with("q_"),
-                                                                      dplyr::starts_with("iis"),
-                                                                      dplyr::starts_with("sis")),
+                  dplyr::left_join(current_pred_raw %>%
+                                     dplyr::select("time", dplyr::starts_with("q_"),
+                                                   dplyr::starts_with("iis"),
+                                                   dplyr::starts_with("sis")),
                                    by = "time") %>%
-                  tidyr::drop_na()))
+                  #tidyr::drop_na()))
+                  # only retain the final n.ahead observations
+                  dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n()))
+    )
+  )
+
 
   out <- list()
   out$pred_df <- pred_df

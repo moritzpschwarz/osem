@@ -336,9 +336,16 @@ test_that("Extensive Model", {
     )
   )
 
+
+  dict %>%
+    dplyr::mutate(p_adj = dplyr::case_when(model_varname == "LabCostManuf" ~ "NV",
+                                           model_varname == "LabCostConstr" ~ "NV",
+                                           model_varname == "LabCostService" ~ "NV",
+                                           TRUE ~ NA)) -> dict_new
+
   expect_warning(ab <- run_model(
     specification = spec,
-    dictionary = dict,
+    dictionary = dict_new,
     inputdata_directory = NULL,
     primary_source = "download",
     save_to_disk = NULL,

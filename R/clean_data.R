@@ -35,15 +35,15 @@ clean_data <- function(raw_data,
     dplyr::arrange(.data$time) %>%
     dplyr::mutate(
       dplyr::across(-"time", list(ln = log), .names = "{.fn}.{.col}"),
-      dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
+      dplyr::across(-"time", list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
     ) -> intermed
 
   to_be_added <- dplyr::tibble(.rows = nrow(intermed))
   for (i in 1:max(max.ar, max.dl)) {
     intermed %>%
-      dplyr::mutate(dplyr::across(c(dplyr::starts_with("D."), dplyr::starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
-      dplyr::select(c(dplyr::starts_with("D."), dplyr::starts_with("ln."))) %>%
-      dplyr::rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
+      dplyr::mutate(dplyr::across(-"time", ~ dplyr::lag(., n = i), .names = paste0("L",i,".{.col}")), .keep = "none") %>%      # dplyr::mutate(dplyr::across(c(dplyr::starts_with("D."), dplyr::starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
+      # dplyr::select(c(dplyr::starts_with("D."), dplyr::starts_with("ln."))) %>%
+      # dplyr::rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
       dplyr::bind_cols(to_be_added, .) -> to_be_added
   }
 

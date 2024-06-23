@@ -46,7 +46,7 @@ add_to_original_data <- function(clean_data,
         dplyr::mutate(.,
                       fitted.cumsum = dplyr::case_when(
                         is.na(.data$fitted) & is.na(dplyr::lead(.data$fitted)) ~ 0,
-                        # ATTENTION TO DO: here change by Moritz: used to be paste0("L.",dep_var_basename)
+                        # ATTENTION TODO: here change by Moritz: used to be paste0("L.",dep_var_basename)
                         is.na(.data$fitted) & !is.na(dplyr::lead(.data$fitted)) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
                         !is.na(.data$fitted) ~ .data$fitted
                       ),
@@ -59,9 +59,17 @@ add_to_original_data <- function(clean_data,
     } %>%
     {
       if (ardl_or_ecm == "ecm") {
-        dplyr::mutate(., fitted.level = exp(.data$fitted.cumsum))
+        if(grepl("ln\\.",isat_object$aux$y.name)){
+          dplyr::mutate(., fitted.level = exp(.data$fitted.cumsum))
+        } else {
+          dplyr::mutate(., fitted.level = .data$fitted.cumsum)
+        }
       } else if (ardl_or_ecm == "ardl") {
-        dplyr::mutate(., fitted.level = exp(.data$fitted))
+        if(grepl("ln\\.",isat_object$aux$y.name)){
+          dplyr::mutate(., fitted.level = exp(.data$fitted))
+        } else {
+          dplyr::mutate(., fitted.level = .data$fitted)
+        }
       } else {
         .
       }
