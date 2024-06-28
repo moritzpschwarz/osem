@@ -23,7 +23,7 @@
 translate_variables <- function(specification, dictionary = NULL) {
 
   if (is.null(dictionary)) {
-    dictionary <- aggregate.model::dict
+    dictionary <- osem::dict
   }
 
   # vectors of dependent and independent parts

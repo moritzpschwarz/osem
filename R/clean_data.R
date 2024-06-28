@@ -20,7 +20,7 @@
 #'   ), each = 2),
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
-#' aggregate.model:::clean_data(sample_data, max.ar = 4, max.dl = 4)
+#' osem:::clean_data(sample_data, max.ar = 4, max.dl = 4)
 
 clean_data <- function(raw_data,
                        max.ar = 4,

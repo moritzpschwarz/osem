@@ -1,6 +1,6 @@
 #' Visualize dependence between modules
 #'
-#' @param model An aggregate model of class 'aggmod'
+#' @param model An aggregate model of class 'osem'
 #'
 #' @return Returns a network graph illustrating the dependence between the
 #'   different modules.

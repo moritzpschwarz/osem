@@ -1,8 +1,8 @@
-#' Simple constructor for class 'aggmod'
+#' Simple constructor for class 'osem'
 #'
 #' @param x A list storing the aggregate model output.
 #'
-#' @return An object of class \code{"aggmod"}, which is a named list with four elements:
+#' @return An object of class \code{"osem"}, which is a named list with four elements:
 #' \describe{
 #'   \item{args}{A named list storing the user arguments for the aggregate
 #'   model.}
@@ -16,22 +16,22 @@
 #'
 #' @keywords internal
 
-new_aggmod <- function(x = list()) {
+new_osem <- function(x = list()) {
 
   stopifnot(is.list(x))
-  class(x) <- "aggmod"
+  class(x) <- "osem"
 
-  validate_aggmod(x) # raises error if doesn't fit
+  validate_osem(x) # raises error if doesn't fit
 
   return(x)
 
 }
 
-#' Simple validator for class 'aggmod'
+#' Simple validator for class 'osem'
 #'
 #' @keywords internal
 
-validate_aggmod <- function(x) {
+validate_osem <- function(x) {
 
   val <- unclass(x)
 

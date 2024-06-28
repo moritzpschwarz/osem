@@ -1,12 +1,12 @@
 #' Print output of an Aggregate Model
 #'
-#' @param x An object of type 'aggmod'
+#' @param x An object of type 'osem'
 #' @param ... Further arguments.
 #'
 #' @export
 #'
 
-print.aggmod <- function(x, ...){
+print.osem <- function(x, ...){
 
 
   cat("Aggregate Model Output\n")
@@ -23,7 +23,7 @@ print.aggmod <- function(x, ...){
   cat("\nRelationships considered: \n")
 
   dictionary <- {if(is.null(x$args$dictionary)){
-    aggregate.model::dict
+    osem::dict
   } else {
     x$args$dictionary
   } } %>%

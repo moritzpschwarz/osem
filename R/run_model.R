@@ -28,7 +28,7 @@
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
 #'
-#' @return An object of class \link[=new_aggmod]{aggmod}, which is a named list
+#' @return An object of class \link[=new_osem]{osem}, which is a named list
 #'   with four elements:
 #' \describe{
 #'   \item{args}{A named list storing the user arguments for the aggregate
@@ -109,7 +109,7 @@ run_model <- function(specification,
     stop("The type column in the Specification can only either be 'n' (for endogenous i.e. modelled) or 'd' (for identity/definition).")
   }
 
-  if(missing(dictionary) | is.null(dictionary)){dictionary <- aggregate.model::dict}
+  if(missing(dictionary) | is.null(dictionary)){dictionary <- osem::dict}
 
   if(!all(c("variable_code", "model_varname", "full_name", "database", "dataset_id","var_col", "nace_r2", "freq", "geo", "unit", "s_adj") %in% colnames(dictionary))){
     stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'variable_code', 'model_varname', 'full_name', 'database', 'dataset_id', 'var_col', 'nace_r2', 'freq', 'geo', 'unit', 's_adj'.")
@@ -257,7 +257,7 @@ run_model <- function(specification,
   out$full_data <- tmp_data
   out$dictionary <- dictionary
 
-  out <- new_aggmod(out)
+  out <- new_osem(out)
 
   # optionally, present aggregate model output
   if (present) {

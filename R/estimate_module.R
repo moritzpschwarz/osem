@@ -27,8 +27,8 @@
 #'   ), each = 2),
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
-#' sample_data_clean <- aggregate.model:::clean_data(sample_data, max.ar = 4)
-#' aggregate.model:::estimate_module(sample_data_clean, "yvar", "xvar")
+#' sample_data_clean <- osem:::clean_data(sample_data, max.ar = 4)
+#' osem:::estimate_module(sample_data_clean, "yvar", "xvar")
 #'
 estimate_module <- function(clean_data,
                             dep_var_basename,
