@@ -229,6 +229,7 @@ run_model <- function(specification,
     module_collection[module_collection$order == i, "model.args"] <- dplyr::tibble(dataset = list(module_estimate$args))
     module_collection[module_collection$order == i, "indep"] <- dplyr::tibble(dataset = list(module_estimate$indep))
     module_collection[module_collection$order == i, "dep"] <- dplyr::tibble(dataset = list(module_estimate$dep))
+    module_collection[module_collection$order == i, "diagnostics"] <- dplyr::tibble(dataset = list(module_estimate$diagnostics))
 
     # update dataset for next module by adding fitted values
     tmp_data <- update_data(orig_data = tmp_data, new_data = module_estimate$data)

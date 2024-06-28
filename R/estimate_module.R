@@ -283,14 +283,7 @@ estimate_module <- function(clean_data,
   }
 
 
-  # Output ------------------------------------------------------------------
-  out <- list()
-  out$isat_list <- isat_list
-  #out$best_model <- isat_list %>%
-  #  dplyr::filter(BIC == min(BIC)) %>%
-  #  dplyr::pull(dplyr::all_of("isat_object")) %>%
-  #  dplyr::first()
-  out$best_model <- if(gets_selection) {
+  final_model <- if(gets_selection) {
     if (!is.null(saturation)) {
       best_isat_model.selected.isat
     } else {
@@ -299,6 +292,20 @@ estimate_module <- function(clean_data,
   } else {
     best_isat_model
   }
+
+
+  # Super Exogeneity Testing ------------------------------------------------
+  superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval)
+
+  # Output ------------------------------------------------------------------
+  out <- list()
+  out$isat_list <- isat_list
+  #out$best_model <- isat_list %>%
+  #  dplyr::filter(BIC == min(BIC)) %>%
+  #  dplyr::pull(dplyr::all_of("isat_object")) %>%
+  #  dplyr::first()
+  out$best_model <- final_model
+  out$superex_test <- superex_test
 
   out$args <- list(clean_data = clean_data,
                    dep_var_basename = dep_var_basename,

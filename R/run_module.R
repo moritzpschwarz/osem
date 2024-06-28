@@ -89,7 +89,8 @@ run_module <- function(
                 data = moduledata,
                 args = estimated_module$args,
                 indep = gsub(" ", "", strsplits(module$independent, splits = c("\\+", "\\-"))),
-                dep = module$dependent)
+                dep = module$dependent,
+                diagnostics = list(super.exogeneity = estimated_module$superex_test))
 
   } # end "n"
 
