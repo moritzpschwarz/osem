@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.aggmod.R
 \name{print.osem}
 \alias{print.osem}
-\title{Print output of an Aggregate Model}
+\title{Print output of an OSEM Model}
 \usage{
 \method{print}{osem}(x, ...)
 }
@@ -12,5 +12,5 @@
 \item{...}{Further arguments.}
 }
 \description{
-Print output of an Aggregate Model
+Print output of an OSEM Model
 }

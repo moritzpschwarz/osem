@@ -3,7 +3,7 @@
 \docType{data}
 \name{sample_input}
 \alias{sample_input}
-\title{Sample Input for the Aggregate Model}
+\title{Sample Input for the OSEM Model}
 \format{
 A tibble with 1200 rows and 9 variables:
 \describe{

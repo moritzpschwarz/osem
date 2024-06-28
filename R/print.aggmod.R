@@ -1,4 +1,4 @@
-#' Print output of an Aggregate Model
+#' Print output of an OSEM Model
 #'
 #' @param x An object of type 'osem'
 #' @param ... Further arguments.
@@ -9,7 +9,7 @@
 print.osem <- function(x, ...){
 
 
-  cat("Aggregate Model Output\n")
+  cat("OSEM Model Output\n")
   cat("-----------------------\n")
 
   cat(paste0("\nEstimation Options:"))

@@ -14,7 +14,7 @@ forecast_insample(
 )
 }
 \arguments{
-\item{model}{An aggregate model object of class 'osem'.}
+\item{model}{A model object of class 'osem'.}
 
 \item{sample_share}{Share of the sample that should be used for the insample forecasting. Must be a numeric and must be either 1 or smaller but larger than 0.}
 

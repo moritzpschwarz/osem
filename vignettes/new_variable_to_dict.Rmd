@@ -23,7 +23,7 @@ library(eurostat)
 library(ggplot2)
 ```
 
-This is a vignette to describe the process to add a new variable to the Dictionary of the package. This is necessary if we want to use a new variable in the Aggregate Model. Here we initially discuss three cases: 1) the case of adding a **Eurostat** variable and 2) adding a new variable from the **EDGAR** emission dataset and lastly 3) to simply create a new identity based on existing variables.
+This is a vignette to describe the process to add a new variable to the Dictionary of the package. This is necessary if we want to use a new variable in the OSEM Model. Here we initially discuss three cases: 1) the case of adding a **Eurostat** variable and 2) adding a new variable from the **EDGAR** emission dataset and lastly 3) to simply create a new identity based on existing variables.
 
 # tl,dr
 
@@ -50,7 +50,7 @@ dict %>%
 
 # Some general remarks about the Dictionary
 
-The dictionary is the central store of information that is being used for us to "translate" difficult data codes into useful variable names - and it is also central for us to tell the Aggregate Model what to download.
+The dictionary is the central store of information that is being used for us to "translate" difficult data codes into useful variable names - and it is also central for us to tell the OSEM Model what to download.
 
 Let's take a look at the dictionary:
 
@@ -122,7 +122,7 @@ This really is the window that we will need to focus on quite a bit. First of al
 
 To identify the correct data, we now need to click through the different dimensions and make note of what it is that we want to use.
 
-While the available types will vary depending on Eurostat data, most variables relevant for the Aggregate Model will include:
+While the available types will vary depending on Eurostat data, most variables relevant for the OSEM Model will include:
 
 -   Some variable that indicates the specific variable name, like `na_item` or `indic_bt`, depending on the Eurostat guidelines associated with the data collection method used.
 

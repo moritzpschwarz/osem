@@ -4,7 +4,7 @@
 #' endogenously modelled or endogenous by identity/definition.
 #'
 #' @param module A row of the specification table.
-#' @param data A tibble or data.frame containing the full data for the aggregate
+#' @param data A tibble or data.frame containing the full data for the OSEM
 #'   model.
 #' @inheritParams identify_module_data
 #' @inheritParams clean_data

@@ -252,7 +252,7 @@ in each module, both in absolute and as a share of the observations.
 
 ## Shiny App
 
-Last but not least, we can get an overview and summary of the whole aggregate
+Last but not least, we can get an overview and summary of the whole OSEM
 model results in a Shiny app, which can be opened using the `present_model()`
 command. The following code snippet is not executed:
 

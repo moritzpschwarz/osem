@@ -1,6 +1,6 @@
-#' Runs the aggregate model
+#' Runs the OSEM model
 #'
-#' Runs the aggregate model according to the given specification of modules.
+#' Runs the OSEM model according to the given specification of modules.
 #'
 #' @param specification A tibble or data.frame with three columns. Column names must be:
 #' 'type', 'dependent', and 'independent'. The column 'type' must contain for each row a
@@ -18,8 +18,8 @@
 #' \code{"local"} data loading takes precedence.
 #' @param save_to_disk A path to a directory where the final dataset will be
 #'   saved, including the file name and ending. Not saved when \code{NULL}.
-#' @param present A logical value whether the final aggregate model output
-#'   should be presented or not. NOTE: not implemented yet.
+#' @param present A logical value whether the final OSEM model output
+#'   should be presented or not.
 #' @param quiet Logical with default = FALSE. Should messages be displayed?
 #' These messages are intended to give more information about the estimation
 #' and data retrieval process.
@@ -31,7 +31,7 @@
 #' @return An object of class \link[=new_osem]{osem}, which is a named list
 #'   with four elements:
 #' \describe{
-#'   \item{args}{A named list storing the user arguments for the aggregate
+#'   \item{args}{A named list storing the user arguments for the OSEM
 #'   model.}
 #'   \item{module_order_eurostatvars}{The original specification with translated
 #'   variable names to Eurostat codes and arranged in order of estimation.}
@@ -39,7 +39,7 @@
 #'   that store the model object for each module and the dataset used for
 #'   estimation, including fitted values for the dependent variable.}
 #'   \item{full_data}{A tibble or data.frame containing the complete original
-#'   data for the aggregate model and the fitted values of each module.}
+#'   data for the OSEM model and the fitted values of each module.}
 #' }
 #'
 #' @export
@@ -142,14 +142,14 @@ run_model <- function(specification,
   #if(length(ardl_or_ecm) > 1 | !is.character(ardl_or_ecm) | !all(use_logs %in% c("y","x","both","none"))){stop("The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'.")}
   if(is.null(ardl_or_ecm) | (!identical(ardl_or_ecm, "ardl") & !identical(ardl_or_ecm, "ecm"))){stop("The argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'.")}
 
-  # check whether aggregate model is well-specified
+  # check whether OSEM model is well-specified
   module_order <- check_config_table(specification)
 
   # add columns that translate dependent and independent variables into Eurostat codes
   # module_order_eurostatvars <- translate_variables(specification = module_order,
   #                                                  dictionary = dictionary)
 
-  # download or locally load the data necessary for the whole aggregate model
+  # download or locally load the data necessary for the whole OSEM model
   loaded_data <- load_or_download_variables(specification = module_order,
                                             dictionary = dictionary,
                                             primary_source = primary_source,
@@ -235,7 +235,7 @@ run_model <- function(specification,
 
   }
 
-  # prepare output of aggregate model
+  # prepare output of OSEM model
   out <- list()
   out$args <- list(specification = specification, dictionary = dictionary,
                    inputdata_directory = inputdata_directory,
@@ -259,7 +259,7 @@ run_model <- function(specification,
 
   out <- new_osem(out)
 
-  # optionally, present aggregate model output
+  # optionally, present OSEM model output
   if (present) {
     present_model(out)
   }

@@ -7,19 +7,19 @@
 new_osem(x = list())
 }
 \arguments{
-\item{x}{A list storing the aggregate model output.}
+\item{x}{A list storing the osem output.}
 }
 \value{
 An object of class \code{"osem"}, which is a named list with four elements:
 \describe{
-\item{args}{A named list storing the user arguments for the aggregate
+\item{args}{A named list storing the user arguments for the OSEM
 model.}
 \item{module_order}{The original but ordered specification.}
 \item{module_collection}{The above specification with two added columns
 that store the model object for each module and the dataset used for
 estimation, including fitted values for the dependent variable.}
 \item{full_data}{A tibble or data.frame containing the complete original
-data for the aggregate model and the fitted values of each module.}
+data for the OSEM model and the fitted values of each module.}
 }
 }
 \description{

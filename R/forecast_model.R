@@ -1,6 +1,6 @@
-#' Forecast Aggregate model
+#' Forecast OSEM model
 #'
-#' @param model An aggregate model object of class 'osem'.
+#' @param model A model object of class 'osem'.
 #' @param exog_predictions A data.frame or tibble with values for the exogenous values. The number of rows of this data must be equal to n.ahead.
 #' @param n.ahead Periods to forecast ahead
 #' @param ci.levels Numeric vector. Vector with confidence intervals to be calculated. Default: c(0.5,0.66,0.95)

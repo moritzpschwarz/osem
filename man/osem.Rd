@@ -5,7 +5,7 @@
 \alias{osem}
 \title{\code{osem} package}
 \description{
-The Package for the Aggregate Model
+The Package for the Open Source Empirical Macro (OSEM) Model
 }
 \details{
 See the README on

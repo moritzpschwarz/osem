@@ -1,4 +1,4 @@
-#' Plot a Forecast Object of the Aggregate Model
+#' Plot a Forecast Object of the OSEM Model
 #'
 #' @param x An object of class osem.forecast, which is the output from the forecast_model function.
 #' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.

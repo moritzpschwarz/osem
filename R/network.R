@@ -1,6 +1,6 @@
 #' Visualize dependence between modules
 #'
-#' @param model An aggregate model of class 'osem'
+#' @param model A model of class 'osem'
 #'
 #' @return Returns a network graph illustrating the dependence between the
 #'   different modules.
@@ -23,7 +23,7 @@ network <- function(model) {
   # classification of the variables
   class <- classify_variables(dependency)
 
-  # create the union of all variables used in the aggregate model
+  # create the union of all variables used in the OSEM model
   dep_raw <- dependency$dependent
   indep_raw <- dependency$independent
   indep <- strsplits(indep_raw, splits = c("\\+", "\\-"))

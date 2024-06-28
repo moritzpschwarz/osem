@@ -2,12 +2,12 @@
 % Please edit documentation in R/diagnostics_model.R
 \name{diagnostics_model}
 \alias{diagnostics_model}
-\title{Creates a Summary of the Diagnostics of the Aggregate Model}
+\title{Creates a Summary of the Diagnostics of the OSEM Model}
 \usage{
 diagnostics_model(model)
 }
 \arguments{
-\item{model}{An aggregate model of class 'osem'}
+\item{model}{An model of class 'osem'}
 }
 \value{
 Returns a data.frame with the p-values of the AR and ARCH
@@ -15,5 +15,5 @@ misspecification tests and the number of impulse and step indicators
 retained for each module.
 }
 \description{
-Creates a Summary of the Diagnostics of the Aggregate Model
+Creates a Summary of the Diagnostics of the OSEM Model
 }

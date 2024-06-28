@@ -62,7 +62,7 @@ classify_variables <- function(specification) {
 }
 
 
-#' Updates the aggregate model dataset with fitted values
+#' Updates the osem dataset with fitted values
 #'
 #' NOTE: exported for now, later will be internal
 #' @param orig_data Original data that is to be updated.

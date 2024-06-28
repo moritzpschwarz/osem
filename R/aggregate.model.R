@@ -1,6 +1,6 @@
 #' \code{osem} package
 #'
-#' The Package for the Aggregate Model
+#' The Package for the Open Source Empirical Macro (OSEM) Model
 #'
 #' See the README on
 #' \href{https://cran.r-project.org/package=osem/README.html}{CRAN}

@@ -81,7 +81,7 @@ check_config_table <- function(config_table) {
       c("\\-", "\\+")
     ))) %>%
     dplyr::ungroup() %>%
-    
+
     # create a separate row for each element
     tidyr::unnest("splitvars", keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
     # dplyr::group_by(dependent) %>%
@@ -117,7 +117,7 @@ check_config_table <- function(config_table) {
       paste0(
         "An endogeneity was detected.\nCheck the relationship between ",
         paste0(overall, collapse = "; "),
-        "\nIn the aggregate model a variable can only depend on another variable if that variable does not depend on the other."
+        "\nIn the OSEM model a variable can only depend on another variable if that variable does not depend on the other."
       )
     )
   }
@@ -171,20 +171,20 @@ check_config_table <- function(config_table) {
       dplyr::mutate(
         already_estimated = dplyr::case_when(
           .data$endog & (.data$splitvars %in% order_exog$dependent) ~ TRUE,
-          TRUE ~ FALSE)) %>% 
-        
+          TRUE ~ FALSE)) %>%
+
       # if a variable was earlier an endogeneous variable but has already been estimated, then we can set endog = FALSE
       dplyr::mutate(endog = dplyr::case_when(
           .data$endog & .data$already_estimated ~ FALSE,
           TRUE ~ .data$endog)) %>%
-          
+
       dplyr::group_by(.data$index, .data$type) %>%
       # get all relationships where no endogenous terms are left
       dplyr::filter(!any(.data$endog)) %>%
       dplyr::distinct(dplyr::across(c("index", "dependent", "independent"))) %>%
 
       dplyr::ungroup() %>%
-      
+
       # give those relationships an order number - these should now be run after all those that are already in the order_exog tibble
       dplyr::mutate(
         order = 1:dplyr::n(),

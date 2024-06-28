@@ -27,7 +27,7 @@
 "dict"
 
 
-#' Sample Input for the Aggregate Model
+#' Sample Input for the OSEM Model
 #'
 #' A dataset containing input data that has been downloaded using the functions in the osem package.
 #' This dataset is supposed to be used for testing and to enable out-of-the-box estimation.

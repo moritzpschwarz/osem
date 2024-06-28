@@ -13,7 +13,7 @@ forecast_identities(
 )
 }
 \arguments{
-\item{model}{An aggregate model object of class 'osem'.}
+\item{model}{A model object of class 'osem'.}
 
 \item{exog_df_ready}{The outcome of \link[=forecast_exogenous_values]{forecast_exogenous_values} function (potentially modified by the \link[=nowcasting]{nowcasting} function)}
 

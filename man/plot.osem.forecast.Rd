@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.aggmod.forecast.R
 \name{plot.osem.forecast}
 \alias{plot.osem.forecast}
-\title{Plot a Forecast Object of the Aggregate Model}
+\title{Plot a Forecast Object of the OSEM Model}
 \usage{
 \method{plot}{osem.forecast}(
   x,
@@ -33,7 +33,7 @@
 \item{...}{Further arguments (currently not in use).}
 }
 \description{
-Plot a Forecast Object of the Aggregate Model
+Plot a Forecast Object of the OSEM Model
 }
 \examples{
 spec <- dplyr::tibble(
