@@ -11,7 +11,8 @@
   interactive = FALSE,
   first_date = NULL,
   grepl_variables = NULL,
-  return.data = FALSE
+  return.data = FALSE,
+  ...
 )
 }
 \arguments{
@@ -28,6 +29,8 @@
 \item{grepl_variables}{Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.}
 
 \item{return.data}{Logical. Do not return a plot but rather just the final dataset that has been created for the plot.}
+
+\item{...}{Additional arguments passed to the plotting function.}
 }
 \description{
 Plot a Forecast Object of the OSEM Model

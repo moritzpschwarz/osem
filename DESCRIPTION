@@ -7,7 +7,7 @@ Authors@R: c(
     person("Moritz", "Schwarz", , "moritz.schwarz@scmo.eu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0340-3780"))
            )
-Description: This package provides an open-source macro-econometric model to forecast and study climate policies. The model is designed to be transparent and easy to use. It is based on a small set of equations and can be used to forecast the economic and environmental impacts of climate policies and can be used by researchers, policy makers,
+Description: This package provides the Open Source Empirical Macro (OSEM) Model to forecast macro-economic variables and study climate policies. 
 License: AGPL (>= 3)
 Encoding: UTF-8
 URL: http://moritzschwarz.org/osem/

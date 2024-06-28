@@ -167,7 +167,7 @@ Now let's filter this raw dataset down to the data series that we need:
 
 ```{r}
 dat_raw %>% 
-  filter(indic_bt == "PROD", # for industrial production variable
+  filter(indic_bt == "PRD", # for industrial production variable
          nace_r2 == "B-D", # to select all NACE rev 2 sectors in B, C, and D
          s_adj == "NSA", # to get the raw, non-adjusted data
          unit == "I15", # to get the 2015 Index
@@ -211,7 +211,7 @@ dict %>%
     model_varname = "IndProd", # this is free to choose but must be unique
     full_name = "An index of Industrial Production",
     database  = "eurostat",
-    variable_code = "PROD", # in this case use the bt_indicator information here
+    variable_code = "PRD", # in this case use the bt_indicator information here
     dataset_id = "sts_inpr_q",
     var_col = "indic_bt", # here we specify what the column with the variables is called
     freq = "q", # for quarterly data, 'm' would be monthly
