@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, echo=TRUE, warning=FALSE, message=FALSE}
-library(aggregate.model)
+library(osem)
 library(dplyr)
 library(purrr)
 ```

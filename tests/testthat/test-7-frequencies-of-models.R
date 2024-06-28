@@ -104,7 +104,7 @@ test_that("Annual Models run with EUROSTAT data",{
     )
   )
 
-  aggregate.model::dict %>%
+  osem::dict %>%
     dplyr::mutate(dataset_id = dplyr::case_when(model_varname == "FinConsExpHH" ~ "nama_10_gdp",
                                                 model_varname == "GCapitalForm" ~ "nama_10_gdp",
                                                 TRUE ~ dataset_id)) -> dict_new

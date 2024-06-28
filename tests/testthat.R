@@ -1,4 +1,4 @@
 library(testthat)
-library(aggregate.model)
+library(osem)
 
-test_check("aggregate.model")
+test_check("osem")

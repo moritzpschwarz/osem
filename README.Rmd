@@ -18,21 +18,21 @@ knitr::opts_chunk$set(
 )
 ```
 
-# aggregate.model
+# osem - Open Source Empirical Macro Model
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/moritzpschwarz/aggregate.model/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/moritzpschwarz/aggregate.model/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/moritzpschwarz/osem/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/moritzpschwarz/osem/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of the aggregate.model Package is to implement and operationalise the Aggregate Model, developed by Moritz Schwarz, Jonas Kurle, Felix Pretis, and Andrew Martinez. This is an adaptation of the [Norwegian Aggregate Model](https://normetrics.no/nam/), developed by Gunnar Bardsen and Ragnar Nymoen. 
+The goal of the {osem} Package is to implement and operationalise the Open Source Empirical Macro (OSEM) Model, developed by Moritz Schwarz, Jonas Kurle, Felix Pretis, and Andrew Martinez. This is an adaptation of the [Norwegian Aggregate Model](https://normetrics.no/nam/), developed by Gunnar Bardsen and Ragnar Nymoen. 
 
 ## Installation
 
-You can install the development version of aggregate.model from [GitHub](https://github.com/) with:
+You can install the development version of osem from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("moritzpschwarz/aggregate.model")
+devtools::install_github("moritzpschwarz/osem")
 ```
 
 ## Basic Workflow
@@ -47,7 +47,7 @@ library(tidyverse)
 
 
 ```{r loading}
-library(aggregate.model)
+library(osem)
 ```
 
 ### Specify the model
@@ -107,11 +107,11 @@ kable(spec) %>%
 ```
 
 
-In order to run this model, we also need a dictionary that translates our model variables to EUROSTAT codes so that the download process can be automated. You can either pass a new dictionary to the model function, or you can use the built in dictionary `aggregate.model::dict`:
+In order to run this model, we also need a dictionary that translates our model variables to EUROSTAT codes so that the download process can be automated. You can either pass a new dictionary to the model function, or you can use the built in dictionary `osem::dict`:
 
 
 ```{r, results='asis', echo=FALSE}
-kable(aggregate.model::dict) %>% 
+kable(osem::dict) %>% 
   kable_styling() %>% 
   kable_paper()
 ```

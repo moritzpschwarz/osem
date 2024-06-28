@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, message=FALSE}
-library(aggregate.model)
+library(osem)
 library(dplyr)
 library(eurostat)
 library(ggplot2)
@@ -30,7 +30,7 @@ This is a vignette to describe the process to add a new variable to the Dictiona
 This is an example how you add a new variable to the Dictionary:
 
 ```{r}
-# Add a new row to 'dict', which is an element of the aggregate.model package
+# Add a new row to 'dict', which is an element of the osem package
 dict %>% 
   bind_rows(tibble(
     model_varname = "IndProd", # this is free to choose but must be unique
