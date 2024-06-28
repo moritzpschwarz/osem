@@ -135,7 +135,7 @@ local directory when calling `run_model()`.
 
 # Running the Model
 
-We are now ready to run the model and obtain an `"aggmod"` object.
+We are now ready to run the model and obtain an `"osem"` object.
 
 ```{r run-model}
 model <- run_model(specification = specification,
@@ -227,7 +227,7 @@ class(forecast)
 ```
 We did not specify paths for the exogenous regressors, so the output informs us
 that AR(4) processes were used to project their paths. The function returns an
-object of class `"aggmod.forecast"`, which can also be plotted.
+object of class `"osem.forecast"`, which can also be plotted.
 
 ```{r, forecast-plot, fig.width=7, fig.height=5}
 plot(forecast)
