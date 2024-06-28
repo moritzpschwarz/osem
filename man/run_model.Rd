@@ -78,7 +78,7 @@ and data retrieval process.}
 constrained to the minimum data series? Default is \code{TRUE}.}
 }
 \value{
-An object of class \link[=new_aggmod]{aggmod}, which is a named list
+An object of class \link[=new_osem]{osem}, which is a named list
 with four elements:
 \describe{
 \item{args}{A named list storing the user arguments for the aggregate

@@ -7,7 +7,7 @@
 nowcasting(model, exog_df_ready, frequency)
 }
 \arguments{
-\item{model}{An aggregate model object of class 'aggmod'.}
+\item{model}{An aggregate model object of class 'osem'.}
 
 \item{exog_df_ready}{The outcome of the \link[=forecast_exogenous_values]{forecast_exogenous_values} function, as prepared by the \link[=forecast_model]{forecast_model} function..}
 

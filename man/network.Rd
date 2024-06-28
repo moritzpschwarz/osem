@@ -7,7 +7,7 @@
 network(model)
 }
 \arguments{
-\item{model}{An aggregate model of class 'aggmod'}
+\item{model}{An aggregate model of class 'osem'}
 }
 \value{
 Returns a network graph illustrating the dependence between the

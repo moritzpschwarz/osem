@@ -7,7 +7,7 @@
 forecast_sensitivity(model, size = 0.5, quiet = FALSE, impulse_response = TRUE)
 }
 \arguments{
-\item{model}{An aggregate model object of class 'aggmod'.}
+\item{model}{An aggregate model object of class 'osem'.}
 
 \item{size}{Numeric, must be larger than -1. The percentage value that the exogenous values will be multiplied with. Default is 0.5 (i.e. 50\%).}
 

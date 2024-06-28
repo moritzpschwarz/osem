@@ -7,7 +7,7 @@
 diagnostics_model(model)
 }
 \arguments{
-\item{model}{An aggregate model of class 'aggmod'}
+\item{model}{An aggregate model of class 'osem'}
 }
 \value{
 Returns a data.frame with the p-values of the AR and ARCH
