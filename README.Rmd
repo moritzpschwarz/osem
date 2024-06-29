@@ -28,7 +28,7 @@ The goal of the {osem} Package is to implement and operationalise the Open Sourc
 
 ## Installation
 
-You can install the development version of osem from [GitHub](https://github.com/) with:
+You can install the development version of {osem} from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
