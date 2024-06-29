@@ -37,8 +37,8 @@
 
 super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FALSE) {
 
-  # check if the model is an isat object
-  stopifnot(inherits(initial.model, "isat"))
+  # check if the model is an isat or an arx object
+  stopifnot(inherits(initial.model, "isat") | inherits(initial.model, "arx") | inherits(initial.model, "gets"))
 
   xvars_to_test <- setdiff(row.names(initial.model$mean.results),c("mconst","trend",initial.model$ISnames))
   xvars_to_test <- xvars_to_test[!grepl("^ar[0-9]+$",xvars_to_test)]

@@ -4,12 +4,14 @@
 \alias{super.exogeneity}
 \title{Super Exogeneity (Parameter Invariance) Test}
 \usage{
-super.exogeneity(initial.model, saturation.tpval = 0.01)
+super.exogeneity(initial.model, saturation.tpval = 0.01, quiet = FALSE)
 }
 \arguments{
 \item{initial.model}{An object of class \code{isat} (i.e. from the \code{gets} package) that contains the initial model}
 
 \item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
+
+\item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
 \value{
 An h-test object with the results of the super exogeneity test

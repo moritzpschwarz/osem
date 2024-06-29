@@ -77,6 +77,19 @@ test_that("Super Exogeneity Tests", {
 
 
 
+  # check that it works without saturation in the general model
+  mod <- run_model(specification = specification,
+                   dictionary = dict,
+                   inputdata_directory = testdata,
+                   primary_source = "local",
+                   present = FALSE,
+                   quiet = TRUE,
+                   saturation = NULL)
+
+  expect_true(!is.null(mod$module_collection$diagnostics[[1]]$super.exogeneity))
+  expect_s3_class(mod$module_collection$diagnostics[[1]]$super.exogeneity, "htest")
+  expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.024863487)
+
   # run a super exogeneity test without the current value
   set.seed(123)
   is_mod <- gets::isat(y = testdata_2$FinConsExpHH, mxreg = testdata_2[, c("FinConsExpGov", "L1.HICP_Gas", "L2.HICP_Gas")], t.pval = 0.001,

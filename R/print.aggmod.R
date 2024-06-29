@@ -89,10 +89,11 @@ print.aggmod <- function(x, ...){
     return(paste0(formatC(x, format = "f", digits = digits), stars.pval(x)))
   }
 
-
   cat("\n\nDiagnostics:\n ")
   print(diagnostics_model(x) %>%
           dplyr::rename(`Dependent Variable` = "module") %>%
-          dplyr::mutate(dplyr::across(c("AR","ARCH","Super Exogeneity"), ~paste0(format.pval(.)))))
+          dplyr::rowwise() %>%
+          dplyr::mutate(dplyr::across(c("AR","ARCH","Super Exogeneity"), ~paste0(format.pval(.)))) %>%
+          dplyr::ungroup())
 
 }
