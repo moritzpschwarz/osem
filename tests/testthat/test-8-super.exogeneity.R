@@ -19,7 +19,10 @@ testdata <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.
                           L1.HICP_Gas = lag(HICP_Gas),
                           FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas -0.2 * L1.HICP_Gas +
                             as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 0.2, mean = 0)))
-                            #rnorm(length(time), mean = 0, sd = 0.2))
+#rnorm(length(time), mean = 0, sd = 0.2))
+testdata_2 <- testdata %>%
+  dplyr::mutate(L2.HICP_Gas = lag(L1.HICP_Gas))
+
 testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
 
 # plot testdata using ggplot
@@ -71,5 +74,17 @@ test_that("Super Exogeneity Tests", {
   expect_true(!is.null(mod$module_collection$diagnostics[[1]]$super.exogeneity))
   expect_equal(mod$module_collection$diagnostics[[1]]$super.exogeneity, NA)
   expect_equal(diagnostics_model(mod)$`Super Exogeneity`, NA)
+
+
+
+  # run a super exogeneity test without the current value
+  set.seed(123)
+  is_mod <- gets::isat(y = testdata_2$FinConsExpHH, mxreg = testdata_2[, c("FinConsExpGov", "L1.HICP_Gas", "L2.HICP_Gas")], t.pval = 0.001,
+                       print.searchinfo = FALSE)
+
+  is_mod_test <- super.exogeneity(is_mod, quiet = TRUE, saturation.tpval = 0.001)
+
+  expect_s3_class(is_mod_test, "htest")
+
 
 })

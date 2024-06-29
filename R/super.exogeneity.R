@@ -59,7 +59,10 @@ super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FAL
     if(any(xvars_cur %in% xvars_to_test_unique)){
       dep_var_exog_test <- xvars_cur[xvars_cur %in% xvars_to_test_unique]
     } else {
-      dep_var_exog_test <- xvars_cur[which.min(gsub("L[0-9]+\\.","",xvars_cur))]
+      # find the variable with the lowest lag
+      # grep only the numbers of the strings in xvars_cur in the starting L[0-9]+.
+      # then convert to numeric and find the minimum
+      dep_var_exog_test <- xvars_cur[which.min(as.numeric(gsub("L([0-9]+)\\..*","\\1",xvars_cur)))]
     }
 
     # the dep_var_exog_test as the dependent variable and all other variables as independent variables
