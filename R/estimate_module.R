@@ -295,7 +295,7 @@ estimate_module <- function(clean_data,
 
 
   # Super Exogeneity Testing ------------------------------------------------
-  superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval)
+  superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet)
 
   # Output ------------------------------------------------------------------
   out <- list()

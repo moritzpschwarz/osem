@@ -58,4 +58,18 @@ test_that("Super Exogeneity Tests", {
   expect_true(!is.null(mod$module_collection$diagnostics[[1]]$super.exogeneity))
   expect_s3_class(mod$module_collection$diagnostics[[1]]$super.exogeneity, "htest")
 
+
+  # run it with a very tight significance to ensure no test is possible
+  mod <- run_model(specification = specification,
+                   dictionary = dict,
+                   inputdata_directory = testdata,
+                   primary_source = "local",
+                   present = FALSE,
+                   quiet = TRUE, saturation = "IIS",
+                   saturation.tpval = 0.000001)
+
+  expect_true(!is.null(mod$module_collection$diagnostics[[1]]$super.exogeneity))
+  expect_equal(mod$module_collection$diagnostics[[1]]$super.exogeneity, NA)
+  expect_equal(diagnostics_model(mod)$`Super Exogeneity`, NA)
+
 })

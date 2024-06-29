@@ -69,5 +69,30 @@ print.aggmod <- function(x, ...){
   cat("\n\nRelationships estimated in the order: ",paste0(x$module_collection$index, collapse = ","))
 
 
+  stars.pval <- function(x) {
+    stars <- c("***", "**", "*", "")
+    var <- c(0, 0.01, 0.05, 0.10, 1)
+    i <- findInterval(x, var, left.open = TRUE, rightmost.closed = TRUE)
+    stars[i]
+  }
+
+  format.pval <- function(x, digits = 3) {
+    if (is.na(x)) {
+      return("")
+    }
+    if (x < 0.001) {
+      return("<0.001***")
+    }
+    if (x > 1) {
+      return(">0.999")
+    }
+    return(paste0(formatC(x, format = "f", digits = digits), stars.pval(x)))
+  }
+
+
+  cat("\n\nDiagnostics:\n ")
+  print(diagnostics_model(x) %>%
+          dplyr::rename(`Dependent Variable` = "module") %>%
+          dplyr::mutate(dplyr::across(c("AR","ARCH","Super Exogeneity"), ~paste0(format.pval(.)))))
 
 }

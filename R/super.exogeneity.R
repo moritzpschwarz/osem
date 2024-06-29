@@ -35,7 +35,7 @@
 #'
 #' super.exogeneity(is.model)
 
-super.exogeneity <- function(initial.model, saturation.tpval = 0.01) {
+super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FALSE) {
 
   # check if the model is an isat object
   stopifnot(inherits(initial.model, "isat"))
@@ -161,6 +161,7 @@ super.exogeneity <- function(initial.model, saturation.tpval = 0.01) {
     # cat("Chi-2 Distribution p-value:", chisq_pvalue, "\n")
 
   } else {
-    cat("No Outliers or Step-Shifts detected in the marginal equations.\nHence not possible to run the test.","\n")
+    if(!quiet){cat(paste0("No Outliers or Step-Shifts detected in the marginal equations to test for Super Exogeneity in ",initial.model$aux$y.name,".\nHence not possible to run the test.","\n"))}
+    return(NA)
   }
 }
