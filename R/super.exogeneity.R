@@ -110,24 +110,24 @@ super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FAL
                                       initial.model$aux$mX[,colnames(initial.model$aux$mX) %in% xvars_to_test_unique, drop = FALSE],
                                       collected_indicators)
 
-    testmodel <- lm(y ~ . -1, data = data_for_test)
+    testmodel <- stats::lm(y ~ . -1, data = data_for_test)
 
     varnames_to_test <- names(testmodel$coefficients)[!names(testmodel$coefficients) %in% c("mconst", xvars_to_test)]
 
     b <- as.numeric(t(testmodel$coefficients[names(testmodel$coefficients) %in% varnames_to_test]))
 
-    vcov_matrix <- vcov(testmodel)[row.names(vcov(testmodel)) %in% varnames_to_test, colnames(vcov(testmodel)) %in% varnames_to_test] %>%
+    vcov_matrix <- stats::vcov(testmodel)[row.names(vcov(testmodel)) %in% varnames_to_test, colnames(stats::vcov(testmodel)) %in% varnames_to_test] %>%
       solve() %>%
       as.matrix()
 
     fstat <- b %*% vcov_matrix %*% t(t(b))/2
 
-    fstat_pvalue <- pf(fstat,
+    fstat_pvalue <- stats::pf(fstat,
                        df1 = nrow(as.data.frame(testmodel$coefficients[varnames_to_test])),
                        df2 = nrow(as.data.frame(testmodel$coefficients)) - nrow(as.data.frame(testmodel$coefficients[varnames_to_test])),
                        lower.tail = FALSE)
 
-    chisq_pvalue <- 1 - pchisq(fstat*2, nrow(as.data.frame(initial.model$coefficients[varnames_to_test])))
+    chisq_pvalue <- 1 - stats::pchisq(fstat*2, nrow(as.data.frame(initial.model$coefficients[varnames_to_test])))
 
     out <- list()
     out$statistic <- c("F-Stat" = fstat)
