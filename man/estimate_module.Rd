@@ -18,7 +18,7 @@ estimate_module(
   max.block.size = 20,
   gets_selection = TRUE,
   selection.tpval = 0.01,
-  quiet
+  quiet = FALSE
 )
 }
 \arguments{

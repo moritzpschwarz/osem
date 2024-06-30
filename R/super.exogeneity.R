@@ -116,7 +116,7 @@ super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FAL
 
     b <- as.numeric(t(testmodel$coefficients[names(testmodel$coefficients) %in% varnames_to_test]))
 
-    vcov_matrix <- stats::vcov(testmodel)[row.names(vcov(testmodel)) %in% varnames_to_test, colnames(stats::vcov(testmodel)) %in% varnames_to_test] %>%
+    vcov_matrix <- stats::vcov(testmodel)[row.names(stats::vcov(testmodel)) %in% varnames_to_test, colnames(stats::vcov(testmodel)) %in% varnames_to_test] %>%
       solve() %>%
       as.matrix()
 

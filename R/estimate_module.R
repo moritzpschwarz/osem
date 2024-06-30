@@ -43,7 +43,7 @@ estimate_module <- function(clean_data,
                             max.block.size = 20,
                             gets_selection = TRUE,
                             selection.tpval = 0.01,
-                            quiet) {
+                            quiet = FALSE) {
   # Set-up ------------------------------------------------------------------
   log_opts <- use_logs
 
