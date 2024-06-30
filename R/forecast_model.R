@@ -1,6 +1,6 @@
-#' Forecast Aggregate model
+#' Forecast OSEM model
 #'
-#' @param model An aggregate model object of class 'aggmod'.
+#' @param model A model object of class 'osem'.
 #' @param exog_predictions A data.frame or tibble with values for the exogenous values. The number of rows of this data must be equal to n.ahead.
 #' @param n.ahead Periods to forecast ahead
 #' @param ci.levels Numeric vector. Vector with confidence intervals to be calculated. Default: c(0.5,0.66,0.95)
@@ -10,7 +10,7 @@
 #' @param uncertainty_sample Integer. Number of draws to be made for the error bars. Default is 100.
 #' @param quiet Logical. Should messages about the forecast procedure be suppressed?
 #'
-#' @return An object of class aggmod.forecast
+#' @return An object of class osem.forecast
 #' @export
 #'
 #' @examples
@@ -54,7 +54,7 @@ forecast_model <- function(model,
                            uncertainty_sample = 100,
                            quiet = FALSE){
 
-  if(!isa(model, "aggmod")){stop("Forecasting only possible with an aggmod object. Execute 'run_model' to get such an object.")}
+  if(!isa(model, "osem")){stop("Forecasting only possible with an osem object. Execute 'run_model' to get such an object.")}
   if(!is.null(exog_fill_method) & !exog_fill_method %in% c("AR","last","auto")){stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR', 'auto', or 'last'.")}
   if(!is.null(ar.fill.max) & (!is.integer(as.integer(ar.fill.max)) | ar.fill.max < 1)){stop("The option 'ar.fill.max' can either be NULL or must be an integer that is larger than 0.")}
 
@@ -336,7 +336,7 @@ forecast_model <- function(model,
   out$exog_data_nowcast <- exog_df_ready_full
   out$nowcast_data <- nowcasted$nowcast_model$full_data
 
-  class(out) <- "aggmod.forecast"
+  class(out) <- "osem.forecast"
 
   out$full_forecast_data <- plot(out, return.data = TRUE)
 

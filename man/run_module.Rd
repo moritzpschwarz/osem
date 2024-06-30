@@ -24,7 +24,7 @@ run_module(
 \arguments{
 \item{module}{A row of the specification table.}
 
-\item{data}{A tibble or data.frame containing the full data for the aggregate
+\item{data}{A tibble or data.frame containing the full data for the OSEM
 model.}
 
 \item{classification}{A data.frame with two columns: 'var' stores the

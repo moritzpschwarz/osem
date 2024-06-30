@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_shiny.R
 \name{run_shiny}
 \alias{run_shiny}
-\title{Creates and runs the Shiny App "shinyaggmodel"}
+\title{Creates and runs the OSEM Shiny App}
 \usage{
 run_shiny(model = NULL)
 }
@@ -11,6 +11,6 @@ run_shiny(model = NULL)
 }
 \description{
 Opens a window for the user to interact with the app. The user can upload
-an \link[=new_aggmod]{aggmod} object returned by \code{\link{run_model}} and
+an \link[=new_osem]{osem} object returned by \code{\link{run_model}} and
 produce graphical and tabular output.
 }

@@ -1,4 +1,4 @@
-#' Present the results of the Aggregate Model in a Shiny Dashboard
+#' Present the results of the OSEM Model in a Shiny Dashboard
 #'
 #' @param model object. The output of the run_model command.
 #'

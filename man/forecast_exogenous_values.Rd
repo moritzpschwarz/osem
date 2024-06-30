@@ -15,7 +15,7 @@ forecast_exogenous_values(
 )
 }
 \arguments{
-\item{model}{An aggregate model object of class 'aggmod'.}
+\item{model}{A model object of class 'osem'.}
 
 \item{exog_vars}{The set of exogenous variables to be forecasted.}
 

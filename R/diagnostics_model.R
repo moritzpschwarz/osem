@@ -1,6 +1,6 @@
-#' Creates a Summary of the Diagnostics of the Aggregate Model
+#' Creates a Summary of the Diagnostics of the OSEM Model
 #'
-#' @param model An aggregate model of class 'aggmod'
+#' @param model An model of class 'osem'
 #'
 #' @return Returns a data.frame with the p-values of the AR and ARCH
 #'   misspecification tests and the number of impulse and step indicators

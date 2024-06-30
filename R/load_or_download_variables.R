@@ -38,10 +38,10 @@ load_or_download_variables <- function(specification,
   primary_source <- match.arg(primary_source)
   # user dictionary or default (TODO: write a function that validates whether user dict is ok)
   if (is.null(dictionary)) {
-    dictionary <- aggregate.model::dict
+    dictionary <- osem::dict
   }
   # determine whether user has added additional filters
-  default_cols <- colnames(aggregate.model::dict)
+  default_cols <- colnames(osem::dict)
   actual_cols <- colnames(dictionary)
   additional_filters <- setdiff(actual_cols, default_cols)
 

@@ -1,13 +1,13 @@
-#' \code{aggregate.model} package
+#' \code{osem} package
 #'
-#' The Package for the Aggregate Model
+#' The Package for the Open Source Empirical Macro (OSEM) Model
 #'
 #' See the README on
-#' \href{https://cran.r-project.org/package=aggregate.model/README.html}{CRAN}
-#' or \href{https://github.com/moritzpschwarz/aggregate.model#readme}{GitHub}
+#' \href{https://cran.r-project.org/package=osem/README.html}{CRAN}
+#' or \href{https://github.com/moritzpschwarz/osem#readme}{GitHub}
 #'
 #' @docType package
-#' @name aggregate.model
+#' @name osem
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
 #' @importFrom rlang :=

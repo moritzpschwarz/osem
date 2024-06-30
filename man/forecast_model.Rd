@@ -2,7 +2,7 @@
 % Please edit documentation in R/forecast_model.R
 \name{forecast_model}
 \alias{forecast_model}
-\title{Forecast Aggregate model}
+\title{Forecast OSEM model}
 \usage{
 forecast_model(
   model,
@@ -17,7 +17,7 @@ forecast_model(
 )
 }
 \arguments{
-\item{model}{An aggregate model object of class 'aggmod'.}
+\item{model}{A model object of class 'osem'.}
 
 \item{exog_predictions}{A data.frame or tibble with values for the exogenous values. The number of rows of this data must be equal to n.ahead.}
 
@@ -36,10 +36,10 @@ forecast_model(
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
 \value{
-An object of class aggmod.forecast
+An object of class osem.forecast
 }
 \description{
-Forecast Aggregate model
+Forecast OSEM model
 }
 \examples{
 spec <- dplyr::tibble(

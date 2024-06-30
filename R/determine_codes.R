@@ -72,7 +72,7 @@ determine_datacodes <- function(specification, dictionary = NULL) {
 
   # } else if(old){
   #   if (is.null(dictionary)) {
-  #     dictionary <- aggregate.model::dict
+  #     dictionary <- osem::dict
   #   }
   #
   #   codes.avail <- dictionary$eurostat_code
@@ -137,7 +137,7 @@ determine_datacodes <- function(specification, dictionary = NULL) {
 determine_eurocodes <- function(specification, dictionary = NULL) {
 
   if (is.null(dictionary)) {
-    dictionary <- aggregate.model::dict
+    dictionary <- osem::dict
   }
 
   #codes.avail <- dictionary$eurostat_code

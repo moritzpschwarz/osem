@@ -1,14 +1,13 @@
-#' Plot a Forecast Object of the Aggregate Model
+#' Plot a Forecast Object of the OSEM Model
 #'
-#' @param x An object of class aggmod.forecast, which is the output from the forecast_model function.
+#' @param x An object of class osem.forecast, which is the output from the forecast_model function.
 #' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.
 #' @param order.as.run Logical. Should the plots be arranged in the way that the model was run? Default FALSE.
 #' @param interactive Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).
 #' @param first_date Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
 #' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.
 #' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
-#' @param ... Further arguments (currently not in use).
-#'
+#' @param ... Additional arguments passed to the plotting function.
 #' @export
 #'
 #' @examples
@@ -35,10 +34,10 @@
 #' save_to_disk = NULL, present = FALSE)
 #' plot(forecast_model(a))
 #'}
-plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
+plot.osem.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
 
-  if(!isa(x, "aggmod.forecast")){
-    stop("Input object not of type aggmod.forecast. Run 'forecast_model' again and use the output of that function.")
+  if(!isa(x, "osem.forecast")){
+    stop("Input object not of type osem.forecast. Run 'forecast_model' again and use the output of that function.")
   }
 
   if(!is.null(first_date)){if(!is.character(first_date) | !lubridate::is.Date(as.Date(first_date))){stop("When supplying 'first_date', the it must be a character and must be (able to be converted to) a Date.")}}
