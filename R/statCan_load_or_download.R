@@ -128,6 +128,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
     }
   }
 
+  browser()
   return (
     list ( df= df_statcan, to_obtain = to_obtain)
   )
