@@ -21,7 +21,7 @@ spec <- dplyr::tibble(
 dict_imf <- tibble::tribble(
   ~model_varname, ~full_name, ~database, ~variable_code, ~dataset_id, ~var_col, ~nace_r2, ~geo, ~unit, ~s_adj,~freq,~ref_area,~commodity,~unit_measure,~start_period,~end_period,
   "HICP_GAS","The PCPS","imf",NA,"PCPS","na_item", NA, NA, NA, NA,"M","W00","POILAPSP","USD",NA,NA,
-  "HICP_Energy","The TEST","imf",NA,"PCPS","na_item", NA, NA, NA, NA,"M","W00","TEST","USD",NA,NA
+  "HICP_Energy","The TEST","imf",NA,"PCPS","na_item", NA, NA, NA, NA,"M","W00","POILAPSP","USD",NA,NA
 
 
 

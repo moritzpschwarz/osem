@@ -15,6 +15,7 @@
 download_imf <- function(to_obtain, column_filters, quiet) {
 
 
+ # browser()
   # initialise empty df
   df_imf <- data.frame()
 
@@ -37,6 +38,9 @@ download_imf <- function(to_obtain, column_filters, quiet) {
     #get the dictionary coordinates that use the following dataset_id
     indices <- which(to_obtain$database == "imf" & to_obtain$dataset_id == id)
 
+    imf_data <- imf.data::load_datasets(id,use_cache = TRUE)
+    #get the columns that can be filterable
+    query_vars = names(imf_data$dimensions)
 
     for (idx in indices) {
 
@@ -44,19 +48,15 @@ download_imf <- function(to_obtain, column_filters, quiet) {
       col_filters_idx = seq(column_filters)
 
 
-      for (col in 11:length(col_filters_idx)) {
+      for (col in 1:length(col_filters_idx)) {
         filter_name <- column_filters[col]
         filter = to_obtain[idx,filter_name]
 
-        if ( !(is.na(filter)) ) {
-          query <- c(query,filter)
-        }
-        if (filter_name == "start_period" | filter_name == "end_period")
+        if (filter_name %in% query_vars | filter_name == "start_period" | filter_name == "end_period")
           query <- c(query,filter)
       }
 
       #run query
-      imf_data <- imf.data::load_datasets(id,use_cache = FALSE)
       subset_of_data <- do.call(imf_data$get_series,query)
 
       # if after filtering "sub" is not empty, we found the variable and can mark it as such
@@ -107,6 +107,12 @@ download_imf <- function(to_obtain, column_filters, quiet) {
       subset_of_data <- subset_of_data %>% dplyr::mutate(na_item = to_obtain$model_varname[idx])
       #add geo
       subset_of_data <- subset_of_data %>% dplyr::mutate(geo = to_obtain$ref_area[idx])
+      #add nace_r2
+      subset_of_data <- subset_of_data %>% dplyr::mutate(nace_r2 = NA)
+      #add s_adj
+      subset_of_data <- subset_of_data %>% dplyr::mutate(s_adj = NA)
+
+
 
       #rename REF_DATE to time
       subset_of_data <- subset_of_data %>% dplyr::rename("time" = "TIME_PERIOD")
