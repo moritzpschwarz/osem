@@ -13,7 +13,8 @@ forecast_setup_estimated_relationships(
   prediction_list,
   uncertainty_sample,
   nowcasted_data,
-  full_exog_predicted_data = NULL
+  full_exog_predicted_data = NULL,
+  endog.nowcast = NULL
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ forecast_setup_estimated_relationships(
 \item{nowcasted_data}{The full_data element of the model object resulting from the nowcasting() function. Used to substitute missing historical data.}
 
 \item{full_exog_predicted_data}{An argument to pass a larger data.frame to the function that can contain the entire exogenously predicted data. This is an argument that is needed in the nowcasting() function.}
+
+\item{endog.nowcast}{An indicator whether the endogenous variable has to be nowcasted before the forecast is carried out. The argument only takes dates.}
 }
 \value{
 A list containing, among other elements, the data required to carry out the forecast for this estimated module.

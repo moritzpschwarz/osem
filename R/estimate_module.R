@@ -161,8 +161,8 @@ estimate_module <- function(clean_data,
       ar_opts_isat <- if(i != 0){1:i} else {NULL}
 
       try(intermed.model <- gets::isat(
-        y = yvar,
-        mxreg = as.matrix(xvars),
+        y = zoo::zoo(yvar, order.by = clean_data$time),
+        mxreg = zoo::zoo(xvars, order.by = clean_data$time),
         ar = ar_opts_isat,
         plot = FALSE,
         print.searchinfo = FALSE,
@@ -187,8 +187,8 @@ estimate_module <- function(clean_data,
 
 
       intermed.model <- gets::arx(
-        y = yvar,
-        mxreg = as.matrix(xvars),
+        y = zoo::zoo(yvar, order.by = clean_data$time),
+        mxreg = zoo::zoo(xvars, order.by = clean_data$time),
         ar = if (i != 0) {
           1:i
         } else {
@@ -219,7 +219,8 @@ estimate_module <- function(clean_data,
       ggplot2::geom_line(na.rm = TRUE) +
       ggplot2::facet_wrap(~.data$name, scales = "free_y", ncol = 1) +
       ggplot2::theme_minimal() +
-      ggplot2::theme(legend.position = "none") -> p
+      ggplot2::theme(legend.position = "none") +
+      ggplot2::labs(x = NULL, y = NULL) -> p
     print(p)
 
     stop(paste0("No model could be estimated for the module for ",dep_var_basename,
@@ -264,12 +265,12 @@ estimate_module <- function(clean_data,
     retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
 
     if (!is.null(saturation)) {
-      best_isat_model.selected.isat <- gets::isat(y = yvar,
+      best_isat_model.selected.isat <- gets::isat(y = zoo::zoo(yvar, order.by = clean_data$time),
                                                   # ar = best_isat_model$aux$args$ar,
                                                   # mc = best_isat_model$aux$args$mc,
                                                   ar = ar_retained_num,
                                                   mc = any(grepl("mconst",best_isat_model.selected$aux$mXnames)),
-                                                  mxreg = retained.xvars,
+                                                  mxreg = zoo::zoo(retained.xvars, order.by = clean_data$time),
                                                   plot = FALSE,
                                                   print.searchinfo = FALSE,
                                                   iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
