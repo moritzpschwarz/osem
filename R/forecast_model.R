@@ -157,6 +157,8 @@ forecast_model <- function(model,
       if(!all(c(exog_df_ready$time %in% toforecast_from_isat))){
         no.to.nowcast <- sum(as.numeric(!exog_df_ready$time %in% toforecast_from_isat))
         times.to.endog.nowcast <- toforecast_from_isat[1:no.to.nowcast]
+      } else {
+        times.to.endog.nowcast <- NULL
       }
 
 

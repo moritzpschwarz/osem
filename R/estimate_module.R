@@ -159,10 +159,13 @@ estimate_module <- function(clean_data,
       }
 
       ar_opts_isat <- if(i != 0){1:i} else {NULL}
+      xvar_opts <- if(nrow(zoo::zoo(xvars, order.by = clean_data$time))>0){
+        zoo::zoo(xvars, order.by = clean_data$time)
+      } else {NULL}
 
       try(intermed.model <- gets::isat(
         y = zoo::zoo(yvar, order.by = clean_data$time),
-        mxreg = zoo::zoo(xvars, order.by = clean_data$time),
+        mxreg = xvar_opts,
         ar = ar_opts_isat,
         plot = FALSE,
         print.searchinfo = FALSE,
@@ -185,10 +188,12 @@ estimate_module <- function(clean_data,
 
       options(mc.warning = FALSE)
 
-
+      xvar_opts <- if(nrow(zoo::zoo(xvars, order.by = clean_data$time))>0){
+        zoo::zoo(xvars, order.by = clean_data$time)
+      } else {NULL}
       intermed.model <- gets::arx(
         y = zoo::zoo(yvar, order.by = clean_data$time),
-        mxreg = zoo::zoo(xvars, order.by = clean_data$time),
+        mxreg = xvar_opts,
         ar = if (i != 0) {
           1:i
         } else {
@@ -262,7 +267,10 @@ estimate_module <- function(clean_data,
     retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
     retained.xvars <- as.matrix(xvars[,retained.coefs])
 
-    retained.xvars <- if (ncol(retained.xvars) > 0) {retained.xvars} else {NULL}
+    retained.xvars <- if (!is.null(retained.xvars)){
+      if(ncol(retained.xvars) > 0){
+        zoo::zoo(retained.xvars, order.by = clean_data$time)
+      }} else {NULL}
 
     if (!is.null(saturation)) {
       best_isat_model.selected.isat <- gets::isat(y = zoo::zoo(yvar, order.by = clean_data$time),
@@ -270,7 +278,7 @@ estimate_module <- function(clean_data,
                                                   # mc = best_isat_model$aux$args$mc,
                                                   ar = ar_retained_num,
                                                   mc = any(grepl("mconst",best_isat_model.selected$aux$mXnames)),
-                                                  mxreg = zoo::zoo(retained.xvars, order.by = clean_data$time),
+                                                  mxreg = retained.xvars,
                                                   plot = FALSE,
                                                   print.searchinfo = FALSE,
                                                   iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
