@@ -154,7 +154,7 @@ plot.osem.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE
 
   # here we get the last fitted value
   plot_df %>%
-    dplyr::filter(.data$fit == "TRUE") %>%
+    dplyr::filter(.data$fit == "TRUE", !is.na(.data$values)) %>%
     dplyr::group_by(.data$na_item) %>%
     dplyr::filter(.data$time == max(.data$time, na.rm = TRUE)) %>%
     dplyr::ungroup() %>%

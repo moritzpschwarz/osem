@@ -141,6 +141,25 @@ forecast_model <- function(model,
     ## 2b. Start of loop for estimated relationships  ------------------------------------------------
     if(model$module_order$type[model$module_order$order == i] != "d"){
 
+      # get the isat object for this relationship
+      isat_obj <- model$module_collection %>%
+        dplyr::filter(.data$order == i) %>%
+        dplyr::pull(.data$model) %>%
+        .[[1]]
+
+      # check which dates would be included if we go from the last date in the estimation
+      toforecast_from_isat <- seq.Date(from = isat_obj$aux$y.index[length(isat_obj$aux$y.index)],
+                                       by = exog_forecast_list$frequency, length.out = n.ahead + 1)[-1]
+
+      # we then compare them to the dates that we will forecast based on the exog_df_ready
+      # if there are any dates that are not in the exog_df_ready, then we need to nowcast them
+      # here we identify them
+      if(!all(c(exog_df_ready$time %in% toforecast_from_isat))){
+        no.to.nowcast <- sum(as.numeric(!exog_df_ready$time %in% toforecast_from_isat))
+        times.to.endog.nowcast <- toforecast_from_isat[1:no.to.nowcast]
+      }
+
+
       pred_setup_list <- forecast_setup_estimated_relationships(model = model,
                                                                 i = i,
                                                                 exog_df_ready = exog_df_ready,
@@ -148,11 +167,11 @@ forecast_model <- function(model,
                                                                 current_spec = current_spec,
                                                                 prediction_list = prediction_list,
                                                                 uncertainty_sample = uncertainty_sample,
-                                                                nowcasted_data = nowcasted$nowcast_model$full_data)
+                                                                nowcasted_data = nowcasted$nowcast_model$full_data,
+                                                                endog.nowcast = times.to.endog.nowcast)
 
       final_i_data <- pred_setup_list$final_i_data
       pred_df <- pred_setup_list$pred_df
-      isat_obj <- pred_setup_list$isat_obj
       chk_any_listcols <- pred_setup_list$chk_any_listcols
       current_pred_raw <- pred_setup_list$current_pred_raw
 
@@ -160,21 +179,21 @@ forecast_model <- function(model,
         pred_df.all <- pred_setup_list$pred_df.all
       }
 
-
-
       ### 2b.i. Predict main estimate for estimated relationships  ------------------------------------------------
       isat_obj$call$ar <- isat_obj$aux$args$ar
       isat_obj$call$mc <- isat_obj$aux$args$mc
       isat_obj$call$tis <- isat_obj$aux$args$tis
 
       pred_obj <- gets::predict.isat(isat_obj,
-                                     newmxreg = as.matrix(utils::tail(pred_df %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)), n.ahead)),
-                                     n.ahead = n.ahead, plot = plot.forecast,
+                                     newmxreg = as.matrix(utils::tail(pred_df %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)),
+                                                                      pred_setup_list$n.ahead.incl.nowcast)),
+                                     n.ahead = pred_setup_list$n.ahead.incl.nowcast,
+                                     plot = plot.forecast,
                                      ci.levels = ci.levels)
 
       # make samples from the model residuals and add them to the mean prediction
-      res_draws <- sample(as.numeric(isat_obj$residuals), size = uncertainty_sample*n.ahead, replace = TRUE)
-      pred_draw_matrix <- as.vector(pred_obj$yhat) + matrix(res_draws,nrow = n.ahead)
+      res_draws <- sample(as.numeric(isat_obj$residuals), size = uncertainty_sample*pred_setup_list$n.ahead.incl.nowcast, replace = TRUE)
+      pred_draw_matrix <- as.vector(pred_obj$yhat) + matrix(res_draws,nrow = pred_setup_list$n.ahead.incl.nowcast)
 
       ## 2b.ii. Predict uncertainty plume for estimated relationships  ------------------------------------------------
 
@@ -244,7 +263,7 @@ forecast_model <- function(model,
                                newmxreg = x %>%
                                  dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)) %>%
                                  as.matrix,
-                               n.ahead = n.ahead, plot = FALSE,
+                               n.ahead = pred_setup_list$n.ahead.incl.nowcast, plot = FALSE,
                                ci.levels = ci.levels, n.sim = 1)
 
           })) -> all_preds

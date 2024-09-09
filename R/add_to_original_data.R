@@ -38,9 +38,9 @@ add_to_original_data <- function(clean_data,
 
   clean_data %>%
     dplyr::full_join(dplyr::tibble(
-      index = isat_object$aux$y.index,
+      time = isat_object$aux$y.index,
       fitted = as.numeric(isat_object$mean.fit)
-    ), by = "index") %>%
+    ), by = "time") %>%
     {
       if (ardl_or_ecm == "ecm") {
         dplyr::mutate(.,

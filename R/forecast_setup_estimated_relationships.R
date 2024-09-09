@@ -7,11 +7,21 @@
 #' @param prediction_list The full list of all predictions. The results of the function will be saved in this list.
 #' @param nowcasted_data The full_data element of the model object resulting from the nowcasting() function. Used to substitute missing historical data.
 #' @param full_exog_predicted_data An argument to pass a larger data.frame to the function that can contain the entire exogenously predicted data. This is an argument that is needed in the nowcasting() function.
+#' @param endog.nowcast An indicator whether the endogenous variable has to be nowcasted before the forecast is carried out. The argument only takes dates.
 #' @inheritParams forecast_model
 #'
 #' @return A list containing, among other elements, the data required to carry out the forecast for this estimated module.
 #'
-forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ahead, current_spec, prediction_list, uncertainty_sample, nowcasted_data, full_exog_predicted_data = NULL) {
+forecast_setup_estimated_relationships <- function(model,
+                                                   i,
+                                                   exog_df_ready,
+                                                   n.ahead,
+                                                   current_spec,
+                                                   prediction_list,
+                                                   uncertainty_sample,
+                                                   nowcasted_data,
+                                                   full_exog_predicted_data = NULL,
+                                                   endog.nowcast = NULL) {
 
   # set up -----------
   # get isat obj
@@ -23,6 +33,25 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
   model$module_collection %>%
     dplyr::filter(.data$order == i) %>%
     dplyr::pull(.data$dataset) %>% .[[1]] -> data_obj
+
+
+  # Check if any nowcasting is needed
+  if(!is.null(endog.nowcast)){
+    if(!isa(endog.nowcast, "Date")){stop("Variable 'endog.nowcast' must be a date object.")}
+    n.ahead.incl.nowcast <- n.ahead + length(endog.nowcast)
+
+    data_obj %>%
+      dplyr::filter(.data$time %in% endog.nowcast) %>%
+      dplyr::select("time",dplyr::all_of(current_spec$independent)) %>%
+      dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE),
+                    q = factor(.data$q, levels = c(1,2,3,4))) %>%
+      fastDummies::dummy_cols("q", remove_first_dummy = FALSE, remove_selected_columns = TRUE) %>%
+
+      dplyr::bind_rows(exog_df_ready) -> exog_df_ready
+
+  } else {
+    n.ahead.incl.nowcast <- n.ahead
+  }
 
   # determine ARDL or ECM
   is_ardl <- is.null(model$args$ardl_or_ecm) | identical(model$args$ardl_or_ecm,"ARDL")
@@ -115,12 +144,11 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
   }
 
   if ("trend" %in% names(coef(isat_obj))) {
-    trend_pred <- dplyr::tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead))
+    trend_pred <- dplyr::tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead.incl.nowcast))
   }
 
 
   # adding together all variables apart from x-variables (so IIS, SIS, trends, etc.)  -------------------------------
-
   exog_df_ready %>%
 
     # select the relevant variables
@@ -329,7 +357,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
     # tidyr::drop_na() %>%
 
     # only retain the final n.ahead observations
-    dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
+    dplyr::slice(-c(dplyr::n() - n.ahead.incl.nowcast : dplyr::n())) %>%
 
     dplyr::select(-"time") %>%
     dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
@@ -402,7 +430,7 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
                                    by = "time") %>%
                   #tidyr::drop_na()))
                   # only retain the final n.ahead observations
-                  dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n()))
+                  dplyr::slice(-c(dplyr::n() - n.ahead.incl.nowcast : dplyr::n()))
     )
   )
 
@@ -415,6 +443,8 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
   out$current_pred_raw <- current_pred_raw
   out$current_pred_raw_all <- if(exists("current_pred_raw_all")){current_pred_raw_all}
   out$pred_df.all <- if(exists("pred_df.all")){pred_df.all}
+  out$n.ahead.incl.nowcast <- n.ahead.incl.nowcast
+
   return(out)
 
 }
