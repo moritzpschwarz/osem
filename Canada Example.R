@@ -65,7 +65,7 @@ hind_cast <- forecast_insample(
   model_result,
   sample_share = 0.5,
   uncertainty_sample = 100,
-  exog_fill_method = "AR",
+  exog_fill_method = "last",
   plot.forecast = TRUE
 )
 

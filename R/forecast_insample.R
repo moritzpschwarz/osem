@@ -90,7 +90,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
     if(!quiet){print(paste0("Forecast ", i, " from ", start, " to ", end))}
 
-    browser()
+    #browser()
 
     forecasted_unknownexogvalues[[i]] <- forecast_model(model = all_models[[i]],
                                                         n.ahead = nsteps,
