@@ -1,9 +1,8 @@
 #' Print output of an OSEM Model
-#'
+#' Print the output of the OSEM model
 #' @param x An object of type 'osem'
 #' @param ... Further arguments.
 #'
-#' @export
 #'
 
 print.osem <- function(x, ...){

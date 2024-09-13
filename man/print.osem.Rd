@@ -2,7 +2,8 @@
 % Please edit documentation in R/print.osem.R
 \name{print.osem}
 \alias{print.osem}
-\title{Print output of an OSEM Model}
+\title{Print output of an OSEM Model
+Print the output of the OSEM model}
 \usage{
 \method{print}{osem}(x, ...)
 }
@@ -13,4 +14,5 @@
 }
 \description{
 Print output of an OSEM Model
+Print the output of the OSEM model
 }

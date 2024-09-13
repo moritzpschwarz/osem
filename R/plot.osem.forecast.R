@@ -8,7 +8,6 @@
 #' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.
 #' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
 #' @param ... Additional arguments passed to the plotting function.
-#' @export
 #'
 #' @examples
 #' spec <- dplyr::tibble(
