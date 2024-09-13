@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/moritzpschwarz/osem/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/moritzpschwarz/osem/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/moritzpschwarz/osem/branch/main/graph/badge.svg)](https://app.codecov.io/gh/moritzpschwarz/osem?branch=main)
 <!-- badges: end -->
 
 The goal of the {osem} Package is to implement and operationalise the Open Source Empirical Macro (OSEM) Model, developed by Moritz Schwarz, Jonas Kurle, Felix Pretis, and Andrew Martinez. This is an adaptation of the [Norwegian Aggregate Model](https://normetrics.no/nam/), developed by Gunnar Bardsen and Ragnar Nymoen. 
