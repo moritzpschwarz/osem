@@ -108,11 +108,13 @@ kable(spec) %>%
 ```
 
 
-In order to run this model, we also need a dictionary that translates our model variables to EUROSTAT codes so that the download process can be automated. You can either pass a new dictionary to the model function, or you can use the built in dictionary `osem::dict`:
+In order to run this model, we also need a dictionary that translates our model variables to EUROSTAT codes so that the download process can be automated. You can either pass a new dictionary to the model function, or you can use the built in dictionary `osem::dict` (here the first few rows):
 
 
 ```{r, results='asis', echo=FALSE}
-kable(osem::dict) %>% 
+osem::dict %>% 
+  head() %>% 
+  kable() %>% 
   kable_styling() %>% 
   kable_paper()
 ```
