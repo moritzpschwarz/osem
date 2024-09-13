@@ -27,6 +27,7 @@
 #' constrained to the minimum data series? Default is \code{TRUE}.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
+#' @param plot Logical with default = TRUE. Should plots be displayed?
 #'
 #' @return An object of class \link[=new_osem]{osem}, which is a named list
 #'   with four elements:
@@ -84,8 +85,7 @@ run_model <- function(specification,
                       inputdata_directory = paste0(getwd(), "/data/raw"),
                       primary_source = c("download", "local"),
                       save_to_disk = NULL,
-                      present = FALSE,
-                      quiet = FALSE,
+
                       use_logs = "both",
                       trend = TRUE,
                       ardl_or_ecm = "ardl",
@@ -96,7 +96,11 @@ run_model <- function(specification,
                       max.block.size = 20,
                       gets_selection = TRUE,
                       selection.tpval = 0.01,
-                      constrain.to.minimum.sample = TRUE
+                      constrain.to.minimum.sample = TRUE,
+
+                      present = FALSE,
+                      quiet = FALSE,
+                      plot = TRUE
 ) {
 
   primary_source = match.arg(primary_source)
@@ -265,6 +269,10 @@ run_model <- function(specification,
     present_model(out)
   }
 
+  if(plot){
+
+    plot(out)
+  }
 
   return(out)
 

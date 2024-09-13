@@ -4,10 +4,14 @@
 \alias{print.osem}
 \title{Print output of an OSEM Model}
 \usage{
-\method{print}{osem}(x, ...)
+\method{print}{osem}(x, plot = TRUE, full_names = FALSE, ...)
 }
 \arguments{
 \item{x}{An object of type 'osem'}
+
+\item{plot}{Logical. Default = \code{TRUE}. Should the osem model output be plotted?}
+
+\item{full_names}{Logical. Default = \code{FALSE}. Should the full names of the variables from the dictionary be printed?}
 
 \item{...}{Further arguments.}
 }

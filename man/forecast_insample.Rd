@@ -9,7 +9,7 @@ forecast_insample(
   sample_share = 0.5,
   uncertainty_sample = 100,
   exog_fill_method = "AR",
-  plot.forecast = TRUE,
+  plot = TRUE,
   quiet = FALSE
 )
 }
@@ -22,7 +22,7 @@ forecast_insample(
 
 \item{exog_fill_method}{Character, either 'AR', 'auto', or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used. 'auto' is an \code{\link[forecast]{auto.arima}} model.}
 
-\item{plot.forecast}{Logical. Should the result be plotted? Default is TRUE.}
+\item{plot}{Logical. Should the result be plotted? Default is TRUE.}
 
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }

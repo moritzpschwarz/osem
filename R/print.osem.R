@@ -1,11 +1,13 @@
 #' Print output of an OSEM Model
 #'
 #' @param x An object of type 'osem'
+#' @param plot Logical. Default = \code{TRUE}. Should the osem model output be plotted?
+#' @param full_names Logical. Default = \code{FALSE}. Should the full names of the variables from the dictionary be printed?
 #' @param ... Further arguments.
 #'
 #' @export
 
-print.osem <- function(x, ...){
+print.osem <- function(x, plot = TRUE, full_names = FALSE, ...){
 
 
   cat("OSEM Model Output\n")
@@ -62,8 +64,9 @@ print.osem <- function(x, ...){
                   `Full Name Ind. Var` = "ind_name",
                   `Full Name Dep. Var` = "full_name") %>%
 
-    print
+    {if(!full_names){dplyr::select(.,-c("Full Name Ind. Var","Full Name Dep. Var"))} else {.}} -> rel_styled
 
+  cat(format(rel_styled)[-3L], sep = "\n")
 
   cat("\n\nRelationships estimated in the order: ",paste0(x$module_collection$index, collapse = ","))
 
@@ -95,5 +98,9 @@ print.osem <- function(x, ...){
           dplyr::mutate(dplyr::across(c("AR","ARCH","Super Exogeneity"), ~paste0(format.pval(.)))) %>%
           dplyr::ungroup())
 
+
+  if(plot){
+    plot(x)
+  }
 
 }

@@ -6,7 +6,7 @@
 #' @export
 #'
 #'
-forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 100, exog_fill_method = "AR", plot.forecast = TRUE, quiet = FALSE) {
+forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 100, exog_fill_method = "AR", plot = TRUE, quiet = FALSE) {
 
   # we first must identify the minimum sample across modules
   time_samples <- dplyr::tibble()
@@ -92,7 +92,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     forecasted_unknownexogvalues[[i]] <- forecast_model(model = all_models[[i]],
                                                         n.ahead = nsteps,
                                                         uncertainty_sample = uncertainty_sample,
-                                                        plot.forecast = FALSE,
+                                                        plot = FALSE,
                                                         exog_fill_method = exog_fill_method,
                                                         quiet = TRUE)
 
@@ -210,7 +210,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   #plotly::ggplotly(plt)
 
 
-  if(plot.forecast){
+  if(plot){
     print(plt)
   }
 
