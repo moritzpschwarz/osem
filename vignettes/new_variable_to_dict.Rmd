@@ -158,8 +158,12 @@ Based on all the information above, let's say that we want to add a variable fro
 
 Given this information, let's try to download it first - using the `get_eurostat` function from the {`eurostat}` package:
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, results='hide'}
 dat_raw <- get_eurostat(id = "sts_inpr_q")
+```
+
+
+```{r}
 dat_raw
 ```
 
@@ -269,7 +273,7 @@ model <- run_model(specification = specification,
 Let's visualise this model alongside its forecast:
 
 ```{r, fig.height=5, out.width="100%"}
-mod_fcast <- forecast_model(model, plot.forecast = FALSE)
+mod_fcast <- forecast_model(model, plot = FALSE)
 plot(mod_fcast)
 ```
 

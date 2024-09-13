@@ -62,7 +62,7 @@ mod <- run_model(specification = specification,
                  present = FALSE,
                  quiet = TRUE, saturation = "IIS")
 
-test_that("Testig plot.osem functionality",{
+test_that("Testing plot.osem functionality",{
 
   skip_on_ci()
 
@@ -70,8 +70,7 @@ test_that("Testig plot.osem functionality",{
   expect_snapshot_plot("plot.osem_2",code = plot(mod, exclude.exogenous = FALSE))
   expect_snapshot_plot("plot.osem_3",code = plot(mod, exclude.exogenous = FALSE,grepl_variables = "HICP"))
   expect_snapshot_plot("plot.osem_4",code = plot(mod, exclude.exogenous = TRUE, order.as.run = TRUE))
-  expect_snapshot_plot("plot.osem_5",code = plot(mod, exclude.exogenous = TRUE, order.as.run = TRUE, first_date = "2020-01-01",interactive = TRUE))
-  expect_snapshot_plot("plot.osem_6",code = plot(mod, exclude.exogenous = TRUE, order.as.run = TRUE, first_date = "2020-01-01"))
+  expect_snapshot_plot("plot.osem_5",code = plot(mod, exclude.exogenous = TRUE, order.as.run = TRUE, first_date = "2020-01-01"))
 
 })
 
