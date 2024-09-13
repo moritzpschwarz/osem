@@ -6,6 +6,7 @@
 \usage{
 \method{plot}{osem}(
   x,
+  title = "OSEM Model Output",
   exclude.exogenous = TRUE,
   order.as.run = FALSE,
   interactive = FALSE,
@@ -17,6 +18,8 @@
 }
 \arguments{
 \item{x}{An object of class osem, which is the output from the \link{run_model} function.}
+
+\item{title}{Character. Title of the plot. Default is "OSEM Model Output".}
 
 \item{exclude.exogenous}{Logical. Should exogenous values be plotted? Default is FALSE.}
 

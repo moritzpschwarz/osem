@@ -3,6 +3,7 @@
 S3method(plot,osem)
 S3method(plot,osem.forecast)
 S3method(print,osem)
+S3method(print,osem.forecast)
 export(diagnostics_model)
 export(forecast_insample)
 export(forecast_model)

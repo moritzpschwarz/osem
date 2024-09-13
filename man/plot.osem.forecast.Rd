@@ -6,6 +6,7 @@
 \usage{
 \method{plot}{osem.forecast}(
   x,
+  title = "OSEM Model Forecast",
   exclude.exogenous = TRUE,
   order.as.run = FALSE,
   interactive = FALSE,
@@ -17,6 +18,8 @@
 }
 \arguments{
 \item{x}{An object of class osem.forecast, which is the output from the forecast_model function.}
+
+\item{title}{Character. Title of the plot. Default is "OSEM Model Forecast".}
 
 \item{exclude.exogenous}{Logical. Should exogenous values be plotted? Default is FALSE.}
 
