@@ -59,4 +59,5 @@ inputdata_directory = NULL, primary_source = "download",
 save_to_disk = NULL, present = FALSE)
 plot(forecast_model(a))
 }
+
 }

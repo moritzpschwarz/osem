@@ -9,6 +9,8 @@
 #' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
 #' @param ... Additional arguments passed to the plotting function.
 #'
+#' @export
+#'
 #' @examples
 #' spec <- dplyr::tibble(
 #' type = c(
@@ -33,6 +35,8 @@
 #' save_to_disk = NULL, present = FALSE)
 #' plot(forecast_model(a))
 #'}
+#'
+
 plot.osem.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
 
   if(!isa(x, "osem.forecast")){

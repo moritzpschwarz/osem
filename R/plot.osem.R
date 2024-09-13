@@ -33,7 +33,7 @@
 #' save_to_disk = NULL, present = FALSE)
 #' plot(a)
 #'}
-#'
+#' @export
 plot.osem <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
 
   if(!isa(x, "osem")){
