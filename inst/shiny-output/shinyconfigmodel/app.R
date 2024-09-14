@@ -253,12 +253,12 @@ ui <- fluidPage(
               ),
               tabPanel("Diagnostics", #fluid = TRUE,
                        mainPanel(width = 12,
-                         DT::DTOutput("diag")
+                                 DT::DTOutput("diag")
                        )
               ),
               tabPanel("Dependency Network Graph", #fluid = TRUE,x^
                        mainPanel(width = 12,
-                         plotOutput("network", height = "600", width = "800")
+                                 plotOutput("network", height = "600", width = "800")
                        )
               )
 
@@ -532,24 +532,24 @@ server <- function(input, output, session) {
     withProgress(message = 'Estimation Running... ', value = 0, { # the update is being sent from within run_model.R
       print(reactiveValuesToList(rv)) # to display reactive variables at time of function call
       model_output <- osem::run_model(specification = rv$specification,
-                                                 dictionary = rv$dictionary,
-                                                 inputdata_directory = if (is.null(rv$inputdirectory)) { NULL } else { dirname(input$data$datapath) }, # inputdata
-                                                 primary_source = if (is.null(rv$inputdirectory)) { "download" } else { "local" },#  swtichting to "download" makes it slower? Could be a setting with a warning "might take longer". Reading the cached files takes long as well.
-                                                 save_to_disk = rv$save_file,
-                                                 present = FALSE,
-                                                 quiet = FALSE,
-                                                 use_logs = rv$use.logs,
-                                                 trend = rv$trend,
-                                                 ardl_or_ecm = rv$ardl.or.ecm,
-                                                 max.ar = rv$max_ar,
-                                                 max.dl = rv$max_dl,
-                                                 saturation = rv$saturation,
-                                                 saturation.tpval = rv$ind_sat_pval,
-                                                 max.block.size = rv$max_block_size,
-                                                 gets_selection = rv$gets_select,
-                                                 selection.tpval = rv$gets_pval,
-                                                 constrain.to.minimum.sample = rv$constrain_to_minimum_sample,
-                                                 plot = FALSE)
+                                      dictionary = rv$dictionary,
+                                      inputdata_directory = if (is.null(rv$inputdirectory)) { NULL } else { dirname(input$data$datapath) }, # inputdata
+                                      primary_source = if (is.null(rv$inputdirectory)) { "download" } else { "local" },#  swtichting to "download" makes it slower? Could be a setting with a warning "might take longer". Reading the cached files takes long as well.
+                                      save_to_disk = rv$save_file,
+                                      present = FALSE,
+                                      quiet = FALSE,
+                                      use_logs = rv$use.logs,
+                                      trend = rv$trend,
+                                      ardl_or_ecm = rv$ardl.or.ecm,
+                                      max.ar = rv$max_ar,
+                                      max.dl = rv$max_dl,
+                                      saturation = rv$saturation,
+                                      saturation.tpval = rv$ind_sat_pval,
+                                      max.block.size = rv$max_block_size,
+                                      gets_selection = rv$gets_select,
+                                      selection.tpval = rv$gets_pval,
+                                      constrain.to.minimum.sample = rv$constrain_to_minimum_sample,
+                                      plot = FALSE)
 
       # # Print or process the model output as needed
       #print(unlist(model_output))
@@ -574,6 +574,14 @@ server <- function(input, output, session) {
       #quiet = FALSE
     )
   }
+
+  # # this is a way to launch this app directly using a model that has already been estimated
+  # TODO
+  # if(!is.null(getShinyOption("osem_direct"))){
+  #   rv$model_output <- getShinyOption("osem_direct")
+  # }
+
+
 
   # Run model when "Run Model" button is clicked
   observeEvent(input$run_button, {
