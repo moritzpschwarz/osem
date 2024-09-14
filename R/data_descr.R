@@ -27,21 +27,21 @@
 "dict"
 
 
-#' Sample Input for the Aggregate Model
+#' Sample Input for the OSEM Model
 #'
-#' A dataset containing input data that has been downloaded using the functions in the aggregate.model package.
+#' A dataset containing input data that has been downloaded using the functions in the osem package.
 #' This dataset is supposed to be used for testing and to enable out-of-the-box estimation.
 #'
 #' @format A tibble with 1200 rows and 9 variables:
 #' \describe{
 #'   \item{unit}{Unit according to Eurostat.}
 #'   \item{s_adj}{Indication whether variable was seasonally adjusted or not. SCA refers to seasonal and calendar adjusted data.}
-#'   \item{na_item}{Variable Name according to the aggregate.model dictionary.}
+#'   \item{na_item}{Variable Name according to the osem dictionary.}
 #'   \item{geo}{Geographic location for which the data was downloaded.}
 #'   \item{time}{The date of the observation.}
 #'   \item{nace_r2}{If applicable, the NACE2 sector code.}
 #'   \item{p_adj}{If applicable, price adjustment.}
 #'   \item{cpa2_1}{If applicable, Classification of Products by Activity.}
 #' }
-#' @source Own compilation, data from \url{https://ec.europa.eu/eurostat}, downloaded with aggregate.model::run_model()
+#' @source Own compilation, data from \url{https://ec.europa.eu/eurostat}, downloaded with osem::run_model()
 "sample_input"

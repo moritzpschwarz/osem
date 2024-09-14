@@ -9,19 +9,22 @@ forecast_insample(
   sample_share = 0.5,
   uncertainty_sample = 100,
   exog_fill_method = "AR",
-  plot.forecast = TRUE
+  plot.forecast = TRUE,
+  quiet = FALSE
 )
 }
 \arguments{
-\item{model}{An aggregate model object of class 'aggmod'.}
+\item{model}{A model object of class 'osem'.}
 
 \item{sample_share}{Share of the sample that should be used for the insample forecasting. Must be a numeric and must be either 1 or smaller but larger than 0.}
 
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
 
-\item{exog_fill_method}{Character, either 'AR', 'auto', or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used. 'auto' is an \link{forecast::auto.arima()} model.}
+\item{exog_fill_method}{Character, either 'AR', 'auto', or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used. 'auto' is an \code{\link[forecast]{auto.arima}} model.}
 
 \item{plot.forecast}{Logical. Should the result be plotted? Default is TRUE.}
+
+\item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
 \value{
 List element.

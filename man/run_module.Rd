@@ -17,13 +17,14 @@ run_module(
   saturation.tpval = 0.01,
   max.block.size = 20,
   gets_selection = TRUE,
-  selection.tpval = 0.01
+  selection.tpval = 0.01,
+  quiet
 )
 }
 \arguments{
 \item{module}{A row of the specification table.}
 
-\item{data}{A tibble or data.frame containing the full data for the aggregate
+\item{data}{A tibble or data.frame containing the full data for the OSEM
 model.}
 
 \item{classification}{A data.frame with two columns: 'var' stores the
@@ -32,7 +33,7 @@ Eurostat variable code and 'class' the classification code (one of
 endogenous by modelling, endogenous by identity/definition, or exogenous.
 As returned by \link{classify_variables}.}
 
-\item{use_logs}{Character vector. Either "both", "x", or "y" to decide whether to use logs.}
+\item{use_logs}{To decide whether to log any variables. Must be one of 'both', 'y', 'x', or 'none'. Default is 'both'.}
 
 \item{trend}{Logical. Should a trend be added? Default is TRUE.}
 
@@ -42,7 +43,7 @@ As returned by \link{classify_variables}.}
 
 \item{max.dl}{Integer. The maximum number of lags to use for the independent variables (the distributed lags).}
 
-\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
+\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needs a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
 
 \item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
 
@@ -51,6 +52,8 @@ As returned by \link{classify_variables}.}
 \item{gets_selection}{Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.}
 
 \item{selection.tpval}{Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.}
+
+\item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
 \value{
 Returns a list with two named elements.

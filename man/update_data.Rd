@@ -2,7 +2,7 @@
 % Please edit documentation in R/auxiliary.R
 \name{update_data}
 \alias{update_data}
-\title{Updates the aggregate model dataset with fitted values}
+\title{Updates the osem dataset with fitted values}
 \usage{
 update_data(orig_data, new_data)
 }

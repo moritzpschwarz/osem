@@ -72,7 +72,7 @@ determine_datacodes <- function(specification, dictionary = NULL) {
 
   # } else if(old){
   #   if (is.null(dictionary)) {
-  #     dictionary <- aggregate.model::dict
+  #     dictionary <- osem::dict
   #   }
   #
   #   codes.avail <- dictionary$eurostat_code
@@ -137,7 +137,7 @@ determine_datacodes <- function(specification, dictionary = NULL) {
 determine_eurocodes <- function(specification, dictionary = NULL) {
 
   if (is.null(dictionary)) {
-    dictionary <- aggregate.model::dict
+    dictionary <- osem::dict
   }
 
   #codes.avail <- dictionary$eurostat_code
@@ -221,6 +221,11 @@ determine_variables <- function(specification, dictionary) {
     dplyr::filter(.data$model_varname %in% codes.used) %>%
     dplyr::filter(!is.na(.data$database)) %>%
     dplyr::mutate(found = FALSE) # will keep track of whether found (download or local)
+
+  if(!all(codes.used %in% dictionary$model_varname)){
+    stop(paste0("Not all model variables found in the dictionary.", "\n",
+                 "Missing variables: ", paste(setdiff(codes.used, to_obtain$model_varname), collapse = ", ")))
+  }
 
   return(to_obtain)
 

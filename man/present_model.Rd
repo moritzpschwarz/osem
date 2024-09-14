@@ -2,7 +2,7 @@
 % Please edit documentation in R/present_model.R
 \name{present_model}
 \alias{present_model}
-\title{Present the results of the Aggregate Model in a Shiny Dashboard}
+\title{Present the results of the OSEM Model in a Shiny Dashboard}
 \usage{
 present_model(model)
 }
@@ -13,5 +13,5 @@ present_model(model)
 Opens a shiny app.
 }
 \description{
-Present the results of the Aggregate Model in a Shiny Dashboard
+Present the results of the OSEM Model in a Shiny Dashboard
 }

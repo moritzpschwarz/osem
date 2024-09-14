@@ -17,26 +17,26 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, message=FALSE}
-library(aggregate.model)
+library(osem)
 library(dplyr)
 library(eurostat)
 library(ggplot2)
 ```
 
-This is a vignette to describe the process to add a new variable to the Dictionary of the package. This is necessary if we want to use a new variable in the Aggregate Model. Here we initially discuss three cases: 1) the case of adding a **Eurostat** variable and 2) adding a new variable from the **EDGAR** emission dataset and lastly 3) to simply create a new identity based on existing variables.
+This is a vignette to describe the process to add a new variable to the Dictionary of the package. This is necessary if we want to use a new variable in the OSEM Model. Here we initially discuss three cases: 1) the case of adding a **Eurostat** variable and 2) adding a new variable from the **EDGAR** emission dataset and lastly 3) to simply create a new identity based on existing variables.
 
 # tl,dr
 
 This is an example how you add a new variable to the Dictionary:
 
 ```{r}
-# Add a new row to 'dict', which is an element of the aggregate.model package
+# Add a new row to 'dict', which is an element of the osem package
 dict %>% 
   bind_rows(tibble(
     model_varname = "IndProd", # this is free to choose but must be unique
     full_name = "An index of Industrial Production",
     database  = "eurostat",
-    variable_code = "PROD", # in this case use the bt_indicator information here
+    variable_code = "PRD", # in this case use the bt_indicator information here
     dataset_id = "sts_inpr_q",
     var_col = "indic_bt", # here we specify what the column with the variables is called
     freq = "q", # for quarterly data, 'm' would be monthly
@@ -50,7 +50,7 @@ dict %>%
 
 # Some general remarks about the Dictionary
 
-The dictionary is the central store of information that is being used for us to "translate" difficult data codes into useful variable names - and it is also central for us to tell the Aggregate Model what to download.
+The dictionary is the central store of information that is being used for us to "translate" difficult data codes into useful variable names - and it is also central for us to tell the OSEM Model what to download.
 
 Let's take a look at the dictionary:
 
@@ -122,7 +122,7 @@ This really is the window that we will need to focus on quite a bit. First of al
 
 To identify the correct data, we now need to click through the different dimensions and make note of what it is that we want to use.
 
-While the available types will vary depending on Eurostat data, most variables relevant for the Aggregate Model will include:
+While the available types will vary depending on Eurostat data, most variables relevant for the OSEM Model will include:
 
 -   Some variable that indicates the specific variable name, like `na_item` or `indic_bt`, depending on the Eurostat guidelines associated with the data collection method used.
 
@@ -158,7 +158,7 @@ Based on all the information above, let's say that we want to add a variable fro
 
 Given this information, let's try to download it first - using the `get_eurostat` function from the {`eurostat}` package:
 
-```{r, message=FALSE}
+```{r, message=FALSE, warning=FALSE}
 dat_raw <- get_eurostat(id = "sts_inpr_q")
 dat_raw
 ```
@@ -167,7 +167,7 @@ Now let's filter this raw dataset down to the data series that we need:
 
 ```{r}
 dat_raw %>% 
-  filter(indic_bt == "PROD", # for industrial production variable
+  filter(indic_bt == "PRD", # for industrial production variable
          nace_r2 == "B-D", # to select all NACE rev 2 sectors in B, C, and D
          s_adj == "NSA", # to get the raw, non-adjusted data
          unit == "I15", # to get the 2015 Index
@@ -211,7 +211,7 @@ dict %>%
     model_varname = "IndProd", # this is free to choose but must be unique
     full_name = "An index of Industrial Production",
     database  = "eurostat",
-    variable_code = "PROD", # in this case use the bt_indicator information here
+    variable_code = "PRD", # in this case use the bt_indicator information here
     dataset_id = "sts_inpr_q",
     var_col = "indic_bt", # here we specify what the column with the variables is called
     freq = "q", # for quarterly data, 'm' would be monthly
@@ -237,21 +237,18 @@ $$
 EmiCO2Industry = HICP_{Gas} + HICP_{Electricity} + IndProd
 $$
 
-We put this into our specification table alongside a simple identity that we need for the moment because the current set-up does not allow not adding any identities.
+This is then the specification that we will run - with the type being `n` that denotes a Definition and will therefore be estimated: 
 
 ```{r}
 specification <- dplyr::tibble(
   type = c(
-    "n",
-    "d"
+    "n"
   ),
   dependent = c(
-    "EmiCO2Industry",
-    "TOTS"
+    "EmiCO2Industry"
   ),
   independent = c(
-    "HICP_Gas + HICP_Electricity + IndProd",
-    "GDP + Import"
+    "HICP_Gas + HICP_Electricity + IndProd"
   )
 )
 specification
@@ -269,7 +266,7 @@ model <- run_model(specification = specification,
 
 ```
 
-Let's visualise this model alongisde its forecast:
+Let's visualise this model alongside its forecast:
 
 ```{r, fig.height=5, out.width="100%"}
 mod_fcast <- forecast_model(model, plot.forecast = FALSE)

@@ -28,14 +28,14 @@ test_that("download_eurostat works correctly", {
       "HDD + CDD + HICP_Energy + GValueAdd"
     )
   )
-  module_order <- aggregate.model:::check_config_table(specification)
-  dictionary <- aggregate.model::dict
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- osem::dict
   additional_filters <- character() # no additional filters
-  to_obtain <- aggregate.model:::determine_variables(specification = module_order,
+  to_obtain <- osem:::determine_variables(specification = module_order,
                                    dictionary = dictionary)
 
   # basic functionality
-  a <- aggregate.model:::download_eurostat(to_obtain = to_obtain,
+  a <- osem:::download_eurostat(to_obtain = to_obtain,
                          additional_filters = additional_filters,
                          quiet = FALSE)
   # expected:
@@ -53,14 +53,14 @@ test_that("download_eurostat works correctly", {
 
   # additional filters (e.g. if user uses data that requires a filter we have not encountered before)
   # for illustration, simply filter on "time" variable
-  module_order <- aggregate.model:::check_config_table(specification)
-  dictionary <- aggregate.model::dict
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- osem::dict
   dictionary$time <- lubridate::NA_Date_
   dictionary[, "time"] <- as.Date("2022-10-01")
   additional_filters <- c("time")
-  to_obtain <- aggregate.model:::determine_variables(specification = module_order,
+  to_obtain <- osem:::determine_variables(specification = module_order,
                                                      dictionary = dictionary)
-  a <- aggregate.model:::download_eurostat(to_obtain = to_obtain,
+  a <- osem:::download_eurostat(to_obtain = to_obtain,
                                            additional_filters = additional_filters,
                                            quiet = FALSE)
   # expected as before:
@@ -115,13 +115,13 @@ test_that("download_edgar works correctly", {
       "GValueAdd"
     )
   )
-  module_order <- aggregate.model:::check_config_table(specification)
-  dictionary <- aggregate.model::dict
-  to_obtain <- aggregate.model:::determine_variables(specification = module_order,
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- osem::dict
+  to_obtain <- osem:::determine_variables(specification = module_order,
                                                      dictionary = dictionary)
 
   # basic functionality
-  a <- aggregate.model:::download_edgar(to_obtain = to_obtain, quiet = FALSE)
+  a <- osem:::download_edgar(to_obtain = to_obtain, quiet = FALSE)
   # expected:
   # download 3 datasets from edgar: CO2, CH4, N2O
   # list with two entries: a df and updated "to_obtain" where the edgar vars are found == TRUE
@@ -138,13 +138,14 @@ test_that("download_edgar works correctly", {
   # IPCC code allows to sum across sub-codes
   # e.g. code "1.A" sums up all codes "1.A.xxx"
   # check manually whether this worked correctly for EmiCO2Combustion
-  url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip"
+  #url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip"
+  url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v80_FT2022_GHG/IEA_EDGAR_CO2_m_1970_2022.zip"
   tmp_download <- tempfile(fileext = "zip")
   download.file(url = url, destfile = tmp_download, mode = "wb")
   tmp_extract <- tempdir()
-  unzip(zipfile = tmp_download, files = "CO2_2000_2021.xlsx", exdir = tmp_extract)
-  tmp <- readxl::read_excel(path = file.path(tmp_extract, "CO2_2000_2021.xlsx"),
-                            sheet = "CO2_IPCC2006",
+  unzip(zipfile = tmp_download, files = "IEA_EDGAR_CO2_m_1970_2022.xlsx", exdir = tmp_extract)
+  tmp <- readxl::read_excel(path = file.path(tmp_extract, "IEA_EDGAR_CO2_m_1970_2022.xlsx"),
+                            sheet = "IPCC 2006",
                             skip = 9)
   manual <- tmp %>%
     dplyr::select("Country_code_A3", "Year", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "ipcc_code_2006_for_standard_report") %>%
@@ -230,16 +231,16 @@ test_that("load_locally() works correctly", {
       "GValueAdd"
     )
   )
-  module_order <- aggregate.model:::check_config_table(specification)
-  dictionary <- aggregate.model::dict
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- osem::dict
   # make the edgar emissions data to be loaded locally
   indices <- which(dictionary$model_varname %in% c("EmiCO2Combustion", "EmiN2OTotal", "EmiCH4Livestock"))
   dictionary[indices, "database"] <- "local"
-  to_obtain <- aggregate.model:::determine_variables(specification = module_order,
+  to_obtain <- osem:::determine_variables(specification = module_order,
                                                      dictionary = dictionary)
 
   # basic functionality
-  a <- aggregate.model:::load_locally(to_obtain = to_obtain, inputdata_directory = test_path("testdata", "complete"), quiet = FALSE)
+  a <- osem:::load_locally(to_obtain = to_obtain, inputdata_directory = test_path("testdata", "complete"), quiet = FALSE)
   expect_length(a, 2)
   expect_type(a, "list")
   expect_named(a, c("df", "to_obtain"))
@@ -250,11 +251,11 @@ test_that("load_locally() works correctly", {
   # internally, Moritz has allowed for inputdata_directory to be a data.frame
   # check that this also works as intended
   # reset
-  to_obtain <- aggregate.model:::determine_variables(specification = module_order,
+  to_obtain <- osem:::determine_variables(specification = module_order,
                                                      dictionary = dictionary)
   # create data.frame
   x <- readRDS(test_path("testdata", "complete", "emin2ototal.rds"))
-  a <- aggregate.model:::load_locally(to_obtain = to_obtain, inputdata_directory = x, quiet = FALSE)
+  a <- osem:::load_locally(to_obtain = to_obtain, inputdata_directory = x, quiet = FALSE)
   expect_length(a, 2)
   expect_type(a, "list")
   expect_named(a, c("df", "to_obtain"))
@@ -287,10 +288,10 @@ test_that("load_or_download_variables() works correctly", {
       "FinConsExpHH + GCapitalForm"
     )
   )
-  module_order <- aggregate.model:::check_config_table(specification)
-  dictionary <- aggregate.model::dict
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- osem::dict
 
-  a <- aggregate.model:::load_or_download_variables(
+  a <- osem:::load_or_download_variables(
     specification = module_order,
     dictionary = dictionary,
     primary_source = "download",
@@ -301,7 +302,7 @@ test_that("load_or_download_variables() works correctly", {
   )
 
   # check that obtained all variables
-  to_obtain <- aggregate.model:::determine_variables(specification = module_order,
+  to_obtain <- osem:::determine_variables(specification = module_order,
                                                      dictionary = dictionary)
   expect_setequal(unique(to_obtain$model_varname), unique(a$na_item))
 
@@ -320,10 +321,10 @@ test_that("load_or_download_variables() works correctly", {
       ""
     )
   )
-  module_order <- aggregate.model:::check_config_table(specification)
-  dictionary <- aggregate.model::dict
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- osem::dict
 
-  a <- aggregate.model:::load_or_download_variables(
+  a <- osem:::load_or_download_variables(
     specification = module_order,
     dictionary = dictionary,
     primary_source = "download",
@@ -334,7 +335,7 @@ test_that("load_or_download_variables() works correctly", {
   )
 
   # check that obtained all variables
-  to_obtain <- aggregate.model:::determine_variables(specification = module_order,
+  to_obtain <- osem:::determine_variables(specification = module_order,
                                                      dictionary = dictionary)
   expect_setequal(unique(to_obtain$model_varname), unique(a$na_item))
 
@@ -353,13 +354,13 @@ test_that("load_or_download_variables() works correctly", {
       ""
     )
   )
-  module_order <- aggregate.model:::check_config_table(specification)
-  dictionary <- aggregate.model::dict
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- osem::dict
   # make the edgar emissions data to be loaded locally
   indices <- which(dictionary$model_varname %in% c("EmiCO2Combustion", "EmiN2OTotal", "EmiCH4Livestock", "EmiCO2Industry"))
   dictionary[indices, "database"] <- "local"
 
-  a <- aggregate.model:::load_or_download_variables(
+  a <- osem:::load_or_download_variables(
     specification = module_order,
     dictionary = dictionary,
     primary_source = "download", # even though specify download here, will use local directory b/c dictionary specifies "local"
@@ -368,7 +369,7 @@ test_that("load_or_download_variables() works correctly", {
     quiet = FALSE,
     constrain.to.minimum.sample = TRUE
   )
-  b <- aggregate.model:::load_or_download_variables(
+  b <- osem:::load_or_download_variables(
     specification = module_order,
     dictionary = dictionary,
     primary_source = "local", # do local loading first, should not matter b/c dictionary specifies "local"
@@ -379,7 +380,7 @@ test_that("load_or_download_variables() works correctly", {
   )
 
   # check that obtained all variables
-  to_obtain <- aggregate.model:::determine_variables(specification = module_order,
+  to_obtain <- osem:::determine_variables(specification = module_order,
                                                      dictionary = dictionary)
   expect_setequal(unique(to_obtain$model_varname), unique(a$na_item))
   expect_identical(a, b)
@@ -419,17 +420,17 @@ test_that("load_or_download_variables() works correctly", {
       "EmiCH4Livestock" # this will be database == "local", so should always be local
     )
   )
-  module_order <- aggregate.model:::check_config_table(specification)
-  dictionary <- aggregate.model::dict
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- osem::dict
   # make the "EmiCH4Livestock" to be loaded locally
   indices <- which(dictionary$model_varname == "EmiCH4Livestock")
   dictionary[indices, "database"] <- "local"
-  to_obtain <- aggregate.model:::determine_variables(specification = module_order,
+  to_obtain <- osem:::determine_variables(specification = module_order,
                                                      dictionary = dictionary)
 
   # should see difference in EmiN2OTotal; EmiCH4Livestock should always be from local
   # use incomplete directory so that we know they come from the local data
-  a <- aggregate.model:::load_or_download_variables(
+  a <- osem:::load_or_download_variables(
     specification = module_order,
     dictionary = dictionary,
     primary_source = "download",
@@ -438,7 +439,7 @@ test_that("load_or_download_variables() works correctly", {
     quiet = FALSE,
     constrain.to.minimum.sample = FALSE # don't constrain, so can see clearly
   )
-  b <- aggregate.model:::load_or_download_variables(
+  b <- osem:::load_or_download_variables(
     specification = module_order,
     dictionary = dictionary,
     primary_source = "local",
@@ -455,7 +456,7 @@ test_that("load_or_download_variables() works correctly", {
   expect_identical(a %>% dplyr::filter(na_item == "EmiCH4Livestock") %>% dplyr::pull(time) %>% max(), as.Date("2017-10-01"))
   expect_identical(b %>% dplyr::filter(na_item == "EmiCH4Livestock") %>% dplyr::pull(time) %>% max(), as.Date("2017-10-01"))
   # check that in case a, have full data for EmiN2OTotal but only until time < as.Date("2015-01-01") in case b
-  expect_identical(a %>% dplyr::filter(na_item == "EmiN2OTotal") %>% dplyr::pull(time) %>% max(), as.Date("2021-10-01"))
+  expect_identical(a %>% dplyr::filter(na_item == "EmiN2OTotal") %>% dplyr::pull(time) %>% max(), as.Date("2022-10-01"))
   expect_identical(b %>% dplyr::filter(na_item == "EmiN2OTotal") %>% dplyr::pull(time) %>% max(), as.Date("2014-10-01"))
 
   # test that saving works
@@ -476,10 +477,10 @@ test_that("load_or_download_variables() works correctly", {
       "FinConsExpHH + GCapitalForm"
     )
   )
-  module_order <- aggregate.model:::check_config_table(specification)
-  dictionary <- aggregate.model::dict
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- osem::dict
 
-  a <- aggregate.model:::load_or_download_variables(
+  a <- osem:::load_or_download_variables(
     specification = module_order,
     dictionary = dictionary,
     primary_source = "download",

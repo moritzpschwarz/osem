@@ -21,6 +21,6 @@ config_table_small <- dplyr::tibble(
   dependent = c("JL", "TOTS", "B"),
   independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J")
 )
-aggregate.model:::check_config_table(config_table_small)
+osem:::check_config_table(config_table_small)
 
 }

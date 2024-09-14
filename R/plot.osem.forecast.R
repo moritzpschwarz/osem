@@ -1,14 +1,13 @@
-#' Plot a Forecast Object of the Aggregate Model
+#' Plot a Forecast Object of the OSEM Model
 #'
-#' @param x An object of class aggmod.forecast, which is the output from the forecast_model function.
+#' @param x An object of class osem.forecast, which is the output from the forecast_model function.
 #' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.
 #' @param order.as.run Logical. Should the plots be arranged in the way that the model was run? Default FALSE.
 #' @param interactive Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).
 #' @param first_date Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
 #' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.
 #' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
-#' @param ... Further arguments (currently not in use).
-#'
+#' @param ... Additional arguments passed to the plotting function.
 #' @export
 #'
 #' @examples
@@ -35,10 +34,10 @@
 #' save_to_disk = NULL, present = FALSE)
 #' plot(forecast_model(a))
 #'}
-plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
+plot.osem.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
 
-  if(!isa(x, "aggmod.forecast")){
-    stop("Input object not of type aggmod.forecast. Run 'forecast_model' again and use the output of that function.")
+  if(!isa(x, "osem.forecast")){
+    stop("Input object not of type osem.forecast. Run 'forecast_model' again and use the output of that function.")
   }
 
   if(!is.null(first_date)){if(!is.character(first_date) | !lubridate::is.Date(as.Date(first_date))){stop("When supplying 'first_date', the it must be a character and must be (able to be converted to) a Date.")}}
@@ -58,7 +57,7 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     exclude.exogenous <- TRUE
   }
   if(exclude.exogenous){
-    # determine which variables to exclude, when we are not including exogenous varibles
+    # determine which variables to exclude, when we are not including exogenous variables
     plot_df %>%
       dplyr::distinct(dplyr::across(c("na_item", "fit"))) %>%
       dplyr::mutate(fit = as.logical(.data$fit)) %>%
@@ -144,12 +143,13 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
   all_forecasts_processed %>%
     tidyr::drop_na("time") %>%
     dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
-    dplyr::summarise(max = max(.data$values),
-                     min = min(.data$values),
-                     p975 = stats::quantile(.data$values, probs = 0.975),
-                     p025 = stats::quantile(.data$values, probs = 0.025),
-                     p75 = stats::quantile(.data$values, probs = 0.75),
-                     p25 = stats::quantile(.data$values, probs = 0.25)) -> all_forecasts_processed_q
+    dplyr::summarise(
+      p95 = stats::quantile(.data$values, probs = 0.95),
+      p05 = stats::quantile(.data$values, probs = 0.05),
+      p975 = stats::quantile(.data$values, probs = 0.975),
+      p025 = stats::quantile(.data$values, probs = 0.025),
+      p75 = stats::quantile(.data$values, probs = 0.75),
+      p25 = stats::quantile(.data$values, probs = 0.25)) -> all_forecasts_processed_q
 
 
   # here we get the last fitted value
@@ -170,12 +170,10 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     dplyr::select(-"var") %>%
     dplyr::mutate(fit = "forecast") -> last_hist_value
 
-
-
   last_fitted_value %>%
     dplyr::group_by(.data$time, .data$na_item) %>%
-    dplyr::summarise(max = .data$values,
-                     min = .data$values,
+    dplyr::summarise(p95 = .data$values,
+                     p05 = .data$values,
                      p975 = .data$values,
                      p025 = .data$values,
                      p75 =  .data$values,
@@ -213,11 +211,10 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}}
 
 
-
   plotting_df_ready %>%
     ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
 
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$min, x = .data$time, ymax = .data$max, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
+    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p05, x = .data$time, ymax = .data$p95, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
     ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
     ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = .data$fit), linewidth = 0.1, alpha = 0.5, inherit.aes = FALSE, na.rm = TRUE) +
 
@@ -238,9 +235,21 @@ plot.aggmod.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FAL
                    panel.grid.minor.x = ggplot2::element_blank(),
                    panel.grid.minor.y = ggplot2::element_blank()) -> p
 
-
   if(return.data){
-    return(plotting_df_ready %>% dplyr::bind_rows(exog_forecasts) %>% dplyr::select(-"var"))
+    # prepare a nice dataset to be spit out
+    plotting_df_ready %>%
+      {if(!exclude.exogenous){dplyr::bind_rows(.,exog_forecasts %>%
+                                                 dplyr::mutate(fit = "Exogenous Forecast"))} else {.}} %>%
+      dplyr::select(-"var") %>%
+      dplyr::full_join(all_forecasts_processed_q %>%
+                         dplyr::select(-"fit"), by = dplyr::join_by("time", "na_item")) %>%
+      dplyr::mutate(fit = dplyr::case_when(fit == "forecast" ~ "Endogenous Forecast",
+                                           fit == "TRUE" ~ "Insample Fit",
+                                           fit == "FALSE" ~ "Observation",
+                                           TRUE ~ fit)) %>%
+      dplyr::rename(type = "fit") %>%
+      dplyr::arrange(dplyr::desc(.data$time), .data$na_item, .data$type) %>%
+      return()
   } else {
     if(interactive){
       plotly::ggplotly(p)
