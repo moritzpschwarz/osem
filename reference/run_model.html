@@ -48,8 +48,6 @@
 <span>  inputdata_directory <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">getwd</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"/data/raw"</span><span class="op">)</span>,</span>
 <span>  primary_source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"download"</span>, <span class="st">"local"</span><span class="op">)</span>,</span>
 <span>  save_to_disk <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  present <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  use_logs <span class="op">=</span> <span class="st">"both"</span>,</span>
 <span>  trend <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  ardl_or_ecm <span class="op">=</span> <span class="st">"ardl"</span>,</span>
@@ -60,7 +58,10 @@
 <span>  max.block.size <span class="op">=</span> <span class="fl">20</span>,</span>
 <span>  gets_selection <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  selection.tpval <span class="op">=</span> <span class="fl">0.01</span>,</span>
-<span>  constrain.to.minimum.sample <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  constrain.to.minimum.sample <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  present <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  plot <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -97,17 +98,6 @@ stored. Can be <code>NULL</code> if <code>download == TRUE</code>.</p></dd>
 <dt id="arg-save-to-disk">save_to_disk<a class="anchor" aria-label="anchor" href="#arg-save-to-disk"></a></dt>
 <dd><p>A path to a directory where the final dataset will be
 saved, including the file name and ending. Not saved when <code>NULL</code>.</p></dd>
-
-
-<dt id="arg-present">present<a class="anchor" aria-label="anchor" href="#arg-present"></a></dt>
-<dd><p>A logical value whether the final OSEM model output
-should be presented or not.</p></dd>
-
-
-<dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
-<dd><p>Logical with default = FALSE. Should messages be displayed?
-These messages are intended to give more information about the estimation
-and data retrieval process.</p></dd>
 
 
 <dt id="arg-use-logs">use_logs<a class="anchor" aria-label="anchor" href="#arg-use-logs"></a></dt>
@@ -153,6 +143,21 @@ and data retrieval process.</p></dd>
 <dt id="arg-constrain-to-minimum-sample">constrain.to.minimum.sample<a class="anchor" aria-label="anchor" href="#arg-constrain-to-minimum-sample"></a></dt>
 <dd><p>Logical. Should all data series be
 constrained to the minimum data series? Default is <code>TRUE</code>.</p></dd>
+
+
+<dt id="arg-present">present<a class="anchor" aria-label="anchor" href="#arg-present"></a></dt>
+<dd><p>A logical value whether the final OSEM model output
+should be presented or not.</p></dd>
+
+
+<dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
+<dd><p>Logical with default = FALSE. Should messages be displayed?
+These messages are intended to give more information about the estimation
+and data retrieval process.</p></dd>
+
+
+<dt id="arg-plot">plot<a class="anchor" aria-label="anchor" href="#arg-plot"></a></dt>
+<dd><p>Logical with default = TRUE. Should plots be displayed?</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -202,16 +207,17 @@ data for the OSEM model and the fitted values of each module.</p></dd>
 <span class="r-in"><span>inputdata_directory <span class="op">=</span> <span class="cn">NULL</span>, primary_source <span class="op">=</span> <span class="st">"download"</span>,</span></span>
 <span class="r-in"><span>save_to_disk <span class="op">=</span> <span class="cn">NULL</span>, present <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Dataset query already saved in cache_list.json...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Reading cache file /tmp/Rtmp9VmTF3/eurostat/a48b692dcc3fb2781f39b235c4498221.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table  namq_10_a10  read from cache file:  /tmp/Rtmp9VmTF3/eurostat/a48b692dcc3fb2781f39b235c4498221.rds</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reading cache file /tmp/Rtmp9cGmhb/eurostat/fe85259df4c39ab17cb0730e7acc2839.rds</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Table  namq_10_a10  read from cache file:  /tmp/Rtmp9cGmhb/eurostat/fe85259df4c39ab17cb0730e7acc2839.rds</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Dataset query already saved in cache_list.json...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Reading cache file /tmp/Rtmp9VmTF3/eurostat/c567619dc239cdb6c8552d73b75636ff.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table  namq_10_gdp  read from cache file:  /tmp/Rtmp9VmTF3/eurostat/c567619dc239cdb6c8552d73b75636ff.rds</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reading cache file /tmp/Rtmp9cGmhb/eurostat/e6ecd38ef874f4f19a21de22a442f02b.rds</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Table  namq_10_gdp  read from cache file:  /tmp/Rtmp9cGmhb/eurostat/e6ecd38ef874f4f19a21de22a442f02b.rds</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> --- Estimation begins ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Estimating Import = FinConsExpHH + GCapitalForm </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Constructing TOTS = GValueAdd + Import </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Constructing StatDiscrep = TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export </span>
+<span class="r-plt img"><img src="run_model-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
