@@ -40,7 +40,6 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
     #get the dictionary coordinates that use the following dataset_id
     indices <- which(to_obtain$database == "statcan" & to_obtain$dataset_id == id)
 
-    #browser();
     #look through the rows of the dictionary based on the coordinates for the id
     for (idx in indices) {
       subset_of_data <- df
@@ -53,7 +52,6 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
         if (filtername %in% names(subset_of_data)) {
 
           subset_of_data <- subset_of_data %>% dplyr::filter(.,.[[filtername]] == as.name(to_obtain[idx,filtername]))
-          #print(head(subset_of_data,2))
         }
       }
 
@@ -64,8 +62,6 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
         to_obtain[idx, "found"] <- TRUE
       }
 
-
-
       subset_of_data <- subset_of_data %>% dplyr::mutate(na_item = to_obtain$model_varname[idx])
         # dplyr::rename_with(.cols = dplyr::all_of(to_obtain$var_col[idx]), .fn = ~paste0("na_item")) %>%
 
@@ -74,7 +70,6 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
       #   dplyr::rename_with(.cols = dplyr::all_of(varcolname), .fn = ~paste0("na_item")) %>%
       #   dplyr::mutate(na_item = to_obtain$model_varname[j])
 
-      #browser()
       # if have monthly data, need to aggregate to quarterly
       if (to_obtain$freq[idx] == "m") {
         # need to aggregate across all filters
@@ -125,8 +120,6 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
 
 
       df_statcan <- dplyr::bind_rows(df_statcan, subset_of_data)
-      #write.csv(df_statcan, "/Users/geoffreyharper/Desktop/statcan_data.csv", row.names=FALSE)
-      #print(head(subset_of_data,2))
     }
   }
 

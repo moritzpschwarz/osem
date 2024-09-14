@@ -10,6 +10,7 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
+  warning = FALSE,
   comment = "#>",
   fig.width = 7,
   dpi = 300
@@ -53,3 +54,25 @@ print(specification)
 ```{r dictionary}
 dictionary <- aggregate.model::statcan_dict
 ```
+
+The statcan dictionary contains a different set of variables than found within eurostat. Due to the way statistics Canada's R package pulls data we need to include all the same headers found within the eurostat dictionary in the statcan dictionary to help with data consistency.
+
+```{r dictionary pt.2}
+dictionary <- aggregate.model::statcan_dict
+print(colnames(dictionary))
+print(colnames(aggregate.model::dict))
+```
+
+##Preform modelling
+Now let's model the equations we have specified and perform some forecasting.
+
+```{r, forecast-plot, fig.width=3, fig.height=3}
+model <- run_model(specification = specification, dictionary = dictionary, primary_source = "download",quiet = TRUE)
+forecast <- forecast_model(model = model,
+                           exog_predictions = NULL,
+                           plot.forecast = FALSE)
+
+plot(forecast)
+
+```
+
