@@ -30,7 +30,9 @@ print.osem.forecast <- function(x, plot = TRUE, full_names = FALSE, ...){
 
   dplyr::bind_rows(x$forecast$central.estimate) %>%
     tidyr::pivot_longer(-"time") %>%
-    tidyr::pivot_wider(id_cols = "time") -> fcast_table
+    tidyr::drop_na("value") %>%
+    tidyr::pivot_wider(id_cols = "time") %>%
+    dplyr::rename("Date" = "time") -> fcast_table
 
 
   cat(format(fcast_table)[-3L], sep = "\n")
