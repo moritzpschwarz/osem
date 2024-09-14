@@ -82,7 +82,6 @@ load_or_download_variables <- function(specification,
   # data input
   if (primary_source == "download") {
 
-
     # steps:
     # 1) download from eurostat
     # 2) download from edgar
