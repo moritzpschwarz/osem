@@ -22,7 +22,6 @@ download_imf <- function(to_obtain, column_filters, quiet) {
   #get the eurodict colnames
   euro_dict = colnames(aggregate.model::dict)
 
-  # browser()
   #pulls dataframe of unique database ids
   dataset_id <- to_obtain %>% dplyr::filter(.data$database == "imf" &
                                               .data$found == FALSE) %>%

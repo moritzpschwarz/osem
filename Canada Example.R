@@ -57,7 +57,7 @@ to_obtain <- determine_variables(specification=spec,dictionary=dictionary)
 
 model_result <- run_model(specification = spec, dictionary = dict_statCan, primary_source = "download")
 browser()
-model_forecast <- forecast_model(model_result, n.ahead = 10, exog_fill_method = "AR", plot.forecast = FALSE)
+model_forecast <- forecast_model(model_result, n.ahead = 10, exog_fill_method = "last", plot.forecast = FALSE)
 browser()
 plot <- plot.aggmod.forecast(model_forecast,order.as.run = TRUE)
 
