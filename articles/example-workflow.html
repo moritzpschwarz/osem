@@ -260,8 +260,10 @@ object.</p>
 <span><span class="co">#&gt; Estimating Import = FinConsExpHH + GCapitalForm </span></span>
 <span><span class="co">#&gt; Estimating EmiCO2Combustion = HDD + HICP_Energy + GValueAdd </span></span>
 <span><span class="co">#&gt; Constructing TOTS = GValueAdd + Import </span></span>
-<span><span class="co">#&gt; Constructing StatDiscrep = TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Constructing StatDiscrep = TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export</span></span></code></pre></div>
+<p><img src="example-workflow_files/figure-html/run-model-1.png" width="700"></p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "osem"</span></span></code></pre></div>
 <p>We did not <code>quiet</code> the output, so we get some information
 about the estimation.</p>
@@ -291,7 +293,7 @@ datasets, independent and dependent variables, model arguments, and the
 model itself as an <code>"isat"</code> object.</p>
 <p>For example, taking a closer look at the estimated module for carbon
 emissions from combustion activities:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># extract the isat model object</span></span>
 <span><span class="va">co2module</span> <span class="op">&lt;-</span> <span class="va">model</span><span class="op">$</span><span class="va">module_collection</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">dependent</span> <span class="op">==</span> <span class="st">"EmiCO2Combustion"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
@@ -302,7 +304,7 @@ emissions from combustion activities:</p>
 <span><span class="co"># inspect the estimated equation</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">co2module</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: Fri Sep 13 08:21:24 2024 </span></span>
+<span><span class="co">#&gt; Date: Sat Sep 14 15:28:29 2024 </span></span>
 <span><span class="co">#&gt; Dependent var.: ln.EmiCO2Combustion </span></span>
 <span><span class="co">#&gt; Method: Ordinary Least Squares (OLS)</span></span>
 <span><span class="co">#&gt; Variance-Covariance: Ordinary </span></span>
@@ -346,7 +348,7 @@ conditional heteroskedasticity pass.</p>
 </h3>
 <p>We can show the relationship between the different modules using the
 <code><a href="../reference/network.html">network()</a></code> function.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/network.html">network</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
 <p><img src="example-workflow_files/figure-html/network-1.png" width="672">
 Each node represents a module and the different colours represent
@@ -368,10 +370,10 @@ modules. The user can either provide future values for the exogenous
 variables (e.g. corresponding to certain scenario assumptions) or use
 automatic AR models to forecast future values of the exogenous
 variables.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">forecast</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/forecast_model.html">forecast_model</a></span><span class="op">(</span>model <span class="op">=</span> <span class="va">model</span>,</span>
 <span>                           exog_predictions <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>                           plot.forecast <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>                           plot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; No exogenous values provided. Model will forecast the exogenous values with an AR4 process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').</span></span>
 <span><span class="co">#&gt; Alternative is exog_fill_method = 'last'.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">forecast</span><span class="op">)</span></span>
@@ -380,7 +382,7 @@ variables.</p>
 informs us that AR(4) processes were used to project their paths. The
 function returns an object of class <code>"osem.forecast"</code>, which
 can also be plotted.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forecast</span><span class="op">)</span></span></code></pre></div>
 <p><img src="example-workflow_files/figure-html/forecast-plot-1.png" width="672"></p>
 </div>
@@ -391,7 +393,7 @@ can also be plotted.</p>
 module, we can use the command <code><a href="../reference/diagnostics_model.html">diagnostics_model()</a></code>. This
 avoids having to look at all <code>"isat"</code> model objects
 manually.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/diagnostics_model.html">diagnostics_model</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 8</span></span></span>
 <span><span class="co">#&gt;   module     AR  ARCH `Super Exogeneity`   IIS   SIS     n `Share of Indicators`</span></span>
@@ -413,7 +415,7 @@ of the observations.</p>
 OSEM model results in a Shiny app, which can be opened using the
 <code><a href="../reference/present_model.html">present_model()</a></code> command. The following code snippet is not
 executed:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/present_model.html">present_model</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
