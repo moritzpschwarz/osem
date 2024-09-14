@@ -1,4 +1,8 @@
 # creates a dictionary to translate variables names from model to other databases
+#' statcan_dict object
+#'
+#' This is an exported object.
+#' @export
 
 statcan_dict <- tibble::tribble(
   ~model_varname, ~full_name, ~database, ~variable_code, ~dataset_id, ~var_col ,~freq, ~GEO, ~geo, ~unit, ~s_adj, ~`Seasonal adjustment`, ~nace_r2, ~`North American Industry Classification System (NAICS)`, ~`North American Product Classification System (NAPCS)`,~Prices, ~`Type of fuel`, ~`Products and product groups`,~found, ~ipcc_sector, ~cpa2_1, ~siec,
