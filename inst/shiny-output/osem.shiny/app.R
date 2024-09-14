@@ -49,16 +49,16 @@ server <- function(input, output) {
   # })
 
 
-  aggmod <- reactive({
+  osem <- reactive({
     if (is.null(input$upload)) {
-      getShinyOption("aggmodel_direct")
+      getShinyOption("osem_direct")
     } else {
       readRDS(file = input$upload$datapath)
     }
   })
 
   wide <- reactive({
-    aggmod()$full_data %>%
+    osem()$full_data %>%
       tidyr::pivot_wider(names_from = na_item, values_from = values)
   })
 
@@ -74,7 +74,7 @@ server <- function(input, output) {
   })
 
   eq <- reactive({
-    modulesprint <- aggmod()$module_collection %>%
+    modulesprint <- osem()$module_collection %>%
       filter(type == "n")
     wholeprint <- ""
     for (i in 1:NROW(modulesprint)) {
@@ -85,7 +85,7 @@ server <- function(input, output) {
 
   # get_file_or_default <- reactive({
   #   if (is.null(input$upload)) {
-  #     getShinyOption("aggmodel_direct ")
+  #     getShinyOption("osem_direct ")
   #   } else {
   #     readRDS(file = input$upload$datapath)
   #   }
@@ -103,7 +103,7 @@ server <- function(input, output) {
   output$test <- renderText(input$range_plot)
 
   output$files <- renderTable(input$upload)
-  output$spec <- DT::renderDT(aggmod()$module_order)
+  output$spec <- DT::renderDT(osem()$module_order)
   output$plots <- renderPlot({
     sel() %>%
       filter(time >= as.Date(input$range_plot[1]) & time <= as.Date(input$range_plot[2])) %>%
@@ -117,7 +117,7 @@ server <- function(input, output) {
   output$equations <- renderPrint(eq(), width = 1000)
   output$diag <- DT::renderDT({
 
-    diagnostics_model(aggmod()) %>%
+    diagnostics_model(osem()) %>%
       DT::datatable() %>%
       DT::formatStyle(columns = c("AR", "ARCH"),
                       backgroundColor = DT::styleInterval(cuts = c(0.01, 0.05), values = c("lightcoral", "lightsalmon", "lightgreen"))) %>%
@@ -126,8 +126,8 @@ server <- function(input, output) {
 
   })
   output$network <- renderPlot({
-    req(aggmod())
-    network(aggmod())
+    req(osem())
+    network(osem())
   })
 
 }

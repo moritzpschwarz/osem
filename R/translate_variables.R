@@ -23,7 +23,7 @@
 translate_variables <- function(specification, dictionary = NULL) {
 
   if (is.null(dictionary)) {
-    dictionary <- aggregate.model::dict
+    dictionary <- osem::dict
   }
 
   # vectors of dependent and independent parts
@@ -46,7 +46,7 @@ translate_variables <- function(specification, dictionary = NULL) {
 
   # replace independent variable names
   for (i in seq_along(indep)) {
-    #if(i == 8){browser()}
+
     # each element of character vector may contain formula, e.g. "A + B", must split
     vars <- strsplits(
       indep[i],

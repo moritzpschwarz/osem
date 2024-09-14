@@ -38,10 +38,10 @@ load_or_download_variables <- function(specification,
   primary_source <- match.arg(primary_source)
   # user dictionary or default (TODO: write a function that validates whether user dict is ok)
   if (is.null(dictionary)) {
-    dictionary <- aggregate.model::dict
+    dictionary <- osem::dict
   }
   # determine whether user has added additional filters
-  default_cols <- colnames(aggregate.model::dict)
+  default_cols <- colnames(osem::dict)
   actual_cols <- colnames(dictionary)
   additional_filters <- setdiff(actual_cols, default_cols)
 
@@ -66,7 +66,7 @@ load_or_download_variables <- function(specification,
   # sources
   sources <- unique(to_obtain$database)
   if (length(setdiff(sources, c("eurostat", "edgar", "local"))) >= 1L) {
-    stop("Currently, only allow data bases 'eurostat', 'edgar', or 'local' files.")
+    stop("Currently, only allow databases 'eurostat', 'edgar', or 'local' files.")
   }
   if ("edgar" %in% sources) {
     if (!requireNamespace("readxl", quietly = TRUE)) {
@@ -139,6 +139,7 @@ load_or_download_variables <- function(specification,
       to_obtain <- step2$to_obtain
       full <- dplyr::bind_rows(full, step2$df)
     }
+
     not_loaded_edgar <- which(to_obtain$database == "edgar" & to_obtain$found == FALSE)
     if (length(not_loaded_edgar) > 0L) {
       step3 <- download_edgar(to_obtain = to_obtain, quiet = quiet)
@@ -244,13 +245,23 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
   # loop through required datasets
   for (i in seq_along(eurostat_dataset_ids)) {
 
+    # check the right frequency for the dataset
+    # TODO write unit tests for this
+    to_obtain %>%
+      dplyr::filter(.data$database == "eurostat" & .data$found == FALSE) %>%
+      dplyr::filter(.data$dataset_id == eurostat_dataset_ids[i]) %>%
+      dplyr::pull(.data$freq) %>%
+      unique() -> freq_dataset
+
+    if(length(freq_dataset)>1){stop("You are downloading the same dataset in two different frequencies. Check your dictionary and there check that all 'freq' are equal for each individual 'dataset_id'.")}
+
     # download dataset
     if(quiet){
-      suppressWarnings(suppressMessages(tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i]) %>%
+      suppressWarnings(suppressMessages(tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i], select_time = toupper(freq_dataset)) %>%
                                           dplyr::rename(time = "TIME_PERIOD") %>%
                                           dplyr::select(-dplyr::any_of("freq"))))
     } else {
-      tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i]) %>%
+      tmp <- eurostat::get_eurostat(id = eurostat_dataset_ids[i], select_time = toupper(freq_dataset)) %>%
         dplyr::rename(time = "TIME_PERIOD") %>%
         dplyr::select(-dplyr::any_of("freq"))
     }
@@ -272,12 +283,12 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
         {if(dplyr::select(., dplyr::any_of("ipcc_sector")) %>% ncol == 1){dplyr::filter(., .data$ipcc_sector == to_obtain$ipcc_sector[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(., .data$cpa2_1 == to_obtain$cpa2_1[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("siec")) %>% ncol == 1){dplyr::filter(., .data$siec == to_obtain$siec[j])}else{.}}
-      # if user specified additional filters, apply them now
-      for (k in seq_along(additional_filters)) {
-        filtername <- additional_filters[k]
-        sub <- sub %>%
-          {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[j, filtername])}else{.}}
-      }
+        # if user specified additional filters, apply them now
+        for (k in seq_along(additional_filters)) {
+          filtername <- additional_filters[k]
+          sub <- sub %>%
+            {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[j, filtername])}else{.}}
+        }
       # if after filtering "sub" is not empty, we found the variable and can mark it as such
       if (NROW(sub) == 0L) {
         stop(paste0("For model variable '", to_obtain$model_varname[j], "', the dataset is empty after applying filter. Check whether the dictionary and the data source for changes and errors (i.e. name of units, etc.)"))
@@ -310,7 +321,10 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
       }
       # ensure column "time" is a Date variable (Moritz had this)
       sub <- sub %>%
-        dplyr::mutate(time = as.Date(.data$time))
+        dplyr::mutate(time = as.Date(.data$time)) %>%
+        # added by MORITZ on 10.05.2024 because lots of filters would add new filters
+        # those would then be kept throughout the model
+        dplyr::select("geo","time", "na_item", "values")
       # add subset to df_eurostat, final dataset
       df_eurostat <- dplyr::bind_rows(df_eurostat, sub)
     } # end for variables
@@ -368,9 +382,15 @@ download_edgar <- function(to_obtain, quiet) {
     zipfilename <- stringr::str_extract(string = edgar_dataset_ids[i], pattern = "(CO2|CH4|N2O)(.)+(\\.zip$)")
     # extract GHG name
     ghg <- stringr::str_extract(string = zipfilename, pattern = "(CO2|CH4|N2O)")
+
     # assume that will continue to be able to remove "_m" and replace ".zip" by ".xlsx
-    filename <- stringr::str_remove(string = zipfilename, pattern = "_m")
+    # commented out by Moritz 13.03.2024 due to update of file convention by EDGAR for v8
+    #filename <- stringr::str_remove(string = zipfilename, pattern = "_m")
+    # this now matches everything from the last /
+    filename <- stringr::str_extract(string = edgar_dataset_ids[i], pattern = "([^/]+$)")
     filename <- stringr::str_replace(string = filename, pattern = ".zip", replacement = ".xlsx")
+    filename <- stringr::str_replace(string = filename, pattern = "b.xlsx", replacement = ".xlsx")
+
     # unzip the .xlsx file into temporary directory
     utils::unzip(zipfile = tmp_download, files = filename, exdir = tmp_extract)
 
@@ -443,7 +463,8 @@ download_edgar <- function(to_obtain, quiet) {
 
     if (length(indices_sector) > 0L) {
       tmp <- readxl::read_excel(path = file.path(tmp_extract, filename),
-                                sheet = paste0(ghg, "_IPCC2006"),
+                                #sheet = paste0(ghg, "_IPCC2006"),
+                                sheet = "IPCC 2006",
                                 skip = 9)
       # quick sanity check
       stopifnot(unique(tmp$Substance) == ghg)

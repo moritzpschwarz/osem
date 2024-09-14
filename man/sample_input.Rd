@@ -3,13 +3,13 @@
 \docType{data}
 \name{sample_input}
 \alias{sample_input}
-\title{Sample Input for the Aggregate Model}
+\title{Sample Input for the OSEM Model}
 \format{
 A tibble with 1200 rows and 9 variables:
 \describe{
 \item{unit}{Unit according to Eurostat.}
 \item{s_adj}{Indication whether variable was seasonally adjusted or not. SCA refers to seasonal and calendar adjusted data.}
-\item{na_item}{Variable Name according to the aggregate.model dictionary.}
+\item{na_item}{Variable Name according to the osem dictionary.}
 \item{geo}{Geographic location for which the data was downloaded.}
 \item{time}{The date of the observation.}
 \item{nace_r2}{If applicable, the NACE2 sector code.}
@@ -18,13 +18,13 @@ A tibble with 1200 rows and 9 variables:
 }
 }
 \source{
-Own compilation, data from \url{https://ec.europa.eu/eurostat}, downloaded with aggregate.model::run_model()
+Own compilation, data from \url{https://ec.europa.eu/eurostat}, downloaded with osem::run_model()
 }
 \usage{
 sample_input
 }
 \description{
-A dataset containing input data that has been downloaded using the functions in the aggregate.model package.
+A dataset containing input data that has been downloaded using the functions in the osem package.
 This dataset is supposed to be used for testing and to enable out-of-the-box estimation.
 }
 \keyword{datasets}

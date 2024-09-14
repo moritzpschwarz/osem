@@ -2,7 +2,7 @@
 % Please edit documentation in R/run_model.R
 \name{run_model}
 \alias{run_model}
-\title{Runs the aggregate model}
+\title{Runs the OSEM model}
 \usage{
 run_model(
   specification,
@@ -12,7 +12,7 @@ run_model(
   save_to_disk = NULL,
   present = FALSE,
   quiet = FALSE,
-  use_logs = c("both", "y", "x"),
+  use_logs = "both",
   trend = TRUE,
   ardl_or_ecm = "ardl",
   max.ar = 4,
@@ -47,14 +47,14 @@ stored. Can be \code{NULL} if \code{download == TRUE}.}
 \item{save_to_disk}{A path to a directory where the final dataset will be
 saved, including the file name and ending. Not saved when \code{NULL}.}
 
-\item{present}{A logical value whether the final aggregate model output
-should be presented or not. NOTE: not implemented yet.}
+\item{present}{A logical value whether the final OSEM model output
+should be presented or not.}
 
 \item{quiet}{Logical with default = FALSE. Should messages be displayed?
 These messages are intended to give more information about the estimation
 and data retrieval process.}
 
-\item{use_logs}{To decide whether to log any variables. Must be one of "both", "y", or "x". Default is "both".}
+\item{use_logs}{To decide whether to log any variables. Must be one of 'both', 'y', 'x', or 'none'. Default is 'both'.}
 
 \item{trend}{Logical. Should a trend be added? Default is TRUE.}
 
@@ -64,7 +64,7 @@ and data retrieval process.}
 
 \item{max.dl}{Integer. The maximum number of lags to use for the independent variables (the distributed lags).}
 
-\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
+\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needs a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
 
 \item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
 
@@ -78,10 +78,10 @@ and data retrieval process.}
 constrained to the minimum data series? Default is \code{TRUE}.}
 }
 \value{
-An object of class \link[=new_aggmod]{aggmod}, which is a named list
+An object of class \link[=new_osem]{osem}, which is a named list
 with four elements:
 \describe{
-\item{args}{A named list storing the user arguments for the aggregate
+\item{args}{A named list storing the user arguments for the OSEM
 model.}
 \item{module_order_eurostatvars}{The original specification with translated
 variable names to Eurostat codes and arranged in order of estimation.}
@@ -89,11 +89,11 @@ variable names to Eurostat codes and arranged in order of estimation.}
 that store the model object for each module and the dataset used for
 estimation, including fitted values for the dependent variable.}
 \item{full_data}{A tibble or data.frame containing the complete original
-data for the aggregate model and the fitted values of each module.}
+data for the OSEM model and the fitted values of each module.}
 }
 }
 \description{
-Runs the aggregate model according to the given specification of modules.
+Runs the OSEM model according to the given specification of modules.
 }
 \examples{
 spec <- dplyr::tibble(

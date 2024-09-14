@@ -4,9 +4,8 @@
 #' endogenously modelled or endogenous by identity/definition.
 #'
 #' @param module A row of the specification table.
-#' @param data A tibble or data.frame containing the full data for the aggregate
+#' @param data A tibble or data.frame containing the full data for the OSEM
 #'   model.
-#' @param use_logs Character vector. Either "both", "x", or "y" to decide whether to use logs.
 #' @inheritParams identify_module_data
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
@@ -36,7 +35,8 @@ run_module <- function(
     saturation.tpval = 0.01,
     max.block.size = 20,
     gets_selection = TRUE,
-    selection.tpval = 0.01) {
+    selection.tpval = 0.01,
+    quiet) {
 
   raw_data <- identify_module_data(module, classification, data)
 
@@ -77,7 +77,8 @@ run_module <- function(
                                         saturation.tpval = saturation.tpval,
                                         max.block.size = max.block.size,
                                         gets_selection = gets_selection,
-                                        selection.tpval = selection.tpval)
+                                        selection.tpval = selection.tpval,
+                                        quiet = quiet)
 
     moduledata <- add_to_original_data(clean_data = clean_df,
                                        isat_object = estimated_module$best_model,
@@ -88,7 +89,8 @@ run_module <- function(
                 data = moduledata,
                 args = estimated_module$args,
                 indep = gsub(" ", "", strsplits(module$independent, splits = c("\\+", "\\-"))),
-                dep = module$dependent)
+                dep = module$dependent,
+                diagnostics = list(super.exogeneity = estimated_module$superex_test))
 
   } # end "n"
 

@@ -4,12 +4,14 @@
 \alias{nowcasting}
 \title{Nowcast missing data for forecasting}
 \usage{
-nowcasting(model, exog_df_ready)
+nowcasting(model, exog_df_ready, frequency)
 }
 \arguments{
-\item{model}{An aggregate model object of class 'aggmod'.}
+\item{model}{A model object of class 'osem'.}
 
 \item{exog_df_ready}{The outcome of the \link[=forecast_exogenous_values]{forecast_exogenous_values} function, as prepared by the \link[=forecast_model]{forecast_model} function..}
+
+\item{frequency}{Character string that indicates the frequency of the model. Must be compatible with the 'by' argument in \code{seq.Date()}.}
 }
 \value{
 Returns a list with two full model objects. One contains the original model and one contains the nowcasted model.

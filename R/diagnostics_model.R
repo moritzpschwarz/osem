@@ -1,6 +1,6 @@
-#' Creates a Summary of the Diagnostics of the Aggregate Model
+#' Creates a Summary of the Diagnostics of the OSEM Model
 #'
-#' @param model An aggregate model of class 'aggmod'
+#' @param model An model of class 'osem'
 #'
 #' @return Returns a data.frame with the p-values of the AR and ARCH
 #'   misspecification tests and the number of impulse and step indicators
@@ -16,17 +16,22 @@ diagnostics_model <- function(model) {
   # give names to the elements in the list (b/c internally might always say dep var = "y")
   names(models) <- model$module_collection$dependent
 
+  # now do the same for super exogeneity tests
+  other.test.objects <- model$module_collection$diagnostics
+  names(other.test.objects) <- model$module_collection$dependent
+
   # get rid of NULL elements
   models <- models[!sapply(models,is.null)]
 
   # diagnostics
-  diag <- data.frame(module = names(models),
-                     AR = NA,
-                     ARCH = NA,
-                     IIS = NA,
-                     SIS = NA,
-                     n = NA,
-                     indicator_share = NA)
+  diag <- dplyr::tibble(module = names(models),
+                        AR = NA,
+                        ARCH = NA,
+                        `Super Exogeneity` = NA,
+                        IIS = NA,
+                        SIS = NA,
+                        n = NA,
+                        `Share of Indicators` = NA)
 
   # fill in the values
   for (i in 1:length(models)) {
@@ -65,7 +70,15 @@ diagnostics_model <- function(model) {
     diag[i, "n"] <- module$n
 
     # record share of indicators retained
-    diag[i, "indicator_share"] <- (diag[i, "IIS"] + diag[i, "SIS"]) / diag[i, "n"]
+    diag[i, "Share of Indicators"] <- (diag[i, "IIS"] + diag[i, "SIS"]) / diag[i, "n"]
+
+    # record other test objects (currently super.exogeneity, in the future cointegration)
+    if(is.list(other.test.objects[[i]]$super.exogeneity)){
+      diag[i, "Super Exogeneity"] <- other.test.objects[[i]]$super.exogeneity$p.value
+    } else {
+      diag[i, "Super Exogeneity"] <- NA
+    }
+
 
   } # end for
 

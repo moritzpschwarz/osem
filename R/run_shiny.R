@@ -1,7 +1,7 @@
-#' Creates and runs the Shiny App "shinyaggmodel"
+#' Creates and runs the OSEM Shiny App
 #'
 #' Opens a window for the user to interact with the app. The user can upload
-#' an \link[=new_aggmod]{aggmod} object returned by \code{\link{run_model}} and
+#' an \link[=new_osem]{osem} object returned by \code{\link{run_model}} and
 #' produce graphical and tabular output.
 #' @param model The model object that is passed by the 'present_model()' function.
 #'
@@ -15,10 +15,10 @@ run_shiny <- function(model = NULL) {
     stop("Shiny App requires package 'shiny'.")
   }
 
-  appDir <- system.file("shiny-output", "shinyaggmodel", package = "aggregate.model")
+  appDir <- system.file("shiny-output", "osem.shiny", package = "osem")
 
   if (appDir == "") {
-    stop("Could not find example directory. Try re-installing `aggregate.model`.", call. = FALSE)
+    stop("Could not find example directory. Try re-installing `osem`.", call. = FALSE)
   }
 
   # if(!is.null(model)){
@@ -28,7 +28,7 @@ run_shiny <- function(model = NULL) {
   # }
 
 
-  shiny::shinyOptions(aggmodel_direct = model)
-  source(system.file("shiny-output", "shinyaggmodel/app.R", package = "aggregate.model"))$value
+  shiny::shinyOptions(osemel_direct = model)
+  source(system.file("shiny-output", "shinyosemel/app.R", package = "osem"))$value
 
 }

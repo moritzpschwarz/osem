@@ -17,7 +17,7 @@ forecast_setup_estimated_relationships(
 )
 }
 \arguments{
-\item{model}{An aggregate model object of class 'aggmod'.}
+\item{model}{A model object of class 'osem'.}
 
 \item{i}{Current module that is being cycled through}
 

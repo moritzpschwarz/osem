@@ -6,10 +6,9 @@
 \usage{
 estimate_module(
   clean_data,
-  dep_var_basename = "imports_of_goods_and_services",
-  x_vars_basename = c("gross_capital_formation",
-    "household_and_npish_final_consumption_expenditure"),
-  use_logs = c("both", "y", "x"),
+  dep_var_basename,
+  x_vars_basename,
+  use_logs = "both",
   trend = TRUE,
   ardl_or_ecm = "ardl",
   max.ar = 4,
@@ -18,7 +17,8 @@ estimate_module(
   saturation.tpval = 0.01,
   max.block.size = 20,
   gets_selection = TRUE,
-  selection.tpval = 0.01
+  selection.tpval = 0.01,
+  quiet = FALSE
 )
 }
 \arguments{
@@ -28,7 +28,7 @@ estimate_module(
 
 \item{x_vars_basename}{A character vector of the name(s) of the independent variable(s) as contained in clean_data() in a level form (i.e. no ln or D in front of the name).}
 
-\item{use_logs}{To decide whether to log any variables. Must be one of "both", "y", or "x". Default is "both".}
+\item{use_logs}{To decide whether to log any variables. Must be one of 'both', 'y', 'x', or 'none'. Default is 'both'.}
 
 \item{trend}{Logical. To determine whether a trend should be added. Default is TRUE.}
 
@@ -38,7 +38,7 @@ estimate_module(
 
 \item{max.dl}{Integer. The maximum number of lags to use for the independent variables (the distributed lags).}
 
-\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needes is a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
+\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needs a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
 
 \item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
 
@@ -47,6 +47,8 @@ estimate_module(
 \item{gets_selection}{Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.}
 
 \item{selection.tpval}{Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.}
+
+\item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
 \value{
 A list containing all estimated models, with the model with the smallest BIC under 'best_model'.
@@ -62,7 +64,7 @@ sample_data <- dplyr::tibble(
   ), each = 2),
   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 )
-sample_data_clean <- aggregate.model:::clean_data(sample_data, max.ar = 4)
-aggregate.model:::estimate_module(sample_data_clean, "yvar", "xvar")
+sample_data_clean <- osem:::clean_data(sample_data, max.ar = 4)
+osem:::estimate_module(sample_data_clean, "yvar", "xvar")
 
 }

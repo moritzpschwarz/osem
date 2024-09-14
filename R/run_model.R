@@ -1,6 +1,6 @@
-#' Runs the aggregate model
+#' Runs the OSEM model
 #'
-#' Runs the aggregate model according to the given specification of modules.
+#' Runs the OSEM model according to the given specification of modules.
 #'
 #' @param specification A tibble or data.frame with three columns. Column names must be:
 #' 'type', 'dependent', and 'independent'. The column 'type' must contain for each row a
@@ -18,8 +18,8 @@
 #' \code{"local"} data loading takes precedence.
 #' @param save_to_disk A path to a directory where the final dataset will be
 #'   saved, including the file name and ending. Not saved when \code{NULL}.
-#' @param present A logical value whether the final aggregate model output
-#'   should be presented or not. NOTE: not implemented yet.
+#' @param present A logical value whether the final OSEM model output
+#'   should be presented or not.
 #' @param quiet Logical with default = FALSE. Should messages be displayed?
 #' These messages are intended to give more information about the estimation
 #' and data retrieval process.
@@ -28,10 +28,10 @@
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
 #'
-#' @return An object of class \link[=new_aggmod]{aggmod}, which is a named list
+#' @return An object of class \link[=new_osem]{osem}, which is a named list
 #'   with four elements:
 #' \describe{
-#'   \item{args}{A named list storing the user arguments for the aggregate
+#'   \item{args}{A named list storing the user arguments for the OSEM
 #'   model.}
 #'   \item{module_order_eurostatvars}{The original specification with translated
 #'   variable names to Eurostat codes and arranged in order of estimation.}
@@ -39,7 +39,7 @@
 #'   that store the model object for each module and the dataset used for
 #'   estimation, including fitted values for the dependent variable.}
 #'   \item{full_data}{A tibble or data.frame containing the complete original
-#'   data for the aggregate model and the fitted values of each module.}
+#'   data for the OSEM model and the fitted values of each module.}
 #' }
 #'
 #' @export
@@ -86,7 +86,7 @@ run_model <- function(specification,
                       save_to_disk = NULL,
                       present = FALSE,
                       quiet = FALSE,
-                      use_logs = c("both", "y", "x"),
+                      use_logs = "both",
                       trend = TRUE,
                       ardl_or_ecm = "ardl",
                       max.ar = 4,
@@ -97,7 +97,7 @@ run_model <- function(specification,
                       gets_selection = TRUE,
                       selection.tpval = 0.01,
                       constrain.to.minimum.sample = TRUE
-                      ) {
+) {
 
   primary_source = match.arg(primary_source)
 
@@ -109,7 +109,7 @@ run_model <- function(specification,
     stop("The type column in the Specification can only either be 'n' (for endogenous i.e. modelled) or 'd' (for identity/definition).")
   }
 
-  if(missing(dictionary) | is.null(dictionary)){dictionary <- aggregate.model::dict}
+  if(missing(dictionary) | is.null(dictionary)){dictionary <- osem::dict}
 
   if(!all(c("variable_code", "model_varname", "full_name", "database", "dataset_id","var_col", "nace_r2", "freq", "geo", "unit", "s_adj") %in% colnames(dictionary))){
     stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'variable_code', 'model_varname', 'full_name', 'database', 'dataset_id', 'var_col', 'nace_r2', 'freq', 'geo', 'unit', 's_adj'.")
@@ -118,22 +118,38 @@ run_model <- function(specification,
   if(any(duplicated(dictionary$model_varname))){stop("Dictionary cannot contain duplicated values for 'model_varname'.")}
 
   if(any(grepl("\\-|\\+|\\*|\\/|\\^",dictionary$model_varname))){stop("The 'model_varname' column in the Dictionary cannot contain any of the following characters: + - / * ^")}
+  if(any(grepl("\\-|\\+|\\*|\\/|\\^",specification$dependent))){stop("The 'dependent' column in the specification cannot contain any of the following characters: + - / * ^")}
+
 
   if(!is.null(save_to_disk)){
     if(!is.character(save_to_disk)){stop("'save_to_disk' must be a path to a file as a character. For example 'data.csv'.")}
     if(is.character(save_to_disk) & identical(strsplit(basename(save_to_disk), split="\\.")[[1]][-1],character(0))){stop("'save_to_disk' must be a path to a file. No file ending detected. Currently supporting RDS, rds, Rds, csv, xls, xlsx.")}
   }
 
+  # Checking saturation and selection options
+  if(!is.logical(gets_selection)){stop("'gets_selection' must be logical  (so either TRUE or FALSE).")}
+  if(!is.null(saturation) & !all(saturation %in% c("IIS","SIS","TIS"))){stop("'saturation' must be either NULL to disable Indicator Saturation or a character vector that can take the values 'IIS', 'SIS', or 'TIS'. These can also be combined e.g. c('IIS', 'TIS').")}
 
+  if(!is.numeric(saturation.tpval) & !is.null(saturation.tpval)){stop("'saturation.tpval' must be either NULL or numeric between 0 and 1.")}
+  if(is.numeric(saturation.tpval) & (saturation.tpval > 1 | saturation.tpval < 0 )){stop("'saturation.tpval' must be either NULL or numeric between 0 and 1.")}
+  if(!is.numeric(selection.tpval) & !is.null(selection.tpval)){stop("'selection.tpval' must be either NULL or numeric between 0 and 1.")}
+  if(is.numeric(selection.tpval) & (selection.tpval > 1 | selection.tpval < 0 )){stop("'selection.tpval' must be either NULL or numeric between 0 and 1.")}
 
-  # check whether aggregate model is well-specified
+  # Checking log specifications
+  if(length(use_logs) > 1 | !is.character(use_logs) | !all(use_logs %in% c("y","x","both","none"))){stop("The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'.")}
+
+  # Checking ardl_or_ecm specification
+  #if(length(ardl_or_ecm) > 1 | !is.character(ardl_or_ecm) | !all(use_logs %in% c("y","x","both","none"))){stop("The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'.")}
+  if(is.null(ardl_or_ecm) | (!identical(ardl_or_ecm, "ardl") & !identical(ardl_or_ecm, "ecm"))){stop("The argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'.")}
+
+  # check whether OSEM model is well-specified
   module_order <- check_config_table(specification)
 
   # add columns that translate dependent and independent variables into Eurostat codes
   # module_order_eurostatvars <- translate_variables(specification = module_order,
   #                                                  dictionary = dictionary)
 
-  # download or locally load the data necessary for the whole aggregate model
+  # download or locally load the data necessary for the whole OSEM model
   loaded_data <- load_or_download_variables(specification = module_order,
                                             dictionary = dictionary,
                                             primary_source = primary_source,
@@ -144,6 +160,31 @@ run_model <- function(specification,
 
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
+
+  # check the frequencies of the full data and if necessary aggregate
+  freq_output <- check_frequencies(full_data, quiet = quiet)
+  full_data <- freq_output$full_data
+  frequency <- freq_output$frequency
+
+
+  # check for duplicates in the data
+  if(full_data %>%
+     dplyr::select("na_item", "time") %>%
+     dplyr::filter(duplicated(.)) %>%
+     nrow() > 0){
+
+    full_data %>%
+      dplyr::select("na_item", "time") %>%
+      dplyr::filter(duplicated(.)) %>%
+      dplyr::distinct(.data$na_item) %>%
+      dplyr::pull("na_item") -> duplicated_variables
+
+    stop(paste0("The data contains duplicates. Please remove them. ",
+                "This might be related to an additional filter that is necessary for the eurostat data (e.g. need to select nace_2 for the right value for the sector).\n",
+                "Variables that contain duplicates: ",paste0(duplicated_variables, collapse = ", ")))
+  }
+
+
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order)
@@ -185,7 +226,8 @@ run_model <- function(specification,
       saturation.tpval = saturation.tpval,
       max.block.size = max.block.size,
       gets_selection = gets_selection,
-      selection.tpval = selection.tpval
+      selection.tpval = selection.tpval,
+      quiet = quiet
     )
 
     # store module estimates dataset, including fitted values
@@ -194,13 +236,14 @@ run_model <- function(specification,
     module_collection[module_collection$order == i, "model.args"] <- dplyr::tibble(dataset = list(module_estimate$args))
     module_collection[module_collection$order == i, "indep"] <- dplyr::tibble(dataset = list(module_estimate$indep))
     module_collection[module_collection$order == i, "dep"] <- dplyr::tibble(dataset = list(module_estimate$dep))
+    module_collection[module_collection$order == i, "diagnostics"] <- dplyr::tibble(dataset = list(module_estimate$diagnostics))
 
     # update dataset for next module by adding fitted values
     tmp_data <- update_data(orig_data = tmp_data, new_data = module_estimate$data)
 
   }
 
-  # prepare output of aggregate model
+  # prepare output of OSEM model
   out <- list()
   out$args <- list(specification = specification, dictionary = dictionary,
                    inputdata_directory = inputdata_directory,
@@ -222,9 +265,9 @@ run_model <- function(specification,
   out$full_data <- tmp_data
   out$dictionary <- dictionary
 
-  out <- new_aggmod(out)
+  out <- new_osem(out)
 
-  # optionally, present aggregate model output
+  # optionally, present OSEM model output
   if (present) {
     present_model(out)
   }

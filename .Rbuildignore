@@ -1,4 +1,4 @@
-^aggregate\.model\.Rproj$
+^osem\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
 ^LICENSE\.md$
@@ -10,3 +10,4 @@
 ^docs$
 ^pkgdown$
 ^data-raw$
+^codecov\.yml$

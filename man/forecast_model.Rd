@@ -2,7 +2,7 @@
 % Please edit documentation in R/forecast_model.R
 \name{forecast_model}
 \alias{forecast_model}
-\title{Forecast Aggregate model}
+\title{Forecast OSEM model}
 \usage{
 forecast_model(
   model,
@@ -17,7 +17,7 @@ forecast_model(
 )
 }
 \arguments{
-\item{model}{An aggregate model object of class 'aggmod'.}
+\item{model}{A model object of class 'osem'.}
 
 \item{exog_predictions}{A data.frame or tibble with values for the exogenous values. The number of rows of this data must be equal to n.ahead.}
 
@@ -25,7 +25,7 @@ forecast_model(
 
 \item{ci.levels}{Numeric vector. Vector with confidence intervals to be calculated. Default: c(0.5,0.66,0.95)}
 
-\item{exog_fill_method}{Character, either 'AR', 'auto', or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used. 'auto' is an \link{forecast::auto.arima()} model.}
+\item{exog_fill_method}{Character, either 'AR', 'auto', or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used. 'auto' is an \code{\link[forecast]{auto.arima}} model.}
 
 \item{ar.fill.max}{Integer. When no exogenous values have been provided, these must be inferred. If option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. This options determines the number of AR terms that should be used. Default is 4.}
 
@@ -36,10 +36,10 @@ forecast_model(
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
 \value{
-An object of class aggmod.forecast
+An object of class osem.forecast
 }
 \description{
-Forecast Aggregate model
+Forecast OSEM model
 }
 \examples{
 spec <- dplyr::tibble(

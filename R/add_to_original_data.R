@@ -23,9 +23,9 @@
 #'   ), each = 2),
 #'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
 #' )
-#' sample_data_clean <- aggregate.model:::clean_data(sample_data, max.ar = 4, max.dl = 4)
-#' estimation <- aggregate.model:::estimate_module(sample_data_clean, "yvar", "xvar")
-#' aggregate.model:::add_to_original_data(
+#' sample_data_clean <- osem:::clean_data(sample_data, max.ar = 4, max.dl = 4)
+#' estimation <- osem:::estimate_module(sample_data_clean, "yvar", "xvar")
+#' osem:::add_to_original_data(
 #'   sample_data_clean, estimation$best_model,
 #'   dep_var_basename = "yvar")
 add_to_original_data <- function(clean_data,
@@ -46,7 +46,7 @@ add_to_original_data <- function(clean_data,
         dplyr::mutate(.,
                       fitted.cumsum = dplyr::case_when(
                         is.na(.data$fitted) & is.na(dplyr::lead(.data$fitted)) ~ 0,
-                        # ATTENTION TO DO: here change by Moritz: used to be paste0("L.",dep_var_basename)
+                        # ATTENTION TODO: here change by Moritz: used to be paste0("L.",dep_var_basename)
                         is.na(.data$fitted) & !is.na(dplyr::lead(.data$fitted)) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
                         !is.na(.data$fitted) ~ .data$fitted
                       ),
@@ -59,9 +59,17 @@ add_to_original_data <- function(clean_data,
     } %>%
     {
       if (ardl_or_ecm == "ecm") {
-        dplyr::mutate(., fitted.level = exp(.data$fitted.cumsum))
+        if(grepl("ln\\.",isat_object$aux$y.name)){
+          dplyr::mutate(., fitted.level = exp(.data$fitted.cumsum))
+        } else {
+          dplyr::mutate(., fitted.level = .data$fitted.cumsum)
+        }
       } else if (ardl_or_ecm == "ardl") {
-        dplyr::mutate(., fitted.level = exp(.data$fitted))
+        if(grepl("ln\\.",isat_object$aux$y.name)){
+          dplyr::mutate(., fitted.level = exp(.data$fitted))
+        } else {
+          dplyr::mutate(., fitted.level = .data$fitted)
+        }
       } else {
         .
       }
