@@ -251,17 +251,25 @@ ui <- fluidPage(
                        plotOutput("forecast_output")   # should more forecast outputs be displayed (printed?)
               ),
               tabPanel("Diagnostics", #fluid = TRUE,
-                       mainPanel(
+                       mainPanel(width = 12,
                          DT::DTOutput("diag")
                        )
               ),
               tabPanel("Dependency Network Graph", #fluid = TRUE,x^
-                       mainPanel(
+                       mainPanel(width = 12,
                          plotOutput("network", height = "600", width = "800")
                        )
               )
 
   ),
+
+
+  h3("Exporting Replication File"),
+  HTML('<section>
+        <p>This button saves an R file alongside two csv files for the Dictionary and the Specification.</p>
+        <p>This is intended to allow for easy replication in an R environment and within this app.</p>
+    </section>'),
+
   fluidRow(
     column(4, textInput("exportname", label = "Export File Name", value = "export.R")),
     column(8, actionButton("export", "Export replication file"))
