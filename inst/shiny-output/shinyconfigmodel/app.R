@@ -30,20 +30,19 @@ ui <- fluidPage(
       }"))
   ),
 
-  titlePanel("Aggregate Model Configuration App"),
+  titlePanel("OSEM Model Configuration App"),
 
-  #HTML("<p>Lorem ipsum dolor sit amet.</p>"),
   HTML('    <section>
-        <p>This powerful tool is designed to implement and operationalize the Aggregate Model, a collaborative effort by Jonas Kurle, Andrew Martinez, Felix Pretis, and Moritz Schwarz. This model is an adaptation of the renowned Norwegian Aggregate Model, originally developed by Gunnar Bardsen and Ragnar Nymoen.</p>
-        <p>The "Aggregate Model" is a cutting-edge, open-source econometric model builder. Its primary objective is to deliver robust empirical forecasts of sectoral carbon emissions. The model leverages advanced econometric tools from the robust time series modeling literature, incorporating techniques such as diagnostic testing, indicator saturation, and automatic forecast evaluation. For more information see </p>
+        <p>This powerful tool is designed to implement and operationalize the Open Source Empirical Macro Model (OSEM), a collaborative effort by Jonas Kurle, Andrew Martinez, Felix Pretis, and Moritz Schwarz. This model is an adaptation of the renowned Norwegian Aggregate Model, originally developed by Gunnar Bardsen and Ragnar Nymoen.</p>
+        <p>The OSEM Model is a cutting-edge, open-source econometric model builder. Its primary objective is to deliver robust empirical forecasts of sectoral carbon emissions. The model leverages advanced econometric tools from the robust time series modeling literature, incorporating techniques such as diagnostic testing, indicator saturation, and automatic forecast evaluation. For more information see </p>
     </section>
 
     <section>
         <h2>Key Features:</h2>
         <ul>
-            <li><strong>Robust Forecasting:</strong> The Aggregate Model excels in providing reliable and robust forecasts for sectoral carbon emissions.</li>
+            <li><strong>Robust Forecasting:</strong> The OSEM Model excels in providing reliable and robust forecasts for sectoral carbon emissions.</li>
             <li><strong>Econometric Tools:</strong> Leveraging state-of-the-art econometric tools ensures accurate and data-driven predictions.</li>
-            <li><strong>Open-Source:</strong> As an open-source initiative, the Aggregate Model encourages collaboration and transparency in the modeling community.</li>
+            <li><strong>Open-Source:</strong> As an open-source initiative, the OSEM Model encourages collaboration and transparency in the modeling community.</li>
         </ul>
     </section>
 
@@ -52,14 +51,14 @@ ui <- fluidPage(
         <ol>
             <li><strong>Configure the Model Parameters:</strong> Easily customize model parameters to tailor predictions to your specific needs.</li>
             <li><strong>Explore Diagnostic Tests:</strong> Dive into diagnostic testing capabilities to ensure the robustness of your forecasts.</li>
-            <li><strong>Evaluate Forecasts Automatically:</strong> The Aggregate Model automates forecast evaluation, streamlining the process for enhanced efficiency.</li>
+            <li><strong>Evaluate Forecasts Automatically:</strong> The OSEM Model automates forecast evaluation, streamlining the process for enhanced efficiency.</li>
         </ol>
     </section>
 
     <section>
         <h2>Get Started:</h2>
-        <p>Begin your journey with the Aggregate Model Package today and unlock the potential for precise and reliable sectoral carbon emissions forecasting. Visit <a href="https://moritzschwarz.org/aggregate.model/" target="_blank">the Aggregate Model Package Website</a> for more information.</p>
-        <p><em>Disclaimer: The Aggregate Model Package is a collaborative effort and is continuously evolving. User feedback and contributions are welcomed to enhance its capabilities.</em></p>
+        <p>Begin your journey with the OSEM Model Package today and unlock the potential for precise and reliable sectoral carbon emissions forecasting. Visit <a href="https://moritzschwarz.org/osem/" target="_blank">the OSEM Model Package Website</a> for more information.</p>
+        <p><em>Disclaimer: The OSEM Model Package is a collaborative effort and is continuously evolving. User feedback and contributions are welcomed to enhance its capabilities.</em></p>
     </section>
     <a href="#input">Get Started</a>
 
@@ -77,17 +76,23 @@ ui <- fluidPage(
   ),
 
   tabsetPanel( id = "SettingsTab",
+               # Specification Tab ------------------------------------------------------------
                tabPanel(
                  "Specification",
-                 div(style = "margin-top: 10px"),
-                 fileInput("spec", "Upload Specification (CSV)", accept = ".csv"),
-                 div(style = "margin-top: -30px"),  # margins manually set for better-looking display
+
+                 h3("Current Specification for the OSEM Model (to edit double-click into any cell):"),
                  DT::dataTableOutput("specification_table"),
                  fluidRow(actionLink("addRow", "Add Row"), " - ",
                           actionLink("deleteRows", "Delete selected rows"), "(Rows can be selected by clicking)",
                           class = 'rightAlign' # defined above, to put interaction links on right side of table
-                 )
+                 ),
+
+                 div(style = "margin-top: 10px"),
+                 fileInput("spec", "Upload existing specification (CSV)", accept = ".csv"),
+                 div(style = "margin-top: -30px"),  # margins manually set for better-looking display
+
                ),
+               # Input Tab ------------------------------------------------------------
                tabPanel(
                  "Input Data",
                  fileInput("data", "Upload Input Data (CSV, from 'Save Processed Input data')", accept = ".csv"), # file input scrolls up page; this is an unresolved shiny issue - https://github.com/rstudio/shiny/issues/3327 - the fixes in the discussion could be considered, but are rather messy, so leaving them out currently
@@ -95,10 +100,13 @@ ui <- fluidPage(
                ),
                tabPanel( # default values and how these settings are passed on should be checked
 
+                 # Settings Tab ------------------------------------------------------------
+
+
                  "Settings",
                  fluidRow(
                    column(6,
-                          "Model settings",
+                          h2("Model settings"),
                           numericInput(
                             "max_ar",
                             "Maximum Number of Autoregressive Lags:",
@@ -118,7 +126,7 @@ ui <- fluidPage(
                           radioButtons(
                             "use.logs",
                             "Use logs?",
-                            choices = c("both", "y", "x"),
+                            choices = c("both", "y", "x", "none"),
                             selected = "both"
                           ),
                           checkboxInput("trend", "Should a trend be added?", value = TRUE),
@@ -131,20 +139,22 @@ ui <- fluidPage(
                           checkboxInput("gets_selection", "Run GETS Selection?", value = TRUE),
                           numericInput(
                             "gets_pvalue",
-                            "GETS P-value:",
-                            min = 0.01,
+                            "GETS p-value:",
+                            min = 0,
                             max = 0.5,
                             step = 0.01,
                             value = 0.05
                           ),
-                          checkboxInput("indicator_saturation", "Run Indicator Saturation?", value = TRUE),
+                          checkboxGroupInput("indicator_saturation", "Run Indicator Saturation?",
+                                             choices = c("IIS (Outliers)", "SIS (Step-Shifts)", "TIS (Trend-Breaks)"),
+                                             selected = c("IIS (Outliers)", "SIS (Step-Shifts)", "TIS (Trend-Breaks)")),
                           numericInput(
                             "ind_sat_pval",
                             "Indicator Saturation P-value:",
-                            min = 0.01,
+                            min = 0,
                             max = 0.5,
                             step = 0.01,
-                            value = 0.05
+                            value = 0.001
                           ),
                           numericInput(
                             "max_block_size",
@@ -154,14 +164,14 @@ ui <- fluidPage(
                             step = 1,
                             value = 20
                           ),
-                          checkboxInput("constrain_to_minimum_sample", "Constrain to minimum sample?", value = TRUE),
+                          checkboxInput("constrain_to_minimum_sample", "Constrain to minimum sample?", value = FALSE),
                           textInput(
                             "save_file",
                             "Save Processed Input Data (must be file ending with RDS, rds, Rds, csv, xls, xlsx):",
                             value = "inputdata/processed_inputdata.csv"
                           )),
                    column(6,
-                          "Forecast settings",
+                          h2("Forecast settings"),
                           #exog predicitions: unclear how to implement.. file input?
                           numericInput(
                             "n_ahead",
@@ -175,7 +185,8 @@ ui <- fluidPage(
                           radioButtons(
                             "exog.fill.method",
                             "Exogenous fill method?",
-                            choices = c("AR", "last"),
+                            choiceNames = c("AR Model", "Last Value", "auto.arima() Function"),
+                            choiceValues = c("AR", "last", "auto"),
                             selected = "AR"
                           ),
                           numericInput(
@@ -199,18 +210,28 @@ ui <- fluidPage(
                  ),
 
                ),
+
+               # Dictionary Tab ------------------------------------------------------------
+
                tabPanel(
                  "Dictionary",
                  fileInput("dict", "Upload Dictionary (CSV)", accept = ".csv"),
+                 h3("Current Dictionary (to edit double-click into any cell):"),
                  DT::dataTableOutput("dictionary_table")
                ),
   ),
 
+
+  # Action Buttons ---------------------------------------------------------
+
+  div(style = "height:20px"),
+
+  h2("Click buttons to run or forecast the model! Results will appear below."),
   actionButton("run_button", "Run Model", onclick ="location.href='#output';"), # uses onclick to scroll to section automatically
   actionButton("forecast_button", "Forecast Model", onclick ="location.href='#output';"),
 
 
-
+  div(style = "height:30px"),
 
   tags$div(
     `id` = "output",
@@ -218,27 +239,27 @@ ui <- fluidPage(
   ),
 
   tabsetPanel(id = "OutputTab",
-    tabPanel(title = "Model Results", value = "results",
-             shinycssloaders::withSpinner(
-               tableOutput("model_output")
-             ),
-             tags$head(tags$style("#model_output{min-height: 400px;}")) # manual placeholder height
-    ),
-    tabPanel(title = "Model Forecasts", value = "forecast",
-             dateInput(inputId = "startdate_plot", label = "Start date for plots",
-                       value = as.Date("2000-01-01")),
-             plotOutput("forecast_output")   # should more forecast outputs be displayed (printed?)
-    ),
-    tabPanel("Diagnostics", #fluid = TRUE,
-             mainPanel(
-               DT::DTOutput("diag")
-             )
-    ),
-    tabPanel("Dependency Network Graph", #fluid = TRUE,x^
-             mainPanel(
-               plotOutput("network", height = "600", width = "800")
-             )
-    )
+              tabPanel(title = "Model Results", value = "results",
+                       shinycssloaders::withSpinner(
+                         tableOutput("model_output")
+                       ),
+                       tags$head(tags$style("#model_output{min-height: 400px;}")) # manual placeholder height
+              ),
+              tabPanel(title = "Model Forecasts", value = "forecast",
+                       dateInput(inputId = "startdate_plot", label = "Start date for plots",
+                                 value = as.Date("2000-01-01")),
+                       plotOutput("forecast_output")   # should more forecast outputs be displayed (printed?)
+              ),
+              tabPanel("Diagnostics", #fluid = TRUE,
+                       mainPanel(
+                         DT::DTOutput("diag")
+                       )
+              ),
+              tabPanel("Dependency Network Graph", #fluid = TRUE,x^
+                       mainPanel(
+                         plotOutput("network", height = "600", width = "800")
+                       )
+              )
 
   ),
   fluidRow(
@@ -249,7 +270,7 @@ ui <- fluidPage(
 )
 
 # Default dictionary
-default_dict <- aggregate.model::dict
+default_dict <- osem::dict
 
 default_spec <- dplyr::tibble(
   type = c(
@@ -276,7 +297,7 @@ default_spec <- dplyr::tibble(
 )
 
 
-default_input <- aggregate.model::sample_input          # should this be processed_inputdata if availible?
+default_input <- osem::sample_input          # should this be processed_inputdata if availible?
 
 
 
@@ -365,6 +386,9 @@ server <- function(input, output, session) {
 
 
 
+  # Presets -----------------------------------------------------------------
+
+
   # presets currently formatted as list; using yaml::write_yaml(presets, "presets.yaml") (or jsonlite::write_json), it could be saved externally in a human-readable format and separated out from the main script to be loaded here
 
   presets <- list(
@@ -411,10 +435,10 @@ server <- function(input, output, session) {
   observe({
     updateSelectInput(session,"presets_selector",
                       choices = c("Choose preset model..." = "",
-                                            "No Preset",
-                                            preset_names # along with the placeholder and the default "No Preset" choice, it adds the names element of the elements of the presets list as options
-                                  )
+                                  "No Preset",
+                                  preset_names # along with the placeholder and the default "No Preset" choice, it adds the names element of the elements of the presets list as options
                       )
+    )
   })
 
   # if the presets selector is used, update inputs and rvs based on chosen preset
@@ -494,38 +518,39 @@ server <- function(input, output, session) {
     rv$save_file <- input$save_file
   })
 
-  # Function to run the model
+  # Function to run the model ------------
   run_model_shiny <- function() {
     withProgress(message = 'Estimation Running... ', value = 0, { # the update is being sent from within run_model.R
-    print(reactiveValuesToList(rv)) # to display reactive variables at time of function call
-    model_output <- aggregate.model::run_model(specification = rv$specification,
-                                               dictionary = rv$dictionary,
-                                               inputdata_directory = if (is.null(rv$inputdirectory)) { NULL } else { dirname(input$data$datapath) }, # inputdata
-                                               primary_source = if (is.null(rv$inputdirectory)) { "download" } else { "local" },#  swtichting to "download" makes it slower? Could be a setting with a warning "might take longer". Reading the cached files takes long as well.
-                                               save_to_disk = rv$save_file,
-                                               present = FALSE,
-                                               quiet = FALSE,
-                                               use_logs = rv$use.logs,
-                                               trend = rv$trend,
-                                               ardl_or_ecm = rv$ardl.or.ecm,
-                                               max.ar = rv$max_ar,
-                                               max.dl = rv$max_dl,
-                                               saturation = rv$saturation,
-                                               saturation.tpval = rv$ind_sat_pval,
-                                               max.block.size = rv$max_block_size,
-                                               gets_selection = rv$gets_select,
-                                               selection.tpval = rv$gets_pval,
-                                               constrain.to.minimum.sample = rv$constrain_to_minimum_sample)
+      print(reactiveValuesToList(rv)) # to display reactive variables at time of function call
+      model_output <- osem::run_model(specification = rv$specification,
+                                                 dictionary = rv$dictionary,
+                                                 inputdata_directory = if (is.null(rv$inputdirectory)) { NULL } else { dirname(input$data$datapath) }, # inputdata
+                                                 primary_source = if (is.null(rv$inputdirectory)) { "download" } else { "local" },#  swtichting to "download" makes it slower? Could be a setting with a warning "might take longer". Reading the cached files takes long as well.
+                                                 save_to_disk = rv$save_file,
+                                                 present = FALSE,
+                                                 quiet = FALSE,
+                                                 use_logs = rv$use.logs,
+                                                 trend = rv$trend,
+                                                 ardl_or_ecm = rv$ardl.or.ecm,
+                                                 max.ar = rv$max_ar,
+                                                 max.dl = rv$max_dl,
+                                                 saturation = rv$saturation,
+                                                 saturation.tpval = rv$ind_sat_pval,
+                                                 max.block.size = rv$max_block_size,
+                                                 gets_selection = rv$gets_select,
+                                                 selection.tpval = rv$gets_pval,
+                                                 constrain.to.minimum.sample = rv$constrain_to_minimum_sample,
+                                                 plot = FALSE)
 
-    # # Print or process the model output as needed
-    #print(unlist(model_output))
-    return(model_output)})
+      # # Print or process the model output as needed
+      #print(unlist(model_output))
+      return(model_output)})
   }
 
   # Function to forecast the model
   forecast_model_shiny <- function(){
     print(reactiveValuesToList(rv)) # to display reactive variables at time of function call
-    aggregate.model::forecast_model(
+    osem::forecast_model(
       model = rv$model_output,
 
       ## exog_predicitins asnd ci.levels as of yet unimplemented ##
@@ -631,7 +656,7 @@ server <- function(input, output, session) {
 
     script <- paste0(
       '
-  library(aggregate.model)
+  library(osem)
   setwd("', getwd(), '")
 
   spec <- readr::read_csv("', "export/", path, "_spec.csv" ,'")
@@ -639,7 +664,7 @@ server <- function(input, output, session) {
   dict <- readr::read_csv("', "export/", path, "_dict.csv" ,'")
   dict <- dict[,-1]
 
-  model <- aggregate.model::run_model(specification = spec,
+  model <- osem::run_model(specification = spec,
                                       dictionary = dict,
                                       inputdata_directory = "' , if (is.null(rv$inputdirectory)) { NULL } else { dirname(input$data$datapath) }, '", # this is not working correctly yet with local data, but I was not able to find the issue. Download works as intended.
                                       primary_source = "', if (is.null(rv$inputdirectory)) { "download" } else { "local" }, '",
@@ -659,7 +684,7 @@ server <- function(input, output, session) {
                                       constrain.to.minimum.sample = ', rv$constrain_to_minimum_sample, ')
 
       print(model)
-      aggregate.model::forecast_model(
+      osem::forecast_model(
         model = model,
         #exog_predictions = NULL,
         n.ahead =', rv$n_ahead, ',
@@ -816,8 +841,8 @@ server <- function(input, output, session) {
 # # Define server logic
 # server <- function(input, output, session) {
 #   # Load default dictionaries and specs
-#   dictionary <- aggregate.model::dict
-#   specs <- aggregate.model::spec
+#   dictionary <- osem::dict
+#   specs <- osem::spec
 #
 #   # Render dictionary table
 #   output$dict_table <- DT::renderDataTable({
@@ -847,7 +872,7 @@ server <- function(input, output, session) {
 #     specs[cbind(edited_spec_rows, edited_spec_cols)] <- edited_spec_value
 #
 #     # Call run_model function
-#     model_output <- aggregate.model::run_model(specs, dictionary, input$lags, input$gets, input$pvalue)
+#     model_output <- osem::run_model(specs, dictionary, input$lags, input$gets, input$pvalue)
 #
 #     # Return model output
 #     return(model_output)
