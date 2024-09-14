@@ -6,7 +6,7 @@
 #' \href{https://cran.r-project.org/package=aggregate.model/README.html}{CRAN}
 #' or \href{https://github.com/moritzpschwarz/aggregate.model#readme}{GitHub}
 #'
-#' @docType _PACKAGE
+#' @docType package
 #' @name aggregate.model
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
