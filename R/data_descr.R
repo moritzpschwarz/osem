@@ -26,6 +26,17 @@
 #' @source Own compilation, codes from \url{https://ec.europa.eu/eurostat} and \url{https://edgar.jrc.ec.europa.eu/dataset_ghg70}
 "dict"
 
+#' Statcan dictionary object
+#'
+#' Description_of_the_Data
+#'
+#' @format A data frame with 10000 rows and 2 variables:
+#' \describe{
+#'   \item{Col1}{description of Col1}
+#'   \item{Col2}{description of Col2}
+#' }
+"statcan_dict"
+
 
 #' Sample Input for the Aggregate Model
 #'
