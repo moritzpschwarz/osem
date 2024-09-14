@@ -164,7 +164,7 @@ forecast_model <- function(model,
       ### 2b.i. Predict main estimate for estimated relationships  ------------------------------------------------
       isat_obj$call$ar <- isat_obj$aux$args$ar
       isat_obj$call$mc <- isat_obj$aux$args$mc
-
+      #browser()
       pred_obj <- gets::predict.isat(isat_obj,
                                      newmxreg = as.matrix(utils::tail(pred_df %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)), n.ahead)),
                                      n.ahead = n.ahead, plot = plot.forecast,

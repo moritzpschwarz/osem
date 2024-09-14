@@ -65,7 +65,7 @@ load_or_download_variables <- function(specification,
 
   # sources
   sources <- unique(to_obtain$database)
-  if (length(setdiff(sources, c("eurostat", "edgar", "local", "statcan"))) >= 1L) {
+  if (length(setdiff(sources, c("eurostat", "edgar", "local", "statcan","imf"))) >= 1L) {
     stop("Currently, only allow data bases 'eurostat', 'edgar', 'statcan', or 'local' files.")
   }
   if ("edgar" %in% sources) {
@@ -86,7 +86,8 @@ load_or_download_variables <- function(specification,
     # 1) download from eurostat
     # 2) download from edgar
     # 3) download from statcan
-    # 4) local loading
+    # 4) download from imf
+    # 5) local loading
     # -> since download updates "found", local does not overwrite (download takes precedence)
 
     if ("eurostat" %in% sources) {
@@ -110,12 +111,22 @@ load_or_download_variables <- function(specification,
       to_obtain <- step3$to_obtain
       full <- dplyr::bind_rows(full, step3$df)
     }
-    if ("local" %in% sources) {
-      step4 <- load_locally(to_obtain = to_obtain,
-                            inputdata_directory = inputdata_directory,
-                            quiet = quiet)
+    not_loaded_imf <- which(to_obtain$database == "imf" & to_obtain$found == FALSE)
+    if (length(not_loaded_imf) > 0L) {
+      step4 <- download_imf(to_obtain = to_obtain,
+                                #column_filters = additional_filters,
+                                column_filters = actual_cols,
+                                quiet = quiet)
       to_obtain <- step4$to_obtain
       full <- dplyr::bind_rows(full, step4$df)
+    }
+
+    if ("local" %in% sources) {
+      step5 <- load_locally(to_obtain = to_obtain,
+                            inputdata_directory = inputdata_directory,
+                            quiet = quiet)
+      to_obtain <- step5$to_obtain
+      full <- dplyr::bind_rows(full, step5$df)
     }
 
     if (any(to_obtain$found == FALSE)) {

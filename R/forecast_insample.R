@@ -90,6 +90,8 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
     if(!quiet){print(paste0("Forecast ", i, " from ", start, " to ", end))}
 
+    #browser()
+
     forecasted_unknownexogvalues[[i]] <- forecast_model(model = all_models[[i]],
                                                         n.ahead = nsteps,
                                                         uncertainty_sample = uncertainty_sample,
@@ -105,6 +107,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
   # save(forecasted_unknownexogvalues, file = "forecasted_models.RData")
   # load("forecasted_models.RData")
+
 
   overall_to_plot_central <- dplyr::tibble()
   overall_to_plot_alls <- dplyr::tibble()
