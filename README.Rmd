@@ -155,9 +155,15 @@ model_result <- run_model(
   save_to_disk = "inst/extdata/InputData.xlsx",
   primary_source = "download",
   trend = TRUE,
-  saturation.tpval = 0.01
+  saturation.tpval = 0.01,
+  plot = FALSE
 )
 ```
+
+```{r}
+model_result
+```
+
 
 The first time that we run this, all data will be downloaded and saved in the folder `data/use/InputData.xlsx`. 
 
@@ -178,7 +184,7 @@ model_result <- run_model(
 Now that we have run the model, we can forecast the model (here using an AR process for the exogenous values and for 10 time periods):
 
 ```{r}
-model_forecast <- forecast_model(model_result, n.ahead = 10, exog_fill_method = "AR", plot.forecast = FALSE)
+model_forecast <- forecast_model(model_result, n.ahead = 10, exog_fill_method = "AR", plot = FALSE)
 ```
 
 Once we are done, we can plot the forecast: 

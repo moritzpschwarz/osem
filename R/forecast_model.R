@@ -6,7 +6,7 @@
 #' @param ci.levels Numeric vector. Vector with confidence intervals to be calculated. Default: c(0.5,0.66,0.95)
 #' @param ar.fill.max Integer. When no exogenous values have been provided, these must be inferred. If option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. This options determines the number of AR terms that should be used. Default is 4.
 #' @param exog_fill_method Character, either 'AR', 'auto', or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used. 'auto' is an \code{\link[forecast]{auto.arima}} model.
-#' @param plot.forecast Logical. Should the result be plotted? Default is TRUE.
+#' @param plot Logical. Should the result be plotted? Default is TRUE.
 #' @param uncertainty_sample Integer. Number of draws to be made for the error bars. Default is 100.
 #' @param quiet Logical. Should messages about the forecast procedure be suppressed?
 #'
@@ -50,7 +50,7 @@ forecast_model <- function(model,
                            ci.levels = c(0.5,0.66,0.95),
                            exog_fill_method = "AR",
                            ar.fill.max = 4,
-                           plot.forecast = TRUE,
+                           plot = TRUE,
                            uncertainty_sample = 100,
                            quiet = FALSE){
 
@@ -169,7 +169,7 @@ forecast_model <- function(model,
 
       pred_obj <- gets::predict.isat(isat_obj,
                                      newmxreg = as.matrix(utils::tail(pred_df %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)), n.ahead)),
-                                     n.ahead = n.ahead, plot = plot.forecast,
+                                     n.ahead = n.ahead, plot = FALSE,
                                      ci.levels = ci.levels)
 
       # make samples from the model residuals and add them to the mean prediction
@@ -335,12 +335,19 @@ forecast_model <- function(model,
   out$exog_data <- exog_df_ready
   out$exog_data_nowcast <- exog_df_ready_full
   out$nowcast_data <- nowcasted$nowcast_model$full_data
+  out$args <- list(
+    n.ahead = n.ahead,
+    ci.levels = ci.levels,
+    exog_fill_method = exog_fill_method,
+    ar.fill.max = ar.fill.max,
+    uncertainty_sample = uncertainty_sample
+  )
 
   class(out) <- "osem.forecast"
 
   out$full_forecast_data <- plot(out, return.data = TRUE)
 
-  if(plot.forecast){
+  if(plot){
     print(plot(out))
   }
 

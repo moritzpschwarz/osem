@@ -7,7 +7,9 @@
 #' @param first_date Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
 #' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.
 #' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
+#' @param title Character. Title of the plot. Default is "OSEM Model Forecast".
 #' @param ... Additional arguments passed to the plotting function.
+#'
 #' @export
 #'
 #' @examples
@@ -34,7 +36,9 @@
 #' save_to_disk = NULL, present = FALSE)
 #' plot(forecast_model(a))
 #'}
-plot.osem.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
+#'
+
+plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
 
   if(!isa(x, "osem.forecast")){
     stop("Input object not of type osem.forecast. Run 'forecast_model' again and use the output of that function.")
@@ -224,7 +228,7 @@ plot.osem.forecast <- function(x, exclude.exogenous = TRUE, order.as.run = FALSE
 
     ggplot2::facet_wrap(~.data$na_item, scales = "free") +
 
-    ggplot2::labs(x = NULL, y = NULL) +
+    ggplot2::labs(x = NULL, y = NULL, title = title) +
 
     ggplot2::scale_y_continuous(labels = scales::label_comma()) +
     ggplot2::scale_color_viridis_d() +
