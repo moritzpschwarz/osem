@@ -146,8 +146,9 @@ ui <- fluidPage(
                             value = 0.05
                           ),
                           checkboxGroupInput("indicator_saturation", "Run Indicator Saturation?",
-                                             choices = c("IIS (Outliers)", "SIS (Step-Shifts)", "TIS (Trend-Breaks)"),
-                                             selected = c("IIS (Outliers)", "SIS (Step-Shifts)", "TIS (Trend-Breaks)")),
+                                             choiceValues = c("IIS", "SIS", "TIS"),
+                                             choiceNames = c("IIS (Outliers)", "SIS (Step-Shifts)", "TIS (Trend-Breaks)"),
+                                             selected = c("IIS", "SIS", "TIS")),
                           numericInput(
                             "ind_sat_pval",
                             "Indicator Saturation P-value:",
@@ -654,7 +655,7 @@ server <- function(input, output, session) {
     network(rv$model_output)
   })
 
-  # Export a reproduction file as an R script
+  # Export a reproduction file as an R script --------
   observeEvent(input$export, {
     path <- input$exportname
     path <- tools::file_path_sans_ext(path)
