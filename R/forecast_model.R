@@ -185,7 +185,7 @@ forecast_model <- function(model,
         list_cols <- names(pred_df.all)[sapply(pred_df.all, "class")=="list"]
         time_values <- current_pred_raw$time
 
-        # in this following dataset we write the list columsn properly formatted
+        # in this following dataset we write the list columns properly formatted
         overall_listcols <- dplyr::tibble(time = time_values) %>%
           #dplyr::full_join(dplyr::tibble(run = 1:uncertainty_sample), by = character())
           dplyr::cross_join(dplyr::tibble(run = 1:uncertainty_sample))
