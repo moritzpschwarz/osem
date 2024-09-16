@@ -11,7 +11,7 @@ forecast_model(
   ci.levels = c(0.5, 0.66, 0.95),
   exog_fill_method = "AR",
   ar.fill.max = 4,
-  plot.forecast = TRUE,
+  plot = TRUE,
   uncertainty_sample = 100,
   quiet = FALSE
 )
@@ -29,7 +29,7 @@ forecast_model(
 
 \item{ar.fill.max}{Integer. When no exogenous values have been provided, these must be inferred. If option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. This options determines the number of AR terms that should be used. Default is 4.}
 
-\item{plot.forecast}{Logical. Should the result be plotted? Default is TRUE.}
+\item{plot}{Logical. Should the result be plotted? Default is TRUE.}
 
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
 

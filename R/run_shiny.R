@@ -15,7 +15,7 @@ run_shiny <- function(model = NULL) {
     stop("Shiny App requires package 'shiny'.")
   }
 
-  appDir <- system.file("shiny-output", "osem.shiny", package = "osem")
+  appDir <- system.file("shiny-output", "shinyconfigmodel", package = "osem")
 
   if (appDir == "") {
     stop("Could not find example directory. Try re-installing `osem`.", call. = FALSE)
@@ -27,8 +27,7 @@ run_shiny <- function(model = NULL) {
   #   shiny::shinyAppDir(appDir)
   # }
 
-
-  shiny::shinyOptions(osemel_direct = model)
-  source(system.file("shiny-output", "shinyosemel/app.R", package = "osem"))$value
+  shiny::shinyOptions(osem_direct = model)
+  source(system.file("shiny-output", "shinyconfigmodel/app.R", package = "osem"))$value
 
 }

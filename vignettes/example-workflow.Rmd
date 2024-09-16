@@ -222,7 +222,7 @@ values of the exogenous variables.
 ```{r, forecast}
 forecast <- forecast_model(model = model,
                            exog_predictions = NULL,
-                           plot.forecast = FALSE)
+                           plot = FALSE)
 class(forecast)
 ```
 We did not specify paths for the exogenous regressors, so the output informs us

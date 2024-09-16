@@ -27,6 +27,7 @@
 #' constrained to the minimum data series? Default is \code{TRUE}.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
+#' @param plot Logical with default = TRUE. Should plots be displayed?
 #'
 #' @return An object of class \link[=new_osem]{osem}, which is a named list
 #'   with four elements:
@@ -84,8 +85,7 @@ run_model <- function(specification,
                       inputdata_directory = paste0(getwd(), "/data/raw"),
                       primary_source = c("download", "local"),
                       save_to_disk = NULL,
-                      present = FALSE,
-                      quiet = FALSE,
+
                       use_logs = "both",
                       trend = TRUE,
                       ardl_or_ecm = "ardl",
@@ -96,7 +96,11 @@ run_model <- function(specification,
                       max.block.size = 20,
                       gets_selection = TRUE,
                       selection.tpval = 0.01,
-                      constrain.to.minimum.sample = TRUE
+                      constrain.to.minimum.sample = TRUE,
+
+                      present = FALSE,
+                      quiet = FALSE,
+                      plot = TRUE
 ) {
 
   primary_source = match.arg(primary_source)
@@ -201,6 +205,13 @@ run_model <- function(specification,
     # print progress update
     if(!quiet){
       if(i == 1){cat("\n--- Estimation begins ---\n")}
+
+
+      if (shiny::isRunning()) { # send updates to shiny if called from shiny session
+        incProgress(1/length(module_order$order), detail = paste0(paste0("Running step ", i, "/", length(module_order$order), ": ", module_order$dependent[i], " = ", module_order$independent[i])))
+      }
+
+
       if(module_order$type[i] == "n") {cat(paste0("Estimating ", module_order$dependent[i], " = ", module_order$independent[i]), "\n")}
       if(module_order$type[i] == "d") {cat(paste0("Constructing ", module_order$dependent[i], " = ", module_order$independent[i]), "\n")}
     }
@@ -265,6 +276,10 @@ run_model <- function(specification,
     present_model(out)
   }
 
+  if(plot){
+
+    plot(out)
+  }
 
   return(out)
 

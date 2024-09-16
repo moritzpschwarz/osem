@@ -10,8 +10,6 @@ run_model(
   inputdata_directory = paste0(getwd(), "/data/raw"),
   primary_source = c("download", "local"),
   save_to_disk = NULL,
-  present = FALSE,
-  quiet = FALSE,
   use_logs = "both",
   trend = TRUE,
   ardl_or_ecm = "ardl",
@@ -22,7 +20,10 @@ run_model(
   max.block.size = 20,
   gets_selection = TRUE,
   selection.tpval = 0.01,
-  constrain.to.minimum.sample = TRUE
+  constrain.to.minimum.sample = TRUE,
+  present = FALSE,
+  quiet = FALSE,
+  plot = TRUE
 )
 }
 \arguments{
@@ -47,13 +48,6 @@ stored. Can be \code{NULL} if \code{download == TRUE}.}
 \item{save_to_disk}{A path to a directory where the final dataset will be
 saved, including the file name and ending. Not saved when \code{NULL}.}
 
-\item{present}{A logical value whether the final OSEM model output
-should be presented or not.}
-
-\item{quiet}{Logical with default = FALSE. Should messages be displayed?
-These messages are intended to give more information about the estimation
-and data retrieval process.}
-
 \item{use_logs}{To decide whether to log any variables. Must be one of 'both', 'y', 'x', or 'none'. Default is 'both'.}
 
 \item{trend}{Logical. Should a trend be added? Default is TRUE.}
@@ -76,6 +70,15 @@ and data retrieval process.}
 
 \item{constrain.to.minimum.sample}{Logical. Should all data series be
 constrained to the minimum data series? Default is \code{TRUE}.}
+
+\item{present}{A logical value whether the final OSEM model output
+should be presented or not.}
+
+\item{quiet}{Logical with default = FALSE. Should messages be displayed?
+These messages are intended to give more information about the estimation
+and data retrieval process.}
+
+\item{plot}{Logical with default = TRUE. Should plots be displayed?}
 }
 \value{
 An object of class \link[=new_osem]{osem}, which is a named list

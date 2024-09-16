@@ -410,6 +410,10 @@ forecast_setup_estimated_relationships <- function(model,
                          dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
                                        dplyr::starts_with("iis"), dplyr::starts_with("sis")),
                        by = "time") %>%
+
+      # only retain the final n.ahead observations
+      dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
+
       tidyr::drop_na() %>%
       dplyr::select(-"time") %>%
       dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
