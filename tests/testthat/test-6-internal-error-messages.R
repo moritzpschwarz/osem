@@ -181,7 +181,7 @@ test_that("Error messages for log specifications", {
                    saturation = NULL,
                    max.ar = 0,
                    max.dl = 0)
-  # forecast_model(mod, plot.forecast = TRUE)
+  # forecast_model(mod, plot = TRUE)
 
   mod$full_data %>%
     dplyr::filter(grepl("FinConsExpHH", na_item), time == as.Date("2005-01-01")) %>%

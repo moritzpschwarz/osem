@@ -112,7 +112,7 @@ test_that("Test that forecasting works - with fixed data",{
     ))
 
   set.seed(123)
-  expect_message(bb <- forecast_model(b, plot.forecast = FALSE), regexp = "No exogenous values")
+  expect_message(bb <- forecast_model(b, plot = FALSE), regexp = "No exogenous values")
 
   skip_on_ci()
   expect_snapshot_plot("Forecast_plot",code = plot(bb))
@@ -167,7 +167,7 @@ test_that("Testing nowcasting and dealing with ragged edges works with fixed dat
   )
 
   set.seed(123)
-  expect_message(bb <- forecast_model(model, plot.forecast = FALSE), regexp = "No exogenous values")
+  expect_message(bb <- forecast_model(model, plot = FALSE), regexp = "No exogenous values")
 
   # check that a dataframe can be returned
   bb_df <- plot(bb, return.data = TRUE)

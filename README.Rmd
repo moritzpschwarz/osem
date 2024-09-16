@@ -22,6 +22,7 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/moritzpschwarz/osem/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/moritzpschwarz/osem/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/moritzpschwarz/osem/branch/main/graph/badge.svg)](https://app.codecov.io/gh/moritzpschwarz/osem?branch=main)
 <!-- badges: end -->
 
 The goal of the {osem} Package is to implement and operationalise the Open Source Empirical Macro (OSEM) Model, developed by Moritz Schwarz, Jonas Kurle, Felix Pretis, and Andrew Martinez. This is an adaptation of the [Norwegian Aggregate Model](https://normetrics.no/nam/), developed by Gunnar Bardsen and Ragnar Nymoen. 
@@ -107,11 +108,13 @@ kable(spec) %>%
 ```
 
 
-In order to run this model, we also need a dictionary that translates our model variables to EUROSTAT codes so that the download process can be automated. You can either pass a new dictionary to the model function, or you can use the built in dictionary `osem::dict`:
+In order to run this model, we also need a dictionary that translates our model variables to EUROSTAT codes so that the download process can be automated. You can either pass a new dictionary to the model function, or you can use the built in dictionary `osem::dict` (here the first few rows):
 
 
 ```{r, results='asis', echo=FALSE}
-kable(osem::dict) %>% 
+osem::dict %>% 
+  head() %>% 
+  kable() %>% 
   kable_styling() %>% 
   kable_paper()
 ```
@@ -152,9 +155,15 @@ model_result <- run_model(
   save_to_disk = "inst/extdata/InputData.xlsx",
   primary_source = "download",
   trend = TRUE,
-  saturation.tpval = 0.01
+  saturation.tpval = 0.01,
+  plot = FALSE
 )
 ```
+
+```{r}
+model_result
+```
+
 
 The first time that we run this, all data will be downloaded and saved in the folder `data/use/InputData.xlsx`. 
 
@@ -175,7 +184,7 @@ model_result <- run_model(
 Now that we have run the model, we can forecast the model (here using an AR process for the exogenous values and for 10 time periods):
 
 ```{r}
-model_forecast <- forecast_model(model_result, n.ahead = 10, exog_fill_method = "AR", plot.forecast = FALSE)
+model_forecast <- forecast_model(model_result, n.ahead = 10, exog_fill_method = "AR", plot = FALSE)
 ```
 
 Once we are done, we can plot the forecast: 

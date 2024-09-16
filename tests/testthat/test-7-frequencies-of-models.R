@@ -75,8 +75,8 @@ test_that("Test the reaction of the model for different frequencies",{
   expect_error(forecast_model(model_d),regexp = "Mixed frequency forecasts or forecasts with daily or monthly data are not yet implemented.")
   expect_error(forecast_model(model_m),regexp = "Mixed frequency forecasts or forecasts with daily or monthly data are not yet implemented.")
 
-  fc_q <- forecast_model(model_q, quiet = TRUE, plot.forecast = FALSE)
-  fc_a <- forecast_model(model_a, quiet = TRUE, plot.forecast = FALSE)
+  fc_q <- forecast_model(model_q, quiet = TRUE, plot = FALSE)
+  fc_a <- forecast_model(model_a, quiet = TRUE, plot = FALSE)
 
   expect_equal(fc_q$forecast$data[[1]]$time, structure(c(15522, 15614, 15706, 15796, 15887, 15979, 16071, 16161, 16252, 16344), class = "Date"))
   expect_equal(fc_a$forecast$data[[1]]$time, structure(c(23741, 24106, 24472, 24837, 25202, 25567, 25933, 26298, 26663, 27028), class = "Date"))
@@ -354,7 +354,7 @@ test_that("Annual Models run with EUROSTAT data",{
                     use_logs = "both",
                     constrain.to.minimum.sample = FALSE)
 
-  test_fc <- forecast_model(test, plot.forecast = FALSE)
+  test_fc <- forecast_model(test, plot = FALSE)
 
   expect_equal(test_fc$forecast$central.estimate[[1]]$time, structure(c(19723, 20089, 20454, 20819, 21184, 21550, 21915,
                                                                         22280, 22645, 23011), class = "Date"))
