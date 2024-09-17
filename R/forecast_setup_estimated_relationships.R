@@ -179,9 +179,25 @@ forecast_setup_estimated_relationships <- function(model,
   current_pred_raw_all <- current_pred_raw
 
   # Deal with current_spec not being fully exogenous --------
-  if (!all(current_spec$independent %in% names(exog_df_ready)) && !all(is.na(current_spec$independent))) {
+  # the current conditions says: all independent variables are either in exog_df_ready or
+  # they are NA
+  #if (!all(current_spec$independent %in% names(exog_df_ready)) && !all(is.na(current_spec$independent))) {
 
-    missing_vars <- current_spec$independent[!current_spec$independent %in% names(exog_df_ready)]
+  # new version, trying to make this more explicit:
+  if(!all(is.na(current_spec$independent))){
+    exog_df_ready %>%
+      dplyr::select(dplyr::any_of(current_spec$independent)) %>%
+      dplyr::filter(dplyr::if_any(dplyr::everything(), ~is.na(.))) %>%
+      nrow > 0 -> any_NA_in_exog
+  } else {
+    any_NA_in_exog <- FALSE
+  }
+
+
+  previous_dependent_vars <- model$module_order$dependent[model$module_order$order < i]
+  if(any(current_spec$independent %in% previous_dependent_vars) & any_NA_in_exog){
+
+    missing_vars <- current_spec$independent[current_spec$independent %in% previous_dependent_vars]
 
     for (mvar in missing_vars) {
       # mvar = "p5g"
@@ -245,6 +261,55 @@ forecast_setup_estimated_relationships <- function(model,
         } else {
           stop("Error occurred in adding missing/lower estimated variables (likely identities) to a subsequent/higher model. This is likely being caused by either log specification or lag specifiction. Check code.")
         }
+      }
+
+
+      # if the variable is already there (e.g. through nowcasting) then combine them
+      if(all(names(mvar_tibble) %in% names(current_pred_raw))){
+
+        # this first adds the correct time dimension to mvar_tibble
+        exog_df_ready %>%
+          dplyr::select("time") %>%
+          dplyr::slice((dplyr::n() - (nrow(mvar_tibble)-1)) : dplyr::n()) -> mvar_tibble_time
+
+        mvar_tibble_time %>%
+          dplyr::bind_cols(mvar_tibble) %>%
+
+          # now we rename it to then be able to join it
+          dplyr::rename_with(.cols = dplyr::all_of(names(mvar_tibble)), .fn = ~paste0("new.",.)) %>%
+
+          # then we join it
+          dplyr::full_join(current_pred_raw %>%
+                             dplyr::select("time", dplyr::all_of(names(mvar_tibble))), by = "time") %>%
+
+          dplyr::arrange(.data$time) %>%
+
+          # and combine the two columns so that each value is filled
+          dplyr::transmute(!!sym(names(mvar_tibble)) := dplyr::case_when(
+            is.na(.[[names(mvar_tibble)]]) ~ .[[paste0("new.",names(mvar_tibble))]],
+            TRUE ~ .[[names(mvar_tibble)]]
+          )) -> mvar_tibble
+
+        # now we do the same for the all estimates
+        mvar_tibble_time %>%
+          dplyr::bind_cols(mvar_all.estimates.tibble) %>%
+          dplyr::rename_with(.cols = dplyr::all_of(names(mvar_all.estimates.tibble)), .fn = ~paste0("new.",.)) %>%
+          dplyr::full_join(current_pred_raw_all %>%
+                             dplyr::select("time", dplyr::all_of(names(mvar_tibble))), by = "time") %>%
+
+          dplyr::arrange(.data$time) %>%
+
+          dplyr::transmute(!!sym(names(mvar_all.estimates.tibble)) := case_when(
+            is.na(.[[names(mvar_tibble)]]) ~ .[[paste0("new.",names(mvar_all.estimates.tibble))]],
+            TRUE ~ purrr::map(.[[names(mvar_tibble)]], ~ .x)  # Wrap each individual value in a list
+          )) -> mvar_all.estimates.tibble
+
+        current_pred_raw %>%
+          dplyr::select(-dplyr::all_of(names(mvar_tibble))) -> current_pred_raw
+
+        current_pred_raw_all %>%
+          dplyr::select(-dplyr::all_of(names(mvar_tibble))) -> current_pred_raw_all
+
       }
 
       current_pred_raw <- dplyr::bind_cols(current_pred_raw,mvar_tibble)
@@ -412,7 +477,7 @@ forecast_setup_estimated_relationships <- function(model,
                        by = "time") %>%
 
       # only retain the final n.ahead observations
-      dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
+      dplyr::slice(-c(dplyr::n() - n.ahead.incl.nowcast : dplyr::n())) %>%
 
       tidyr::drop_na() %>%
       dplyr::select(-"time") %>%
