@@ -222,9 +222,15 @@ determine_variables <- function(specification, dictionary) {
     dplyr::filter(!is.na(.data$database)) %>%
     dplyr::mutate(found = FALSE) # will keep track of whether found (download or local)
 
-  if(!all(codes.used %in% dictionary$model_varname)){
+  code.check <- codes.used
+  idents <- specification %>%
+    dplyr::filter(.data$type == "d") %>%
+    dplyr::pull(.data$dependent)
+  code.check <- code.check[!code.check %in% idents]
+
+  if(!all(code.check %in% dictionary$model_varname)){
     stop(paste0("Not all model variables found in the dictionary.", "\n",
-                 "Missing variables: ", paste(setdiff(codes.used, to_obtain$model_varname), collapse = ", ")))
+                 "Missing variables: ", paste(setdiff(code.check, to_obtain$model_varname), collapse = ", ")))
   }
 
   return(to_obtain)
