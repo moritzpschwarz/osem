@@ -12,7 +12,7 @@ License: AGPL (>= 3)
 Encoding: UTF-8
 URL: http://moritzschwarz.org/osem/
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 Depends: 
     R (>= 3.5)
 Imports: 
@@ -28,7 +28,8 @@ Imports:
     stringr,
     utils,
     ggplot2,
-    scales
+    scales,
+    statcanR
 LazyData: true
 Suggests: 
     shiny,

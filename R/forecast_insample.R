@@ -43,7 +43,6 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
         max.ar = model$args$max.ar,
         max.dl = model$args$max.dl,
         max.block.size = model$args$max.block.size,
-
         ardl_or_ecm = model$args$ardl_or_ecm,
         use_logs = model$args$use_logs,
         saturation = model$args$saturation,
@@ -105,6 +104,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
   # save(forecasted_unknownexogvalues, file = "forecasted_models.RData")
   # load("forecasted_models.RData")
+
 
   overall_to_plot_central <- dplyr::tibble()
   overall_to_plot_alls <- dplyr::tibble()

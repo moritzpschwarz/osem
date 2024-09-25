@@ -147,6 +147,7 @@ run_model <- function(specification,
   if(is.null(ardl_or_ecm) | (!identical(ardl_or_ecm, "ardl") & !identical(ardl_or_ecm, "ecm"))){stop("The argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'.")}
 
   # check whether OSEM model is well-specified
+
   module_order <- check_config_table(specification)
 
   # add columns that translate dependent and independent variables into Eurostat codes
@@ -161,7 +162,6 @@ run_model <- function(specification,
                                             save_to_disk = save_to_disk,
                                             quiet = quiet,
                                             constrain.to.minimum.sample = constrain.to.minimum.sample)
-
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
 
@@ -216,6 +216,7 @@ run_model <- function(specification,
       if(module_order$type[i] == "d") {cat(paste0("Constructing ", module_order$dependent[i], " = ", module_order$independent[i]), "\n")}
     }
 
+   # browser()
     # estimate current module, using most up-to-date dataset including predicted values
     module_estimate <- run_module(
       module = module_order[module_order$order == i, ],
@@ -243,6 +244,7 @@ run_model <- function(specification,
     module_collection[module_collection$order == i, "diagnostics"] <- dplyr::tibble(dataset = list(module_estimate$diagnostics))
 
     # update dataset for next module by adding fitted values
+    #browser()
     tmp_data <- update_data(orig_data = tmp_data, new_data = module_estimate$data)
 
   }
