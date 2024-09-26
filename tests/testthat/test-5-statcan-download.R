@@ -1,36 +1,43 @@
+#skip_on_cran()
+skip_on_ci()
+
+#setup
+spec <- dplyr::tibble(
+  type = c(
+    "d",
+    "n"
+  ),
+  dependent = c(
+    "EmiCO2Industry",
+    "IndProd"
+  ),
+  independent = c(
+    "HICP_GAS + HICP_Energy + IndProd",
+    "GAS"
+
+  )
+)
+
+module_order <- check_config_table(spec)
+dictionary <- statcan_dict
+
+dict %>%
+  dplyr::filter(model_varname == "EmiCO2Industry") %>%
+  dplyr::mutate(geo = "CA") %>%
+  dplyr::bind_rows(dictionary,.) -> dictionary
+
 test_that('statCan_load_or_download works', {
 
-  skip_on_cran()
-  skip_on_ci()
+  to_obtain <- determine_variables(specification = module_order,
+                                   dictionary = dictionary)
 
-  #setup
-  spec <- dplyr::tibble(
-    type = c(
-      "d",
-      "n"
-    ),
-    dependent = c(
-      "EmiCO2Industry",
-      "IndProd"
-    ),
-    independent = c(
-      "HICP_GAS + HICP_Energy + IndProd",
-      "GAS"
-
-    )
-  )
-
-  module_order <- aggregate.model:::check_config_table(spec)
-  dictionary <- aggregate.model::statcan_dict
-  to_obtain <- aggregate.model:::determine_variables(specification = module_order,
-                                                     dictionary = dictionary)
 
   actual_cols = colnames(dictionary)
+
   # basic functionality
-  data <- aggregate.model:::download_statcan(to_obtain = to_obtain,
-                                          #column_filters = additional_filters,
-                                          column_filters = actual_cols,
-                                          quiet = FALSE)
+  data <- download_statcan(to_obtain = to_obtain,
+                           column_filters = actual_cols,
+                           quiet = FALSE)
 
   expect_length(data, 2)
   expect_type(data, "list")
@@ -40,44 +47,19 @@ test_that('statCan_load_or_download works', {
   expect_identical(data$df %>% dplyr::filter(na_item == "HICP_Energy") %>% dplyr::pull(time) %>% lubridate::month() %>% unique() %>% sort(), c(1, 4, 7, 10))
   expect_identical(data$df %>% dplyr::filter(na_item == "IndProd") %>% dplyr::pull(time) %>% lubridate::month() %>% unique() %>% sort(), c(1, 4, 7, 10))
 
-
 })
 
 test_that('statcan_load_and_download_forecasting_functionality',{
-  #library("tinytest")
-  #using("tinysnapshot")
-  skip_on_cran()
-  skip_on_ci()
-
-  #setup
-  spec <- dplyr::tibble(
-    type = c(
-      "d",
-      "n"
-    ),
-    dependent = c(
-      "EmiCO2Industry",
-      "IndProd"
-    ),
-    independent = c(
-      "HICP_GAS + HICP_Energy + IndProd",
-      "GAS"
-
-    )
-  )
-  # basic functionality: running a model
-  dictionary <- aggregate.model::statcan_dict
-
 
   #run the model
   model_run <- run_model(
-      specification = spec,
-      dictionary = dictionary,
-      max.ar = 4,
-      max.dl = 4,
-      primary_source = "download",
-      quiet = TRUE
-    )
+    specification = spec,
+    dictionary = dictionary,
+    max.ar = 4,
+    max.dl = 4,
+    primary_source = "download",
+    quiet = TRUE
+  )
 
   set.seed(123)
   #forcast the model
@@ -85,7 +67,7 @@ test_that('statcan_load_and_download_forecasting_functionality',{
   skip_on_ci()
 
   #plot model
-  expect_is(plot.aggmod.forecast(model_forecast,order.as.run = TRUE),class = c("gg","ggplot"))
+  expect_is(plot(model_forecast,order.as.run = TRUE),class = c("gg","ggplot"))
 
   #hindcast model
   hind_cast <- forecast_insample(
