@@ -83,7 +83,7 @@ model <- run_model(specification = specification,
 ```
 
 
-```{r, forecast-plot, fig.width=3, fig.height=3}
+```{r, forecast-plot-2, fig.width=3, fig.height=3}
 forecast <- forecast_model(model = model,
                            exog_predictions = NULL,
                            plot.forecast = FALSE)
