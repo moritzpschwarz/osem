@@ -20,9 +20,8 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
   df_statcan <- data.frame()
 
   #get the eurodict colnames
-  euro_dict = colnames(aggregate.model::dict)
+  euro_dict = colnames(dict)
 
- # browser()
   #pulls dataframe of unique database ids
   dataset_id <- to_obtain %>% dplyr::filter(.data$database == "statcan" &
                                                 .data$found == FALSE) %>%
@@ -34,7 +33,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
 
     #download data table according to data_base_id
     id <- dataset_id[i,1]
-    df <- statcanR::statcan_data(id,"eng")
+    suppressMessages(df <- statcanR::statcan_data(id,"eng"))
     df <- as.data.frame(df)
 
     #get the dictionary coordinates that use the following dataset_id
@@ -62,13 +61,9 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
         to_obtain[idx, "found"] <- TRUE
       }
 
-      subset_of_data <- subset_of_data %>% dplyr::mutate(na_item = to_obtain$model_varname[idx])
-        # dplyr::rename_with(.cols = dplyr::all_of(to_obtain$var_col[idx]), .fn = ~paste0("na_item")) %>%
-
-      #What is the point of this??
-      # sub <- sub %>%
-      #   dplyr::rename_with(.cols = dplyr::all_of(varcolname), .fn = ~paste0("na_item")) %>%
-      #   dplyr::mutate(na_item = to_obtain$model_varname[j])
+      subset_of_data <- subset_of_data %>%
+        dplyr::mutate(na_item = to_obtain$model_varname[idx])
+      # dplyr::rename_with(.cols = dplyr::all_of(to_obtain$var_col[idx]), .fn = ~paste0("na_item")) %>%
 
       # if have monthly data, need to aggregate to quarterly
       if (to_obtain$freq[idx] == "m") {
@@ -123,11 +118,11 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
     }
   }
 
-  return (
-    list ( df= df_statcan, to_obtain = to_obtain)
-  )
+  out <- list()
+  out$df = df_statcan
+  out$to_obtain = to_obtain
 
-
+  return(out)
 }
 
 

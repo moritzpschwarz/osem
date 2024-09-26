@@ -18,12 +18,12 @@ knitr::opts_chunk$set(
 ```
 
 ```{r setup, message=FALSE}
-library(aggregate.model)
+library(osem)
 library(dplyr)
 library(statcanR)
 library(ggplot2)
 ```
-This is a vignette to describe the process of how to run the model, create forecasts, and create hindcasts using data from Statistics Canada via the implemented statcan dictionary within aggregate.model.
+This is a vignette to describe the process of how to run the model, create forecasts, and create hindcasts using data from Statistics Canada via the implemented statcan dictionary within osem.
 
 ## Specification
 
@@ -49,25 +49,41 @@ specification <- dplyr::tibble(
 print(specification)
 ```
 
-##Load statcan dictionary
+## Load statcan dictionary
 
 ```{r dictionary}
-dictionary <- aggregate.model::statcan_dict
+statcan_dict <- osem::statcan_dict
 ```
 
-The statcan dictionary contains a different set of variables than found within eurostat. Due to the way statistics Canada's R package pulls data we need to include all the same headers found within the eurostat dictionary in the statcan dictionary to help with data consistency.
+The statcan dictionary contains a different set of variables than found within eurostat. Due to the way Statistics Canada's R package pulls data we need to include all the same headers found within the eurostat dictionary in the statcan dictionary to help with data consistency.
 
 ```{r dictionary pt.2}
-dictionary <- aggregate.model::statcan_dict
-print(colnames(dictionary))
-print(colnames(aggregate.model::dict))
+print(colnames(statcan_dict))
+print(colnames(osem::dict))
 ```
 
-##Preform modelling
+From the default dictionary, we use the EDGAR variable "EmiCO2Industry" and reset the country in the column `geo` to `CA` and then add it to the statcan dictionary:
+
+```{r}
+osem::dict %>% 
+  dplyr::filter(model_varname == "EmiCO2Industry") %>% 
+  dplyr::mutate(geo = "CA") %>% 
+  dplyr::bind_rows(statcan_dict,.) -> statcan_dict_ready
+```
+
+
+## Perform modelling
 Now let's model the equations we have specified and perform some forecasting.
 
 ```{r, forecast-plot, fig.width=3, fig.height=3}
-model <- run_model(specification = specification, dictionary = dictionary, primary_source = "download",quiet = TRUE)
+model <- run_model(specification = specification, 
+                   dictionary = statcan_dict_ready, 
+                   primary_source = "download",
+                   quiet = TRUE)
+```
+
+
+```{r, forecast-plot, fig.width=3, fig.height=3}
 forecast <- forecast_model(model = model,
                            exog_predictions = NULL,
                            plot.forecast = FALSE)
