@@ -33,7 +33,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
 
     #download data table according to data_base_id
     id <- dataset_id[i,1]
-    suppressMessages(df <- statcanR::statcan_data(id,"eng"))
+    suppressWarnings(suppressMessages(df <- statcanR::statcan_data(id,"eng")))
     df <- as.data.frame(df)
 
     #get the dictionary coordinates that use the following dataset_id

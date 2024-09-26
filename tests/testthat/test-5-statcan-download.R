@@ -63,22 +63,22 @@ test_that('statcan_load_and_download_forecasting_functionality',{
 
   set.seed(123)
   #forcast the model
-  expect_message(model_forecast <- forecast_model(model_run, plot.forecast = FALSE), regexp = "No exogenous values")
+  expect_message(model_forecast <- forecast_model(model_run, plot = FALSE), regexp = "No exogenous values")
   skip_on_ci()
 
   #plot model
-  expect_is(plot(model_forecast,order.as.run = TRUE),class = c("gg","ggplot"))
+  expect_s3_class(plot(model_forecast,order.as.run = TRUE),"ggplot")
 
   #hindcast model
   hind_cast <- forecast_insample(
     model_run,
-    sample_share = 0.5,
+    sample_share = 0.9,
     uncertainty_sample = 100,
     exog_fill_method = "AR",
-    plot.forecast = TRUE
+    plot = TRUE
   )
 
-  expect_is(hind_cast$plot,class = c("gg","ggplot"))
+  expect_s3_class(hind_cast$plot,"ggplot")
 
 
 })
