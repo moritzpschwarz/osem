@@ -26,6 +26,25 @@
 #' @source Own compilation, codes from \url{https://ec.europa.eu/eurostat} and \url{https://edgar.jrc.ec.europa.eu/dataset_ghg70}
 "dict"
 
+#' Statcan dictionary object
+#'
+#' Sample sample dataset that hs been downloaded using the functions in the osem package
+#'
+#' Functions used to obtain data:
+#'    statCan_load_or_download, IMF_load_or_download, or download_eurostat
+#'    These functions will give outout consistent to download_eurostat (a function witin load_or_download_variables)
+#'
+#'geo,na_item,values,time,s_adj,nace_r2
+#' @format A data frame with 10000 rows and 2 variables:
+#' \describe{
+#'   \item{geo}{Geographic location for which the data was downloaded.}
+#'   \item{na_item}{Variable Name according to the osem dictionary.}
+#'   \item{time}{The date of the observation.}
+#'   \item{s_adj}{Indication whether variable was seasonally adjusted or not. SCA refers to seasonal and calendar adjusted data.}
+#'   \item{nace_r2}{If applicable, the NACE2 sector code.}
+#' }
+"statcan_dict"
+
 
 #' Sample Input for the OSEM Model
 #'

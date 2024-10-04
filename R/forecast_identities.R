@@ -173,7 +173,6 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
   }
 
 
-
   out <- list()
   out$identity_pred <- identity_pred
   out$identity_pred_final <- identity_pred_final

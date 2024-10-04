@@ -101,6 +101,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       time_to_forecast <- seq.Date(col_to_forecast_max_time, length.out = n.ahead + (1 + diff_time_to_max),
                                    by = frequency)[-1]
 
+
       # now let's extract the data
       exog_df_intermed %>%
         dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE)) %>%
