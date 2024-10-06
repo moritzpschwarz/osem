@@ -286,7 +286,7 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
         for (k in seq_along(additional_filters)) {
           filtername <- additional_filters[k]
           sub <- sub %>%
-            {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[j, filtername])}else{.}}
+            {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[[j, filtername]])}else{.}}
         }
       # if after filtering "sub" is not empty, we found the variable and can mark it as such
       if (NROW(sub) == 0L) {

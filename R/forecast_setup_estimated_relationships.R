@@ -143,7 +143,9 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
 
     {if (xlog) {
       dplyr::mutate(.,
-                    dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
+                    #dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
+                    #dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = asinh), .names = "{.fn}.{.col}"),
+                    dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = ~ if (any(. <= 0)) {asinh(.)} else {log(.)}, .names = "ln.{.col}")
                     #dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
       )
     } else {.}} -> current_pred_raw
@@ -172,28 +174,49 @@ forecast_setup_estimated_relationships <- function(model, i, exog_df_ready, n.ah
         .[[1]] %>%
         .$use_logs
 
-      prediction_list %>%
-        dplyr::filter(.data$index == mvar_model_index) %>%
-        dplyr::pull("all.estimates") %>%
-        .[[1]] %>%
-        dplyr::select(-"time") -> mvar_all.estimates
-
-
       mvar_euname <- model$module_collection %>%
         dplyr::filter(.data$index == mvar_model_index) %>%
         dplyr::pull("dependent")
 
       mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
 
-      # name all the individual estimates
-      colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
+      # get the uncertainty around it
+      prediction_list %>%
+        dplyr::filter(.data$index == mvar_model_index) %>%
+        dplyr::pull("all.estimates") %>%
+        .[[1]] -> prediction_list.mvar.all
 
-      # get all the individual estimates into a column of a tibble
-      mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
-        dplyr::mutate(index = 1:dplyr::n()) %>%
-        tidyr::nest(data = -"index") %>%
-        dplyr::select(-"index") %>%
-        setNames(paste0(mvar_name,".all"))
+      # if the all estimates are not yet stored, use the central estimate
+      if(!is.null(prediction_list.mvar.all)){
+        prediction_list.mvar.all %>%
+          dplyr::select(-"time") -> mvar_all.estimates
+
+        # name all the individual estimates
+        colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
+
+        # get all the individual estimates into a column of a tibble
+        mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
+          dplyr::mutate(index = 1:dplyr::n()) %>%
+          tidyr::nest(data = -"index") %>%
+          dplyr::select(-"index") %>%
+          setNames(paste0(mvar_name,".all"))
+
+      } else {
+        prediction_list %>%
+          dplyr::filter(.data$index == mvar_model_index) %>%
+          dplyr::pull("central.estimate") %>%
+          .[[1]] %>%
+          dplyr::select(-"time") -> mvar_all.estimates
+
+        # name all the individual estimates
+        colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
+
+        # get all the individual estimates into a column of a tibble
+        mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
+          dplyr::mutate(index = 1:dplyr::n()) %>%
+          dplyr::select(-"index") %>%
+          setNames(paste0(mvar_name,".all"))
+      }
 
       # add the mean yhat estimates and the all estimates together
       mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
