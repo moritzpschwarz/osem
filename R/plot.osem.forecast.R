@@ -46,11 +46,13 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
 
   if(!is.null(first_date)){if(!is.character(first_date) | !lubridate::is.Date(as.Date(first_date))){stop("When supplying 'first_date', the it must be a character and must be (able to be converted to) a Date.")}}
 
-  {if(!is.null(x$nowcast_data)){
-    x$nowcast_data
-  } else {
-    x$orig_model$full_data
-  }} %>%
+  # {if(!is.null(x$nowcast_data)){
+  #   x$orig_model$full_data %>%
+  #     dplyr::bind_rows(x$nowcast_data) %>%
+  #     dplyr::arrange(.data$time)
+  # } else {
+  x$orig_model$full_data %>%
+    # }} %>%
     dplyr::mutate(var = .data$na_item,
                   na_item = gsub("\\.hat","",.data$na_item),
                   fit = as.character(stringr::str_detect(.data$var, ".hat"))) -> plot_df
@@ -96,6 +98,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   #         panel.grid.minor.x = ggplot2::element_blank(),
   #         panel.grid.minor.y = ggplot2::element_blank()) -> initial_plot
 
+  # CENTRAL FORECASTS --------
   # get the central forecasts
   x$forecast %>%
     dplyr::select("central.estimate") %>%
@@ -109,19 +112,6 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     names %>%
     stringr::str_detect(., "^ln.") -> to_exponentiate
 
-  # ---
-
-  # Dealing with uncertainty (all forecasts) --------
-  # unnest the set of all estimates from the original object
-  x$forecast %>%
-    dplyr::select("dep_var", "all.estimates") %>%
-    tidyr::unnest("all.estimates") %>%
-    tidyr::pivot_longer(-c("time", "dep_var")) -> all_forecasts
-
-  dplyr::tibble(dep_var = names(central_forecasts),
-                expo = to_exponentiate,
-                #all = c("time",unique(all_forecasts$dep_var))) -> to_exponentiate_tibble
-                all = c("time",unique(x$forecast$dep_var))) -> to_exponentiate_tibble
 
   central_forecasts %>%
     dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
@@ -134,6 +124,39 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
 
     dplyr::mutate(fit = "forecast") -> forecasts_processed
 
+  # NOWCASTS --------
+  x$nowcast_data %>%
+    tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") -> nowcasted_data
+
+  # find out which of the central forecasts should be exponentiated (because they were run in ln)
+  nowcasted_data %>%
+    names %>%
+    stringr::str_detect(., "^ln.") -> to_exponentiate
+
+  nowcasted_data %>%
+    dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(nowcasted_data)[to_exponentiate]), exp)) %>%
+    dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
+
+    tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
+    dplyr::full_join(x$orig_model$module_order %>%
+                       dplyr::select("dependent") %>%
+                       dplyr::rename(na_item = "dependent"), by = "na_item") %>%
+
+    dplyr::mutate(fit = "nowcast") -> nowcast_processed
+
+
+  # ALL FORECASTS --------
+  # Dealing with uncertainty (all forecasts)
+  # unnest the set of all estimates from the original object
+  x$forecast %>%
+    dplyr::select("dep_var", "all.estimates") %>%
+    tidyr::unnest("all.estimates") %>%
+    tidyr::pivot_longer(-c("time", "dep_var")) -> all_forecasts
+
+  dplyr::tibble(dep_var = names(central_forecasts),
+                expo = to_exponentiate,
+                #all = c("time",unique(all_forecasts$dep_var))) -> to_exponentiate_tibble
+                all = c("time",unique(x$forecast$dep_var))) -> to_exponentiate_tibble
 
   all_forecasts %>%
     dplyr::mutate(value = dplyr::case_when(.data$dep_var %in% to_exponentiate_tibble$all[to_exponentiate_tibble$expo == TRUE] ~ exp(.data$value),
@@ -156,6 +179,8 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
       p25 = stats::quantile(.data$values, probs = 0.25)) -> all_forecasts_processed_q
 
 
+
+  # LAST FITTED -------------------------------------------------------------
   # here we get the last fitted value
   plot_df %>%
     dplyr::filter(.data$fit == "TRUE", !is.na(.data$values)) %>%
@@ -174,21 +199,34 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     dplyr::select(-"var") %>%
     dplyr::mutate(fit = "forecast") -> last_hist_value
 
+
+  # and the last nowcasted value
+  nowcast_processed %>%
+    dplyr::filter(.data$fit == "nowcast") %>%
+    dplyr::group_by(.data$na_item) %>%
+    dplyr::filter(.data$time == max(.data$time, na.rm = TRUE)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(fit = "forecast") -> last_nowcast_value
+
+  # first figure out whether the last variable is a forecast or a nowcast
   last_fitted_value %>%
-    dplyr::group_by(.data$time, .data$na_item) %>%
-    dplyr::summarise(p95 = .data$values,
-                     p05 = .data$values,
-                     p975 = .data$values,
-                     p025 = .data$values,
-                     p75 =  .data$values,
-                     p25 =  .data$values, .groups = "drop") %>%
+    dplyr::bind_rows(last_nowcast_value) %>%
+    dplyr::group_by(.data$na_item) %>%
+    dplyr::filter(.data$time == max(.data$time, na.rm = TRUE)) %>%
+    dplyr::ungroup() %>%
+
+    dplyr::reframe(p95 = .data$values,
+                   p05 = .data$values,
+                   p975 = .data$values,
+                   p025 = .data$values,
+                   p75 =  .data$values,
+                   p25 =  .data$values, .groups = "drop", .by = .data$time, .data$na_item) %>%
     dplyr::mutate(fit = "Forecast Uncertainty") %>%
     dplyr::bind_rows(.,all_forecasts_processed_q) %>%
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} %>%
     tidyr::drop_na() -> all_forecasts_processed_q
 
   # Exogenous forecasts --------
-
   x$exog_data %>%
     dplyr::select(-dplyr::any_of(c("q_1","q_2","q_3","q_4"))) %>%
     tidyr::pivot_longer(-"time", values_to = "values", names_to = "na_item") %>%
@@ -201,9 +239,9 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     if (!exclude.exogenous) {ggplot2::geom_line(data = exog_forecasts, ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit))} else {NULL}
   )
 
-
   plotting_df_ready <- dplyr::bind_rows(forecasts_processed, last_fitted_value) %>%
     dplyr::bind_rows(plot_df) %>%
+    dplyr::bind_rows(nowcast_processed) %>%
 
     {if(order.as.run){
       dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$orig_model$module_order$dependent)) %>%

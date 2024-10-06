@@ -19,7 +19,7 @@ forecast_setup_estimated_relationships <- function(model,
                                                    current_spec,
                                                    prediction_list,
                                                    uncertainty_sample,
-                                                   nowcasted_data,
+                                                   nowcasted_data = NULL,
                                                    full_exog_predicted_data = NULL,
                                                    endog.nowcast = NULL) {
 
@@ -34,24 +34,23 @@ forecast_setup_estimated_relationships <- function(model,
     dplyr::filter(.data$order == i) %>%
     dplyr::pull(.data$dataset) %>% .[[1]] -> data_obj
 
-
   # Check if any nowcasting is needed
-  if(!is.null(endog.nowcast)){
-    if(!isa(endog.nowcast, "Date")){stop("Variable 'endog.nowcast' must be a date object.")}
-    n.ahead.incl.nowcast <- n.ahead + length(endog.nowcast)
-
-    data_obj %>%
-      dplyr::filter(.data$time %in% endog.nowcast) %>%
-      dplyr::select("time",dplyr::all_of(current_spec$independent)) %>%
-      dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE),
-                    q = factor(.data$q, levels = c(1,2,3,4))) %>%
-      fastDummies::dummy_cols("q", remove_first_dummy = FALSE, remove_selected_columns = TRUE) %>%
-
-      dplyr::bind_rows(exog_df_ready) -> exog_df_ready
-
-  } else {
-    n.ahead.incl.nowcast <- n.ahead
-  }
+  # if(!is.null(endog.nowcast)){
+  #   if(!isa(endog.nowcast, "Date")){stop("Variable 'endog.nowcast' must be a date object.")}
+  #   n.ahead.incl.nowcast <- n.ahead + length(endog.nowcast)
+  #
+  #   data_obj %>%
+  #     dplyr::filter(.data$time %in% endog.nowcast) %>%
+  #     dplyr::select("time",dplyr::all_of(current_spec$independent)) %>%
+  #     dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE),
+  #                   q = factor(.data$q, levels = c(1,2,3,4))) %>%
+  #     fastDummies::dummy_cols("q", remove_first_dummy = FALSE, remove_selected_columns = TRUE) %>%
+  #
+  #     dplyr::bind_rows(exog_df_ready) -> exog_df_ready
+  #
+  # } else {
+  n.ahead.incl.nowcast <- n.ahead
+  # }
 
   # determine ARDL or ECM
   is_ardl <- is.null(model$args$ardl_or_ecm) | identical(model$args$ardl_or_ecm,"ARDL")
@@ -320,7 +319,7 @@ forecast_setup_estimated_relationships <- function(model,
   # checking the data for nowcasted data --------
 
   data_obj %>%
-    dplyr::select("time", dplyr::all_of(x_names_vec_nolag)) -> historical_estimation_data
+    dplyr::select("time", dplyr::all_of(x_names_vec_nolag), dplyr::all_of(y_names_vec[1])) -> historical_estimation_data
 
   # in this section we check whether any of the missing values are present in nowcasted data
   # we first check if there is even any historical data used (would not be true for e.g. AR models)
@@ -332,42 +331,32 @@ forecast_setup_estimated_relationships <- function(model,
       dplyr::filter(is.na(.data$values)) -> missing_values_dataobj
 
     # then we check whether any of the missing values in the historical data are present in nowcasted or in the exog_df_ready data
-    if (nrow(missing_values_dataobj) > 0 & !is.null(nowcasted_data)) {
+    #if (nrow(missing_values_dataobj) > 0 & !is.null(nowcasted_data)) {
+    if (nrow(missing_values_dataobj) > 0) {
 
       missing_values_dataobj %>%
         dplyr::mutate(basename = gsub("ln.","",.data$na_item)) %>%
-        dplyr::left_join(nowcasted_data %>%
-                           dplyr::rename(basename = "na_item",
-                                         values_nowcast = "values"), by = c("time", "basename")) %>%
-
-        dplyr::left_join(exog_df_ready %>%
-                           tidyr::pivot_longer(-"time",names_to = "basename",
-                                               values_to = "values_exog"), by = c("time", "basename")) %>%
 
         {if(!is.null(full_exog_predicted_data)){
           dplyr::left_join(.,full_exog_predicted_data %>%
                              tidyr::pivot_longer(-"time",names_to = "basename",
-                                                 values_to = "values_exog_full"), by = c("time", "basename"))} else {.}} %>%
+                                                 values_to = "values_exog_full"), by = c("time", "basename")) %>%
+            dplyr::mutate(.,values = dplyr::case_when(
+              !is.na(.data$values_exog_full) & is.na(.data$values) ~ .data$values_exog_full, TRUE ~ .data$values))
 
-
-        # where there are nowcast values but not original ones, take now the nowcast ones
-        # when doing this, we check first if we need to log them
-        dplyr::mutate(values = dplyr::case_when(!is.na(.data$values_nowcast) & is.na(.data$values) ~ .data$values_nowcast, TRUE ~ .data$values)) %>%
-
-        # now do the same with exog values; where there are exog values but not original or nowcast ones, take now the exog ones
-        dplyr::mutate(values = dplyr::case_when(!is.na(.data$values_exog) & is.na(.data$values) ~ .data$values_exog, TRUE ~ .data$values)) %>%
-
-        {if(!is.null(full_exog_predicted_data)){
-          # we do the same for the case that this function is called within the nowcast() function.
-          # we need this particular line in the cases where a co-variate for nowcasting is missing in its lag.
-          # an example: nowcasting a = b + c for date t. For time t also b and c are missing, so have to be taken from the exogenously forecasted values.
-          # then, if everything is contemporaneous, a can be nowcasted
-          # however, if we e.g. need the first lag of c to nowcast a and that lag is missing, then we need to go back to the full dataset of exogenously forecasted values
-          # we then take that value as well.
-          dplyr::mutate(.,values = dplyr::case_when(!is.na(.data$values_exog_full) & is.na(.data$values) ~ .data$values_exog_full, TRUE ~ .data$values))
         } else {.}} %>%
 
-        # now we check first if we need to log them
+        {if(!is.null(nowcasted_data)){
+          dplyr::left_join(.,nowcasted_data %>%
+                             dplyr::rename(basename = "na_item",
+                                           values_nowcast = "values"), by = c("time", "basename")) %>%
+
+            # where there are nowcast values but not original ones, take now the nowcast ones
+            dplyr::mutate(values = dplyr::case_when(
+              !is.na(.data$values_nowcast) & is.na(.data$values) ~ .data$values_nowcast, TRUE ~ .data$values))
+        } else {.}} %>%
+
+        # now we check if we need to log them
         dplyr::mutate(values = dplyr::case_when(!is.na(.data$values) & grepl("^ln.",.data$na_item) ~ log(.data$values), TRUE ~ .data$values)) %>%
 
         dplyr::select("time", "na_item", new_values = "values") %>%
@@ -390,14 +379,7 @@ forecast_setup_estimated_relationships <- function(model,
 
   # merging nowcasted data with non-x variables (IIS, SIS, etc.) --------
   historical_estimation_data_w_nowcast %>%
-
-    ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
-    # The drop_na below was used because for GCapitalForm the value for July 2022 was missing - while it was there for FinConsExpHH
-    # Now the question is whether the drop_na messes up the timing
-    #tidyr::drop_na() %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
-
     dplyr::bind_rows(current_pred_raw %>%
-                       #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
                        dplyr::select("time", dplyr::all_of(x_names_vec_nolag))) %>%
     dplyr::distinct() -> intermed
 
@@ -419,7 +401,6 @@ forecast_setup_estimated_relationships <- function(model,
                        dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
                                      dplyr::starts_with("iis"), dplyr::starts_with("sis")),
                      by = "time") %>%
-    # tidyr::drop_na() %>%
 
     # only retain the final n.ahead observations
     dplyr::slice(-c(dplyr::n() - n.ahead.incl.nowcast : dplyr::n())) %>%
@@ -427,8 +408,6 @@ forecast_setup_estimated_relationships <- function(model,
     dplyr::select(-"time") %>%
     dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
     return() -> pred_df
-
-  #print(pred_df)
 
   # doing the same for all uncertainty samples -------
 
@@ -442,18 +421,11 @@ forecast_setup_estimated_relationships <- function(model,
 
   if(chk_any_listcols){
     ## repeat the above with all
-    #data_obj %>%
-    # dplyr::select(time, dplyr::all_of(x_names_vec_nolag)) %>%
+
     historical_estimation_data_w_nowcast %>%
       dplyr::mutate(dplyr::across(dplyr::all_of(x_names_vec_nolag), ~as.list(.))) %>%
 
-      ########### TODO CHHHHEEEEEEECK. Don't think this makes sense. This happens if e.g. a value for one variable is released later
-      # The drop_na below was used because for GCapitalForm the value for July 2022 was missing - while it was there for FinConsExpHH
-      # Now the question is whether the drop_na messes up the timing
-      #tidyr::drop_na() %>% # UNCOMMENT THIS WHEN NOT HAVING A FULL DATASET
-
       dplyr::bind_rows(current_pred_raw_all %>%
-                         #dplyr::select(time, dplyr::all_of(x_names_vec_nolag), dplyr::any_of("trend"))) -> intermed
                          dplyr::rename_with(dplyr::everything(), .fn = ~gsub(".all","",.)) %>%
                          dplyr::mutate(dplyr::across(-"time", .fn = ~as.list(.))) %>%
                          dplyr::select("time", dplyr::all_of(paste0(x_names_vec_nolag)))) -> intermed.all
