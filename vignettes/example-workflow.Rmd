@@ -137,16 +137,23 @@ local directory when calling `run_model()`.
 
 We are now ready to run the model and obtain an `"osem"` object.
 
-```{r run-model}
+```{r run-model, out.width="100%"}
 model <- run_model(specification = specification,
                    dictionary = dict,
                    inputdata_directory = ".",
                    primary_source = "local",
                    save_to_disk = NULL,
                    present = FALSE,
-                   quiet = FALSE)
+                   quiet = FALSE, 
+                   plot = FALSE)
 class(model)
 ```
+
+```{r, fig.width=5, out.width="100%"}
+plot(model)
+```
+
+
 We did not `quiet` the output, so we get some information about the estimation.
 
 We are told that local files are used, namely the file 
