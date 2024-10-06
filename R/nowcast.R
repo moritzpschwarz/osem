@@ -74,11 +74,9 @@ nowcasting <- function(model, exog_df_ready, frequency){
             fastDummies::dummy_cols(.,
                                     select_columns = "q", remove_first_dummy = FALSE,
                                     remove_selected_columns = TRUE)} else {.}} -> exog_data_nowcasting
-        # fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE,
-        #                         remove_selected_columns = TRUE) -> exog_data_nowcasting
 
         # if there are no variables available, we just record them as NA (needed for below)
-        if(nrow(exog_data_nowcasting)==0){
+        if(nrow(exog_data_nowcasting) == 0){
 
           vars_missing <- indep_vars_to_get
           matrix(NA_integer_,
@@ -141,7 +139,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
 
         if(!identical(exog_data_to_replace$values_forecasted_exogenously,numeric(0)) & all(is.na(exog_data_to_replace$values_forecasted_exogenously))){
           stop(paste0("Forecasting has failed, likely due to a nowcasting issue. ",
-                      "This typcially happens when exogenous values are provided using the 'exog_predictions' option of 'forecast_model()'. ",
+                      "This typically happens when exogenous values are provided using the 'exog_predictions' option of 'forecast_model()'. ",
                       "There the source of this error is likely that the provided values do not cover values for the situation that there is a need to nowcast some values. ",
                       "The most reliable process to avoid this is to use: ",
                       "result <- run_model(specification); ",
@@ -185,7 +183,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
           exog_df_ready = exog_data_nowcasting,
           n.ahead = length(cur_target_dates),
           current_spec = current_spec,
-          nowcasted_data = model$full_data,
+          #nowcasted_data = model$full_data,
           full_exog_predicted_data = exog_df_ready
         )
 
@@ -215,15 +213,19 @@ nowcasting <- function(model, exog_df_ready, frequency){
           dplyr::mutate(values = dplyr::case_when(log_use == "both" | log_use == "y" ~ exp(.data$values), TRUE ~ .data$values),
                         na_item = dep_var,.after = "time") -> data_to_add
 
-        model$full_data %>%
-          dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-          dplyr::bind_rows(.,data_to_add) %>%
-          dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$full_data
 
-        model$processed_input_data %>%
-          dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-          dplyr::bind_rows(.,data_to_add) %>%
-          dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$processed_input_data
+        collected_nowcasts %>%
+          dplyr::bind_rows(data_to_add) -> collected_nowcasts
+
+        # model$full_data %>%
+        #   dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+        #   dplyr::bind_rows(.,data_to_add) %>%
+        #   dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$full_data
+        #
+        # model$processed_input_data %>%
+        #   dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+        #   dplyr::bind_rows(.,data_to_add) %>%
+        #   dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$processed_input_data
 
       }
 
@@ -300,24 +302,30 @@ nowcasting <- function(model, exog_df_ready, frequency){
           dplyr::rename_with(.cols = dplyr::everything(), .fn = ~gsub(".level|.hat","",.)) %>%
           tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") -> data_to_add
 
+        collected_nowcasts %>%
+          dplyr::bind_rows(data_to_add) -> collected_nowcasts
 
-        model$full_data %>%
-          dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-          dplyr::bind_rows(.,data_to_add) %>%
-          dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$full_data
 
-        model$processed_input_data %>%
-          dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-          dplyr::bind_rows(.,data_to_add) %>%
-          dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$processed_input_data
+        # model$full_data %>%
+        #   dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+        #   dplyr::bind_rows(.,data_to_add) %>%
+        #   dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$full_data
+        #
+        # model$processed_input_data %>%
+        #   dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
+        #   dplyr::bind_rows(.,data_to_add) %>%
+        #   dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$processed_input_data
       }
     }
 
 
-    out <- list()
-    out$nowcast_model <- model
-    out$orig_model <- orig_model
-    return(out)
+    # out <- list()
+    # out$nowcast_model <- model
+    # out$orig_model <- orig_model
+    # out$nowcast_data <- data_to_add
+    # return(out)
+
+    return(dplyr::arrange(collected_nowcasts, dplyr::desc(.data$time), .data$na_item))
 
   }
 

@@ -74,33 +74,21 @@ forecast_model <- function(model,
                                                   n.ahead = n.ahead,
                                                   quiet = quiet)
 
-  exog_df_ready <- exog_forecast_list$exog_df_ready
+  # extract the exogenous data that is ready for forecasting
+  exog_df_ready_full <- exog_forecast_list$exog_df_ready
+  exog_df_ready <- exog_df_ready_full %>% utils::tail(n.ahead)
 
   ## 1a. Nowcasting --------------------------------------------------------------------
-  nowcasted <- nowcasting(model, exog_df_ready = exog_df_ready, frequency = exog_forecast_list$frequency)
-
-  # after we are done with nowcasting, we throw away the early values
-  exog_df_ready_full <- exog_df_ready
-  exog_df_ready <- exog_df_ready %>% utils::tail(n.ahead)
-
-  if(!is.null(nowcasted$nowcast_model$full_data)){
-    nowcasted$nowcast_model$full_data %>%
-      dplyr::left_join(exog_df_ready_full %>%
-                         tidyr::pivot_longer(-"time",names_to = "na_item", values_to = "values_exog"),
-                       by = c("time","na_item")) %>%
-      dplyr::mutate(values = dplyr::case_when(is.na(.data$values) & !is.na(.data$values_exog) ~ .data$values_exog, TRUE ~ values)) %>%
-      dplyr::select(-"values_exog") -> nowcasted$nowcast_model$full_data
-  }
+  nowcasted <- nowcasting(model, exog_df_ready = exog_df_ready_full, frequency = exog_forecast_list$frequency)
 
   # if(!is.null(nowcasted)){
-  #   model <- nowcasted$nowcast_model
-  #   orig_model <- nowcasted$orig_model
-  # } else {
-  #   orig_model <- NULL
+  #   nowcasted$nowcast_model$full_data %>%
+  #     dplyr::left_join(exog_df_ready_full %>%
+  #                        tidyr::pivot_longer(-"time",names_to = "na_item", values_to = "values_exog"),
+  #                      by = c("time","na_item")) %>%
+  #     dplyr::mutate(values = dplyr::case_when(is.na(.data$values) & !is.na(.data$values_exog) ~ .data$values_exog, TRUE ~ values)) %>%
+  #     dplyr::select(-"values_exog") -> nowcasted$nowcast_model$full_data
   # }
-
-
-
 
   # 2. Forecasting step by step according to model order ------------------------------------------------
   # set-up the prediction list that will collect all results
@@ -165,11 +153,12 @@ forecast_model <- function(model,
       pred_setup_list <- forecast_setup_estimated_relationships(model = model,
                                                                 i = i,
                                                                 exog_df_ready = exog_df_ready,
+                                                                full_exog_predicted_data = exog_df_ready_full,
                                                                 n.ahead = n.ahead,
                                                                 current_spec = current_spec,
                                                                 prediction_list = prediction_list,
                                                                 uncertainty_sample = uncertainty_sample,
-                                                                nowcasted_data = nowcasted$nowcast_model$full_data,
+                                                                nowcasted_data = nowcasted,
                                                                 endog.nowcast = times.to.endog.nowcast)
 
       final_i_data <- pred_setup_list$final_i_data
@@ -355,7 +344,7 @@ forecast_model <- function(model,
   out$dictionary <- model$dictionary
   out$exog_data <- exog_df_ready
   out$exog_data_nowcast <- exog_df_ready_full
-  out$nowcast_data <- nowcasted$nowcast_model$full_data
+  out$nowcast_data <- nowcasted
   out$args <- list(
     n.ahead = n.ahead,
     ci.levels = ci.levels,
