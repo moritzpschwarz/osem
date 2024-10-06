@@ -32,7 +32,8 @@ print.osem.forecast <- function(x, plot = TRUE, full_names = FALSE, ...){
     tidyr::pivot_longer(-"time") %>%
     tidyr::drop_na("value") %>%
     tidyr::pivot_wider(id_cols = "time") %>%
-    dplyr::rename("Date" = "time") -> fcast_table
+    dplyr::rename("Date" = "time") %>%
+    dplyr::arrange(.data$Date) -> fcast_table
 
 
   cat(format(fcast_table)[-3L], sep = "\n")
