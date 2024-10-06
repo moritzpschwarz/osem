@@ -1,5 +1,10 @@
 #' Nowcast missing data for forecasting
 #'
+#' The \code{nowcasting()} function checks across all variables in the model whether there are any missing values that need to be nowcasted. If there are, it will nowcast these values and add them to the model.
+#' This is done by using the forecasted values of the exogenous variables. The function will return a list with two full model objects. One contains the original model and one contains the nowcasted model.
+#'
+#' Concretely, the function checks in model$processed_input_data for the maximum time point. It then identifies which variables do not fully extend to this time point. For these variables, it will nowcast the values using the forecasted values of the exogenous variables.
+#' So fundamentally these nowcasts depend on the exogenous forecasts.
 #' @param exog_df_ready The outcome of the \link[=forecast_exogenous_values]{forecast_exogenous_values} function, as prepared by the \link[=forecast_model]{forecast_model} function..
 #' @param frequency Character string that indicates the frequency of the model. Must be compatible with the 'by' argument in \code{seq.Date()}.
 #' @inheritParams forecast_model

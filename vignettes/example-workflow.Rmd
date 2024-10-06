@@ -137,7 +137,8 @@ local directory when calling `run_model()`.
 
 We are now ready to run the model and obtain an `"osem"` object.
 
-```{r run-model, out.width="100%"}
+```{r run-model, fig.height=7, out.width="100%"}
+
 model <- run_model(specification = specification,
                    dictionary = dict,
                    inputdata_directory = ".",
@@ -149,7 +150,7 @@ model <- run_model(specification = specification,
 class(model)
 ```
 
-```{r, fig.width=5, out.width="100%"}
+```{r, fig.height=7, out.width="100%"}
 plot(model)
 ```
 

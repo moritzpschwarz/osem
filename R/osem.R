@@ -6,7 +6,7 @@
 #' \href{https://cran.r-project.org/package=osem/README.html}{CRAN}
 #' or \href{https://github.com/moritzpschwarz/osem#readme}{GitHub}
 #'
-#' @docType package
+#' @docType _PACKAGE
 #' @name osem
 #' @importFrom magrittr %>%
 #' @importFrom rlang .data
