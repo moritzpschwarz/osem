@@ -225,34 +225,46 @@ nowcasting <- function(model, exog_df_ready, frequency){
       # Identities
       if(vars_not_full_analysis %>% dplyr::filter(.data$order == ord) %>% dplyr::pull("type") == "d"){
 
+        # steps for identity nowcasting
+        # 1. get the default data from identify module data
+        # 2. get the historical data to fill in any values that are available in the historical data (I don't think there ever are any)
+        # 3. fill in any exogenous values from the exogenous forecasts
+        # 4. fill in any nowcasted data from previous modules
+
         identity_data <- identify_module_data(data = model$full_data,
                                               classification = classify_variables(model$module_order),
                                               module = vars_not_full_analysis %>% dplyr::filter(.data$order == ord))
 
-        # we now look where we have historical or nowcasted data but not estimated (.hat) data
+        # we now look where we have historical data but not estimated (.hat) data
         # we would not want to use those for estimation but for nowcasting this makes sense
-        # so we identify where in identity_data there is data NA for the dates that we are nowcasting
-        # we then replace those with the historical data
+
+
         model$full_data %>%
           dplyr::rename(values_full = "values") %>%
-          dplyr::filter(!grepl("\\.hat$",.data$na_item)) %>%
-          #dplyr::mutate(na_item = paste0(na_item,".hat")) %>%
-          dplyr::left_join(identity_data %>%
-                             dplyr::filter(.data$time %in% cur_target_dates) %>%
-                             dplyr::filter(is.na(.data$values)), by = c("time", "na_item")) %>%
+          dplyr::filter(.data$time %in% cur_target_dates) %>%
+          dplyr::filter(!grepl("\\.hat$",.data$na_item)) -> historical_data
+
+        # so we identify where in identity_data there is data missing (is NA) for the dates that we are nowcasting here
+        # we then replace those with the historical data
+
+        identity_data %>%
+          dplyr::filter(.data$time %in% cur_target_dates) %>%
+          dplyr::filter(is.na(.data$values)) %>%
+          dplyr::left_join(historical_data, by = c("time","na_item")) %>%
           dplyr::mutate(values = .data$values_full,
                         values_full = NULL) -> data_to_substitute
 
 
-        # here we check whether any of the exogenous values need to be replaced
+        # we then check whether any of the exogenous values need to be filled in from the exogenous forecasts
         # this can happen when co-variates were not available up to the final time
-        # this would mean that those values are not available for nowcasting
         data_to_substitute %>%
           dplyr::filter(is.na(.data$values)) %>%
+
+          # check with exog_df_ready
           dplyr::left_join(exog_df_ready %>%
-                             tidyr::pivot_longer(-"time", names_to = "na_item"), by = c("time","na_item")) %>%
-          dplyr::mutate(values_forecasted_exogenously = .data$value) %>%
-          dplyr::select(-"value", -"values") -> exog_data_to_replace
+                             tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values_forecasted_exogenously"), by = c("time","na_item")) %>%
+          dplyr::select(-"values") -> exog_data_to_replace
+
 
         if(nrow(exog_data_to_replace) > 0){
           data_to_substitute %>%
@@ -264,6 +276,28 @@ nowcasting <- function(model, exog_df_ready, frequency){
 
         }
 
+        # we then check whether any of the values need to be filled in from already nowcasted data
+        data_to_substitute %>%
+          dplyr::filter(is.na(.data$values)) %>%
+
+          # check with already nowcasted data
+          dplyr::left_join(collected_nowcasts %>%
+                             dplyr::rename(values_nowcasted = "values") %>%
+                             dplyr::mutate(na_item = paste0(na_item, ".hat")), by = c("time","na_item")) %>%
+
+          dplyr::select(-"values") -> nowcast_data_to_replace
+
+        if(nrow(nowcast_data_to_replace) > 0){
+          data_to_substitute %>%
+            dplyr::left_join(nowcast_data_to_replace, by = c("time","na_item")) %>%
+            dplyr::mutate(values = dplyr::case_when(
+              is.na(.data$values) &
+                !is.na(values_nowcasted) ~ values_nowcasted, TRUE ~ .data$values)) %>%
+            dplyr::select(-"values_nowcasted") -> data_to_substitute
+
+        }
+
+        # we then combine the default identity data with the additional data
         identity_data %>%
           dplyr::filter(.data$time %in% cur_target_dates) %>%
           dplyr::filter(!is.na(.data$values)) %>%
