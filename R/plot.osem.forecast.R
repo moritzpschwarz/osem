@@ -125,25 +125,27 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     dplyr::mutate(fit = "forecast") -> forecasts_processed
 
   # NOWCASTS --------
-  x$nowcast_data %>%
-    tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") -> nowcasted_data
+  if(!is.null(x$nowcast_data)) {
+    x$nowcast_data%>%
+      tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") -> nowcasted_data
 
-  # find out which of the central forecasts should be exponentiated (because they were run in ln)
-  nowcasted_data %>%
-    names %>%
-    stringr::str_detect(., "^ln.") -> to_exponentiate
+    # find out which of the central forecasts should be exponentiated (because they were run in ln)
+    nowcasted_data %>%
+      names %>%
+      stringr::str_detect(., "^ln.") -> to_exponentiate
 
-  nowcasted_data %>%
-    dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(nowcasted_data)[to_exponentiate]), exp)) %>%
-    dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
+    nowcasted_data %>%
+      dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(nowcasted_data)[to_exponentiate]), exp)) %>%
+      dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
 
-    tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
-    dplyr::full_join(x$orig_model$module_order %>%
-                       dplyr::select("dependent") %>%
-                       dplyr::rename(na_item = "dependent"), by = "na_item") %>%
+      tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
+      dplyr::full_join(x$orig_model$module_order %>%
+                         dplyr::select("dependent") %>%
+                         dplyr::rename(na_item = "dependent"), by = "na_item") %>%
 
-    dplyr::mutate(fit = "nowcast") -> nowcast_processed
+      dplyr::mutate(fit = "nowcast") -> nowcast_processed
 
+  } else {nowcast_processed <- NULL}
 
   # ALL FORECASTS --------
   # Dealing with uncertainty (all forecasts)
@@ -201,16 +203,18 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
 
 
   # and the last nowcasted value
-  nowcast_processed %>%
-    dplyr::filter(.data$fit == "nowcast") %>%
-    dplyr::group_by(.data$na_item) %>%
-    dplyr::filter(.data$time == max(.data$time, na.rm = TRUE)) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(fit = "forecast") -> last_nowcast_value
+  if(!is.null(x$nowcast_data)) {
+    nowcast_processed %>%
+      dplyr::filter(.data$fit == "nowcast") %>%
+      dplyr::group_by(.data$na_item) %>%
+      dplyr::filter(.data$time == max(.data$time, na.rm = TRUE)) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(fit = "forecast") -> last_nowcast_value
+  }
 
   # first figure out whether the last variable is a forecast or a nowcast
   last_fitted_value %>%
-    dplyr::bind_rows(last_nowcast_value) %>%
+    {if(!is.null(x$nowcast_data)){dplyr::bind_rows(last_nowcast_value)} else {.}} %>%
     dplyr::group_by(.data$na_item) %>%
     dplyr::filter(.data$time == max(.data$time, na.rm = TRUE)) %>%
     dplyr::ungroup() %>%
