@@ -177,14 +177,14 @@ forecast_model <- function(model,
 
       pred_obj <- gets::predict.isat(isat_obj,
                                      newmxreg = as.matrix(utils::tail(pred_df %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)),
-                                                                      pred_setup_list$n.ahead.incl.nowcast)),
-                                     n.ahead = pred_setup_list$n.ahead.incl.nowcast,
+                                                                      n.ahead)),
+                                     n.ahead = n.ahead,
                                      plot = FALSE,
                                      ci.levels = ci.levels)
 
       # make samples from the model residuals and add them to the mean prediction
-      res_draws <- sample(as.numeric(isat_obj$residuals), size = uncertainty_sample*pred_setup_list$n.ahead.incl.nowcast, replace = TRUE)
-      pred_draw_matrix <- as.vector(pred_obj$yhat) + matrix(res_draws,nrow = pred_setup_list$n.ahead.incl.nowcast)
+      res_draws <- sample(as.numeric(isat_obj$residuals), size = uncertainty_sample * n.ahead, replace = TRUE)
+      pred_draw_matrix <- as.vector(pred_obj$yhat) + matrix(res_draws, nrow = n.ahead)
 
       ## 2b.ii. Predict uncertainty plume for estimated relationships  ------------------------------------------------
 
@@ -254,7 +254,7 @@ forecast_model <- function(model,
                                newmxreg = x %>%
                                  dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)) %>%
                                  as.matrix,
-                               n.ahead = pred_setup_list$n.ahead.incl.nowcast, plot = FALSE,
+                               n.ahead = n.ahead, plot = FALSE,
                                ci.levels = ci.levels, n.sim = 1)
 
           })) -> all_preds
