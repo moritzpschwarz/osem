@@ -204,10 +204,11 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   #   {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} -> exog_forecasts
 
   # CONSTRUCTING JOINT LINES --------
-
-  nowcast_processed %>%
-    dplyr::distinct(.data$na_item) %>%
-    dplyr::pull("na_item") -> nowcast_present
+  if(!is.null(nowcast_processed)){
+    nowcast_processed %>%
+      dplyr::distinct(.data$na_item) %>%
+      dplyr::pull("na_item") -> nowcast_present
+  } else {nowcast_present <- NULL}
 
 
   ## Nowcasts ----
@@ -225,9 +226,9 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
 
   ## Central Forecasts ----
 
-  forecasts_processed %>%
+  forecasts_processed <- forecasts_processed %>%
     dplyr::bind_rows(last_fitted_value %>% dplyr::filter(!.data$na_item %in% nowcast_present)) %>%
-    dplyr::bind_rows(last_nowcast_value %>% dplyr::filter(.data$na_item %in% nowcast_present)) -> forecasts_processed
+    {if(!is.null(nowcast_processed)){dplyr::bind_rows(.,last_nowcast_value %>% dplyr::filter(.data$na_item %in% nowcast_present))}else{.}}
 
   ## All Forecasts ---
 
@@ -241,15 +242,15 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                                       p75 =  .data$values,
                                       p25 =  .data$values, .by = .data$time, .data$na_item) %>%
                        dplyr::mutate(fit = "Forecast Uncertainty")) %>%
-    dplyr::bind_rows(last_nowcast_value %>%
-                       dplyr::filter(.data$na_item %in% nowcast_present) %>%
-                       dplyr::reframe(p95 = .data$values,
-                                      p05 = .data$values,
-                                      p975 = .data$values,
-                                      p025 = .data$values,
-                                      p75 =  .data$values,
-                                      p25 =  .data$values, .by = .data$time, .data$na_item) %>%
-                       dplyr::mutate(fit = "Forecast Uncertainty")) -> all_forecasts_processed_q
+    {if(!is.null(nowcast_processed)){dplyr::bind_rows(.,last_nowcast_value %>%
+                                                        dplyr::filter(.data$na_item %in% nowcast_present) %>%
+                                                        dplyr::reframe(p95 = .data$values,
+                                                                       p05 = .data$values,
+                                                                       p975 = .data$values,
+                                                                       p025 = .data$values,
+                                                                       p75 =  .data$values,
+                                                                       p25 =  .data$values, .by = .data$time, .data$na_item) %>%
+                                                        dplyr::mutate(fit = "Forecast Uncertainty"))}else{.}} -> all_forecasts_processed_q
 
   plotting_df_ready <- forecasts_processed %>%
     dplyr::bind_rows(plot_df) %>%
