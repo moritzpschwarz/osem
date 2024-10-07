@@ -46,13 +46,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
 
   if(!is.null(first_date)){if(!is.character(first_date) | !lubridate::is.Date(as.Date(first_date))){stop("When supplying 'first_date', the it must be a character and must be (able to be converted to) a Date.")}}
 
-  # {if(!is.null(x$nowcast_data)){
-  #   x$orig_model$full_data %>%
-  #     dplyr::bind_rows(x$nowcast_data) %>%
-  #     dplyr::arrange(.data$time)
-  # } else {
   x$orig_model$full_data %>%
-    # }} %>%
     dplyr::mutate(var = .data$na_item,
                   na_item = gsub("\\.hat","",.data$na_item),
                   fit = as.character(stringr::str_detect(.data$var, ".hat"))) -> plot_df
@@ -73,30 +67,6 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     plot_df %>%
       dplyr::filter(.data$na_item %in% when_excluding_exog) -> plot_df
   }
-
-
-
-
-  # dplyr::left_join(x$dictionary %>%
-  #             dplyr::rename(na_item = model_varnma) %>%
-  #             dplyr::select(na_item, model_varname), by = "na_item")
-
-  # plot_df %>%
-  #   ggplot2::ggplot(ggplot2::aes(x = time, y = values, color = fit, group = var, fit = var)) +
-  #   ggplot2::geom_line(linewidth = 1, na.rm = TRUE) +
-  #
-  #   ggplot2::facet_wrap(~na_item, scales = "free") +
-  #
-  #   ggplot2::labs(x = NULL, y = NULL) +
-  #
-  #   ggplot2::scale_y_continuous(labels = scales::comma) +
-  #   ggplot2::scale_color_viridis_d() +
-  #
-  #   ggplot2::theme_minimal() +
-  #   ggplot2::theme(legend.position = "none",
-  #         panel.grid.major.x = ggplot2::element_blank(),
-  #         panel.grid.minor.x = ggplot2::element_blank(),
-  #         panel.grid.minor.y = ggplot2::element_blank()) -> initial_plot
 
   # CENTRAL FORECASTS --------
   # get the central forecasts
@@ -182,10 +152,17 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   } else {nowcast_processed <- NULL}
 
 
+  # EXOGENOUS FORECASTS --------
+  x$exog_data_nowcast %>%
+    dplyr::select(-dplyr::any_of(c("q_1","q_2","q_3","q_4"))) %>%
+    tidyr::pivot_longer(-"time", values_to = "values", names_to = "na_item") %>%
+    #dplyr::bind_rows(last_hist_value %>% dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables")) %>%
+    dplyr::arrange(.data$time) %>%
+    dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") %>%
+    {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} -> exog_forecasts
 
 
-
-  # LAST FITTED -------------------------------------------------------------
+  # LAST VALUES -------------------------------------------------------------
   # here we get the last fitted value
   plot_df %>%
     dplyr::filter(.data$fit == "TRUE", !is.na(.data$values)) %>%
@@ -198,6 +175,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   # and the last historical value
   plot_df %>%
     dplyr::filter(.data$fit == "FALSE") %>%
+    tidyr::drop_na(.data$values) %>%
     dplyr::group_by(.data$na_item) %>%
     dplyr::filter(.data$time == max(.data$time, na.rm = TRUE)) %>%
     dplyr::ungroup() %>%
@@ -214,38 +192,66 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
       dplyr::mutate(fit = "forecast") -> last_nowcast_value
   }
 
-  # first figure out whether the last variable is a forecast or a nowcast
-  last_fitted_value %>%
-    {if(!is.null(x$nowcast_data)){dplyr::bind_rows(last_nowcast_value)} else {.}} %>%
-    dplyr::group_by(.data$na_item) %>%
-    dplyr::filter(.data$time == max(.data$time, na.rm = TRUE)) %>%
-    dplyr::ungroup() %>%
 
-    dplyr::reframe(p95 = .data$values,
-                   p05 = .data$values,
-                   p975 = .data$values,
-                   p025 = .data$values,
-                   p75 =  .data$values,
-                   p25 =  .data$values, .by = .data$time, .data$na_item) %>%
-    dplyr::mutate(fit = "Forecast Uncertainty") %>%
-    dplyr::bind_rows(.,all_forecasts_processed_q) %>%
-    {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} %>%
-    tidyr::drop_na() -> all_forecasts_processed_q
 
-  # Exogenous forecasts --------
-  x$exog_data %>%
-    dplyr::select(-dplyr::any_of(c("q_1","q_2","q_3","q_4"))) %>%
-    tidyr::pivot_longer(-"time", values_to = "values", names_to = "na_item") %>%
-    dplyr::bind_rows(last_hist_value %>% dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables")) %>%
-    dplyr::arrange(.data$time) %>%
-    dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") %>%
-    {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} -> exog_forecasts
 
-  ggplot_options <- list(
-    if (!exclude.exogenous) {ggplot2::geom_line(data = exog_forecasts, ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit))} else {NULL}
-  )
+  # x$exog_data %>%
+  #   dplyr::select(-dplyr::any_of(c("q_1","q_2","q_3","q_4"))) %>%
+  #   tidyr::pivot_longer(-"time", values_to = "values", names_to = "na_item") %>%
+  #   dplyr::bind_rows(last_hist_value %>% dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables")) %>%
+  #   dplyr::arrange(.data$time) %>%
+  #   dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") %>%
+  #   {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} -> exog_forecasts
 
-  plotting_df_ready <- dplyr::bind_rows(forecasts_processed, last_fitted_value) %>%
+  # CONSTRUCTING JOINT LINES --------
+
+  nowcast_processed %>%
+    dplyr::distinct(.data$na_item) %>%
+    dplyr::pull("na_item") -> nowcast_present
+
+
+  ## Nowcasts ----
+  # nowcast_processed %>%
+  #   dplyr::bind_rows(last_fitted_value %>%
+  #                      dplyr::filter(.data$na_item %in% nowcast_present)) %>%
+  #   dplyr::mutate(fit = "Nowcast") -> nowcast_processed
+
+  ## Exogenous Forecasts ---
+  exog_forecasts %>%
+    dplyr::bind_rows(last_hist_value %>%
+                       dplyr::filter(.data$na_item %in% unique(exog_forecasts$na_item))) %>%
+    dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") -> exog_forecasts
+
+
+  ## Central Forecasts ----
+
+  forecasts_processed %>%
+    dplyr::bind_rows(last_fitted_value %>% dplyr::filter(!.data$na_item %in% nowcast_present)) %>%
+    dplyr::bind_rows(last_nowcast_value %>% dplyr::filter(.data$na_item %in% nowcast_present)) -> forecasts_processed
+
+  ## All Forecasts ---
+
+  all_forecasts_processed_q %>%
+    dplyr::bind_rows(last_fitted_value %>%
+                       dplyr::filter(!.data$na_item %in% nowcast_present) %>%
+                       dplyr::reframe(p95 = .data$values,
+                                      p05 = .data$values,
+                                      p975 = .data$values,
+                                      p025 = .data$values,
+                                      p75 =  .data$values,
+                                      p25 =  .data$values, .by = .data$time, .data$na_item) %>%
+                       dplyr::mutate(fit = "Forecast Uncertainty")) %>%
+    dplyr::bind_rows(last_nowcast_value %>%
+                       dplyr::filter(.data$na_item %in% nowcast_present) %>%
+                       dplyr::reframe(p95 = .data$values,
+                                      p05 = .data$values,
+                                      p975 = .data$values,
+                                      p025 = .data$values,
+                                      p75 =  .data$values,
+                                      p25 =  .data$values, .by = .data$time, .data$na_item) %>%
+                       dplyr::mutate(fit = "Forecast Uncertainty")) -> all_forecasts_processed_q
+
+  plotting_df_ready <- forecasts_processed %>%
     dplyr::bind_rows(plot_df) %>%
     dplyr::bind_rows(nowcast_processed) %>%
 
@@ -256,7 +262,28 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
 
     {if(!is.null(first_date)){dplyr::filter(., .data$time >= as.Date(first_date))} else {.}} %>%
 
-    {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}}
+    {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} %>%
+
+    dplyr::mutate(fit = dplyr::case_when(fit == "TRUE" ~ "Insample Fit",
+                                         fit == "FALSE" ~ "Observation",
+                                         fit == "nowcast" ~ "Nowcast",
+                                         fit == "forecast" ~ "Forecast",
+                                         TRUE ~ fit)) %>%
+    dplyr::mutate(fit = factor(.data$fit, levels = c("Observation","Insample Fit", "Nowcast", "Forecast")))
+
+  ggplot_options <- list(
+    if (!exclude.exogenous) {ggplot2::geom_line(data = exog_forecasts, ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit))} else {NULL}
+  )
+
+  #"#440154FF" "#3B528BFF" "#21908CFF" "#5DC863FF" "#FDE725FF"
+  # viridis::viridis(4)
+  colors <- c(
+    "Forecast/Assumption of\nExogenous Variables" = "#31688EFF",
+    "Forecast" = "#3B528BFF",
+    "Insample Fit" = "#FDE725FF",
+    "Observation" = "#440154FF",
+    "Nowcast" = "#35B779FF"
+  )
 
 
   plotting_df_ready %>%
@@ -275,7 +302,8 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     ggplot2::labs(x = NULL, y = NULL, title = title) +
 
     ggplot2::scale_y_continuous(labels = scales::label_comma()) +
-    ggplot2::scale_color_viridis_d() +
+    #ggplot2::scale_color_viridis_d() +
+    ggplot2::scale_color_manual(values = colors) +
 
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "none",
