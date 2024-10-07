@@ -41,8 +41,6 @@ nowcasting <- function(model, exog_df_ready, frequency){
 
     collected_nowcasts <- dplyr::tibble()
     for(ord in vars_not_full_analysis$order){
-      # ord <- vars_not_full_analysis$order[1]
-      # ord <- vars_not_full_analysis$order[2]
 
       dep_var <- vars_not_full_analysis[vars_not_full_analysis$order == ord,"dependent", drop = TRUE]
 
@@ -177,13 +175,12 @@ nowcasting <- function(model, exog_df_ready, frequency){
           tidyr::drop_na("index") %>%
           dplyr::select("index","dependent","independent","independent_orig")
 
-        pred_setup_list <- forecast_setup_estimated_relationships(
+        pred_setup_list <- nowcast_setup_estimated_relationships(
           model = model,
           i = ord,
           exog_df_ready = exog_data_nowcasting,
           n.ahead = length(cur_target_dates),
           current_spec = current_spec,
-          #nowcasted_data = model$full_data,
           full_exog_predicted_data = exog_df_ready
         )
 
@@ -191,10 +188,6 @@ nowcasting <- function(model, exog_df_ready, frequency){
         pred_df <- pred_setup_list$pred_df
         isat_obj <- pred_setup_list$isat_obj
         current_pred_raw <- pred_setup_list$current_pred_raw
-
-        if(!is.null(pred_setup_list$pred_df.all)){
-          pred_df.all <- pred_setup_list$pred_df.all
-        }
 
         isat_obj$call$ar <- isat_obj$aux$args$ar
         isat_obj$call$mc <- isat_obj$aux$args$mc
