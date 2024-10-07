@@ -12,7 +12,7 @@ forecast_setup_estimated_relationships(
   current_spec,
   prediction_list,
   uncertainty_sample,
-  nowcasted_data,
+  nowcasted_data = NULL,
   full_exog_predicted_data = NULL,
   endog.nowcast = NULL
 )
