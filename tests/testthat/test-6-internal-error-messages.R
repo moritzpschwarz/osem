@@ -247,3 +247,46 @@ test_that("Check that all variables are in the dictionary",{
 
 
 
+
+test_that("Check that a missing dictionary entry is not triggering an error for an identity",{
+
+
+  specification <- dplyr::tibble(
+    type = c(
+      "n",
+      "d"
+    ),
+    dependent = c(
+      "FinConsExpHH",
+      "NewIdent" # this identity is not defined in the dictionary
+    ),
+    independent = c(
+      "FinConsExpGov + HICP_Gas",
+      "FinConsExpHH + HICP_Gas"
+    )
+  )
+
+  set.seed(123)
+  testdata <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
+                            FinConsExpGov = rnorm(mean = 100, n = length(time)),
+                            #HICP_Gas = rnorm(mean = 200, n = length(time)),
+                            # simulate an AR1 process with rho = 0.3 and call it HICP_Gas
+                            HICP_Gas = as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 30, mean = 200)),
+                            L1.HICP_Gas = lag(HICP_Gas),
+                            FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas -0.2 * L1.HICP_Gas +
+                              as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 0.2, mean = 0)))
+
+  testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
+
+  expect_silent(mod <- run_model(specification = specification,
+                                 dictionary = dict,
+                                 inputdata_directory = testdata,
+                                 primary_source = "local",
+                                 present = FALSE,
+                                 quiet = TRUE, saturation = "IIS"))
+
+  expect_true("NewIdent" %in% unique(mod$full_data$na_item))
+
+
+})
+
