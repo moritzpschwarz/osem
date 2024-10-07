@@ -224,7 +224,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                    p975 = .data$values,
                    p025 = .data$values,
                    p75 =  .data$values,
-                   p25 =  .data$values, .groups = "drop", .by = .data$time, .data$na_item) %>%
+                   p25 =  .data$values, .by = .data$time, .data$na_item) %>%
     dplyr::mutate(fit = "Forecast Uncertainty") %>%
     dplyr::bind_rows(.,all_forecasts_processed_q) %>%
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} %>%
