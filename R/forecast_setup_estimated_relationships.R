@@ -183,18 +183,22 @@ forecast_setup_estimated_relationships <- function(model,
   #if (!all(current_spec$independent %in% names(exog_df_ready)) && !all(is.na(current_spec$independent))) {
 
   # new version, trying to make this more explicit:
-  if(!all(is.na(current_spec$independent))){
-    exog_df_ready %>%
-      dplyr::select(dplyr::any_of(current_spec$independent)) %>%
-      dplyr::filter(dplyr::if_any(dplyr::everything(), ~is.na(.))) %>%
-      nrow > 0 -> any_NA_in_exog
-  } else {
-    any_NA_in_exog <- FALSE
-  }
-
+  # this checks whether there is a value that is NA in the exogenous values
+  # this would then need to be replaced in the following loop
+  # if(!all(is.na(current_spec$independent))){
+  #   exog_df_ready %>%
+  #     dplyr::select(dplyr::any_of(current_spec$independent)) %>%
+  #     dplyr::filter(dplyr::if_any(dplyr::everything(), ~is.na(.))) %>%
+  #     nrow > 0 -> any_NA_in_exog
+  # } else {
+  #   any_NA_in_exog <- FALSE
+  # }
 
   previous_dependent_vars <- model$module_order$dependent[model$module_order$order < i]
-  if(any(current_spec$independent %in% previous_dependent_vars) & any_NA_in_exog){
+  # run this loop if any of the independent variables has already been a dependent variable of a preceding module
+  # also run this loop, if there are any missing values in the exog_df_ready
+  #if(any(current_spec$independent %in% previous_dependent_vars) & any_NA_in_exog){
+  if(any(current_spec$independent %in% previous_dependent_vars)){
 
     missing_vars <- current_spec$independent[current_spec$independent %in% previous_dependent_vars]
 
@@ -406,8 +410,7 @@ forecast_setup_estimated_relationships <- function(model,
     dplyr::slice(-c(dplyr::n() - n.ahead.incl.nowcast : dplyr::n())) %>%
 
     dplyr::select(-"time") %>%
-    dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
-    return() -> pred_df
+    dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) -> pred_df
 
   # doing the same for all uncertainty samples -------
 
@@ -423,12 +426,13 @@ forecast_setup_estimated_relationships <- function(model,
     ## repeat the above with all
 
     historical_estimation_data_w_nowcast %>%
+      dplyr::select("time", dplyr::all_of(x_names_vec_nolag)) %>%
       dplyr::mutate(dplyr::across(dplyr::all_of(x_names_vec_nolag), ~as.list(.))) %>%
 
       dplyr::bind_rows(current_pred_raw_all %>%
                          dplyr::rename_with(dplyr::everything(), .fn = ~gsub(".all","",.)) %>%
                          dplyr::mutate(dplyr::across(-"time", .fn = ~as.list(.))) %>%
-                         dplyr::select("time", dplyr::all_of(paste0(x_names_vec_nolag)))) -> intermed.all
+                         dplyr::select("time", dplyr::all_of(x_names_vec_nolag))) -> intermed.all
 
 
     # same for .all: add the lagged x-variables
