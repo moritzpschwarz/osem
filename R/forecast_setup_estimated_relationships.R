@@ -12,6 +12,7 @@
 #'
 #' @return A list containing, among other elements, the data required to carry out the forecast for this estimated module.
 #'
+
 forecast_setup_estimated_relationships <- function(model,
                                                    i,
                                                    exog_df_ready,
@@ -42,6 +43,7 @@ forecast_setup_estimated_relationships <- function(model,
   extracted_info$exog_df_ready -> exog_df_ready
   extracted_info$pred_ar_needed -> pred_ar_needed
   extracted_info$pred_dl_needed -> pred_dl_needed
+
 
 
   # Deal with current_spec not being fully exogenous --------
@@ -85,13 +87,6 @@ forecast_setup_estimated_relationships <- function(model,
         .$model.args %>%
         .[[1]] %>%
         .$use_logs
-
-      prediction_list %>%
-        dplyr::filter(.data$index == mvar_model_index) %>%
-        dplyr::pull("all.estimates") %>%
-        .[[1]] %>%
-        dplyr::select(-"time") -> mvar_all.estimates
-
 
       mvar_euname <- model$module_collection %>%
         dplyr::filter(.data$index == mvar_model_index) %>%
