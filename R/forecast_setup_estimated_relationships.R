@@ -99,19 +99,19 @@ forecast_setup_estimated_relationships <- function(model,
 
       mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
 
-        # name all the individual estimates
-        colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
+      # name all the individual estimates
+      colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
 
-        # get all the individual estimates into a column of a tibble
-        mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
-          dplyr::mutate(index = 1:dplyr::n()) %>%
-          tidyr::nest(data = -"index") %>%
-          dplyr::select(-"index") %>%
-          setNames(paste0(mvar_name,".all"))
+      # get all the individual estimates into a column of a tibble
+      mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
+        dplyr::mutate(index = 1:dplyr::n()) %>%
+        tidyr::nest(data = -"index") %>%
+        dplyr::select(-"index") %>%
+        setNames(paste0(mvar_name,".all"))
 
-        # add the mean yhat estimates and the all estimates together
-        mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
-          setNames(mvar_name)
+      # add the mean yhat estimates and the all estimates together
+      mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
+        setNames(mvar_name)
 
 
 
