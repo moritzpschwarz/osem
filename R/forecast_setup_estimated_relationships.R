@@ -23,159 +23,26 @@ forecast_setup_estimated_relationships <- function(model,
                                                    full_exog_predicted_data = NULL,
                                                    endog.nowcast = NULL) {
 
-  # set up -----------
-  # get isat obj
-  model$module_collection %>%
-    dplyr::filter(.data$order == i) %>%
-    dplyr::pull(.data$model) %>% .[[1]] -> isat_obj
-
-  # get data obj (that is the data that was used in the estimation)
-  model$module_collection %>%
-    dplyr::filter(.data$order == i) %>%
-    dplyr::pull(.data$dataset) %>% .[[1]] -> data_obj
-
-  # Check if any nowcasting is needed
-  # if(!is.null(endog.nowcast)){
-  #   if(!isa(endog.nowcast, "Date")){stop("Variable 'endog.nowcast' must be a date object.")}
-  #   n.ahead.incl.nowcast <- n.ahead + length(endog.nowcast)
-  #
-  #   data_obj %>%
-  #     dplyr::filter(.data$time %in% endog.nowcast) %>%
-  #     dplyr::select("time",dplyr::all_of(current_spec$independent)) %>%
-  #     dplyr::mutate(q = lubridate::quarter(.data$time, with_year = FALSE),
-  #                   q = factor(.data$q, levels = c(1,2,3,4))) %>%
-  #     fastDummies::dummy_cols("q", remove_first_dummy = FALSE, remove_selected_columns = TRUE) %>%
-  #
-  #     dplyr::bind_rows(exog_df_ready) -> exog_df_ready
-  #
-  # } else {
-  n.ahead.incl.nowcast <- n.ahead
-  # }
-
-  # determine ARDL or ECM
-  is_ardl <- is.null(model$args$ardl_or_ecm) | identical(model$args$ardl_or_ecm,"ARDL")
-
-  # determine log y
-  ylog <- model$module_collection %>%
-    dplyr::filter(.data$order == i) %>%
-    dplyr::pull(.data$model.args) %>%
-    .[[1]] %>%
-    .$use_logs %in% c("both","y")
-
-  # determine log x
-  xlog <- model$module_collection %>%
-    dplyr::filter(.data$order == i) %>%
-    dplyr::pull(.data$model.args) %>%
-    .[[1]] %>%
-    .$use_logs %in% c("both","x")
-
-  # determine x vars
-  x_vars_basename <- model$module_collection %>%
-    dplyr::filter(.data$order == i) %>%
-    dplyr::pull(.data$model.args) %>%
-    .[[1]] %>%
-    .$x_vars_basename
-
-  y_vars_basename <- model$module_collection %>%
-    dplyr::filter(.data$order == i) %>%
-    dplyr::pull(.data$model.args) %>%
-    .[[1]] %>%
-    .$dep_var_basename
-
-  # check quarterly dummies to drop
-  q_pred_todrop <- c("q_1","q_2","q_3","q_4")[!c("q_1","q_2","q_3","q_4") %in% colnames(isat_obj$aux$mX)]
-
-  # check if mconst is used
-  if ("mconst" %in% colnames(isat_obj$aux$mX)) {
-    mconst <- TRUE
-  } else {
-    mconst <- FALSE
-  }
-
-  # identify any ar terms in the estimated data
-  pred_ar_needed <- colnames(isat_obj$aux$mX)[grepl("ar[0-9]+",colnames(isat_obj$aux$mX))]
-  # identify any dl terms in the estimated data
-  pred_dl_needed <- colnames(isat_obj$aux$mX)[grepl("^L[0-9]+",colnames(isat_obj$aux$mX))]
-
-  # this condition checks whether there are any ar terms that need to be created
-  if (!is.null(pred_ar_needed) & !identical(character(0),pred_ar_needed)) {
-
-    # if we need AR terms, the following loop creates the names of those variables (incl. considering whether they are logged)
-    ar_vec <- 0:max(as.numeric(gsub("ar","",pred_ar_needed)))
-    y_names_vec <- c()
-    for (ar in ar_vec) {
-      # ar = 0
-      y_names_vec <- c(y_names_vec,paste0(paste0(ifelse(ar == 0,"",paste0("L",ar,"."))),ifelse(ylog,"ln.",""),y_vars_basename))
-    }
-  } else {
-    # if we do not need any AR terms then we simply use the standard name (and add ln. if necessary)
-    y_names_vec <- paste0(ifelse(ylog,"ln.",""),y_vars_basename)
-    ar_vec <- 0
-  }
-
-  # TODO: check whether the AR vector is the correct one for the x variables
-  if (!identical(character(0),x_vars_basename)) {
-    x_names_vec_nolag <- paste0(ifelse(xlog,"ln.",""),x_vars_basename)
-    x_names_vec <- c(x_names_vec_nolag, pred_dl_needed)
-  } else {
-    x_names_vec <- NULL
-    x_names_vec_nolag <- NULL
-  }
-
-  # get iis dummies
-  if (!is.null(gets::isatdates(isat_obj)$iis)) {
-    iis_pred <- matrix(0,
-                       nrow = nrow(exog_df_ready),
-                       ncol = nrow(gets::isatdates(isat_obj)$iis),
-                       dimnames  = list(NULL,
-                                        gets::isatdates(isat_obj)$iis$breaks)) %>%
-      dplyr::as_tibble()
-  }
-
-  # get sis dummies
-  if (!is.null(gets::isatdates(isat_obj)$sis)) {
-    sis_pred <- matrix(1,
-                       nrow = nrow(exog_df_ready),
-                       ncol = nrow(gets::isatdates(isat_obj)$sis),
-                       dimnames  = list(NULL,
-                                        gets::isatdates(isat_obj)$sis$breaks)) %>%
-      dplyr::as_tibble()
-  }
-
-  if ("trend" %in% names(coef(isat_obj))) {
-    trend_pred <- dplyr::tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead.incl.nowcast))
-  }
 
 
-  # adding together all variables apart from x-variables (so IIS, SIS, trends, etc.)  -------------------------------
-  exog_df_ready %>%
+  extracted_info <- forecast_extract_info(model = model, i = i, n.ahead = n.ahead, exog_df_ready = exog_df_ready)
 
-    # select the relevant variables
-    dplyr::select("time", dplyr::any_of(c("q_1","q_2","q_3","q_4")), dplyr::any_of(names(data_obj))) %>%
+  extracted_info$y_names_vec -> y_names_vec
+  extracted_info$x_names_vec -> x_names_vec
+  extracted_info$x_names_vec_nolag -> x_names_vec_nolag
+  extracted_info$ar_vec -> ar_vec
+  extracted_info$ylog -> ylog
+  extracted_info$xlog -> xlog
+  extracted_info$mconst -> mconst
+  extracted_info$current_pred_raw -> current_pred_raw
+  extracted_info$current_pred_raw_all -> current_pred_raw_all
+  extracted_info$is_ardl -> is_ardl
+  extracted_info$isat_obj -> isat_obj
+  extracted_info$data_obj -> data_obj
+  extracted_info$exog_df_ready -> exog_df_ready
+  extracted_info$pred_ar_needed -> pred_ar_needed
+  extracted_info$pred_dl_needed -> pred_dl_needed
 
-    # drop not used quarterly dummies
-    dplyr::select(-dplyr::any_of(q_pred_todrop)) %>%
-
-    {if ("trend" %in% names(coef(isat_obj))) {
-      dplyr::bind_cols(.,trend_pred)
-    } else { . }} %>%
-
-    {if (!is.null(gets::isatdates(isat_obj)$iis)) {
-      dplyr::bind_cols(.,iis_pred)
-    } else { . }} %>%
-
-    {if (!is.null(gets::isatdates(isat_obj)$sis)) {
-      dplyr::bind_cols(.,sis_pred)
-    } else { . }} %>%
-
-    {if (xlog) {
-      dplyr::mutate(.,
-                    dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
-                    #dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
-      )
-    } else {.}} -> current_pred_raw
-
-  current_pred_raw_all <- current_pred_raw
 
   # Deal with current_spec not being fully exogenous --------
   # the current conditions says: all independent variables are either in exog_df_ready or
@@ -232,24 +99,20 @@ forecast_setup_estimated_relationships <- function(model,
 
       mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
 
-      # name all the individual estimates
-      colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
+        # name all the individual estimates
+        colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
 
-      # get all the individual estimates into a column of a tibble
-      mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
-        dplyr::mutate(index = 1:dplyr::n()) %>%
-        tidyr::nest(data = -"index") %>%
-        dplyr::select(-"index") %>%
-        setNames(paste0(mvar_name,".all"))
+        # get all the individual estimates into a column of a tibble
+        mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
+          dplyr::mutate(index = 1:dplyr::n()) %>%
+          tidyr::nest(data = -"index") %>%
+          dplyr::select(-"index") %>%
+          setNames(paste0(mvar_name,".all"))
 
-      # add the mean yhat estimates and the all estimates together
-      mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
-        setNames(mvar_name) #%>%
-      # dplyr::bind_cols(mvar_all.estimates.tibble)
+        # add the mean yhat estimates and the all estimates together
+        mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
+          setNames(mvar_name)
 
-      # Old version not including the all.estimates
-      # mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
-      #   setNames(mvar_name)
 
 
       if (!mvar_name %in% x_names_vec_nolag) {
@@ -407,7 +270,7 @@ forecast_setup_estimated_relationships <- function(model,
                      by = "time") %>%
 
     # only retain the final n.ahead observations
-    dplyr::slice(-c(dplyr::n() - n.ahead.incl.nowcast : dplyr::n())) %>%
+    dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
 
     dplyr::select(-"time") %>%
     dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) -> pred_df
@@ -453,7 +316,7 @@ forecast_setup_estimated_relationships <- function(model,
                        by = "time") %>%
 
       # only retain the final n.ahead observations
-      dplyr::slice(-c(dplyr::n() - n.ahead.incl.nowcast : dplyr::n())) %>%
+      dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
 
       tidyr::drop_na() %>%
       dplyr::select(-"time") %>%
@@ -475,7 +338,7 @@ forecast_setup_estimated_relationships <- function(model,
                                    by = "time") %>%
                   #tidyr::drop_na()))
                   # only retain the final n.ahead observations
-                  dplyr::slice(-c(dplyr::n() - n.ahead.incl.nowcast : dplyr::n()))
+                  dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n()))
     )
   )
 
@@ -488,7 +351,7 @@ forecast_setup_estimated_relationships <- function(model,
   out$current_pred_raw <- current_pred_raw
   out$current_pred_raw_all <- if(exists("current_pred_raw_all")){current_pred_raw_all}
   out$pred_df.all <- if(exists("pred_df.all")){pred_df.all}
-  out$n.ahead.incl.nowcast <- n.ahead.incl.nowcast
+  out$n.ahead <- n.ahead
 
   return(out)
 
