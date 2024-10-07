@@ -288,7 +288,7 @@ forecast_setup_estimated_relationships <- function(model,
           dplyr::arrange(.data$time) %>%
 
           # and combine the two columns so that each value is filled
-          dplyr::transmute(!!sym(names(mvar_tibble)) := dplyr::case_when(
+          dplyr::transmute(!!dplyr::sym(names(mvar_tibble)) := dplyr::case_when(
             is.na(.[[names(mvar_tibble)]]) ~ .[[paste0("new.",names(mvar_tibble))]],
             TRUE ~ .[[names(mvar_tibble)]]
           )) -> mvar_tibble
@@ -302,7 +302,7 @@ forecast_setup_estimated_relationships <- function(model,
 
           dplyr::arrange(.data$time) %>%
 
-          dplyr::transmute(!!sym(names(mvar_all.estimates.tibble)) := case_when(
+          dplyr::transmute(!!dplyr::sym(names(mvar_all.estimates.tibble)) := dplyr::case_when(
             is.na(.[[names(mvar_tibble)]]) ~ .[[paste0("new.",names(mvar_all.estimates.tibble))]],
             TRUE ~ purrr::map(.[[names(mvar_tibble)]], ~ .x)  # Wrap each individual value in a list
           )) -> mvar_all.estimates.tibble
