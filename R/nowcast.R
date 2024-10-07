@@ -283,7 +283,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
           # check with already nowcasted data
           dplyr::left_join(collected_nowcasts %>%
                              dplyr::rename(values_nowcasted = "values") %>%
-                             dplyr::mutate(na_item = paste0(na_item, ".hat")), by = c("time","na_item")) %>%
+                             dplyr::mutate(na_item = paste0(.data$na_item, ".hat")), by = c("time","na_item")) %>%
 
           dplyr::select(-"values") -> nowcast_data_to_replace
 
