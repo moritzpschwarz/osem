@@ -240,7 +240,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                                       p975 = .data$values,
                                       p025 = .data$values,
                                       p75 =  .data$values,
-                                      p25 =  .data$values, .by = .data$time, .data$na_item) %>%
+                                      p25 =  .data$values, .by = "time", .data$na_item) %>%
                        dplyr::mutate(fit = "Forecast Uncertainty")) %>%
     {if(!is.null(nowcast_processed)){dplyr::bind_rows(.,last_nowcast_value %>%
                                                         dplyr::filter(.data$na_item %in% nowcast_present) %>%
