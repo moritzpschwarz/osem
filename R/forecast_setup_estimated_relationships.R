@@ -88,6 +88,12 @@ forecast_setup_estimated_relationships <- function(model,
         .[[1]] %>%
         .$use_logs
 
+      prediction_list %>%
+        dplyr::filter(.data$index == mvar_model_index) %>%
+        dplyr::pull("all.estimates") %>%
+        .[[1]] %>%
+        dplyr::select(-"time") -> mvar_all.estimates
+
       mvar_euname <- model$module_collection %>%
         dplyr::filter(.data$index == mvar_model_index) %>%
         dplyr::pull("dependent")
@@ -322,8 +328,6 @@ forecast_setup_estimated_relationships <- function(model,
 
   # Final output data -------------------------------------------------------
 
-
-
   final_i_data <- dplyr::tibble(
     data = list(intermed %>%
                   dplyr::left_join(current_pred_raw %>%
@@ -331,9 +335,12 @@ forecast_setup_estimated_relationships <- function(model,
                                                    dplyr::starts_with("iis"),
                                                    dplyr::starts_with("sis")),
                                    by = "time") %>%
-                  #tidyr::drop_na()))
+
                   # only retain the final n.ahead observations
-                  dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n()))
+                  dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
+
+                  # delete all columns that are just NA
+                  dplyr::select(-dplyr::where(~all(is.na(.))))
     )
   )
 

@@ -44,8 +44,12 @@ test_that("Checking nowcasting issue when one independent variable is not availa
 
   expect_message(f1 <- forecast_model(model, exog_fill_method = "auto", plot = FALSE), regexp = "No exogenous values")
 
-  expect_equal(model$module_collection$model[[1]]$aux$mXnames[!model$module_collection$model[[1]]$aux$mXnames %in% c("mconst","time")],
-               names(f1$forecast$data[[1]])[!names(f1$forecast$data[[1]]) %in% c("mconst","time")])
+
+
+
+
+  expect_equal(model$module_collection$model[[1]]$aux$mXnames,
+               setdiff(names(f1$forecast$data[[1]]),"time"))
 })
 
 
