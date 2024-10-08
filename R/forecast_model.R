@@ -129,27 +129,6 @@ forecast_model <- function(model,
     ## 2b. Start of loop for estimated relationships  ------------------------------------------------
     if(model$module_order$type[model$module_order$order == i] != "d"){
 
-      # get the isat object for this relationship
-      isat_obj <- model$module_collection %>%
-        dplyr::filter(.data$order == i) %>%
-        dplyr::pull(.data$model) %>%
-        .[[1]]
-
-      # check which dates would be included if we go from the last date in the estimation
-      toforecast_from_isat <- seq.Date(from = isat_obj$aux$y.index[length(isat_obj$aux$y.index)],
-                                       by = exog_forecast_list$frequency, length.out = n.ahead + 1)[-1]
-
-      # we then compare them to the dates that we will forecast based on the exog_df_ready
-      # if there are any dates that are not in the exog_df_ready, then we need to nowcast them
-      # here we identify them
-      if(!all(c(exog_df_ready$time %in% toforecast_from_isat))){
-        no.to.nowcast <- sum(as.numeric(!exog_df_ready$time %in% toforecast_from_isat))
-        times.to.endog.nowcast <- toforecast_from_isat[1:no.to.nowcast]
-      } else {
-        times.to.endog.nowcast <- NULL
-      }
-
-
       pred_setup_list <- forecast_setup_estimated_relationships(model = model,
                                                                 i = i,
                                                                 exog_df_ready = exog_df_ready,
@@ -158,8 +137,7 @@ forecast_model <- function(model,
                                                                 current_spec = current_spec,
                                                                 prediction_list = prediction_list,
                                                                 uncertainty_sample = uncertainty_sample,
-                                                                nowcasted_data = nowcasted,
-                                                                endog.nowcast = times.to.endog.nowcast)
+                                                                nowcasted_data = nowcasted)
 
       final_i_data <- pred_setup_list$final_i_data
       pred_df <- pred_setup_list$pred_df
@@ -355,7 +333,7 @@ forecast_model <- function(model,
 
   class(out) <- "osem.forecast"
 
-  out$full_forecast_data <- plot(out, return.data = TRUE)
+  try(out$full_forecast_data <- plot(out, return.data = TRUE))
 
   if(plot){
     try(print(plot(out)))
