@@ -21,8 +21,7 @@ forecast_setup_estimated_relationships <- function(model,
                                                    prediction_list,
                                                    uncertainty_sample,
                                                    nowcasted_data = NULL,
-                                                   full_exog_predicted_data = NULL,
-                                                   endog.nowcast = NULL) {
+                                                   full_exog_predicted_data = NULL) {
 
 
 

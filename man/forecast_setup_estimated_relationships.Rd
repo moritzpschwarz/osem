@@ -13,8 +13,7 @@ forecast_setup_estimated_relationships(
   prediction_list,
   uncertainty_sample,
   nowcasted_data = NULL,
-  full_exog_predicted_data = NULL,
-  endog.nowcast = NULL
+  full_exog_predicted_data = NULL
 )
 }
 \arguments{
