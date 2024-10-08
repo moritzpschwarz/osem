@@ -175,7 +175,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   # and the last historical value
   plot_df %>%
     dplyr::filter(.data$fit == "FALSE") %>%
-    tidyr::drop_na(.data$values) %>%
+    tidyr::drop_na("values") %>%
     dplyr::group_by(.data$na_item) %>%
     dplyr::filter(.data$time == max(.data$time, na.rm = TRUE)) %>%
     dplyr::ungroup() %>%
@@ -249,7 +249,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                                                                        p975 = .data$values,
                                                                        p025 = .data$values,
                                                                        p75 =  .data$values,
-                                                                       p25 =  .data$values, .by = .data$time, .data$na_item) %>%
+                                                                       p25 =  .data$values, .by = "time", .data$na_item) %>%
                                                         dplyr::mutate(fit = "Forecast Uncertainty"))}else{.}} -> all_forecasts_processed_q
 
   plotting_df_ready <- forecasts_processed %>%
