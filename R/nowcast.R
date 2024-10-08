@@ -62,6 +62,10 @@ nowcasting <- function(model, exog_df_ready, frequency){
           dplyr::pull("indep") -> indep_vars_to_get
 
         model$processed_input_data %>%
+
+          # add in any variables that might already have been nowcasted
+          dplyr::bind_rows(collected_nowcasts) %>%
+
           dplyr::filter(.data$na_item %in% indep_vars_to_get) %>% # get the independent variables
           dplyr::filter(.data$time %in% cur_target_dates) %>% # for the appropriate interval
           tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
