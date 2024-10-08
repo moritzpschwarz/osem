@@ -268,7 +268,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
         # we then check whether any of the values need to be filled in from already nowcasted data
         if(data_to_substitute %>%
            dplyr::filter(is.na(.data$values)) %>%
-           nrow > 0){
+           nrow > 0 & nrow(collected_nowcasts) > 0){
           data_to_substitute %>%
             dplyr::filter(is.na(.data$values)) %>%
 
