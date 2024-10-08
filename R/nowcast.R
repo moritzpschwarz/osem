@@ -330,8 +330,10 @@ nowcasting <- function(model, exog_df_ready, frequency){
       }
     }
 
-    return(dplyr::arrange(collected_nowcasts, dplyr::desc(.data$time), .data$na_item))
-
+    collected_nowcasts %>%
+      dplyr::arrange(dplyr::desc(.data$time), .data$na_item) %>%
+      dplyr::distinct() %>%
+      return()
   }
 
 
