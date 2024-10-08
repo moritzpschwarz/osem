@@ -22,6 +22,7 @@
 <url><loc>http://moritzschwarz.org/osem/reference/download_eurostat.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/estimate_module.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_exogenous_values.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/reference/forecast_extract_info.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_identities.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_insample.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_model.html</loc></url>
@@ -34,6 +35,7 @@
 <url><loc>http://moritzschwarz.org/osem/reference/load_or_download_variables.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/network.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/new_osem.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/reference/nowcast_setup_estimated_relationships.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/nowcasting.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/osem.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/plot.osem.forecast.html</loc></url>
