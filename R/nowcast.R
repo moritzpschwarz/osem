@@ -209,17 +209,6 @@ nowcasting <- function(model, exog_df_ready, frequency){
 
         collected_nowcasts %>%
           dplyr::bind_rows(data_to_add) -> collected_nowcasts
-
-        # model$full_data %>%
-        #   dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-        #   dplyr::bind_rows(.,data_to_add) %>%
-        #   dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$full_data
-        #
-        # model$processed_input_data %>%
-        #   dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-        #   dplyr::bind_rows(.,data_to_add) %>%
-        #   dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$processed_input_data
-
       }
 
       # Identities
@@ -332,25 +321,8 @@ nowcasting <- function(model, exog_df_ready, frequency){
         collected_nowcasts %>%
           dplyr::bind_rows(data_to_add) -> collected_nowcasts
 
-
-        # model$full_data %>%
-        #   dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-        #   dplyr::bind_rows(.,data_to_add) %>%
-        #   dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$full_data
-        #
-        # model$processed_input_data %>%
-        #   dplyr::filter(!(.data$na_item == dep_var & .data$time %in% cur_target_dates)) %>% # delete the old data (should always be NA)
-        #   dplyr::bind_rows(.,data_to_add) %>%
-        #   dplyr::arrange(dplyr::desc(.data$time), .data$na_item) -> model$processed_input_data
       }
     }
-
-
-    # out <- list()
-    # out$nowcast_model <- model
-    # out$orig_model <- orig_model
-    # out$nowcast_data <- data_to_add
-    # return(out)
 
     return(dplyr::arrange(collected_nowcasts, dplyr::desc(.data$time), .data$na_item))
 

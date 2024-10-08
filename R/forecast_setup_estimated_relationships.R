@@ -47,26 +47,9 @@ forecast_setup_estimated_relationships <- function(model,
 
 
   # Deal with current_spec not being fully exogenous --------
-  # the current conditions says: all independent variables are either in exog_df_ready or
-  # they are NA
-  #if (!all(current_spec$independent %in% names(exog_df_ready)) && !all(is.na(current_spec$independent))) {
-
-  # new version, trying to make this more explicit:
-  # this checks whether there is a value that is NA in the exogenous values
-  # this would then need to be replaced in the following loop
-  # if(!all(is.na(current_spec$independent))){
-  #   exog_df_ready %>%
-  #     dplyr::select(dplyr::any_of(current_spec$independent)) %>%
-  #     dplyr::filter(dplyr::if_any(dplyr::everything(), ~is.na(.))) %>%
-  #     nrow > 0 -> any_NA_in_exog
-  # } else {
-  #   any_NA_in_exog <- FALSE
-  # }
 
   previous_dependent_vars <- model$module_order$dependent[model$module_order$order < i]
   # run this loop if any of the independent variables has already been a dependent variable of a preceding module
-  # also run this loop, if there are any missing values in the exog_df_ready
-  #if(any(current_spec$independent %in% previous_dependent_vars) & any_NA_in_exog){
   if(any(current_spec$independent %in% previous_dependent_vars)){
 
     missing_vars <- current_spec$independent[current_spec$independent %in% previous_dependent_vars]
@@ -113,8 +96,6 @@ forecast_setup_estimated_relationships <- function(model,
       # add the mean yhat estimates and the all estimates together
       mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
         setNames(mvar_name)
-
-
 
       if (!mvar_name %in% x_names_vec_nolag) {
         if (paste0("ln.",mvar_name) %in% x_names_vec_nolag) {

@@ -193,16 +193,6 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   }
 
 
-
-
-  # x$exog_data %>%
-  #   dplyr::select(-dplyr::any_of(c("q_1","q_2","q_3","q_4"))) %>%
-  #   tidyr::pivot_longer(-"time", values_to = "values", names_to = "na_item") %>%
-  #   dplyr::bind_rows(last_hist_value %>% dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables")) %>%
-  #   dplyr::arrange(.data$time) %>%
-  #   dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") %>%
-  #   {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} -> exog_forecasts
-
   # CONSTRUCTING JOINT LINES --------
   if(!is.null(nowcast_processed)){
     nowcast_processed %>%
