@@ -120,6 +120,12 @@ forecast_model <- function(model,
     ## 2b. Start of loop for estimated relationships  ------------------------------------------------
     if(model$module_order$type[model$module_order$order == i] != "d"){
 
+      # get the isat object for this relationship
+      isat_obj <- model$module_collection %>%
+        dplyr::filter(.data$order == i) %>%
+        dplyr::pull(.data$model) %>%
+        .[[1]]
+
       pred_setup_list <- forecast_setup_estimated_relationships(model = model,
                                                                 i = i,
                                                                 exog_df_ready = exog_df_ready,
