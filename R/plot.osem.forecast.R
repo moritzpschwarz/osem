@@ -200,13 +200,6 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
       dplyr::pull("na_item") -> nowcast_present
   } else {nowcast_present <- NULL}
 
-
-  ## Nowcasts ----
-  # nowcast_processed %>%
-  #   dplyr::bind_rows(last_fitted_value %>%
-  #                      dplyr::filter(.data$na_item %in% nowcast_present)) %>%
-  #   dplyr::mutate(fit = "Nowcast") -> nowcast_processed
-
   ## Exogenous Forecasts ---
   exog_forecasts %>%
     dplyr::bind_rows(last_hist_value %>%
@@ -241,6 +234,14 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                                                                        p75 =  .data$values,
                                                                        p25 =  .data$values, .by = "time", .data$na_item) %>%
                                                         dplyr::mutate(fit = "Forecast Uncertainty"))}else{.}} -> all_forecasts_processed_q
+
+
+  ## Nowcasts ----
+  nowcast_processed %>%
+    dplyr::bind_rows(last_fitted_value %>%
+                       dplyr::filter(.data$na_item %in% nowcast_present)) %>%
+    dplyr::mutate(fit = "nowcast") -> nowcast_processed
+
 
   plotting_df_ready <- forecasts_processed %>%
     dplyr::bind_rows(plot_df) %>%

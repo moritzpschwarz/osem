@@ -266,15 +266,21 @@ nowcasting <- function(model, exog_df_ready, frequency){
         }
 
         # we then check whether any of the values need to be filled in from already nowcasted data
-        data_to_substitute %>%
-          dplyr::filter(is.na(.data$values)) %>%
+        if(data_to_substitute %>%
+           dplyr::filter(is.na(.data$values)) %>%
+           nrow > 0 & nrow(collected_nowcasts) > 0){
+          data_to_substitute %>%
+            dplyr::filter(is.na(.data$values)) %>%
 
-          # check with already nowcasted data
-          dplyr::left_join(collected_nowcasts %>%
-                             dplyr::rename(values_nowcasted = "values") %>%
-                             dplyr::mutate(na_item = paste0(.data$na_item, ".hat")), by = c("time","na_item")) %>%
+            # check with already nowcasted data
+            dplyr::left_join(collected_nowcasts %>%
+                               dplyr::rename(values_nowcasted = "values") %>%
+                               dplyr::mutate(na_item = paste0(.data$na_item, ".hat")), by = c("time","na_item")) %>%
 
-          dplyr::select(-"values") -> nowcast_data_to_replace
+            dplyr::select(-"values") -> nowcast_data_to_replace
+        } else {
+          nowcast_data_to_replace <- dplyr::tibble()
+        }
 
         if(nrow(nowcast_data_to_replace) > 0){
           data_to_substitute %>%
@@ -324,8 +330,10 @@ nowcasting <- function(model, exog_df_ready, frequency){
       }
     }
 
-    return(dplyr::arrange(collected_nowcasts, dplyr::desc(.data$time), .data$na_item))
-
+    collected_nowcasts %>%
+      dplyr::arrange(dplyr::desc(.data$time), .data$na_item) %>%
+      dplyr::distinct() %>%
+      return()
   }
 
 
