@@ -17,5 +17,10 @@ nowcasting(model, exog_df_ready, frequency)
 Returns a list with two full model objects. One contains the original model and one contains the nowcasted model.
 }
 \description{
-Nowcast missing data for forecasting
+The \code{nowcasting()} function checks across all variables in the model whether there are any missing values that need to be nowcasted. If there are, it will nowcast these values and add them to the model.
+This is done by using the forecasted values of the exogenous variables. The function will return a list with two full model objects. One contains the original model and one contains the nowcasted model.
+}
+\details{
+Concretely, the function checks in model$processed_input_data for the maximum time point. It then identifies which variables do not fully extend to this time point. For these variables, it will nowcast the values using the forecasted values of the exogenous variables.
+So fundamentally these nowcasts depend on the exogenous forecasts.
 }

@@ -46,7 +46,7 @@ test_that("Error messages for saturation, selection",{
                                  present = FALSE,
                                  quiet = TRUE, saturation = "IIS"))
   expect_equal(nrow(mod$module_order), 1)
-  expect_equal(mod$module_collection$model[[1]]$ISnames, "iis12")
+  expect_equal(mod$module_collection$model[[1]]$ISnames, "iis2007-10-01")
 
 
   expect_silent(mod <- run_model(specification = specification,
@@ -57,7 +57,7 @@ test_that("Error messages for saturation, selection",{
                                  quiet = TRUE, saturation = c("SIS","TIS")))
 
   expect_equal(nrow(mod$module_order), 1)
-  expect_equal(mod$module_collection$model[[1]]$ISnames, c("sis12", "sis13"))
+  expect_equal(mod$module_collection$model[[1]]$ISnames, c("sis2007-10-01", "sis2008-01-01"))
 
 })
 

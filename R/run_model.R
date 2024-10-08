@@ -208,7 +208,7 @@ run_model <- function(specification,
 
 
       if (shiny::isRunning()) { # send updates to shiny if called from shiny session
-        incProgress(1/length(module_order$order), detail = paste0(paste0("Running step ", i, "/", length(module_order$order), ": ", module_order$dependent[i], " = ", module_order$independent[i])))
+        shiny::incProgress(1/length(module_order$order), detail = paste0(paste0("Running step ", i, "/", length(module_order$order), ": ", module_order$dependent[i], " = ", module_order$independent[i])))
       }
 
 
