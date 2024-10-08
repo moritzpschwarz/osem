@@ -81,15 +81,6 @@ forecast_model <- function(model,
   ## 1a. Nowcasting --------------------------------------------------------------------
   nowcasted <- nowcasting(model, exog_df_ready = exog_df_ready_full, frequency = exog_forecast_list$frequency)
 
-  # if(!is.null(nowcasted)){
-  #   nowcasted$nowcast_model$full_data %>%
-  #     dplyr::left_join(exog_df_ready_full %>%
-  #                        tidyr::pivot_longer(-"time",names_to = "na_item", values_to = "values_exog"),
-  #                      by = c("time","na_item")) %>%
-  #     dplyr::mutate(values = dplyr::case_when(is.na(.data$values) & !is.na(.data$values_exog) ~ .data$values_exog, TRUE ~ values)) %>%
-  #     dplyr::select(-"values_exog") -> nowcasted$nowcast_model$full_data
-  # }
-
   # 2. Forecasting step by step according to model order ------------------------------------------------
   # set-up the prediction list that will collect all results
   prediction_list <- dplyr::tibble(
