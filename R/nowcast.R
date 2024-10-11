@@ -185,7 +185,8 @@ nowcasting <- function(model, exog_df_ready, frequency){
           exog_df_ready = exog_data_nowcasting,
           n.ahead = length(cur_target_dates),
           current_spec = current_spec,
-          full_exog_predicted_data = exog_df_ready
+          full_exog_predicted_data = exog_df_ready,
+          nowcasted_data = collected_nowcasts,
         )
 
         final_i_data <- pred_setup_list$final_i_data
@@ -212,7 +213,8 @@ nowcasting <- function(model, exog_df_ready, frequency){
 
 
         collected_nowcasts %>%
-          dplyr::bind_rows(data_to_add) -> collected_nowcasts
+          dplyr::bind_rows(data_to_add) %>%
+          dplyr::distinct() -> collected_nowcasts
       }
 
       # Identities
@@ -329,14 +331,14 @@ nowcasting <- function(model, exog_df_ready, frequency){
           tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") -> data_to_add
 
         collected_nowcasts %>%
-          dplyr::bind_rows(data_to_add) -> collected_nowcasts
+          dplyr::bind_rows(data_to_add) %>%
+          dplyr::distinct()-> collected_nowcasts
 
       }
     }
 
     collected_nowcasts %>%
       dplyr::arrange(dplyr::desc(.data$time), .data$na_item) %>%
-      dplyr::distinct() %>%
       return()
   }
 
