@@ -8,6 +8,7 @@
 
 run_shiny <- function(model = NULL) {
 
+  # Check for required packages
   if (!requireNamespace("DT", quietly = TRUE)) {
     stop("Shiny App requires package 'DT'.")
   }
@@ -15,19 +16,19 @@ run_shiny <- function(model = NULL) {
     stop("Shiny App requires package 'shiny'.")
   }
 
+  # Find the app directory within the package
   appDir <- system.file("shiny-output", "shinyconfigmodel", package = "osem")
 
+  # If the directory is not found, raise an error
   if (appDir == "") {
-    stop("Could not find example directory. Try re-installing `osem`.", call. = FALSE)
+    stop("Could not find the Shiny app directory. Try re-installing the 'osem' package.", call. = FALSE)
   }
 
-  # if(!is.null(model)){
-  #   shiny::shinyAppDir(appDir, options = list(object = model))
-  # } else {
-  #   shiny::shinyAppDir(appDir)
-  # }
+  # Set Shiny options to pass the model object to the app if provided
+  if (!is.null(model)) {
+    shiny::shinyOptions(osem_direct = model)
+  }
 
-  shiny::shinyOptions(osem_direct = model)
-  source(system.file("shiny-output", "shinyconfigmodel/app.R", package = "osem"))$value
-
+  # Launch the Shiny app
+  shiny::runApp(appDir)
 }
