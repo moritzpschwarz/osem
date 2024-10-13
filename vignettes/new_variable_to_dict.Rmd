@@ -260,7 +260,7 @@ specification
 
 With that specification set up, we now run the model using the `new_dict` that we constructed earlier.
 
-```{r}
+```{r, fig.height=5, out.width="100%"}
 model <- run_model(specification = specification,
                    dictionary = new_dict,
          
