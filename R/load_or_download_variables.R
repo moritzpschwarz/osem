@@ -317,12 +317,14 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
         {if(dplyr::select(., dplyr::any_of("ipcc_sector")) %>% ncol == 1){dplyr::filter(., .data$ipcc_sector == to_obtain$ipcc_sector[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(., .data$cpa2_1 == to_obtain$cpa2_1[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("siec")) %>% ncol == 1){dplyr::filter(., .data$siec == to_obtain$siec[j])}else{.}}
-      # if user specified additional filters, apply them now
-      for (k in seq_along(additional_filters)) {
-        filtername <- additional_filters[k]
-        sub <- sub %>%
-          {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[j, filtername])}else{.}}
-      }
+
+        # if user specified additional filters, apply them now
+        for (k in seq_along(additional_filters)) {
+          filtername <- additional_filters[k]
+          sub <- sub %>%
+            {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[[j, filtername]])}else{.}}
+        }
+
       # if after filtering "sub" is not empty, we found the variable and can mark it as such
       if (NROW(sub) == 0L) {
         stop(paste0("For model variable '", to_obtain$model_varname[j], "', the dataset is empty after applying filter. Check whether the dictionary and the data source for changes and errors (i.e. name of units, etc.)"))

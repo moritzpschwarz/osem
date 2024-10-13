@@ -78,9 +78,10 @@ update_data <- function(orig_data, new_data) {
   # change name to make consistent with identify_module_data()
   cnames <- colnames(add)
   cur_name <- gsub("\\.level\\.hat","",cnames[cnames != "time"])
-  orig_name_index <- grep(cur_name,orig_data %>%
+  regexpression <- paste0("^", cur_name, "(\\.hat)?$")
+  orig_name_index <- grep(regexpression,orig_data %>%
                             dplyr::distinct(.data$na_item) %>%
-                            dplyr::pull(), fixed = TRUE)
+                            dplyr::pull(), fixed = FALSE)
 
   orig_data_names <- orig_data %>%
     dplyr::distinct(.data$na_item) %>%
