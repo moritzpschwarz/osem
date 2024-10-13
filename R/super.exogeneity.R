@@ -9,6 +9,8 @@
 #' The conditional model is then used to run a linear regression
 #' and to obtain an F-Stat statistic to determine whether the shocks detected in the marginal models affect the conditional model.
 #'
+#' A p-value below the desired level of statistical significance (e.g. 0.05) would indicate that the model is not super exogenous (i.e. the parameters are variant).
+#'
 #'
 #' @param initial.model An object of class \code{isat} (i.e. from the \code{gets} package) that contains the initial model
 #' @inheritParams estimate_module
