@@ -44,7 +44,6 @@ nowcast_setup_estimated_relationships <- function(model,
   extracted_info$pred_dl_needed -> pred_dl_needed
 
   # checking the data for nowcasted data --------
-
   data_obj %>%
     dplyr::select("time", dplyr::all_of(x_names_vec_nolag), dplyr::all_of(y_names_vec[1])) -> historical_estimation_data
 
@@ -72,7 +71,7 @@ nowcast_setup_estimated_relationships <- function(model,
 
         } else {.}} %>%
 
-        {if(!is.null(nowcasted_data)){
+        {if(nrow(nowcasted_data)!=0){
           dplyr::left_join(.,nowcasted_data %>%
                              dplyr::rename(basename = "na_item",
                                            values_nowcast = "values"), by = c("time", "basename")) %>%
