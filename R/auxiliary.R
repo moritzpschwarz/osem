@@ -99,7 +99,6 @@ update_data <- function(orig_data, new_data) {
 
   # combine
   final_wide <- dplyr::full_join(x = orig_data_wide, y = add, by = "time")
-  #browser()
 
   # pivot longer again b/c is how clean_data() and identify_module_data() work
 
