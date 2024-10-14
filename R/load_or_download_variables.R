@@ -318,12 +318,12 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
         {if(dplyr::select(., dplyr::any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(., .data$cpa2_1 == to_obtain$cpa2_1[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("siec")) %>% ncol == 1){dplyr::filter(., .data$siec == to_obtain$siec[j])}else{.}}
 
-        # if user specified additional filters, apply them now
-        for (k in seq_along(additional_filters)) {
-          filtername <- additional_filters[k]
-          sub <- sub %>%
-            {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[[j, filtername]])}else{.}}
-        }
+      # if user specified additional filters, apply them now
+      for (k in seq_along(additional_filters)) {
+        filtername <- additional_filters[k]
+        sub <- sub %>%
+          {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[[j, filtername]])}else{.}}
+      }
 
       # if after filtering "sub" is not empty, we found the variable and can mark it as such
       if (NROW(sub) == 0L) {
@@ -621,7 +621,8 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
 
     # subset the relevant data
     df_local <- inputdata_directory %>%
-      dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) # choose the relevant ones
+      dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) %>%  # choose the relevant ones
+      dplyr::mutate(time = as.Date(.data$time))
 
   } else {
 

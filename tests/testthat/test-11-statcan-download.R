@@ -36,17 +36,17 @@ test_that('statCan_load_or_download works', {
 
   actual_cols = colnames(dictionary)
   # basic functionality
-  module_order <- osem:::check_config_table(spec)
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                                dictionary = dictionary)
-  data <- osem:::download_statcan(to_obtain = to_obtain,
-                                             #column_filters = additional_filters,
-                                             column_filters = actual_cols,
-                                             quiet = FALSE)
-  imf_data <- osem:::download_imf(to_obtain = to_obtain,
-                                  #column_filters = additional_filters,
-                                  column_filters = actual_cols,
-                                  quiet = FALSE)
+  module_order <- check_config_table(spec)
+  to_obtain <- determine_variables(specification = module_order,
+                                   dictionary = dictionary)
+  data <- download_statcan(to_obtain = to_obtain,
+                           #column_filters = additional_filters,
+                           column_filters = actual_cols,
+                           quiet = FALSE)
+  imf_data <- download_imf(to_obtain = to_obtain,
+                           #column_filters = additional_filters,
+                           column_filters = actual_cols,
+                           quiet = FALSE)
 
   expect_length(data, 2)
   expect_type(data, "list")
@@ -62,9 +62,7 @@ test_that('statCan_load_or_download works', {
 })
 
 test_that('statcan_load_and_download_forecasting_functionality',{
-  #library("tinytest")
-  #using("tinysnapshot")
-  library("readr")
+
   skip_on_cran()
   skip_on_ci()
 
@@ -95,35 +93,31 @@ test_that('statcan_load_and_download_forecasting_functionality',{
     "FISH", "Harmonised Index of Consumer Prices, Energy, index 100 = 2002", "statcan", NA,"18-10-0004-01","na_item","m","Canada", NA, "units", NA, NA, NA, NA, NA, NA, NA, "Energy", NA, NA, NA, NA,NA,NA,NA,NA,NA,
 
   )
-  #as.data.frame(dict_statCan)
 
 
-  #module_order <- aggregate.model:::check_config_table(spec)
   dictionary <- dict_statCan #aggregate.model::statcan_dict
 
-
-  data <- "testdata/canada_imf_data/canada_imf_stable_data.csv"
-  df = read_csv(data)
+  df <- read.csv(test_path("testdata", "canada_imf_data", "canada_imf_stable_data.csv"))
 
   #run the model
   model_run <- run_model(specification = spec,
-                                         dictionary = dictionary,
-                                         inputdata_directory = df,
-                                         primary_source = "local")
+                         dictionary = dictionary,
+                         inputdata_directory = df,
+                         primary_source = "local",
+                         quiet = TRUE)
 
 
   #forcast the model
   model_forecast <- forecast_model(model_run, plot = FALSE)
 
   #plot model
-
-  expect_is(plot.osem.forecast(model_forecast,order.as.run = TRUE),class = c("gg","ggplot"))
+  expect_s3_class(plot(model_forecast,order.as.run = TRUE),class = c("gg","ggplot"))
 
   bb_df <- plot(model_forecast, return.data = TRUE)
   expect_s3_class(bb_df, class = "tbl_df")
   expect_true(all(names(bb_df) == c("time", "na_item", "values", "type", "p95", "p05", "p975",
                                     "p025", "p75", "p25")))
-  expect_true(all(unique(bb_df$type) == c("Endogenous Forecast", "Insample Fit", "Observation")))
+  expect_true(all(unique(bb_df$type) == c("Forecast", "Insample Fit", "Observation")))
 
   expect_s3_class(plot(model_forecast, return.data = TRUE), class = "tbl_df")
 
@@ -131,11 +125,11 @@ test_that('statcan_load_and_download_forecasting_functionality',{
   #hindcast model
   hind_cast <- forecast_insample(
     model_run,
-    sample_share = 0.5,
+    sample_share = 0.99,
     uncertainty_sample = 100,
     exog_fill_method = "last"
   )
-  expect_is(hind_cast$plot,class = c("gg","ggplot"))
+  expect_s3_class(hind_cast$plot,class = c("gg","ggplot"))
 
 
 })
