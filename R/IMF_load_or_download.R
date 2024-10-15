@@ -14,13 +14,11 @@
 
 download_imf <- function(to_obtain, column_filters, quiet) {
 
-
- # browser()
   # initialise empty df
   df_imf <- data.frame()
 
   #get the eurodict colnames
-  euro_dict = colnames(aggregate.model::dict)
+  euro_dict = colnames(osem::dict)
 
   #pulls dataframe of unique database ids
   dataset_id <- to_obtain %>% dplyr::filter(.data$database == "imf" &
