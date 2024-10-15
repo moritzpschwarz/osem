@@ -31,7 +31,7 @@ test_that('statCan_load_or_download works', {
   )
   dict_statCan <- as.data.frame(dict_statCan)
 
-  dictionary <- dict_statCan #aggregate.model::statcan_dict
+  dictionary <- dict_statCan
 
 
   actual_cols = colnames(dictionary)
@@ -95,7 +95,7 @@ test_that('statcan_load_and_download_forecasting_functionality',{
   )
 
 
-  dictionary <- dict_statCan #aggregate.model::statcan_dict
+  dictionary <- dict_statCan
 
   df <- read.csv(test_path("testdata", "canada_imf_data", "canada_imf_stable_data.csv"))
 
