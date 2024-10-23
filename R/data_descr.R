@@ -42,6 +42,13 @@
 #'   \item{time}{The date of the observation.}
 #'   \item{s_adj}{Indication whether variable was seasonally adjusted or not. SCA refers to seasonal and calendar adjusted data.}
 #'   \item{nace_r2}{If applicable, the NACE2 sector code.}
+#'   \item{ipcc_sector}{EDGAR IPCC National Greenhouse Gas Inventories,
+#'   see \url{https://www.ipcc-nggip.iges.or.jp/public/2006gl/index.html}.
+#'   \code{"TOTAL"} is not an official IPCC code but is internally interpreted to use country totals.}
+#'   \item{cpa2_1}{Eurostat identifier for Classification of Products by Activity (CPA)}
+#'   North American Industry Classification System (NAICS)
+#'   North American Product Classification System (NAPCS)
+#'
 #' }
 "statcan_dict"
 

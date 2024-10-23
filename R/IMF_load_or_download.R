@@ -104,10 +104,11 @@ download_imf <- function(to_obtain, column_filters, quiet) {
       subset_of_data <- subset_of_data %>% dplyr::mutate(na_item = to_obtain$model_varname[idx])
       #add geo
       subset_of_data <- subset_of_data %>% dplyr::mutate(geo = to_obtain$ref_area[idx])
-      #add nace_r2
-      subset_of_data <- subset_of_data %>% dplyr::mutate(nace_r2 = NA)
-      #add s_adj
-      subset_of_data <- subset_of_data %>% dplyr::mutate(s_adj = NA)
+
+      # #add nace_r2
+      # subset_of_data <- subset_of_data %>% dplyr::mutate(nace_r2 = NA)
+      # #add s_adj
+      # subset_of_data <- subset_of_data %>% dplyr::mutate(s_adj = NA)
 
 
 
@@ -123,14 +124,14 @@ download_imf <- function(to_obtain, column_filters, quiet) {
       #rename column headers so they are consistent with the headers used through out the rest of the system
 
       #for now we will just set these values to NA
-      subset_of_data <- subset_of_data %>% dplyr::mutate(nace_r2 = NA)
-      subset_of_data <- subset_of_data %>% dplyr::mutate(s_adj = NA)
+      # subset_of_data <- subset_of_data %>% dplyr::mutate(nace_r2 = NA)
+      # subset_of_data <- subset_of_data %>% dplyr::mutate(s_adj = NA)
 
 
 
       subset_of_data <- subset_of_data %>% dplyr::rename("values" = "VALUE")
       if ("North American Industry Classification System (NAICS)" %in% names(subset_of_data)){
-        subset_of_data <- subset_of_data %>% dplyr::rename("nace_r2" = "North American Industry Classification System (NAICS)")
+        subset_of_data <- subset_of_data %>% dplyr::rename("naics" = "North American Industry Classification System (NAICS)")
       }
       if("Seasonal adjustment" %in% names(subset_of_data)){
         subset_of_data <- subset_of_data %>% dplyr::rename("s_adj" = "Seasonal adjustment")
