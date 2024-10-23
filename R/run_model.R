@@ -115,8 +115,8 @@ run_model <- function(specification,
 
   if(missing(dictionary) | is.null(dictionary)){dictionary <- osem::dict}
 
-  if(!all(c("variable_code", "model_varname", "full_name", "database", "dataset_id","var_col", "nace_r2", "freq", "geo", "unit", "s_adj") %in% colnames(dictionary))){
-    stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'variable_code', 'model_varname', 'full_name', 'database', 'dataset_id', 'var_col', 'nace_r2', 'freq', 'geo', 'unit', 's_adj'.")
+  if(!all(c("variable_code", "model_varname", "full_name", "database", "dataset_id","var_col","freq", "geo", "unit", "s_adj") %in% colnames(dictionary))){
+    stop("Dictionary does not have all the required columns. Dictionary must have the following column names:\n 'variable_code', 'model_varname', 'full_name', 'database', 'dataset_id', 'var_col', 'freq', 'geo', 'unit', 's_adj'.")
   }
 
   if(any(duplicated(dictionary$model_varname))){stop("Dictionary cannot contain duplicated values for 'model_varname'.")}
