@@ -29,15 +29,12 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
   for (i in 1:nrow(dataset_id)) {
 
     #download data table according to data_base_id
-    id <- dataset_id[i,1]
-    suppressWarnings(suppressMessages(df <- statcanR::statcan_data(id,"eng")))
+    id_identified <- dataset_id[i,1, drop = TRUE]
+    suppressWarnings(suppressMessages(df <- statcanR::statcan_data(id_identified,"eng")))
     df <- as.data.frame(df)
 
-    df %>%
-      rename_with(.fn = tolower) -> df
-
     #get the dictionary coordinates that use the following dataset_id
-    indices <- which(to_obtain$database == "statcan" & to_obtain$dataset_id == id)
+    indices <- which(to_obtain$database == "statcan" & to_obtain$dataset_id == id_identified)
 
     #look through the rows of the dictionary based on the coordinates for the id
     for (idx in indices) {
@@ -46,7 +43,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
       #iterate through all the column filter names of the particular dictionary row to build filtered dataframe
       col_filters <- column_filters[as.character(column_filters) %in% names(subset_of_data)]
       for (k in col_filters) {
-          subset_of_data <- subset_of_data %>% dplyr::filter(.,.[[k]] == as.name(to_obtain[idx,k]))
+          subset_of_data <- subset_of_data %>% dplyr::filter(.,.[[k]] == as.name(to_obtain[idx,k, drop = TRUE]))
       }
 
       # if after filtering "sub" is not empty, we found the variable and can mark it as such
@@ -64,16 +61,16 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
       if (to_obtain$freq[idx] == "m") {
         # need to aggregate across all filters
         columns <- colnames(subset_of_data)
-        unique_columns <- setdiff(columns, "value") # should be unique across these
+        unique_columns <- setdiff(columns, "VALUE") # should be unique across these
         stopifnot(sum(duplicated(subset_of_data[, unique_columns])) == 0L) # sanity check
-        groupby_columns <- union(c("year", "quarter"), setdiff(unique_columns, "ref_date")) # want to group_by year-quarter, so exclude time column
+        groupby_columns <- union(c("year", "quarter"), setdiff(unique_columns, "REF_DATE")) # want to group_by year-quarter, so exclude time column
         subset_of_data <- subset_of_data %>%
-          dplyr::mutate(year = lubridate::year(.data$ref_date),
-                        quarter = lubridate::quarter(.data$ref_date)) %>%
+          dplyr::mutate(year = lubridate::year(.data$REF_DATE),
+                        quarter = lubridate::quarter(.data$REF_DATE)) %>%
           dplyr::group_by(dplyr::across(dplyr::all_of(groupby_columns))) %>%
-          dplyr::summarise(value = sum(.data$value),
+          dplyr::summarise(VALUE = sum(.data$VALUE),
                            n = dplyr::n(), # record how many months are available in each quarter
-                           ref_date = min(.data$ref_date)) %>%
+                           REF_DATE = min(.data$REF_DATE)) %>%
           dplyr::ungroup()  #%>%
           # drop "incomplete" quarters
           subset_of_data <- subset_of_data %>% dplyr::filter(.data$n == 3L) %>%
@@ -81,26 +78,23 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
 
       }
 
-      #rename ref_date to time
-      subset_of_data <- subset_of_data %>% dplyr::rename("time" = "ref_date")
+      #rename REF_DATE to time
+      subset_of_data <- subset_of_data %>% dplyr::rename("time" = "REF_DATE")
 
-      # ensure column "time" is a Date variable (Moritz had this)
+      # ensure column "time" is a Date variable
       subset_of_data <- subset_of_data %>%
         dplyr::mutate(time = as.Date(.data$time))
 
-      #rename column headers so they are consistent with the headers used through out the rest of the system
-      subset_of_data <- subset_of_data %>% dplyr::rename("values" = "value")
-      if ("north american industry classification system (naics)" %in% names(subset_of_data)){
-        subset_of_data <- subset_of_data %>% dplyr::rename("naics" = "north american industry classification system (naics)")
+      if("GEO" %in% names(subset_of_data)){
+        subset_of_data <- subset_of_data %>% dplyr::rename("geo" = "GEO")
       }
-      if("seasonal adjustment" %in% names(subset_of_data)){
-      subset_of_data <- subset_of_data %>% dplyr::rename("s_adj" = "seasonal adjustment")
+      if("VALUE" %in% names(subset_of_data)){
+        subset_of_data <- subset_of_data %>% dplyr::rename("values" = "VALUE")
       }
 
       #get the columns that we need to drop that will no longer be used in later calculations
       #this is to keep data frame consistent with how the eurostat frames are processed
-
-      cols_to_remove <- setdiff(colnames(subset_of_data),c(euro_dict,"time","values","na_item","naics"))
+      cols_to_remove <- setdiff(colnames(subset_of_data),c(dict_colnames,"time","values","na_item"))
 
       #drop columns that we will not be using
       subset_of_data <- subset_of_data %>% dplyr::select(.,-c(cols_to_remove))
