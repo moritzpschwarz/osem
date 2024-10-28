@@ -33,10 +33,10 @@ load_or_download_variables <- function(specification,
                                        quiet = FALSE,
                                        constrain.to.minimum.sample = TRUE) {
 
-  # input check
+  # initial checks ------
   # primary_source must be "download" or "local"
   primary_source <- match.arg(primary_source)
-  # user dictionary or default (TODO: write a function that validates whether user dict is ok)
+  # user dictionary or default
   if (is.null(dictionary)) {
     dictionary <- osem::dict
   }
@@ -67,7 +67,7 @@ load_or_download_variables <- function(specification,
   sources <- unique(to_obtain$database)
 
   if (length(setdiff(sources, c("eurostat", "edgar", "local", "statcan", "imf"))) >= 1L) {
-    stop("Currently, only allow data bases 'eurostat', 'edgar', 'statcan', or 'local' files.")
+    stop("Currently, only allow data bases 'eurostat', 'edgar', 'statcan', 'imf', or 'local' files.")
   }
   if ("edgar" %in% sources) {
     if (!requireNamespace("readxl", quietly = TRUE)) {
@@ -81,7 +81,10 @@ load_or_download_variables <- function(specification,
   options(timeout = 1000)
 
   # data input
+
   if (primary_source == "download") {
+
+    # download ----
 
     # steps:
     # 1) download from eurostat
@@ -91,6 +94,7 @@ load_or_download_variables <- function(specification,
     # 5) local loading
     # -> since download updates "found", local does not overwrite (download takes precedence)
 
+    ## eurostat ----
     if ("eurostat" %in% sources) {
       step1 <- download_eurostat(to_obtain = to_obtain,
                                  additional_filters = additional_filters,
@@ -98,24 +102,28 @@ load_or_download_variables <- function(specification,
       to_obtain <- step1$to_obtain
       full <- dplyr::bind_rows(full, step1$df)
     }
+
+    ## edgar ----
     if ("edgar" %in% sources) {
       step2 <- download_edgar(to_obtain = to_obtain, quiet = quiet)
       to_obtain <- step2$to_obtain
       full <- dplyr::bind_rows(full, step2$df)
     }
+
+    ## statcan ----
     not_loaded_statcan <- which(to_obtain$database == "statcan" & to_obtain$found == FALSE)
     if (length(not_loaded_statcan) > 0L) {
       step3 <- download_statcan(to_obtain = to_obtain,
-                                #column_filters = additional_filters,
                                 column_filters = actual_cols,
                                 quiet = quiet)
       to_obtain <- step3$to_obtain
       full <- dplyr::bind_rows(full, step3$df)
     }
+
+    ## imf ----
     not_loaded_imf <- which(to_obtain$database == "imf" & to_obtain$found == FALSE)
     if (length(not_loaded_imf) > 0L) {
       step4 <- download_imf(to_obtain = to_obtain,
-                            #column_filters = additional_filters,
                             column_filters = actual_cols,
                             quiet = quiet)
       to_obtain <- step4$to_obtain
@@ -136,6 +144,8 @@ load_or_download_variables <- function(specification,
     }
 
   } else { # (primary_source == "local")
+
+    # load locally -----
 
     # steps:
     # 1) local loading

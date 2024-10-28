@@ -11,22 +11,19 @@
 #' downloaded data and \code{$to_obtain} the updated data.frame tracking which
 #' variables still need to be obtained.
 
-#library(statcanR)
-
 download_statcan <- function(to_obtain, column_filters, quiet) {
-
 
   # initialise empty df
   df_statcan <- data.frame()
 
-  #get the eurodict colnames
-  euro_dict = colnames(dict)
+  #get the dictionary colnames
+  dict_colnames = colnames(dict)
 
   #pulls dataframe of unique database ids
   dataset_id <- to_obtain %>% dplyr::filter(.data$database == "statcan" &
                                                 .data$found == FALSE) %>%
     dplyr::distinct(.data$dataset_id) #%>% dplyr::select("dataset_id")
-  browser()
+
   #iterate over unique database ids and pull the dataset
   #each iteration
   for (i in 1:nrow(dataset_id)) {
