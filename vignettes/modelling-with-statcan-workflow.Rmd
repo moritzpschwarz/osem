@@ -12,8 +12,11 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   warning = FALSE,
   comment = "#>",
+  out.width = "100%",
   fig.width = 7,
-  dpi = 300
+  fig.height = 5,
+  dev = "png",
+  dpi = 600
 )
 ```
 
@@ -52,7 +55,7 @@ print(specification)
 ## Load statcan dictionary
 
 ```{r dictionary}
-statcan_dict <- osem::statcan_dict
+statcan_dict <- osem::dict_statcan
 ```
 
 The statcan dictionary contains a different set of variables than found within eurostat. Due to the way Statistics Canada's R package pulls data we need to include all the same headers found within the eurostat dictionary in the statcan dictionary to help with data consistency.
@@ -75,18 +78,23 @@ osem::dict %>%
 ## Perform modelling
 Now let's model the equations we have specified and perform some forecasting.
 
-```{r, forecast-plot, fig.width=3, fig.height=3}
+```{r, mode-plot}
 model <- run_model(specification = specification, 
                    dictionary = statcan_dict_ready, 
                    primary_source = "download",
-                   quiet = TRUE)
+                   quiet = TRUE, 
+                   plot = FALSE)
 ```
 
+```{r}
+model
+```
 
-```{r, forecast-plot-2, fig.width=3, fig.height=3}
-forecast <- forecast_model(model = model,
-                           exog_predictions = NULL,
-                           plot = FALSE)
+## Forecasting
+
+
+```{r, forecast-plot-2}
+forecast <- forecast_model(model = model, plot = FALSE)
 
 plot(forecast)
 
