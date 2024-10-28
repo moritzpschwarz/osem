@@ -28,22 +28,18 @@ download_imf <- function(to_obtain, column_filters, quiet) {
   #iterate over unique database ids and pull the dataset
   #each iteration
   for (i in 1:nrow(dataset_id)) {
-
-
-    id <- dataset_id[i,1]
+    id_identified <- dataset_id[i,1, drop = TRUE]
 
     #get the dictionary coordinates that use the following dataset_id
-    indices <- which(to_obtain$database == "imf" & to_obtain$dataset_id == id)
+    indices <- which(to_obtain$database == "imf" & to_obtain$dataset_id == id_identified)
 
-    imf_data <- imf.data::load_datasets(id,use_cache = TRUE)
+    imf_data <- imf.data::load_datasets(id_identified,use_cache = TRUE)
     #get the columns that can be filterable
     query_vars = names(imf_data$dimensions)
 
     for (idx in indices) {
-
       query <- list()
       col_filters_idx = seq(column_filters)
-
 
       for (col in 1:length(col_filters_idx)) {
         filter_name <- column_filters[col]
@@ -63,10 +59,9 @@ download_imf <- function(to_obtain, column_filters, quiet) {
         to_obtain[idx, "found"] <- TRUE
       }
 
-      #browser()
       # need to aggregate across all filters
       columns <- colnames(subset_of_data) # columns[1] = TIME_PERIOD, columns[2] = 'the unique identifier that represents the values of the data row'
-      value <- columns[2]
+      value_colname <- columns[2]
 
       #ensure data is TIME_PERIOD is set to data time
       subset_of_data <- subset_of_data %>%
@@ -74,14 +69,14 @@ download_imf <- function(to_obtain, column_filters, quiet) {
 
       #convert the value column into numeric
       subset_of_data <- subset_of_data %>%
-        dplyr::mutate(VALUE = as.numeric(.data[[value]]))
+        dplyr::mutate(VALUE = as.numeric(.data[[value_colname]]))
 
       #drop old uniquely identified value column
       subset_of_data <- subset_of_data %>%
-        dplyr::select(.,-c(value))
+        dplyr::select(.,-c(value_colname))
 
 
-
+      #if the frequency is monthly we need to aggregate the data to a quarterly level
       if (to_obtain$freq[idx] == "M") {
         unique_columns <- setdiff(columns, columns[2]) # should be unique across these. columns[2] represents the unique value identifier of the dataset
         stopifnot(sum(duplicated(subset_of_data[, unique_columns])) == 0L) # sanity check
@@ -140,31 +135,22 @@ download_imf <- function(to_obtain, column_filters, quiet) {
 
       #get the columns that we need to drop that will no longer be used in later calculations
       #this is to keep data frame consistent with how the eurostat frames are processed
-
       cols_to_remove <- setdiff(colnames(subset_of_data),c(euro_dict,"time","values","na_item","nace_r2"))
 
       #drop columns that we will not be using
-      subset_of_data <- subset_of_data %>% dplyr::select(.,-c(cols_to_remove))
-
+      subset_of_data <- subset_of_data %>% dplyr::select(.,-c(dplyr::all_of(cols_to_remove)))
 
       df_imf  <- dplyr::bind_rows(df_imf, subset_of_data)
-      #write.csv(df_statcan, "/Users/geoffreyharper/Desktop/statcan_data.csv", row.names=FALSE)
-      #print(head(subset_of_data,2))
 
     }
 
-      #What is the point of this??
-      # sub <- sub %>%
-      #   dplyr::rename_with(.cols = dplyr::all_of(varcolname), .fn = ~paste0("na_item")) %>%
-      #   dplyr::mutate(na_item = to_obtain$model_varname[j])
-
   }
 
-  return (
-    list ( df= df_imf, to_obtain = to_obtain)
-  )
+  out <- list()
+  out$df <- df_imf
+  out$to_obtain <- to_obtain
 
-
+  return(out)
 }
 
 
