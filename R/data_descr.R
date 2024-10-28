@@ -23,34 +23,50 @@
 #'   \item{siec}{Standard International Energy Product Classification, e.g. for Eurostat}
 #'   \item{...}{Additional filters across the database. Need to have exactly the same column name as in the respective database}
 #' }
-#' @source Own compilation, codes from \url{https://ec.europa.eu/eurostat} and \url{https://edgar.jrc.ec.europa.eu/dataset_ghg70}
+#' @source Own compilation, codes from \url{https://ec.europa.eu/eurostat} and \url{https://edgar.jrc.ec.europa.eu/dataset_ghg80}.
 "dict"
 
-#' Statcan dictionary object
+#' Dictionary for translating StatCan model variable names
 #'
-#' Sample sample dataset that hs been downloaded using the functions in the osem package
+#' A dataset containing StatCan model variable names and metadata for data retrieval.
 #'
-#' Functions used to obtain data:
-#'    statCan_load_or_download, IMF_load_or_download, or download_eurostat
-#'    These functions will give outout consistent to download_eurostat (a function witin load_or_download_variables)
-#'
-#'geo,na_item,values,time,s_adj,nace_r2
-#' @format A data frame with 10000 rows and 2 variables:
+#' @format A tibble with 6 rows and 12 variables:
 #' \describe{
-#'   \item{geo}{Geographic location for which the data was downloaded.}
-#'   \item{na_item}{Variable Name according to the osem dictionary.}
-#'   \item{time}{The date of the observation.}
-#'   \item{s_adj}{Indication whether variable was seasonally adjusted or not. SCA refers to seasonal and calendar adjusted data.}
-#'   \item{nace_r2}{If applicable, the NACE2 sector code.}
-#'   \item{ipcc_sector}{EDGAR IPCC National Greenhouse Gas Inventories,
-#'   see \url{https://www.ipcc-nggip.iges.or.jp/public/2006gl/index.html}.
-#'   \code{"TOTAL"} is not an official IPCC code but is internally interpreted to use country totals.}
-#'   \item{cpa2_1}{Eurostat identifier for Classification of Products by Activity (CPA)}
-#'   North American Industry Classification System (NAICS)
-#'   North American Product Classification System (NAPCS)
-#'
+#'   \item{model_varname}{Unique variable name used in model equations}
+#'   \item{full_name}{Full description of the variable}
+#'   \item{database}{Name of the data source, here \code{"statcan"}}
+#'   \item{dataset_id}{Identifier of the StatCan dataset}
+#'   \item{freq}{Frequency of the data, with \code{"m"} for monthly}
+#'   \item{geo}{Geographical location, typically \code{"Canada"}}
+#'   \item{Seasonal adjustment}{Indicates if data is seasonally adjusted, where applicable}
+#'   \item{North American Industry Classification System (NAICS)}{Classification of industries, based on NAICS}
+#'   \item{North American Product Classification System (NAPCS)}{Product classification system}
+#'   \item{Prices}{Price level for specific categories, if applicable}
+#'   \item{Type of fuel}{Specifies the type of fuel, for example \code{"Regular unleaded"}}
+#'   \item{Products and product groups}{Specific product or group as classified by StatCan}
 #' }
+#' @source Data retrieved from StatCan, available at \url{https://www.statcan.gc.ca/}.
 "dict_statcan"
+
+
+
+#' Dictionary for translating IMF model variable names
+#'
+#' A dataset containing IMF model variable names and metadata for data retrieval.
+#'
+#' @format A tibble with 1 row and 8 variables:
+#' \describe{
+#'   \item{model_varname}{Unique variable name used in model equations}
+#'   \item{full_name}{Full description of the variable}
+#'   \item{database}{Name of the data source, here \code{"imf"}}
+#'   \item{dataset_id}{Identifier of the IMF dataset}
+#'   \item{freq}{Frequency of the data, with \code{"M"} for monthly}
+#'   \item{ref_area}{Geographical reference area, e.g., \code{"W00"} for world}
+#'   \item{commodity}{Type of commodity, such as \code{"POILAPSP"} for oil}
+#'   \item{unit_measure}{Unit of measurement, e.g., \code{"USD"} for U.S. dollars}
+#' }
+#' @source Data retrieved from IMF, available at \url{https://www.imf.org/en/Data}.
+"dict_imf"
 
 
 #' Sample Input for the OSEM Model

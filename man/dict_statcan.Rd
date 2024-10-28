@@ -3,35 +3,31 @@
 \docType{data}
 \name{dict_statcan}
 \alias{dict_statcan}
-\title{Statcan dictionary object}
+\title{Dictionary for translating StatCan model variable names}
 \format{
-A data frame with 10000 rows and 2 variables:
+A tibble with 6 rows and 12 variables:
 \describe{
-\item{geo}{Geographic location for which the data was downloaded.}
-\item{na_item}{Variable Name according to the osem dictionary.}
-\item{time}{The date of the observation.}
-\item{s_adj}{Indication whether variable was seasonally adjusted or not. SCA refers to seasonal and calendar adjusted data.}
-\item{nace_r2}{If applicable, the NACE2 sector code.}
-\item{ipcc_sector}{EDGAR IPCC National Greenhouse Gas Inventories,
-see \url{https://www.ipcc-nggip.iges.or.jp/public/2006gl/index.html}.
-\code{"TOTAL"} is not an official IPCC code but is internally interpreted to use country totals.}
-\item{cpa2_1}{Eurostat identifier for Classification of Products by Activity (CPA)}
-North American Industry Classification System (NAICS)
-North American Product Classification System (NAPCS)
-
+\item{model_varname}{Unique variable name used in model equations}
+\item{full_name}{Full description of the variable}
+\item{database}{Name of the data source, here \code{"statcan"}}
+\item{dataset_id}{Identifier of the StatCan dataset}
+\item{freq}{Frequency of the data, with \code{"m"} for monthly}
+\item{geo}{Geographical location, typically \code{"Canada"}}
+\item{Seasonal adjustment}{Indicates if data is seasonally adjusted, where applicable}
+\item{North American Industry Classification System (NAICS)}{Classification of industries, based on NAICS}
+\item{North American Product Classification System (NAPCS)}{Product classification system}
+\item{Prices}{Price level for specific categories, if applicable}
+\item{Type of fuel}{Specifies the type of fuel, for example \code{"Regular unleaded"}}
+\item{Products and product groups}{Specific product or group as classified by StatCan}
 }
+}
+\source{
+Data retrieved from StatCan, available at \url{https://www.statcan.gc.ca/}.
 }
 \usage{
 dict_statcan
 }
 \description{
-Sample sample dataset that hs been downloaded using the functions in the osem package
-}
-\details{
-Functions used to obtain data:
-statCan_load_or_download, IMF_load_or_download, or download_eurostat
-These functions will give outout consistent to download_eurostat (a function witin load_or_download_variables)
-
-geo,na_item,values,time,s_adj,nace_r2
+A dataset containing StatCan model variable names and metadata for data retrieval.
 }
 \keyword{datasets}
