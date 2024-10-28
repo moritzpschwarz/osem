@@ -100,38 +100,15 @@ download_imf <- function(to_obtain, column_filters, quiet) {
       #add geo
       subset_of_data <- subset_of_data %>% dplyr::mutate(geo = to_obtain$ref_area[idx])
 
-      # #add nace_r2
-      # subset_of_data <- subset_of_data %>% dplyr::mutate(nace_r2 = NA)
-      # #add s_adj
-      # subset_of_data <- subset_of_data %>% dplyr::mutate(s_adj = NA)
-
-
-
       #rename REF_DATE to time
       subset_of_data <- subset_of_data %>% dplyr::rename("time" = "TIME_PERIOD")
 
-      # ensure column "time" is a Date variable (Moritz had this)
+      # rename VALUE to values
+      subset_of_data <- subset_of_data %>% dplyr::rename("values" = "VALUE")
+
+      # ensure column "time" is a Date variable
       subset_of_data <- subset_of_data %>%
         dplyr::mutate(time = as.Date(.data$time))
-
-      ##TO DO this needs to be altered in some what when there is s_adj and nace_r2 values present
-      # in dataframe
-      #rename column headers so they are consistent with the headers used through out the rest of the system
-
-      #for now we will just set these values to NA
-      # subset_of_data <- subset_of_data %>% dplyr::mutate(nace_r2 = NA)
-      # subset_of_data <- subset_of_data %>% dplyr::mutate(s_adj = NA)
-
-
-
-      subset_of_data <- subset_of_data %>% dplyr::rename("values" = "VALUE")
-      if ("North American Industry Classification System (NAICS)" %in% names(subset_of_data)){
-        subset_of_data <- subset_of_data %>% dplyr::rename("naics" = "North American Industry Classification System (NAICS)")
-      }
-      if("Seasonal adjustment" %in% names(subset_of_data)){
-        subset_of_data <- subset_of_data %>% dplyr::rename("s_adj" = "Seasonal adjustment")
-      }
-
 
       #get the columns that we need to drop that will no longer be used in later calculations
       #this is to keep data frame consistent with how the eurostat frames are processed

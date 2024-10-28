@@ -50,7 +50,7 @@
 #'   North American Product Classification System (NAPCS)
 #'
 #' }
-"statcan_dict"
+"dict_statcan"
 
 
 #' Sample Input for the OSEM Model

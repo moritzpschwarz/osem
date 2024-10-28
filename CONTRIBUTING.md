@@ -15,3 +15,8 @@ We are working towards creating more S3 methods:
 - `forecast.osem()`
 
 
+# Dictionaries
+
+Dictionaries should be specific to each individual database.
+They should be named as follows: `dict_{databasename}` for example `dict_imf` or `dict_eurostat`.
+Each dictionatry mus have the following columns: model_varname, full_name, database, freq, geo
