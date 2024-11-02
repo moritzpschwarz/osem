@@ -464,12 +464,21 @@ server <- function(input, output, session) {
 
   # Render the input data table
   output$input_data_table <- renderDT({
-    datatable(rv$inputdata, editable = FALSE)
+
+    numeric_cols <- rv$inputdata %>%
+      dplyr::select(dplyr::where(is.numeric)) %>%
+      names()
+
+    # get the numeric column positions of numeric_cols
+    numeric_cols_pos <- which(colnames(rv$inputdata) %in% numeric_cols)
+
+    datatable(rv$inputdata, editable = FALSE, filter = "top", rownames = NULL, selection = "single") %>%
+      DT::formatRound(., digits = 2, columns = numeric_cols_pos)
   })
 
   # Render the dictionary table
   output$dictionary_table <- renderDT({
-    datatable(rv$dictionary, editable = TRUE)
+    datatable(rv$dictionary, editable = TRUE, filter = "top")
   })
 
   # Render the specification table
@@ -590,9 +599,23 @@ server <- function(input, output, session) {
       }
       rv$model_list <- rv$model_list[which_to_keep]
 
+      # ensure the correct order of the table
+      lapply(rv$model_list, broom::tidy) %>%
+        dplyr::bind_rows() %>%
+        dplyr::distinct(term) %>%
+        dplyr::filter(!stringr::str_detect(term, "iis|sis|q_[0-9]+")) %>%
+        dplyr::mutate(base = gsub("L[0-9]+\\.","",term)) %>%
+        dplyr::mutate(base_num = dplyr::case_when(base == "mconst" ~ 2,
+                                                  base == "trend" ~ 3,
+                                                  grepl("ar[0-9]+",base) ~ 1,
+                                                  TRUE ~ 4)) %>%
+        dplyr::arrange(base_num, base, desc(term)) %>%
+        dplyr::pull(term) -> coef_order
+
       # converts the list of results from run_model to a data.frame of estimates and coefficients
       rv$table_output <- modelsummary::modelsummary(
         rv$model_list,
+        coef_map = coef_order,
         coef_omit = "iis|sis",
         gof_omit = "R",
         title = "Final models run for each sub-module.",
@@ -642,9 +665,23 @@ server <- function(input, output, session) {
     }
     rv$model_list <- rv$model_list[which_to_keep]
 
+    # ensure the correct order of the table
+    lapply(rv$model_list, broom::tidy) %>%
+      dplyr::bind_rows() %>%
+      dplyr::distinct(term) %>%
+      dplyr::filter(!stringr::str_detect(term, "iis|sis|q_[0-9]+")) %>%
+      dplyr::mutate(base = gsub("L[0-9]+\\.","",term)) %>%
+      dplyr::mutate(base_num = dplyr::case_when(base == "mconst" ~ 2,
+                                                base == "trend" ~ 3,
+                                                grepl("ar[0-9]+",base) ~ 1,
+                                                TRUE ~ 4)) %>%
+      dplyr::arrange(base_num, base, desc(term)) %>%
+      dplyr::pull(term) -> coef_order
+
     # converts the list of results from run_model to a data.frame of estimates and coefficients
     rv$table_output <- modelsummary::modelsummary(
       rv$model_list,
+      coef_map = coef_order,
       coef_omit = "iis|sis",
       gof_omit = "R",
       title = "Final models run for each sub-module.",
