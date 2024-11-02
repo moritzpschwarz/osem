@@ -184,7 +184,12 @@ load_or_download_variables <- function(specification,
       to_obtain <- step4$to_obtain
       full <- dplyr::bind_rows(full, step4$df)
     }
-
+    not_loaded_imf <- which(to_obtain$database == "imf" & to_obtain$found == FALSE)
+    if (length(not_loaded_imf) > 0L) {
+      step5 <- download_imf(to_obtain = to_obtain, column_filters = actual_cols, quiet = quiet)
+      to_obtain <- step5$to_obtain
+      full <- dplyr::bind_rows(full, step4$df)
+    }
 
 
 
