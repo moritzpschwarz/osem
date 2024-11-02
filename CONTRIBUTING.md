@@ -10,6 +10,11 @@ Official Name of the Model: Open-Source Empirical Macro Model
 
 We generally use `osem` objects. This could be `osem.model` or `osem.forecast` but generally we want to only use `osem` etc.
 
+# Variable names within functions
+
+Within a function, we want to use the following names as a convention: 
+- A dictionary in use is `dictionary` - `dict` is only the default one that is in the package
+
 # S3 Methods
 
 We are working towards creating more S3 methods: - `forecast.osem()` - `plot.osem()`
