@@ -45,6 +45,8 @@ Suggests:
     purrr,
     forecast,
     knitr,
-    rmarkdown
+    rmarkdown,
+    modelsummary,
+    broom
 Config/testthat/edition: 3
 VignetteBuilder: knitr
