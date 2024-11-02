@@ -288,5 +288,15 @@ test_that("Check that a missing dictionary entry is not triggering an error for 
   expect_true("NewIdent" %in% unique(mod$full_data$na_item))
 
 
+  # check that dictionary stops with an error message for incorrect database
+
+  dict %>%
+    dplyr::mutate(database = "incorrect") -> dict_incorrect
+
+  expect_error(run_model(specification = specification, dictionary = dict_incorrect, inputdata_directory = testdata, quiet = TRUE),
+               regexp = "Currently, only allow data bases 'eurostat', 'edgar', 'statcan', 'imf', or 'local' files")
+
+
+
 })
 
