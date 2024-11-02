@@ -29,7 +29,6 @@ Imports:
     utils,
     ggplot2,
     scales,
-    statcanR,
     zoo
 LazyData: true
 Suggests: 
@@ -47,6 +46,7 @@ Suggests:
     forecast,
     knitr,
     rmarkdown,
+    statcanR,
     imf.data
 Config/testthat/edition: 3
 VignetteBuilder: knitr
