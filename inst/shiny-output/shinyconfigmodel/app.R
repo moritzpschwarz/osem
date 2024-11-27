@@ -46,8 +46,12 @@ ui <- fluidPage(
     )
   ),
 
+
+  # Input -------------------------------------------------------------------
+
+
   tabsetPanel( id = "SettingsTab",
-               # Specification Tab ------------------------------------------------------------
+               ## Specification Tab ------------------------------------------------------------
                tabPanel(
                  "Specification",
 
@@ -63,7 +67,7 @@ ui <- fluidPage(
                  div(style = "margin-top: -30px"),  # margins manually set for better-looking display
 
                ),
-               # Input Tab ------------------------------------------------------------
+               ## Data Tab ------------------------------------------------------------
                tabPanel(
                  "Input Data",
                  fileInput("data", "Upload Input Data (CSV, from 'Save Processed Input data')", accept = ".csv"), # file input scrolls up page; this is an unresolved shiny issue - https://github.com/rstudio/shiny/issues/3327 - the fixes in the discussion could be considered, but are rather messy, so leaving them out currently
@@ -213,8 +217,9 @@ ui <- fluidPage(
 
   # Output --------------------------------------------------------------
   tabsetPanel(id = "OutputTab",
-              ## Model results --------------------------------------------------------------
+              ## Model Results --------------------------------------------------------------
               tabPanel(title = "Model Results", value = "results",
+                       uiOutput("modelplot_message"),
                        shinycssloaders::withSpinner(
                          tableOutput("model_output"),
                        ),
@@ -459,12 +464,21 @@ server <- function(input, output, session) {
 
   # Render the input data table
   output$input_data_table <- renderDT({
-    datatable(rv$inputdata, editable = FALSE)
+
+    numeric_cols <- rv$inputdata %>%
+      dplyr::select(dplyr::where(is.numeric)) %>%
+      names()
+
+    # get the numeric column positions of numeric_cols
+    numeric_cols_pos <- which(colnames(rv$inputdata) %in% numeric_cols)
+
+    datatable(rv$inputdata, editable = FALSE, filter = "top", rownames = NULL, selection = "single") %>%
+      DT::formatRound(., digits = 2, columns = numeric_cols_pos)
   })
 
   # Render the dictionary table
   output$dictionary_table <- renderDT({
-    datatable(rv$dictionary, editable = TRUE)
+    datatable(rv$dictionary, editable = TRUE, filter = "top")
   })
 
   # Render the specification table
@@ -511,25 +525,27 @@ server <- function(input, output, session) {
   run_model_shiny <- function() {
     withProgress(message = 'Estimation Running... ', value = 0, { # the update is being sent from within run_model.R
       print(reactiveValuesToList(rv)) # to display reactive variables at time of function call
-      model_output <- osem::run_model(specification = rv$specification,
-                                      dictionary = rv$dictionary,
-                                      inputdata_directory = if (is.null(rv$inputdirectory)) { NULL } else { dirname(input$data$datapath) }, # inputdata
-                                      primary_source = if (is.null(rv$inputdirectory)) { "download" } else { "local" },#  swtichting to "download" makes it slower? Could be a setting with a warning "might take longer". Reading the cached files takes long as well.
-                                      save_to_disk = rv$save_file,
-                                      present = FALSE,
-                                      quiet = FALSE,
-                                      use_logs = rv$use.logs,
-                                      trend = rv$trend,
-                                      ardl_or_ecm = rv$ardl.or.ecm,
-                                      max.ar = rv$max_ar,
-                                      max.dl = rv$max_dl,
-                                      saturation = rv$saturation,
-                                      saturation.tpval = rv$ind_sat_pval,
-                                      max.block.size = rv$max_block_size,
-                                      gets_selection = rv$gets_select,
-                                      selection.tpval = rv$gets_pval,
-                                      constrain.to.minimum.sample = rv$constrain_to_minimum_sample,
-                                      plot = FALSE)
+
+      model_output <- run_model(
+        specification = rv$specification,
+        dictionary = rv$dictionary,
+        inputdata_directory = if (!is.null(rv$inputdata)){rv$inputdata} else {NULL},
+        primary_source =  "local",#  switching to "download" makes it slower? Could be a setting with a warning "might take longer". Reading the cached files takes long as well.
+        save_to_disk = rv$save_file,
+        present = FALSE,
+        quiet = FALSE,
+        use_logs = rv$use.logs,
+        trend = rv$trend,
+        ardl_or_ecm = rv$ardl.or.ecm,
+        max.ar = rv$max_ar,
+        max.dl = rv$max_dl,
+        saturation = rv$saturation,
+        saturation.tpval = rv$ind_sat_pval,
+        max.block.size = rv$max_block_size,
+        gets_selection = rv$gets_select,
+        selection.tpval = rv$gets_pval,
+        constrain.to.minimum.sample = rv$constrain_to_minimum_sample,
+        plot = FALSE)
 
       # # Print or process the model output as needed
       #print(unlist(model_output))
@@ -556,53 +572,70 @@ server <- function(input, output, session) {
   }
 
 
- # Use pre-loaded model ---------------------------------------------------
+  # Use pre-loaded model ---------------------------------------------------
   # Observe whether the user has uploaded a specification file through run_shiny()
-  observeEvent(!is.null(getShinyOption("osem_direct")), {
+  #observeEvent(!is.null(getShinyOption("osem_direct")), {
 
-    rv$table_output <- NULL
-    rv$model_output <- NULL # needed for progress indicator package to work
+  observeEvent(getShinyOption("osem_direct"), {
+    if (!is.null(getShinyOption("osem_direct"))) {
+      rv$table_output <- NULL
+      rv$model_output <- NULL # needed for progress indicator package to work
 
-    updateTabsetPanel(session, "OutputTab",
-                      selected = "results") # only updates after the whole function ran, with final values. Can this be paced manually?
-    rv$model_output <- getShinyOption("osem_direct")
+      updateTabsetPanel(session, "OutputTab",
+                        selected = "results") # only updates after the whole function ran, with final values. Can this be paced manually?
+      rv$model_output <- getShinyOption("osem_direct")
 
+      rv$model_list <- lapply(rv$model_output$module_collection$model, function(x){
+        if(!is.null(x)) {
+          as.lm.custom(x)
+        } else{
+          NULL # if it is an identity in the specification, it shows as NULL in the collection; thus, no lm conversion can take place
+        }})
 
-    rv$model_list <- lapply(rv$model_output$module_collection$model, function(x){
-      if(!is.null(x)) {
-        as.lm.custom(x)
-      } else{
-        NULL # if it is an identity in the specification, it shows as NULL in the collection; thus, no lm conversion can take place
-      }})
+      # removing NULLs, which are identity equations in the specification, so only estimated models are put out in the table
+      which_to_keep <- -which(sapply(rv$model_list, is.null))
+      if(identical(which_to_keep, integer(0))){
+        which_to_keep <- rep(TRUE, length(rv$model_list))
+      }
+      rv$model_list <- rv$model_list[which_to_keep]
 
-    # removing NULLs, which are identity equations in the specification, so only estimated models are put out in the table
-    which_to_keep <- -which(sapply(rv$model_list, is.null))
-    if(identical(which_to_keep, integer(0))){
-      which_to_keep <- rep(TRUE, length(rv$model_list))
+      # ensure the correct order of the table
+      lapply(rv$model_list, broom::tidy) %>%
+        dplyr::bind_rows() %>%
+        dplyr::distinct(term) %>%
+        dplyr::filter(!stringr::str_detect(term, "iis|sis|q_[0-9]+")) %>%
+        dplyr::mutate(base = gsub("L[0-9]+\\.","",term)) %>%
+        dplyr::mutate(base_num = dplyr::case_when(base == "mconst" ~ 2,
+                                                  base == "trend" ~ 3,
+                                                  grepl("ar[0-9]+",base) ~ 1,
+                                                  TRUE ~ 4)) %>%
+        dplyr::arrange(base_num, base, desc(term)) %>%
+        dplyr::pull(term) -> coef_order
+
+      # converts the list of results from run_model to a data.frame of estimates and coefficients
+      rv$table_output <- modelsummary::modelsummary(
+        rv$model_list,
+        coef_map = coef_order,
+        coef_omit = "iis|sis",
+        gof_omit = "R",
+        title = "Final models run for each sub-module.",
+        notes = "Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.", # depending on settings
+        stars = TRUE,
+        output = "data.frame"
+      )
+
+      # this removes the variable name for rows with std errors for better-looking display
+      rv$table_output[rv$table_output$statistic == "std.error",]$term <- ""
+
+      # this removes the columns not necessary for display
+      rv$table_output <- rv$table_output[,setdiff(names(rv$table_output), c("part", "statistic"))]
+
+      # figure out the specification
+      rv$specification <- rv$model_output$args$specification
+      rv$dictionary <- rv$model_output$dictionary
+      rv$inputdata <- rv$model_output$processed_input_data
+      rv$model_plot <- plot(rv$model_output)
     }
-    rv$model_list <- rv$model_list[which_to_keep]
-
-    # converts the list of results from run_model to a data.frame of estimates and coefficients
-    rv$table_output <- modelsummary::modelsummary(
-      rv$model_list,
-      coef_omit = "iis|sis",
-      gof_omit = "R",
-      title = "Final models run for each sub-module.",
-      notes = "Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.", # depending on settings
-      stars = TRUE,
-      output = "data.frame"
-    )
-
-    # this removes the variable name for rows with std errors for better-looking display
-    rv$table_output[rv$table_output$statistic == "std.error",]$term <- ""
-
-    # this removes the columns not necessary for display
-    rv$table_output <- rv$table_output[,setdiff(names(rv$table_output), c("part", "statistic"))]
-
-    # figure out the specification
-    rv$specification <- rv$model_output$args$specification
-    rv$dictionary <- rv$model_output$dictionary
-    rv$input_data_table <- rv$model_output$processed_input_data
   })
 
 
@@ -632,9 +665,23 @@ server <- function(input, output, session) {
     }
     rv$model_list <- rv$model_list[which_to_keep]
 
+    # ensure the correct order of the table
+    lapply(rv$model_list, broom::tidy) %>%
+      dplyr::bind_rows() %>%
+      dplyr::distinct(term) %>%
+      dplyr::filter(!stringr::str_detect(term, "iis|sis|q_[0-9]+")) %>%
+      dplyr::mutate(base = gsub("L[0-9]+\\.","",term)) %>%
+      dplyr::mutate(base_num = dplyr::case_when(base == "mconst" ~ 2,
+                                                base == "trend" ~ 3,
+                                                grepl("ar[0-9]+",base) ~ 1,
+                                                TRUE ~ 4)) %>%
+      dplyr::arrange(base_num, base, desc(term)) %>%
+      dplyr::pull(term) -> coef_order
+
     # converts the list of results from run_model to a data.frame of estimates and coefficients
     rv$table_output <- modelsummary::modelsummary(
       rv$model_list,
+      coef_map = coef_order,
       coef_omit = "iis|sis",
       gof_omit = "R",
       title = "Final models run for each sub-module.",
@@ -649,7 +696,24 @@ server <- function(input, output, session) {
     # this removes the columns not necessary for display
     rv$table_output <- rv$table_output[,setdiff(names(rv$table_output), c("part", "statistic"))]
 
+    # save downloaded data
+    rv$inputdata <- rv$model_output$processed_input_data
+
   })
+
+  # Display the model output ---------
+  output$model_output <- renderTable(rv$table_output)
+  output$model_plot <- renderPlot({rv$model_plot})
+
+  output$modelplot_message <- renderUI({
+    if (is.null(rv$model_plot)) {
+      return(div("Please press 'Run Model' to see Model Output.", style = "color: black;"))
+    } else {
+      return(NULL)
+    }
+    # Remove the message if data is available
+  })
+
 
   # When Forecast button is pressed ---------------
   # Forecast model when "Forecast Model" button is clicked
@@ -677,9 +741,6 @@ server <- function(input, output, session) {
     rv$forecast_output <- plot(rv$forecast_data, first_date = as.character(input$startdate_plot))
   })
 
-  # Display the model output
-  output$model_output <- renderTable(rv$table_output)
-  output$model_plot <- renderPlot(plot(rv$model_output))
 
   # Display the forecast output
   output$forecast_output <- renderPlot({rv$forecast_output})

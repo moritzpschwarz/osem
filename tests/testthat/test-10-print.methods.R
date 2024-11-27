@@ -53,3 +53,19 @@ test_that("print methods are working", {
 })
 
 
+test_that("Testing model_table function",{
+  skip_on_cran()
+  skip_on_ci()
+
+  # create a number of tests that evaluate whether the model_table function works
+  expect_s3_class(model_table(mod), "kableExtra")
+  # check whether the output is a data.frame
+  expect_s3_class(model_table(mod, output = "data.frame"), "data.frame")
+  # expect whether this would be html code
+  expect_s3_class(model_table(mod,output = "html"), "kableExtra")
+  # expect latex
+  expect_warning(model_table(mod, output = "latex"))
+  expect_s3_class(model_table(mod, output = "latex"), "modelsummary_string")
+})
+
+
