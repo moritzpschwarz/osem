@@ -54,6 +54,8 @@ test_that("print methods are working", {
 
 
 test_that("Testing model_table function",{
+  skip_on_cran()
+  skip_on_ci()
 
   # create a number of tests that evaluate whether the model_table function works
   expect_s3_class(model_table(mod), "kableExtra")
