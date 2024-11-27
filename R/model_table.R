@@ -59,9 +59,8 @@ model_table <- function(model,
   }
 
   # this output can go straight into the latex
-  table_latex <- table_change(table_output, label = "tab:regression_summary")
+  if(output == "latex"){return(table_change(table_output, label = "tab:regression_summary"))}
 
-  if(output == "latex"){return(table_latex)}
   if(output %in% c("html","data.frame", "default")){return(table_output)}
 
 }
