@@ -1,0 +1,12 @@
+name: OSEM-Model
+title: OSEM-Model
+username: moritzpschwarz
+account: moritzpschwarz
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13465964
+bundleId: 9453430
+url: https://moritzpschwarz.shinyapps.io/OSEM-Model/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
