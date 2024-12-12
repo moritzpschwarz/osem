@@ -4,7 +4,7 @@
 \alias{model_table}
 \title{Show the final regression equations estimated by the OSEM Model}
 \usage{
-model_table(model, output = "html", title = "OSEM Model Results")
+model_table(model, output = "default", title = "OSEM Model Results")
 }
 \arguments{
 \item{model}{An OSEM model object or class \code{osem}, created by the \code{run_model} function.}

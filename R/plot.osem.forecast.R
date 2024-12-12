@@ -1,6 +1,6 @@
 #' Plot a Forecast Object of the OSEM Model
 #'
-#' @param x An object of class osem.forecast, which is the output from the forecast_model function.
+#' @param x An object of class osem.forecast, which is the output from the \link{forecast_model} function.
 #' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.
 #' @param order.as.run Logical. Should the plots be arranged in the way that the model was run? Default FALSE.
 #' @param interactive Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).
@@ -41,7 +41,7 @@
 plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
 
   if(!isa(x, "osem.forecast")){
-    stop("Input object not of type osem.forecast. Run 'forecast_model' again and use the output of that function.")
+    stop("Input object not of type 'osem.forecast'. Run 'forecast_model' again and use the output of that function.")
   }
 
   if(!is.null(first_date)){if(!is.character(first_date) | !lubridate::is.Date(as.Date(first_date))){stop("When supplying 'first_date', the it must be a character and must be (able to be converted to) a Date.")}}
@@ -94,39 +94,42 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
 
     dplyr::mutate(fit = "forecast") -> forecasts_processed
 
-
   # ALL FORECASTS --------
   # Dealing with uncertainty (all forecasts)
   # unnest the set of all estimates from the original object
   x$forecast %>%
     dplyr::select("dep_var", "all.estimates") %>%
-    tidyr::unnest("all.estimates") %>%
-    tidyr::pivot_longer(-c("time", "dep_var")) -> all_forecasts
+    tidyr::unnest("all.estimates") -> all_forecasts_unnested
 
-  dplyr::tibble(dep_var = names(central_forecasts),
-                expo = to_exponentiate,
-                #all = c("time",unique(all_forecasts$dep_var))) -> to_exponentiate_tibble
-                all = c("time",unique(x$forecast$dep_var))) -> to_exponentiate_tibble
+  if(nrow(all_forecasts_unnested) > 0){
+    all_forecasts_unnested %>%
+      tidyr::pivot_longer(-c("time", "dep_var")) -> all_forecasts
 
-  all_forecasts %>%
-    dplyr::mutate(value = dplyr::case_when(.data$dep_var %in% to_exponentiate_tibble$all[to_exponentiate_tibble$expo == TRUE] ~ exp(.data$value),
-                                           TRUE ~ .data$value)) %>%
-    dplyr::rename(na_item = "dep_var", values = "value") %>%
-    dplyr::full_join(x$orig_model$module_order %>%
-                       dplyr::select("dependent") %>%
-                       dplyr::rename(na_item = "dependent"), by = "na_item") %>%
-    dplyr::mutate(fit = "Forecast Uncertainty") -> all_forecasts_processed
+    dplyr::tibble(dep_var = names(central_forecasts),
+                  expo = to_exponentiate,
+                  #all = c("time",unique(all_forecasts$dep_var))) -> to_exponentiate_tibble
+                  all = c("time",unique(x$forecast$dep_var))) -> to_exponentiate_tibble
 
-  all_forecasts_processed %>%
-    tidyr::drop_na("time") %>%
-    dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
-    dplyr::summarise(
-      p95 = stats::quantile(.data$values, probs = 0.95),
-      p05 = stats::quantile(.data$values, probs = 0.05),
-      p975 = stats::quantile(.data$values, probs = 0.975),
-      p025 = stats::quantile(.data$values, probs = 0.025),
-      p75 = stats::quantile(.data$values, probs = 0.75),
-      p25 = stats::quantile(.data$values, probs = 0.25)) -> all_forecasts_processed_q
+    all_forecasts %>%
+      dplyr::mutate(value = dplyr::case_when(.data$dep_var %in% to_exponentiate_tibble$all[to_exponentiate_tibble$expo == TRUE] ~ exp(.data$value),
+                                             TRUE ~ .data$value)) %>%
+      dplyr::rename(na_item = "dep_var", values = "value") %>%
+      dplyr::full_join(x$orig_model$module_order %>%
+                         dplyr::select("dependent") %>%
+                         dplyr::rename(na_item = "dependent"), by = "na_item") %>%
+      dplyr::mutate(fit = "Forecast Uncertainty") -> all_forecasts_processed
+
+    all_forecasts_processed %>%
+      tidyr::drop_na("time") %>%
+      dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
+      dplyr::summarise(
+        p95 = stats::quantile(.data$values, probs = 0.95),
+        p05 = stats::quantile(.data$values, probs = 0.05),
+        p975 = stats::quantile(.data$values, probs = 0.975),
+        p025 = stats::quantile(.data$values, probs = 0.025),
+        p75 = stats::quantile(.data$values, probs = 0.75),
+        p25 = stats::quantile(.data$values, probs = 0.25)) -> all_forecasts_processed_q
+  }
 
   # NOWCASTS --------
   if(!is.null(x$nowcast_data)) {
@@ -214,26 +217,27 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     {if(!is.null(nowcast_processed)){dplyr::bind_rows(.,last_nowcast_value %>% dplyr::filter(.data$na_item %in% nowcast_present))}else{.}}
 
   ## All Forecasts ---
-
-  all_forecasts_processed_q %>%
-    dplyr::bind_rows(last_fitted_value %>%
-                       dplyr::filter(!.data$na_item %in% nowcast_present) %>%
-                       dplyr::reframe(p95 = .data$values,
-                                      p05 = .data$values,
-                                      p975 = .data$values,
-                                      p025 = .data$values,
-                                      p75 =  .data$values,
-                                      p25 =  .data$values, .by = "time", .data$na_item) %>%
-                       dplyr::mutate(fit = "Forecast Uncertainty")) %>%
-    {if(!is.null(nowcast_processed)){dplyr::bind_rows(.,last_nowcast_value %>%
-                                                        dplyr::filter(.data$na_item %in% nowcast_present) %>%
-                                                        dplyr::reframe(p95 = .data$values,
-                                                                       p05 = .data$values,
-                                                                       p975 = .data$values,
-                                                                       p025 = .data$values,
-                                                                       p75 =  .data$values,
-                                                                       p25 =  .data$values, .by = "time", .data$na_item) %>%
-                                                        dplyr::mutate(fit = "Forecast Uncertainty"))}else{.}} -> all_forecasts_processed_q
+  if(nrow(all_forecasts_unnested) > 0){
+    all_forecasts_processed_q %>%
+      dplyr::bind_rows(last_fitted_value %>%
+                         dplyr::filter(!.data$na_item %in% nowcast_present) %>%
+                         dplyr::reframe(p95 = .data$values,
+                                        p05 = .data$values,
+                                        p975 = .data$values,
+                                        p025 = .data$values,
+                                        p75 =  .data$values,
+                                        p25 =  .data$values, .by = "time", .data$na_item) %>%
+                         dplyr::mutate(fit = "Forecast Uncertainty")) %>%
+      {if(!is.null(nowcast_processed)){dplyr::bind_rows(.,last_nowcast_value %>%
+                                                          dplyr::filter(.data$na_item %in% nowcast_present) %>%
+                                                          dplyr::reframe(p95 = .data$values,
+                                                                         p05 = .data$values,
+                                                                         p975 = .data$values,
+                                                                         p025 = .data$values,
+                                                                         p75 =  .data$values,
+                                                                         p25 =  .data$values, .by = "time", .data$na_item) %>%
+                                                          dplyr::mutate(fit = "Forecast Uncertainty"))}else{.}} -> all_forecasts_processed_q
+  }
 
 
   ## Nowcasts ----
@@ -277,13 +281,19 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     "Nowcast" = "#35B779FF"
   )
 
+  if(nrow(all_forecasts_unnested) > 0){
+    uncertainty_layers <- list(
+      ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p05, x = .data$time, ymax = .data$p95, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE),
+      ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE),
+      ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = .data$fit), linewidth = 0.1, alpha = 0.5, inherit.aes = FALSE, na.rm = TRUE))
+  } else {
+    uncertainty_layers <- list()
+  }
 
   plotting_df_ready %>%
     ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
 
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p05, x = .data$time, ymax = .data$p95, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = .data$fit), linewidth = 0.1, alpha = 0.3, inherit.aes = FALSE, na.rm = TRUE) +
-    ggplot2::geom_ribbon(data = all_forecasts_processed_q, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = .data$fit), linewidth = 0.1, alpha = 0.5, inherit.aes = FALSE, na.rm = TRUE) +
+    uncertainty_layers +
 
     ggplot2::geom_line(linewidth = 1, na.rm = TRUE) +
 
@@ -309,8 +319,11 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
       {if(!exclude.exogenous){dplyr::bind_rows(.,exog_forecasts %>%
                                                  dplyr::mutate(fit = "Exogenous Forecast"))} else {.}} %>%
       dplyr::select(-"var") %>%
-      dplyr::full_join(all_forecasts_processed_q %>%
-                         dplyr::select(-"fit"), by = dplyr::join_by("time", "na_item")) %>%
+
+      {if(nrow(all_forecasts_unnested) > 0){
+        dplyr::full_join(.,all_forecasts_processed_q %>%
+                           dplyr::select(-"fit"), by = dplyr::join_by("time", "na_item"))} else {.}} %>%
+
       dplyr::mutate(fit = dplyr::case_when(fit == "forecast" ~ "Endogenous Forecast",
                                            fit == "TRUE" ~ "Insample Fit",
                                            fit == "FALSE" ~ "Observation",

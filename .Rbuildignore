@@ -11,3 +11,4 @@
 ^pkgdown$
 ^data-raw$
 ^codecov\.yml$
+^CONTRIBUTING\.md$
