@@ -27,7 +27,7 @@ model_table <- function(model,
                                               .data$base == "trend" ~ 3,
                                               grepl("ar[0-9]+",.data$base) ~ 1,
                                               TRUE ~ 4)) %>%
-    dplyr::arrange(.data$base_num, .data$base, desc(.data$term)) %>%
+    dplyr::arrange(.data$base_num, .data$base, dplyr::desc(.data$term)) %>%
     dplyr::pull("term") -> coef_order
 
   table_output <- modelsummary::modelsummary(
