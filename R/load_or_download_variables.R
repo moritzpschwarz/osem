@@ -33,10 +33,10 @@ load_or_download_variables <- function(specification,
                                        quiet = FALSE,
                                        constrain.to.minimum.sample = TRUE) {
 
-  # input check
+  # initial checks ------
   # primary_source must be "download" or "local"
   primary_source <- match.arg(primary_source)
-  # user dictionary or default (TODO: write a function that validates whether user dict is ok)
+  # user dictionary or default
   if (is.null(dictionary)) {
     dictionary <- osem::dict
   }
@@ -65,8 +65,9 @@ load_or_download_variables <- function(specification,
 
   # sources
   sources <- unique(to_obtain$database)
-  if (length(setdiff(sources, c("eurostat", "edgar", "local"))) >= 1L) {
-    stop("Currently, only allow databases 'eurostat', 'edgar', or 'local' files.")
+
+  if (length(setdiff(sources, c("eurostat", "edgar", "local", "statcan", "imf"))) >= 1L) {
+    stop("Currently, only allow data bases 'eurostat', 'edgar', 'statcan', 'imf', or 'local' files.")
   }
   if ("edgar" %in% sources) {
     if (!requireNamespace("readxl", quietly = TRUE)) {
@@ -80,14 +81,20 @@ load_or_download_variables <- function(specification,
   options(timeout = 1000)
 
   # data input
+
   if (primary_source == "download") {
+
+    # download ----
 
     # steps:
     # 1) download from eurostat
     # 2) download from edgar
-    # 3) local loading
+    # 3) download from statcan
+    # 4) download from imf
+    # 5) local loading
     # -> since download updates "found", local does not overwrite (download takes precedence)
 
+    ## eurostat ----
     if ("eurostat" %in% sources) {
       step1 <- download_eurostat(to_obtain = to_obtain,
                                  additional_filters = additional_filters,
@@ -95,24 +102,50 @@ load_or_download_variables <- function(specification,
       to_obtain <- step1$to_obtain
       full <- dplyr::bind_rows(full, step1$df)
     }
+
+    ## edgar ----
     if ("edgar" %in% sources) {
       step2 <- download_edgar(to_obtain = to_obtain, quiet = quiet)
       to_obtain <- step2$to_obtain
       full <- dplyr::bind_rows(full, step2$df)
     }
-    if ("local" %in% sources) {
-      step3 <- load_locally(to_obtain = to_obtain,
-                            inputdata_directory = inputdata_directory,
-                            quiet = quiet)
+
+    ## statcan ----
+    not_loaded_statcan <- which(to_obtain$database == "statcan" & to_obtain$found == FALSE)
+    if (length(not_loaded_statcan) > 0L) {
+      step3 <- download_statcan(to_obtain = to_obtain,
+                                column_filters = actual_cols,
+                                quiet = quiet)
       to_obtain <- step3$to_obtain
       full <- dplyr::bind_rows(full, step3$df)
     }
+
+    ## imf ----
+    not_loaded_imf <- which(to_obtain$database == "imf" & to_obtain$found == FALSE)
+    if (length(not_loaded_imf) > 0L) {
+      step4 <- download_imf(to_obtain = to_obtain,
+                            column_filters = actual_cols,
+                            quiet = quiet)
+      to_obtain <- step4$to_obtain
+      full <- dplyr::bind_rows(full, step4$df)
+    }
+
+    if ("local" %in% sources) {
+      step5 <- load_locally(to_obtain = to_obtain,
+                            inputdata_directory = inputdata_directory,
+                            quiet = quiet)
+      to_obtain <- step5$to_obtain
+      full <- dplyr::bind_rows(full, step5$df)
+    }
+
     if (any(to_obtain$found == FALSE)) {
       stop(paste0("The following variables could not be obtained: ",
                   paste(to_obtain %>% dplyr::filter(.data$found == FALSE) %>% dplyr::pull(.data$model_varname), collapse = ", ")))
     }
 
   } else { # (primary_source == "local")
+
+    # load locally -----
 
     # steps:
     # 1) local loading
@@ -145,6 +178,21 @@ load_or_download_variables <- function(specification,
       to_obtain <- step3$to_obtain
       full <- dplyr::bind_rows(full, step3$df)
     }
+    not_loaded_statcan <- which(to_obtain$database == "statcan" & to_obtain$found == FALSE)
+    if (length(not_loaded_statcan) > 0L) {
+      step4 <- download_statcan(to_obtain = to_obtain, quiet = quiet)
+      to_obtain <- step4$to_obtain
+      full <- dplyr::bind_rows(full, step4$df)
+    }
+    not_loaded_imf <- which(to_obtain$database == "imf" & to_obtain$found == FALSE)
+    if (length(not_loaded_imf) > 0L) {
+      step5 <- download_imf(to_obtain = to_obtain, column_filters = actual_cols, quiet = quiet)
+      to_obtain <- step5$to_obtain
+      full <- dplyr::bind_rows(full, step4$df)
+    }
+
+
+
     if (any(to_obtain$found == FALSE)) {
       stop(paste0("The following variables could not be obtained: ",
                   paste(to_obtain %>% dplyr::filter(.data$found == FALSE) %>% dplyr::pull(.data$model_varname), collapse = ", ")))
@@ -195,8 +243,10 @@ load_or_download_variables <- function(specification,
 
   # This must come after saving
   if (constrain.to.minimum.sample) {
-    if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
-      warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+    if(!quiet){
+      if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
+        warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+      }
     }
     min_date <- max(availability$min_date) # highest minimum date
     max_date <- min(availability$max_date) # lowest maximum date
@@ -282,12 +332,14 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
         {if(dplyr::select(., dplyr::any_of("ipcc_sector")) %>% ncol == 1){dplyr::filter(., .data$ipcc_sector == to_obtain$ipcc_sector[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(., .data$cpa2_1 == to_obtain$cpa2_1[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("siec")) %>% ncol == 1){dplyr::filter(., .data$siec == to_obtain$siec[j])}else{.}}
-        # if user specified additional filters, apply them now
-        for (k in seq_along(additional_filters)) {
-          filtername <- additional_filters[k]
-          sub <- sub %>%
-            {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[[j, filtername]])}else{.}}
-        }
+
+      # if user specified additional filters, apply them now
+      for (k in seq_along(additional_filters)) {
+        filtername <- additional_filters[k]
+        sub <- sub %>%
+          {if(dplyr::select(., dplyr::any_of(filtername)) %>% ncol == 1){dplyr::filter(., .data[[filtername]] == to_obtain[[j, filtername]])}else{.}}
+      }
+
       # if after filtering "sub" is not empty, we found the variable and can mark it as such
       if (NROW(sub) == 0L) {
         stop(paste0("For model variable '", to_obtain$model_varname[j], "', the dataset is empty after applying filter. Check whether the dictionary and the data source for changes and errors (i.e. name of units, etc.)"))
@@ -584,7 +636,8 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
 
     # subset the relevant data
     df_local <- inputdata_directory %>%
-      dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) # choose the relevant ones
+      dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) %>%  # choose the relevant ones
+      dplyr::mutate(time = as.Date(.data$time))
 
   } else {
 

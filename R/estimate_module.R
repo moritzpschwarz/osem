@@ -18,18 +18,6 @@
 #' @return A list containing all estimated models, with the model with the smallest BIC under 'best_model'.
 #'
 #' @importFrom stats BIC coef fitted setNames
-#'
-#' @examples
-#' sample_data <- dplyr::tibble(
-#'   time = rep(seq.Date(
-#'     from = as.Date("2000-01-01"),
-#'     to = as.Date("2000-12-31"), by = 1
-#'   ), each = 2),
-#'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
-#' )
-#' sample_data_clean <- osem:::clean_data(sample_data, max.ar = 4)
-#' osem:::estimate_module(sample_data_clean, "yvar", "xvar")
-#'
 estimate_module <- function(clean_data,
                             dep_var_basename,
                             x_vars_basename,
