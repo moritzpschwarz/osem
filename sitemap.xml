@@ -4,6 +4,7 @@
 <url><loc>http://moritzschwarz.org/osem/LICENSE.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/articles/example-workflow.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/articles/index.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/articles/modelling-with-statcan-workflow.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/articles/new_variable_to_dict.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/authors.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/index.html</loc></url>
@@ -18,8 +19,12 @@
 <url><loc>http://moritzschwarz.org/osem/reference/determine_variables.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/diagnostics_model.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/dict.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/reference/dict_imf.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/reference/dict_statcan.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/download_edgar.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/download_eurostat.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/reference/download_imf.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/reference/download_statcan.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/estimate_module.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_exogenous_values.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_extract_info.html</loc></url>
@@ -40,6 +45,7 @@
 <url><loc>http://moritzschwarz.org/osem/reference/nowcasting.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/osem.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/plot.osem.forecast.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/reference/plot.osem.forecast.insample.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/plot.osem.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/present_model.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/print.osem.forecast.html</loc></url>

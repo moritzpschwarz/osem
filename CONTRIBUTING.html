@@ -19,6 +19,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="articles/example-workflow.html">Example Workflow</a></li>
+    <li><a class="dropdown-item" href="articles/modelling-with-statcan-workflow.html">modelling-with-statcan-workflow</a></li>
     <li><a class="dropdown-item" href="articles/new_variable_to_dict.html">Adding a new variable to the Dictionary</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -46,10 +47,21 @@
 <div class="section level1">
 <h1 id="objects">Objects<a class="anchor" aria-label="anchor" href="#objects"></a></h1>
 <p>We generally use <code>osem</code> objects. This could be <code>osem.model</code> or <code>osem.forecast</code> but generally we want to only use <code>osem</code> etc.</p>
+<p>In those objects, we have the following columns as applicable: - <code>time</code> in a date format - <code>values</code> for a long-format dataset</p>
+</div>
+<div class="section level1">
+<h1 id="variable-names-within-functions">Variable names within functions<a class="anchor" aria-label="anchor" href="#variable-names-within-functions"></a></h1>
+<p>Within a function, we want to use the following names as a convention: - A dictionary in use is <code>dictionary</code> - <code>dict</code> is only the default one that is in the package</p>
 </div>
 <div class="section level1">
 <h1 id="s3-methods">S3 Methods<a class="anchor" aria-label="anchor" href="#s3-methods"></a></h1>
-<p>We are working towards creating more S3 methods: - <code>forecast.osem()</code></p>
+<p>We are working towards creating more S3 methods: - <code>forecast.osem()</code> - <code><a href="reference/plot.osem.html">plot.osem()</a></code></p>
+</div>
+<div class="section level1">
+<h1 id="dictionaries">Dictionaries<a class="anchor" aria-label="anchor" href="#dictionaries"></a></h1>
+<p>Dictionaries should be specific to each individual database.</p>
+<p>They should be named as follows (always lowercase): <code>dict_{databasename}</code> for example <code>dict_imf</code> or <code>dict_eurostat</code>.</p>
+<p>Each dictionary must have at least the following columns: model_varname, full_name, database, dataset_id, freq, geo.</p>
 </div>
 
 
