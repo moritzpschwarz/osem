@@ -31,38 +31,9 @@ ui <- fluidPage(
   ),
 
   titlePanel("OSEM Model Configuration App"),
+  div(style = "height:30px"),
 
-  HTML('    <section>
-        <p>This powerful tool is designed to implement and operationalize the Open Source Empirical Macro Model (OSEM), a collaborative effort by Jonas Kurle, Andrew Martinez, Felix Pretis, and Moritz Schwarz. This model is an adaptation of the renowned Norwegian Aggregate Model, originally developed by Gunnar Bardsen and Ragnar Nymoen.</p>
-        <p>The OSEM Model is a cutting-edge, open-source econometric model builder. Its primary objective is to deliver robust empirical forecasts of sectoral carbon emissions. The model leverages advanced econometric tools from the robust time series modeling literature, incorporating techniques such as diagnostic testing, indicator saturation, and automatic forecast evaluation. For more information see </p>
-    </section>
-
-    <section>
-        <h2>Key Features:</h2>
-        <ul>
-            <li><strong>Robust Forecasting:</strong> The OSEM Model excels in providing reliable and robust forecasts for sectoral carbon emissions.</li>
-            <li><strong>Econometric Tools:</strong> Leveraging state-of-the-art econometric tools ensures accurate and data-driven predictions.</li>
-            <li><strong>Open-Source:</strong> As an open-source initiative, the OSEM Model encourages collaboration and transparency in the modeling community.</li>
-        </ul>
-    </section>
-
-    <section>
-        <h2>How to Use this app:</h2>
-        <ol>
-            <li><strong>Configure the Model Parameters:</strong> Easily customize model parameters to tailor predictions to your specific needs.</li>
-            <li><strong>Explore Diagnostic Tests:</strong> Dive into diagnostic testing capabilities to ensure the robustness of your forecasts.</li>
-            <li><strong>Evaluate Forecasts Automatically:</strong> The OSEM Model automates forecast evaluation, streamlining the process for enhanced efficiency.</li>
-        </ol>
-    </section>
-
-    <section>
-        <h2>Get Started:</h2>
-        <p>Begin your journey with the OSEM Model Package today and unlock the potential for precise and reliable sectoral carbon emissions forecasting. Visit <a href="https://moritzschwarz.org/osem/" target="_blank">the OSEM Model Package Website</a> for more information.</p>
-        <p><em>Disclaimer: The OSEM Model Package is a collaborative effort and is continuously evolving. User feedback and contributions are welcomed to enhance its capabilities.</em></p>
-    </section>
-    <a href="#input">Get Started</a>
-
-    <br><br>'),
+  actionButton("show_modal", "Show Welcome Message and Instructions Again"),
 
   tags$div(
     `id` = "input",
@@ -75,8 +46,12 @@ ui <- fluidPage(
     )
   ),
 
+
+  # Input -------------------------------------------------------------------
+
+
   tabsetPanel( id = "SettingsTab",
-               # Specification Tab ------------------------------------------------------------
+               ## Specification Tab ------------------------------------------------------------
                tabPanel(
                  "Specification",
 
@@ -92,7 +67,7 @@ ui <- fluidPage(
                  div(style = "margin-top: -30px"),  # margins manually set for better-looking display
 
                ),
-               # Input Tab ------------------------------------------------------------
+               ## Data Tab ------------------------------------------------------------
                tabPanel(
                  "Input Data",
                  fileInput("data", "Upload Input Data (CSV, from 'Save Processed Input data')", accept = ".csv"), # file input scrolls up page; this is an unresolved shiny issue - https://github.com/rstudio/shiny/issues/3327 - the fixes in the discussion could be considered, but are rather messy, so leaving them out currently
@@ -100,7 +75,7 @@ ui <- fluidPage(
                ),
                tabPanel( # default values and how these settings are passed on should be checked
 
-                 # Settings Tab ------------------------------------------------------------
+                 ## Settings Tab ------------------------------------------------------------
 
 
                  "Settings",
@@ -148,7 +123,7 @@ ui <- fluidPage(
                           checkboxGroupInput("indicator_saturation", "Run Indicator Saturation?",
                                              choiceValues = c("IIS", "SIS", "TIS"),
                                              choiceNames = c("IIS (Outliers)", "SIS (Step-Shifts)", "TIS (Trend-Breaks)"),
-                                             selected = c("IIS", "SIS", "TIS")),
+                                             selected = c("IIS", "SIS")),
                           numericInput(
                             "ind_sat_pval",
                             "Indicator Saturation P-value:",
@@ -212,7 +187,7 @@ ui <- fluidPage(
 
                ),
 
-               # Dictionary Tab ------------------------------------------------------------
+               ## Dictionary Tab ------------------------------------------------------------
 
                tabPanel(
                  "Dictionary",
@@ -239,23 +214,35 @@ ui <- fluidPage(
     tags$h1("Output"),
   ),
 
+
+  # Output --------------------------------------------------------------
   tabsetPanel(id = "OutputTab",
+              ## Model Results --------------------------------------------------------------
               tabPanel(title = "Model Results", value = "results",
+                       uiOutput("modelplot_message"),
                        shinycssloaders::withSpinner(
-                         tableOutput("model_output")
+                         tableOutput("model_output"),
+                       ),
+                       shinycssloaders::withSpinner(
+                         plotOutput("model_plot"),
                        ),
                        tags$head(tags$style("#model_output{min-height: 400px;}")) # manual placeholder height
               ),
+
+              ## Model Forecasts --------------------------------------------------------------
               tabPanel(title = "Model Forecasts", value = "forecast",
                        dateInput(inputId = "startdate_plot", label = "Start date for plots",
                                  value = as.Date("2000-01-01")),
+                       uiOutput("forecast_message"),
                        plotOutput("forecast_output")   # should more forecast outputs be displayed (printed?)
               ),
+              ## Diagnostics --------------------------------------------------------------
               tabPanel("Diagnostics", #fluid = TRUE,
                        mainPanel(width = 12,
                                  DT::DTOutput("diag")
                        )
               ),
+              ## Network Graph --------------------------------------------------------------
               tabPanel("Dependency Network Graph", #fluid = TRUE,x^
                        mainPanel(width = 12,
                                  plotOutput("network", height = "600", width = "800")
@@ -463,10 +450,9 @@ server <- function(input, output, session) {
 
         print(current_preset)
 
-
       } else {
         # the "No Preset" option is not supposed to change anything
-        print("no preset selected")
+        print("No Preset selected")
       }
     }, ignoreInit = TRUE
   )
@@ -474,15 +460,25 @@ server <- function(input, output, session) {
 
 
 
+  # Changes to data, spec, dict through UI ----------------------------------
 
   # Render the input data table
   output$input_data_table <- renderDT({
-    datatable(rv$inputdata, editable = FALSE)
+
+    numeric_cols <- rv$inputdata %>%
+      dplyr::select(dplyr::where(is.numeric)) %>%
+      names()
+
+    # get the numeric column positions of numeric_cols
+    numeric_cols_pos <- which(colnames(rv$inputdata) %in% numeric_cols)
+
+    datatable(rv$inputdata, editable = FALSE, filter = "top", rownames = NULL, selection = "single") %>%
+      DT::formatRound(., digits = 2, columns = numeric_cols_pos)
   })
 
   # Render the dictionary table
   output$dictionary_table <- renderDT({
-    datatable(rv$dictionary, editable = TRUE)
+    datatable(rv$dictionary, editable = TRUE, filter = "top")
   })
 
   # Render the specification table
@@ -499,8 +495,6 @@ server <- function(input, output, session) {
 
     rv$inputdata[row, col] <- value
   })
-
-
 
   # Update the reactive values object with the edited dictionary table
   observeEvent(input$dictionary_table_cell_edit, {
@@ -531,25 +525,27 @@ server <- function(input, output, session) {
   run_model_shiny <- function() {
     withProgress(message = 'Estimation Running... ', value = 0, { # the update is being sent from within run_model.R
       print(reactiveValuesToList(rv)) # to display reactive variables at time of function call
-      model_output <- osem::run_model(specification = rv$specification,
-                                      dictionary = rv$dictionary,
-                                      inputdata_directory = if (is.null(rv$inputdirectory)) { NULL } else { dirname(input$data$datapath) }, # inputdata
-                                      primary_source = if (is.null(rv$inputdirectory)) { "download" } else { "local" },#  swtichting to "download" makes it slower? Could be a setting with a warning "might take longer". Reading the cached files takes long as well.
-                                      save_to_disk = rv$save_file,
-                                      present = FALSE,
-                                      quiet = FALSE,
-                                      use_logs = rv$use.logs,
-                                      trend = rv$trend,
-                                      ardl_or_ecm = rv$ardl.or.ecm,
-                                      max.ar = rv$max_ar,
-                                      max.dl = rv$max_dl,
-                                      saturation = rv$saturation,
-                                      saturation.tpval = rv$ind_sat_pval,
-                                      max.block.size = rv$max_block_size,
-                                      gets_selection = rv$gets_select,
-                                      selection.tpval = rv$gets_pval,
-                                      constrain.to.minimum.sample = rv$constrain_to_minimum_sample,
-                                      plot = FALSE)
+
+      model_output <- run_model(
+        specification = rv$specification,
+        dictionary = rv$dictionary,
+        inputdata_directory = if (!is.null(rv$inputdata)){rv$inputdata} else {NULL},
+        primary_source =  "local",#  switching to "download" makes it slower? Could be a setting with a warning "might take longer". Reading the cached files takes long as well.
+        save_to_disk = rv$save_file,
+        present = FALSE,
+        quiet = FALSE,
+        use_logs = rv$use.logs,
+        trend = rv$trend,
+        ardl_or_ecm = rv$ardl.or.ecm,
+        max.ar = rv$max_ar,
+        max.dl = rv$max_dl,
+        saturation = rv$saturation,
+        saturation.tpval = rv$ind_sat_pval,
+        max.block.size = rv$max_block_size,
+        gets_selection = rv$gets_select,
+        selection.tpval = rv$gets_pval,
+        constrain.to.minimum.sample = rv$constrain_to_minimum_sample,
+        plot = FALSE)
 
       # # Print or process the model output as needed
       #print(unlist(model_output))
@@ -575,15 +571,76 @@ server <- function(input, output, session) {
     )
   }
 
-  # # this is a way to launch this app directly using a model that has already been estimated
-  # TODO
-  # if(!is.null(getShinyOption("osem_direct"))){
-  #   rv$model_output <- getShinyOption("osem_direct")
-  # }
+
+  # Use pre-loaded model ---------------------------------------------------
+  # Observe whether the user has uploaded a specification file through run_shiny()
+  #observeEvent(!is.null(getShinyOption("osem_direct")), {
+
+  observeEvent(getShinyOption("osem_direct"), {
+    if (!is.null(getShinyOption("osem_direct"))) {
+      rv$table_output <- NULL
+      rv$model_output <- NULL # needed for progress indicator package to work
+
+      updateTabsetPanel(session, "OutputTab",
+                        selected = "results") # only updates after the whole function ran, with final values. Can this be paced manually?
+      rv$model_output <- getShinyOption("osem_direct")
+
+      rv$model_list <- lapply(rv$model_output$module_collection$model, function(x){
+        if(!is.null(x)) {
+          as.lm.custom(x)
+        } else{
+          NULL # if it is an identity in the specification, it shows as NULL in the collection; thus, no lm conversion can take place
+        }})
+
+      # removing NULLs, which are identity equations in the specification, so only estimated models are put out in the table
+      which_to_keep <- -which(sapply(rv$model_list, is.null))
+      if(identical(which_to_keep, integer(0))){
+        which_to_keep <- rep(TRUE, length(rv$model_list))
+      }
+      rv$model_list <- rv$model_list[which_to_keep]
+
+      # ensure the correct order of the table
+      lapply(rv$model_list, broom::tidy) %>%
+        dplyr::bind_rows() %>%
+        dplyr::distinct(term) %>%
+        dplyr::filter(!stringr::str_detect(term, "iis|sis|q_[0-9]+")) %>%
+        dplyr::mutate(base = gsub("L[0-9]+\\.","",term)) %>%
+        dplyr::mutate(base_num = dplyr::case_when(base == "mconst" ~ 2,
+                                                  base == "trend" ~ 3,
+                                                  grepl("ar[0-9]+",base) ~ 1,
+                                                  TRUE ~ 4)) %>%
+        dplyr::arrange(base_num, base, desc(term)) %>%
+        dplyr::pull(term) -> coef_order
+
+      # converts the list of results from run_model to a data.frame of estimates and coefficients
+      rv$table_output <- modelsummary::modelsummary(
+        rv$model_list,
+        coef_map = coef_order,
+        coef_omit = "iis|sis",
+        gof_omit = "R",
+        title = "Final models run for each sub-module.",
+        notes = "Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.", # depending on settings
+        stars = TRUE,
+        output = "data.frame"
+      )
+
+      # this removes the variable name for rows with std errors for better-looking display
+      rv$table_output[rv$table_output$statistic == "std.error",]$term <- ""
+
+      # this removes the columns not necessary for display
+      rv$table_output <- rv$table_output[,setdiff(names(rv$table_output), c("part", "statistic"))]
+
+      # figure out the specification
+      rv$specification <- rv$model_output$args$specification
+      rv$dictionary <- rv$model_output$dictionary
+      rv$inputdata <- rv$model_output$processed_input_data
+      rv$model_plot <- plot(rv$model_output)
+    }
+  })
 
 
 
-  # Run model when "Run Model" button is clicked
+  # When "Run Model" button is clicked ----
   observeEvent(input$run_button, {
     rv$table_output <- NULL
     rv$model_output <- NULL # needed for progress indicator package to work
@@ -602,11 +659,29 @@ server <- function(input, output, session) {
       }})
 
     # removing NULLs, which are identity equations in the specification, so only estimated models are put out in the table
-    rv$model_list <- rv$model_list[-which(sapply(rv$model_list, is.null))]
+    which_to_keep <- -which(sapply(rv$model_list, is.null))
+    if(identical(which_to_keep, integer(0))){
+      which_to_keep <- rep(TRUE, length(rv$model_list))
+    }
+    rv$model_list <- rv$model_list[which_to_keep]
+
+    # ensure the correct order of the table
+    lapply(rv$model_list, broom::tidy) %>%
+      dplyr::bind_rows() %>%
+      dplyr::distinct(term) %>%
+      dplyr::filter(!stringr::str_detect(term, "iis|sis|q_[0-9]+")) %>%
+      dplyr::mutate(base = gsub("L[0-9]+\\.","",term)) %>%
+      dplyr::mutate(base_num = dplyr::case_when(base == "mconst" ~ 2,
+                                                base == "trend" ~ 3,
+                                                grepl("ar[0-9]+",base) ~ 1,
+                                                TRUE ~ 4)) %>%
+      dplyr::arrange(base_num, base, desc(term)) %>%
+      dplyr::pull(term) -> coef_order
 
     # converts the list of results from run_model to a data.frame of estimates and coefficients
     rv$table_output <- modelsummary::modelsummary(
       rv$model_list,
+      coef_map = coef_order,
       coef_omit = "iis|sis",
       gof_omit = "R",
       title = "Final models run for each sub-module.",
@@ -621,8 +696,26 @@ server <- function(input, output, session) {
     # this removes the columns not necessary for display
     rv$table_output <- rv$table_output[,setdiff(names(rv$table_output), c("part", "statistic"))]
 
+    # save downloaded data
+    rv$inputdata <- rv$model_output$processed_input_data
+
   })
 
+  # Display the model output ---------
+  output$model_output <- renderTable(rv$table_output)
+  output$model_plot <- renderPlot({rv$model_plot})
+
+  output$modelplot_message <- renderUI({
+    if (is.null(rv$model_plot)) {
+      return(div("Please press 'Run Model' to see Model Output.", style = "color: black;"))
+    } else {
+      return(NULL)
+    }
+    # Remove the message if data is available
+  })
+
+
+  # When Forecast button is pressed ---------------
   # Forecast model when "Forecast Model" button is clicked
   observeEvent(input$forecast_button, {
     showNotification("Forecasting is currently running...", type = "message")
@@ -634,13 +727,20 @@ server <- function(input, output, session) {
 
   })
 
+  output$forecast_message <- renderUI({
+    if (is.null(rv$forecast_data) & is.null(rv$model_output)) {
+      return(div("Please press 'Run Model' and then press 'Forecast Model' to see Forecast Output.", style = "color: black;"))
+    } else if(is.null(rv$forecast_data)){
+      return(div("Please press 'Forecast Model' to see Forecast Output.", style = "color: black;"))
+    }
+    return(NULL)  # Remove the message if data is available
+  })
+
   observeEvent(list(input$startdate_plot, rv$forecast_data), { # updates plot on calculation or on date change
     req(rv$forecast_data)
     rv$forecast_output <- plot(rv$forecast_data, first_date = as.character(input$startdate_plot))
   })
 
-  # Display the model output
-  output$model_output <- renderTable(rv$table_output)
 
   # Display the forecast output
   output$forecast_output <- renderPlot({rv$forecast_output})
@@ -650,9 +750,9 @@ server <- function(input, output, session) {
     req(rv$model_output)
     diagnostics_model(rv$model_output) %>%
       DT::datatable() %>%
-      DT::formatStyle(columns = c("AR", "ARCH"),
+      DT::formatStyle(columns = c("AR", "ARCH", "Super Exogeneity"),
                       backgroundColor = DT::styleInterval(cuts = c(0.01, 0.05), values = c("lightcoral", "lightsalmon", "lightgreen"))) %>%
-      DT::formatRound(columns = c("AR", "ARCH", "indicator_share"),
+      DT::formatRound(columns = c("AR", "ARCH", "Super Exogeneity",  "Share of Indicators"),
                       digits = 4)
 
   })
@@ -723,6 +823,63 @@ server <- function(input, output, session) {
     writeLines(script, fileConn)
     close(fileConn)
   })
+
+  # Pop-up message ----------------------------------------------------------
+
+  # Function to create the modal dialog
+  modal_content <- function() {
+    modalDialog(
+      title = "Welcome to the OSEM Model App!",
+      #"This message appears at the start and can be triggered again by pressing the button.",
+      HTML('    <section>
+        <p>This powerful tool is designed to implement and operationalize the Open Source Empirical Macro Model (OSEM), a collaborative effort by Jonas Kurle, Andrew Martinez, Felix Pretis, and Moritz Schwarz. This model is an adaptation of the renowned Norwegian Aggregate Model, originally developed by Gunnar Bardsen and Ragnar Nymoen.</p>
+        <p>The OSEM Model is a cutting-edge, open-source econometric model builder. Its primary objective is to deliver robust empirical forecasts of sectoral carbon emissions. The model leverages advanced econometric tools from the robust time series modeling literature, incorporating techniques such as diagnostic testing, indicator saturation, and automatic forecast evaluation. For more information see </p>
+    </section>
+
+    <section>
+        <h2>Key Features:</h2>
+        <ul>
+            <li><strong>Robust Forecasting:</strong> The OSEM Model excels in providing reliable and robust forecasts for sectoral carbon emissions.</li>
+            <li><strong>Econometric Tools:</strong> Leveraging state-of-the-art econometric tools ensures accurate and data-driven predictions.</li>
+            <li><strong>Open-Source:</strong> As an open-source initiative, the OSEM Model encourages collaboration and transparency in the modeling community.</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>How to Use this app:</h2>
+        <ol>
+            <li><strong>Configure the Model Parameters:</strong> Easily customize model parameters to tailor predictions to your specific needs.</li>
+            <li><strong>Explore Diagnostic Tests:</strong> Dive into diagnostic testing capabilities to ensure the robustness of your forecasts.</li>
+            <li><strong>Evaluate Forecasts Automatically:</strong> The OSEM Model automates forecast evaluation, streamlining the process for enhanced efficiency.</li>
+        </ol>
+    </section>
+
+    <section>
+        <h2>Get Started:</h2>
+        <p>Begin your journey with the OSEM Model Package today and unlock the potential for precise and reliable sectoral carbon emissions forecasting. Visit <a href="https://moritzschwarz.org/osem/" target="_blank">the OSEM Model Package Website</a> for more information.</p>
+        <p><em>Disclaimer: The OSEM Model Package is a collaborative effort and is continuously evolving. User feedback and contributions are welcomed to enhance its capabilities.</em></p>
+    </section>
+    <a href="#input">Get Started</a>
+
+    <br><br>'),
+      easyClose = TRUE,  # Allows closing by clicking outside the modal or pressing ESC
+      footer = modalButton("Dismiss")  # Adds a dismiss button
+    )
+  }
+
+  # Show the modal when the app starts
+  observe({
+    showModal(modal_content())  # Show the modal when the app starts
+  })
+
+  # Show the modal when the button is clicked
+  observeEvent(input$show_modal, {
+    showModal(modal_content())  # Show the modal again when button is pressed
+  })
+
+
+
+
 }
 
 

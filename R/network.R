@@ -63,9 +63,11 @@ network <- function(model) {
       if (dependency[i, "independent", drop = TRUE] == "") {
         # then only AR process
         potential <- "^ar[[:digit:]]+$" # must start with "ar" and end with a number, nothing after it
-        found <- sum(grepl(pattern = potential[k], x = retained)) >= 1
-        if (!found) {
-          adj[yvar, yvar] <- 2 # if not found, replace 1 by 2 (linetype)
+        for (k in 1:length(potential)) {
+          found <- sum(grepl(pattern = potential[k], x = retained)) >= 1
+          if (!found) {
+            adj[yvar, yvar] <- 2 # if not found, replace 1 by 2 (linetype)
+          }
         }
       } else {
         potential <- rownames(adj)[adj[, colnames(adj) == yvar] == 1]
@@ -92,24 +94,24 @@ network <- function(model) {
     tidygraph::activate(!!as.symbol("nodes")) %>%
     dplyr::inner_join(y = class, by = c("name" = "var"))
 
-    out <- ggraph::ggraph(graph_df, layout = "kk") +
-      ggraph::geom_node_point(ggplot2::aes(color = class), size = 3) +
-      ggraph::geom_edge_link(ggplot2::aes(edge_linetype = as.factor(.data$weight)),
-                             arrow = ggplot2::arrow(length = ggplot2::unit(2, 'mm')),
-                             end_cap = ggraph::circle(4, 'mm')) +
-      ggraph::geom_edge_loop(ggplot2::aes(edge_linetype = as.factor(.data$weight),
-                                 end_cap = ggraph::circle(1, 'mm'),
-                                 span = 120,
-                                 direction = -45),
-                             arrow = ggplot2::arrow(length = ggplot2::unit(2, 'mm')),
-                             position = "jitter") +
-      ggraph::geom_node_text(ggplot2::aes(label = .data$name), repel = TRUE, size = 3) +
-      ggplot2::scale_color_discrete(name = "Type of Variable",
-                           labels = c("definition/identity", "endogenous", "exogenous")) +
-      ggraph::scale_edge_linetype_manual(name = "Selection",
-                                         values = c("1" = 1, "2" = 2),
-                                         labels = c("retained", "dropped")) +
-      ggplot2::theme(legend.position = "bottom")
+  out <- ggraph::ggraph(graph_df, layout = "kk") +
+    ggraph::geom_node_point(ggplot2::aes(color = class), size = 3) +
+    ggraph::geom_edge_link(ggplot2::aes(edge_linetype = as.factor(.data$weight)),
+                           arrow = ggplot2::arrow(length = ggplot2::unit(2, 'mm')),
+                           end_cap = ggraph::circle(4, 'mm')) +
+    ggraph::geom_edge_loop(ggplot2::aes(edge_linetype = as.factor(.data$weight),
+                                        end_cap = ggraph::circle(1, 'mm'),
+                                        span = 120,
+                                        direction = -45),
+                           arrow = ggplot2::arrow(length = ggplot2::unit(2, 'mm')),
+                           position = "jitter") +
+    ggraph::geom_node_text(ggplot2::aes(label = .data$name), repel = TRUE, size = 3) +
+    ggplot2::scale_color_discrete(name = "Type of Variable",
+                                  labels = c("definition/identity", "endogenous", "exogenous")) +
+    ggraph::scale_edge_linetype_manual(name = "Selection",
+                                       values = c("1" = 1, "2" = 2),
+                                       labels = c("retained", "dropped")) +
+    ggplot2::theme(legend.position = "bottom")
 
   return(out)
 
