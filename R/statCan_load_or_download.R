@@ -97,7 +97,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
       cols_to_remove <- setdiff(colnames(subset_of_data),c(dict_colnames,"time","values","na_item"))
 
       #drop columns that we will not be using
-      subset_of_data <- subset_of_data %>% dplyr::select(.,-c(cols_to_remove))
+      subset_of_data <- subset_of_data %>% dplyr::select(.,-c(dplyr::all_of(cols_to_remove)))
 
 
       df_statcan <- dplyr::bind_rows(df_statcan, subset_of_data)
