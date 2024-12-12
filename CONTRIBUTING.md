@@ -10,6 +10,11 @@ Official Name of the Model: Open-Source Empirical Macro Model
 
 We generally use `osem` objects. This could be `osem.model` or `osem.forecast` but generally we want to only use `osem` etc.
 
+In those objects, we have the following columns as applicable:
+- `time` in a date format
+- `values` for a long-format dataset
+
+
 # Variable names within functions
 
 Within a function, we want to use the following names as a convention: 
