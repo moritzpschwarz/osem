@@ -34,7 +34,7 @@ diagnostics_model <- function(model) {
                         `Share of Indicators` = NA)
 
   # fill in the values
-  for (i in 1:length(models)) {
+  for (i in seq_along(models)) {
 
     # extract module and check that it is an isat object
     module <- models[[i]]

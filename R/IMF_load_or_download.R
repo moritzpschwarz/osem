@@ -73,7 +73,7 @@ download_imf <- function(to_obtain, column_filters, quiet) {
 
       #drop old uniquely identified value column
       subset_of_data <- subset_of_data %>%
-        dplyr::select(.,-c(value_colname))
+        dplyr::select(.,-dplyr::all_of(value_colname))
 
 
       #if the frequency is monthly we need to aggregate the data to a quarterly level

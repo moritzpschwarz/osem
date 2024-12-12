@@ -1,6 +1,6 @@
 #' Plot a Forecast Object of the OSEM Model
 #'
-#' @param x An object of class osem.forecast, which is the output from the forecast_model function.
+#' @param x An object of class osem.forecast, which is the output from the \link{forecast_model} function.
 #' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.
 #' @param order.as.run Logical. Should the plots be arranged in the way that the model was run? Default FALSE.
 #' @param interactive Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).
@@ -41,7 +41,7 @@
 plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
 
   if(!isa(x, "osem.forecast")){
-    stop("Input object not of type osem.forecast. Run 'forecast_model' again and use the output of that function.")
+    stop("Input object not of type 'osem.forecast'. Run 'forecast_model' again and use the output of that function.")
   }
 
   if(!is.null(first_date)){if(!is.character(first_date) | !lubridate::is.Date(as.Date(first_date))){stop("When supplying 'first_date', the it must be a character and must be (able to be converted to) a Date.")}}
@@ -105,8 +105,6 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     all_forecasts_unnested %>%
       tidyr::pivot_longer(-c("time", "dep_var")) -> all_forecasts
 
-
-
     dplyr::tibble(dep_var = names(central_forecasts),
                   expo = to_exponentiate,
                   #all = c("time",unique(all_forecasts$dep_var))) -> to_exponentiate_tibble
@@ -131,9 +129,6 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
         p025 = stats::quantile(.data$values, probs = 0.025),
         p75 = stats::quantile(.data$values, probs = 0.75),
         p25 = stats::quantile(.data$values, probs = 0.25)) -> all_forecasts_processed_q
-
-  } else {
-    all_forecasts <- dplyr::tibble()
   }
 
   # NOWCASTS --------
@@ -326,7 +321,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
       dplyr::select(-"var") %>%
 
       {if(nrow(all_forecasts_unnested) > 0){
-        dplyr::full_join(all_forecasts_processed_q %>%
+        dplyr::full_join(.,all_forecasts_processed_q %>%
                            dplyr::select(-"fit"), by = dplyr::join_by("time", "na_item"))} else {.}} %>%
 
       dplyr::mutate(fit = dplyr::case_when(fit == "forecast" ~ "Endogenous Forecast",
