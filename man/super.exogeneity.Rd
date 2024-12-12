@@ -26,6 +26,9 @@ Any pre-existing indicators from the initial model are removed, as otherwise the
 The conditional model is then used to run a linear regression
 and to obtain an F-Stat statistic to determine whether the shocks detected in the marginal models affect the conditional model.
 }
+\details{
+A p-value below the desired level of statistical significance (e.g. 0.05) would indicate that the model is not super exogenous (i.e. the parameters are variant).
+}
 \examples{
 #load Hoover and Perez (1999) data:
 data(hpdata, package = "gets")
