@@ -19,6 +19,7 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/example-workflow.html">Example Workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/modelling-with-statcan-workflow.html">modelling-with-statcan-workflow</a></li>
     <li><a class="dropdown-item" href="../articles/new_variable_to_dict.html">Adding a new variable to the Dictionary</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -81,44 +82,6 @@ Equilibrium Correction Model (ecm).</p></dd>
     <p>A tibble with the fitted values as one column.</p>
     </div>
 
-    <div class="section level2">
-    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">sample_data</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.Date.html" class="external-link">seq.Date</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>    from <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2000-01-01"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    to <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/as.Date.html" class="external-link">as.Date</a></span><span class="op">(</span><span class="st">"2000-12-31"</span><span class="op">)</span>, by <span class="op">=</span> <span class="fl">1</span></span></span>
-<span class="r-in"><span>  <span class="op">)</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  na_item <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"yvar"</span>, <span class="st">"xvar"</span><span class="op">)</span>, <span class="fl">366</span><span class="op">)</span>, values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">366</span> <span class="op">*</span> <span class="fl">2</span>, mean <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">sample_data_clean</span> <span class="op">&lt;-</span> <span class="fu">osem</span><span class="fu">:::</span><span class="fu"><a href="clean_data.html">clean_data</a></span><span class="op">(</span><span class="va">sample_data</span>, max.ar <span class="op">=</span> <span class="fl">4</span>, max.dl <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">estimation</span> <span class="op">&lt;-</span> <span class="fu">osem</span><span class="fu">:::</span><span class="fu"><a href="estimate_module.html">estimate_module</a></span><span class="op">(</span><span class="va">sample_data_clean</span>, <span class="st">"yvar"</span>, <span class="st">"xvar"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> No Outliers or Step-Shifts detected in the marginal equations to test for Super Exogeneity in ln.yvar.</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Hence not possible to run the test.</span>
-<span class="r-in"><span><span class="fu">osem</span><span class="fu">:::</span><span class="fu">add_to_original_data</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="va">sample_data_clean</span>, <span class="va">estimation</span><span class="op">$</span><span class="va">best_model</span>,</span></span>
-<span class="r-in"><span>  dep_var_basename <span class="op">=</span> <span class="st">"yvar"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 366 × 48</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    index time       trend  yvar  xvar ln.yvar ln.xvar D.yvar  D.xvar D.ln.yvar</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;date&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>     1 2000-01-01     1  98.6 100.     4.59    4.61 <span style="color: #BB0000;">NA</span>     <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>     2 2000-01-02     2  97.6 100.     4.58    4.61 -<span style="color: #BB0000;">1.04</span>  -<span style="color: #BB0000;">0.261</span>   -<span style="color: #BB0000;">0.010</span><span style="color: #BB0000; text-decoration: underline;">6</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span>     3 2000-01-03     3 101.  101.     4.61    4.62  3.06   1.15     0.030<span style="text-decoration: underline;">9</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span>     4 2000-01-04     4  98.2  99.8    4.59    4.60 -<span style="color: #BB0000;">2.44</span>  -<span style="color: #BB0000;">1.40</span>    -<span style="color: #BB0000;">0.024</span><span style="color: #BB0000; text-decoration: underline;">6</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span>     5 2000-01-05     5  99.8  99.7    4.60    4.60  1.58  -<span style="color: #BB0000;">0.035</span><span style="color: #BB0000; text-decoration: underline;">4</span>   0.015<span style="text-decoration: underline;">9</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span>     6 2000-01-06     6  99.4 101.     4.60    4.61 -<span style="color: #BB0000;">0.309</span>  0.912   -<span style="color: #BB0000;">0.003</span><span style="color: #BB0000; text-decoration: underline;">11</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span>     7 2000-01-07     7 102.   98.4    4.63    4.59  2.62  -<span style="color: #BB0000;">2.26</span>     0.026<span style="text-decoration: underline;">0</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>     8 2000-01-08     8 101.   98.1    4.61    4.59 -<span style="color: #BB0000;">1.55</span>  -<span style="color: #BB0000;">0.232</span>   -<span style="color: #BB0000;">0.015</span><span style="color: #BB0000; text-decoration: underline;">3</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>     9 2000-01-09     9  99.5  99.9    4.60    4.60 -<span style="color: #BB0000;">1.03</span>   1.81    -<span style="color: #BB0000;">0.010</span><span style="color: #BB0000; text-decoration: underline;">3</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>    10 2000-01-10    10 101.   99.1    4.61    4.60  1.07  -<span style="color: #BB0000;">0.861</span>    0.010<span style="text-decoration: underline;">6</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 356 more rows</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 38 more variables: D.ln.xvar &lt;dbl&gt;, L1.yvar &lt;dbl&gt;, L1.xvar &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   L1.ln.yvar &lt;dbl&gt;, L1.ln.xvar &lt;dbl&gt;, L1.D.yvar &lt;dbl&gt;, L1.D.xvar &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   L1.D.ln.yvar &lt;dbl&gt;, L1.D.ln.xvar &lt;dbl&gt;, L2.yvar &lt;dbl&gt;, L2.xvar &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   L2.ln.yvar &lt;dbl&gt;, L2.ln.xvar &lt;dbl&gt;, L2.D.yvar &lt;dbl&gt;, L2.D.xvar &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   L2.D.ln.yvar &lt;dbl&gt;, L2.D.ln.xvar &lt;dbl&gt;, L3.yvar &lt;dbl&gt;, L3.xvar &lt;dbl&gt;,</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   L3.ln.yvar &lt;dbl&gt;, L3.ln.xvar &lt;dbl&gt;, L3.D.yvar &lt;dbl&gt;, L3.D.xvar &lt;dbl&gt;, …</span></span>
-</code></pre></div>
-    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
