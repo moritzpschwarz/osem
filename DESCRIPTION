@@ -46,8 +46,6 @@ Suggests:
     forecast,
     knitr,
     rmarkdown,
-    statcanR,
-    imf.data
     modelsummary,
     broom
 Config/testthat/edition: 3
