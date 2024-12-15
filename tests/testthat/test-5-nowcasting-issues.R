@@ -39,13 +39,17 @@ test_that("Checking nowcasting issue when one independent variable is not availa
                                    primary_source = "local",
                                    present = FALSE,
                                    quiet = TRUE,
+                                   plot = FALSE,
                                    selection.tpval = 0.001,
                                    constrain.to.minimum.sample = FALSE))
 
   expect_message(f1 <- forecast_model(model, exog_fill_method = "auto", plot = FALSE), regexp = "No exogenous values")
+  expect_message(f2 <- forecast_model(model, exog_fill_method = "AR", plot = FALSE), regexp = "No exogenous values")
+  expect_message(f3 <- forecast_model(model, exog_fill_method = "last", plot = FALSE), regexp = "No exogenous values")
+  expect_message(f3 <- forecast_model(model, exog_fill_method = "last", plot = FALSE), regexp = "Latest Exogenous Data is not available")
 
-
-
+  expect_equal(f1$forecast$data[[1]]$time, f2$forecast$data[[1]]$time)
+  expect_equal(f1$forecast$data[[1]]$time, f3$forecast$data[[1]]$time)
 
 
   expect_equal(model$module_collection$model[[1]]$aux$mXnames,
@@ -100,11 +104,20 @@ test_that("Checking nowcasting issue when no independent variable is available f
                                    inputdata_directory = testdata_modified_long,
                                    primary_source = "local",
                                    present = FALSE,
+                                   plot = FALSE,
                                    quiet = TRUE,
                                    selection.tpval = 0.001,
                                    constrain.to.minimum.sample = FALSE))
 
   expect_message(f1 <- forecast_model(model, exog_fill_method = "auto", plot = FALSE), regexp = "No exogenous values")
+  expect_message(f2 <- forecast_model(model, exog_fill_method = "AR", plot = FALSE), regexp = "No exogenous values")
+  expect_message(f3 <- forecast_model(model, exog_fill_method = "last", plot = FALSE), regexp = "No exogenous values")
+
+
+  # make sure all forecasting methods are producing the same time
+  expect_equal(f1$forecast$data[[1]]$time, f2$forecast$data[[1]]$time)
+  expect_equal(f1$forecast$data[[1]]$time, f3$forecast$data[[1]]$time)
+  expect_equal(f2$forecast$data[[1]]$time, f3$forecast$data[[1]]$time)
 
   expect_equal(model$module_collection$model[[1]]$aux$mXnames[!model$module_collection$model[[1]]$aux$mXnames %in% c("mconst","time")],
                names(f1$forecast$data[[1]])[!names(f1$forecast$data[[1]]) %in% c("mconst","time")])
@@ -162,11 +175,19 @@ test_that("Checking nowcasting issue when no time period is available for one eq
                                    primary_source = "local",
                                    present = FALSE,
                                    quiet = TRUE,
+                                   plot = FALSE,
                                    selection.tpval = 0.001,
                                    constrain.to.minimum.sample = FALSE))
 
   # used to throw an error
   expect_message(f1 <- forecast_model(model, exog_fill_method = "auto", plot = FALSE), regexp = "No exogenous values")
+  expect_message(f2 <- forecast_model(model, exog_fill_method = "AR", plot = FALSE), regexp = "No exogenous values")
+  expect_message(f3 <- forecast_model(model, exog_fill_method = "last", plot = FALSE), regexp = "No exogenous values")
+
+
+  # make sure all forecasting methods are producing the same time
+  expect_equal(f1$forecast$data[[1]]$time, f2$forecast$data[[1]]$time)
+  expect_equal(f1$forecast$data[[1]]$time, f3$forecast$data[[1]]$time)
 
   expect_equal(model$module_collection$model[[1]]$aux$mXnames[!model$module_collection$model[[1]]$aux$mXnames %in% c("mconst","time")],
                names(f1$forecast$data[[1]])[!names(f1$forecast$data[[1]]) %in% c("mconst","time")])
@@ -212,16 +233,25 @@ test_that("Testing that scenario changes to the exogenous data work",{
                      primary_source = "local",
                      present = FALSE,
                      quiet = TRUE,
+                     plot = FALSE,
                      selection.tpval = 0.001,
                      constrain.to.minimum.sample = FALSE)
 
 
-  f1 <- forecast_model(model, exog_fill_method = "auto", plot = FALSE)
+  f1 <- forecast_model(model, exog_fill_method = "auto", plot = FALSE, quiet = TRUE)
+  f2 <- forecast_model(model, exog_fill_method = "AR", plot = FALSE, quiet = TRUE)
+  f3 <- forecast_model(model, exog_fill_method = "last", plot = FALSE, quiet = TRUE)
   #f1$exog_data
   #f1$exog_data_nowcast
 
+  # error expected
   expect_error(f2.1 <- forecast_model(model, exog_predictions = f1$exog_data, plot = FALSE),
                regexp = "Forecasting has failed, likely due to a nowcasting issue")
+
+  # works
+  expect_silent(f2.1 <- forecast_model(model, exog_predictions = f1$exog_data_nowcast, plot = FALSE))
+  expect_silent(f2.2 <- forecast_model(model, exog_predictions = f2$exog_data_nowcast, plot = FALSE))
+  expect_silent(f2.3 <- forecast_model(model, exog_predictions = f3$exog_data_nowcast, plot = FALSE))
 
   expect_equal(model$module_collection$model[[1]]$aux$mXnames[!model$module_collection$model[[1]]$aux$mXnames %in% c("mconst","time")],
                names(f1$forecast$data[[1]])[!names(f1$forecast$data[[1]]) %in% c("mconst","time")])

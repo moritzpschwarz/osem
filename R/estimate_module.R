@@ -292,7 +292,7 @@ estimate_module <- function(clean_data,
 
 
   # Super Exogeneity Testing ------------------------------------------------
-  superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet)
+  #superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet)
 
   # Output ------------------------------------------------------------------
   out <- list()
@@ -302,7 +302,7 @@ estimate_module <- function(clean_data,
   #  dplyr::pull(dplyr::all_of("isat_object")) %>%
   #  dplyr::first()
   out$best_model <- final_model
-  out$superex_test <- superex_test
+  #out$superex_test <- superex_test
 
   out$args <- list(clean_data = clean_data,
                    dep_var_basename = dep_var_basename,
