@@ -75,7 +75,10 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       dplyr::group_by(.data$na_item) %>%
       tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values")
 
+    #max.ahead <- max(seq(max(exog_df_intermed$time), length = n.ahead + 1, by = frequency))
+
     exog_df_forecast <- model$full_data %>%
+      tidyr::drop_na("values") %>%
       dplyr::filter(.data$time == max(.data$time)) %>%
       dplyr::distinct(dplyr::across("time")) %>%
       dplyr::rowwise() %>%
@@ -223,6 +226,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values")
 
     exog_df_forecast <- model$full_data %>%
+      tidyr::drop_na("values") %>%
       dplyr::filter(.data$time == max(.data$time)) %>%
       dplyr::distinct(dplyr::across("time")) %>%
       dplyr::rowwise() %>%
@@ -244,7 +248,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         dplyr::pull("time") -> col_to_forecast_max_time
 
       model$full_data %>%
-        #tidyr::drop_na() %>%
+        tidyr::drop_na() %>%
         dplyr::summarise(time = max(.data$time)) %>%
         dplyr::pull("time") -> overall_max_time
 
