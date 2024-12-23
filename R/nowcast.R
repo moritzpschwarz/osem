@@ -68,6 +68,13 @@ nowcasting <- function(model, exog_df_ready, frequency){
 
           dplyr::filter(.data$na_item %in% indep_vars_to_get) %>% # get the independent variables
           dplyr::filter(.data$time %in% cur_target_dates) %>% # for the appropriate interval
+
+          # make sure we deal with any duplicates that might come from the collected nowcasts
+          mutate(count = dplyr::n(), .by = c("time","na_item"),
+                 keep = dplyr::if_else(.data$count > 1 & is.na(.data$values), FALSE, TRUE)) %>%
+          dplyr::filter(.data$keep) %>%
+          dplyr::select(-"count",-"keep") %>%
+
           tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
           dplyr::mutate(q = lubridate::quarter(.data$time),
                         q = factor(.data$q, levels = c(1,2,3,4))) %>%
@@ -140,6 +147,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
           dplyr::select(-"value", -"values_historical") -> exog_data_to_replace
 
         if(!identical(exog_data_to_replace$values_forecasted_exogenously,numeric(0)) & all(is.na(exog_data_to_replace$values_forecasted_exogenously))){
+
           stop(paste0("Forecasting has failed, likely due to a nowcasting issue. ",
                       "This typically happens when exogenous values are provided using the 'exog_predictions' option of 'forecast_model()'. ",
                       "There the source of this error is likely that the provided values do not cover values for the situation that there is a need to nowcast some values. ",
