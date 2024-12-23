@@ -34,7 +34,8 @@ clean_data <- function(raw_data,
     #dplyr::rename_with(.fn = tolower) %>%
     dplyr::arrange(.data$time) %>%
     dplyr::mutate(
-      dplyr::across(-"time", list(ln = log), .names = "{.fn}.{.col}"),
+      # dplyr::across(-"time", list(ln = log), .names = "{.fn}.{.col}"),
+      dplyr::across(-"time", .fns = ~ if (any(. <= 0, na.rm = TRUE)) {asinh(.)} else {log(.)}, .names = "ln.{.col}"),
       dplyr::across(-"time", list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
     ) -> intermed
 
