@@ -213,7 +213,7 @@ estimate_module <- function(clean_data,
     if(exists("intermed.model")){rm(intermed.model)}
   }
 
-  if (all(is.na(isat_list$BIC))){
+  if (all(is.na(isat_list$BIC) | is.null(isat_list$BIC))){
     dplyr::tibble(time = clean_data$time,
                   y = yvar,
                   xvars_initial) %>%
