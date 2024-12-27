@@ -70,8 +70,8 @@ nowcasting <- function(model, exog_df_ready, frequency){
           dplyr::filter(.data$time %in% cur_target_dates) %>% # for the appropriate interval
 
           # make sure we deal with any duplicates that might come from the collected nowcasts
-          mutate(count = dplyr::n(), .by = c("time","na_item"),
-                 keep = dplyr::if_else(.data$count > 1 & is.na(.data$values), FALSE, TRUE)) %>%
+          dplyr::mutate(count = dplyr::n(), .by = c("time","na_item"),
+                        keep = dplyr::if_else(.data$count > 1 & is.na(.data$values), FALSE, TRUE)) %>%
           dplyr::filter(.data$keep) %>%
           dplyr::select(-"count",-"keep") %>%
 
