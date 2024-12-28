@@ -104,7 +104,7 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       if(is.list(column)){
         column <- unlist(column)
       }
-      all(column <= 0)
+      all(column > 0)
     })
 
     # we need to turn identity_logs around because those that are true already are already logged
