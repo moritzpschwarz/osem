@@ -214,7 +214,6 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     {if(!is.null(nowcast_processed)){dplyr::bind_rows(.,last_nowcast_value %>% dplyr::filter(.data$na_item %in% nowcast_present))}else{.}}
 
   ## All Forecasts ---
-
   all_forecasts_processed_q %>%
     dplyr::bind_rows(last_fitted_value %>%
                        dplyr::filter(!.data$na_item %in% nowcast_present) %>%
@@ -310,7 +309,9 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                                                  dplyr::mutate(fit = "Exogenous Forecast"))} else {.}} %>%
       dplyr::select(-"var") %>%
       dplyr::full_join(all_forecasts_processed_q %>%
-                         dplyr::select(-"fit"), by = dplyr::join_by("time", "na_item")) %>%
+                         dplyr::select(-"fit"),
+                       by = dplyr::join_by("time", "na_item"),
+                       relationship = "many-to-many") %>%
       dplyr::mutate(fit = dplyr::case_when(fit == "forecast" ~ "Endogenous Forecast",
                                            fit == "TRUE" ~ "Insample Fit",
                                            fit == "FALSE" ~ "Observation",
