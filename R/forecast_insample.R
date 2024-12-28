@@ -124,18 +124,24 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
       tidyr::pivot_longer(-c("dep_var", "start", "time")) %>%
       tidyr::drop_na("value") -> centrals
 
+    # this should also work if there are no estimates for uncertainty
+    # so this could result in alls remaining empty (no rows)
+    # this might happen, if the model only consists of identities and hence
+    # there would not be any uncertainty
     forecasted_unknownexogvalues[[i]]$forecast %>%
       dplyr::select("dep_var","all.estimates") %>%
       dplyr::mutate(start = time_to_use[i]) %>%
       dplyr::mutate(quantiles = purrr::map(.data$all.estimates, function(x){
-        tidyr::pivot_longer(x, -"time") %>%
-          dplyr::summarise(max = max(.data$value),
-                           min = min(.data$value),
-                           p975 = stats::quantile(.data$value, probs = 0.975),
-                           p025 = stats::quantile(.data$value, probs = 0.025),
-                           p75 = stats::quantile(.data$value, probs = 0.75),
-                           p25 = stats::quantile(.data$value, probs = 0.25), .by = .data$time) %>%
-          tidyr::pivot_longer(-"time", names_to = "quantile")
+        if(!is.null(x)){
+          tidyr::pivot_longer(x, -"time") %>%
+            dplyr::summarise(max = max(.data$value),
+                             min = min(.data$value),
+                             p975 = stats::quantile(.data$value, probs = 0.975),
+                             p025 = stats::quantile(.data$value, probs = 0.025),
+                             p75 = stats::quantile(.data$value, probs = 0.75),
+                             p25 = stats::quantile(.data$value, probs = 0.25), .by = "time") %>%
+            tidyr::pivot_longer(-"time", names_to = "quantile")
+        }
       })) %>%
       dplyr::select(-"all.estimates") %>%
       dplyr::full_join(centrals %>%
@@ -150,78 +156,35 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   overall_to_plot_central %>%
     dplyr::mutate(value = ifelse(grepl("^ln.", .data$name), exp(.data$value), .data$value)) -> overall_to_plot_central_exp
 
-  overall_to_plot_alls %>%
-    dplyr::mutate(value = ifelse(grepl("^ln.", .data$name), exp(.data$value), .data$value)) %>%
-    tidyr::pivot_wider(id_cols = c("dep_var","name","start","time"), names_from = "quantile", values_from = "value") -> overall_to_plot_alls_exp
+  if(nrow(overall_to_plot_alls)>0){
+    overall_to_plot_alls %>%
+      dplyr::mutate(value = ifelse(grepl("^ln.", .data$name), exp(.data$value), .data$value)) %>%
+      tidyr::pivot_wider(id_cols = c("dep_var","name","start","time"), names_from = "quantile", values_from = "value") -> overall_to_plot_alls_exp
+  } else {
+    overall_to_plot_alls_exp <- NULL
+  }
 
   forecasted_unknownexogvalues[[length(forecasted_unknownexogvalues)]]$orig_model$full_data %>%
     dplyr::rename(dep_var = "na_item") %>%
     dplyr::filter(.data$dep_var %in% overall_to_plot_central_exp$dep_var,
                   .data$time > min(overall_to_plot_central$start)) -> full_data
 
-
-  #add.months= function(date,n) seq(date, by = paste (n, "months"), length = 2)[2]
-  # bb_insample$central %>%
-  #   dplyr::rowwise() %>%
-  #   dplyr::mutate(forecast_len = add.months(start, 24)) %>%
-  #   dplyr::ungroup() %>%
-  #   dplyr::filter(!(time > forecast_len)) -> central
-  #
-  #
-  # bb_insample$uncertainty %>%
-  #   dplyr::rowwise() %>%
-  #   dplyr::mutate(forecast_len = add.months(start, 24)) %>%
-  #   dplyr::ungroup() %>%
-  #   dplyr::filter(!(time > forecast_len)) -> uncertainty
-  #
-
-  # With those times, we can now find the share to forecast
-  share_to_show <- 1-(ifelse((1-sample_share)*2<=1,(1-sample_share)*2, 1))
-  time_to_show <- all_times[ceiling(length(all_times)*share_to_show):length(all_times)]
-
-  extract_dep_vars <- unique(centrals$dep_var)
-
-  ggplot2::ggplot() +
-    ggplot2::geom_line(data = model$full_data %>%
-                         dplyr::rename(dep_var = "na_item") %>%
-                         dplyr::filter(.data$dep_var %in% extract_dep_vars,
-                                       .data$time %in% time_to_show),
-                       #.data$time > as.Date("2010-01-01")),
-                       ggplot2::aes(x = .data$time, y = .data$values), linewidth = 1) +
-
-    ggplot2::facet_wrap(~dep_var, scales = "free") +
-    ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = .data$min, x = .data$time, ymax = .data$max, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
-    ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
-    ggplot2::geom_ribbon(data = overall_to_plot_alls_exp, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
-
-    ggplot2::geom_line(data = overall_to_plot_central_exp, ggplot2::aes(y = .data$value, x = .data$time, color = as.factor(.data$start)), inherit.aes = FALSE) +
-    ggplot2::facet_wrap(~.data$dep_var, scales = "free") +
-    #ggplot2::scale_color_brewer(palette = "PRGn") +
-    ggplot2::scale_colour_viridis_d() +
-    ggplot2::coord_cartesian(expand = TRUE) +
-
-    ggplot2::labs(x = NULL, y = NULL, title = "Automatic Forecasting Hindcasts") +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(legend.position = "none",
-                   panel.grid.major.x = ggplot2::element_blank(),
-                   panel.grid.minor.x = ggplot2::element_blank(),
-                   panel.grid.minor.y = ggplot2::element_blank()) -> plt
-
-
-  #plotly::ggplotly(plt)
-
-
-  if(plot){
-    print(plt)
-  }
-
-
-
-
   out <- list()
-  out$plot <- plt
-  out$central <- overall_to_plot_central_exp
+  out$central <- overall_to_plot_central_exp %>% dplyr::rename(values = "value")
   out$uncertainty <- overall_to_plot_alls_exp
   out$hist_data <- full_data
+  out$args <- list(sample_share = sample_share,
+                   time_to_use = time_to_use,
+                   all_times = all_times,
+                   dep_vars = overall_to_plot_central_exp$dep_var,
+                   model = model,
+                   exog_fill_method = exog_fill_method)
+
+  class(out) <- "osem.forecast.insample"
+
+  if(plot){
+    plot(out)
+  }
+
   return(out)
 }

@@ -27,7 +27,7 @@ see \url{https://www.ipcc-nggip.iges.or.jp/public/2006gl/index.html}.
 }
 }
 \source{
-Own compilation, codes from \url{https://ec.europa.eu/eurostat} and \url{https://edgar.jrc.ec.europa.eu/dataset_ghg70}
+Own compilation, codes from \url{https://ec.europa.eu/eurostat} and \url{https://edgar.jrc.ec.europa.eu/dataset_ghg80}.
 }
 \usage{
 dict
