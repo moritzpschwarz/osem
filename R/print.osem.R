@@ -91,13 +91,17 @@ print.osem <- function(x, plot = TRUE, full_names = FALSE, ...){
     return(paste0(formatC(x, format = "f", digits = digits), stars.pval(x)))
   }
 
-  cat("\n\nDiagnostics:\n ")
-  print(diagnostics_model(x) %>%
-          dplyr::rename(`Dependent Variable` = "module") %>%
-          dplyr::rowwise() %>%
-          dplyr::mutate(dplyr::across(c("AR","ARCH","Super Exogeneity"), ~paste0(format.pval(.)))) %>%
-          dplyr::ungroup())
-
+  diag <- diagnostics_model(x)
+  if(nrow(diag) > 0){
+    cat("\n\nDiagnostics:\n ")
+    print(diagnostics_model(x) %>%
+            dplyr::rename(`Dependent Variable` = "module") %>%
+            dplyr::rowwise() %>%
+            dplyr::mutate(dplyr::across(c("AR","ARCH","Super Exogeneity"), ~paste0(format.pval(.)))) %>%
+            dplyr::ungroup())
+  } else {
+    cat("\n\nDiagnostics:\nNo Diagnostics available.\n")
+  }
 
   if(plot){
     plot(x)

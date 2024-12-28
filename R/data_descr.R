@@ -23,8 +23,50 @@
 #'   \item{siec}{Standard International Energy Product Classification, e.g. for Eurostat}
 #'   \item{...}{Additional filters across the database. Need to have exactly the same column name as in the respective database}
 #' }
-#' @source Own compilation, codes from \url{https://ec.europa.eu/eurostat} and \url{https://edgar.jrc.ec.europa.eu/dataset_ghg70}
+#' @source Own compilation, codes from \url{https://ec.europa.eu/eurostat} and \url{https://edgar.jrc.ec.europa.eu/dataset_ghg80}.
 "dict"
+
+#' Dictionary for translating StatCan model variable names
+#'
+#' A dataset containing StatCan model variable names and metadata for data retrieval.
+#'
+#' @format A tibble with 6 rows and 12 variables:
+#' \describe{
+#'   \item{model_varname}{Unique variable name used in model equations}
+#'   \item{full_name}{Full description of the variable}
+#'   \item{database}{Name of the data source, here \code{"statcan"}}
+#'   \item{dataset_id}{Identifier of the StatCan dataset}
+#'   \item{freq}{Frequency of the data, with \code{"m"} for monthly}
+#'   \item{geo}{Geographical location, typically \code{"Canada"}}
+#'   \item{Seasonal adjustment}{Indicates if data is seasonally adjusted, where applicable}
+#'   \item{North American Industry Classification System (NAICS)}{Classification of industries, based on NAICS}
+#'   \item{North American Product Classification System (NAPCS)}{Product classification system}
+#'   \item{Prices}{Price level for specific categories, if applicable}
+#'   \item{Type of fuel}{Specifies the type of fuel, for example \code{"Regular unleaded"}}
+#'   \item{Products and product groups}{Specific product or group as classified by StatCan}
+#' }
+#' @source Data retrieved from StatCan, available at \url{https://www.statcan.gc.ca/}.
+"dict_statcan"
+
+
+
+#' Dictionary for translating IMF model variable names
+#'
+#' A dataset containing IMF model variable names and metadata for data retrieval.
+#'
+#' @format A tibble with 1 row and 8 variables:
+#' \describe{
+#'   \item{model_varname}{Unique variable name used in model equations}
+#'   \item{full_name}{Full description of the variable}
+#'   \item{database}{Name of the data source, here \code{"imf"}}
+#'   \item{dataset_id}{Identifier of the IMF dataset}
+#'   \item{freq}{Frequency of the data, with \code{"M"} for monthly}
+#'   \item{ref_area}{Geographical reference area, e.g., \code{"W00"} for world}
+#'   \item{commodity}{Type of commodity, such as \code{"POILAPSP"} for oil}
+#'   \item{unit_measure}{Unit of measurement, e.g., \code{"USD"} for U.S. dollars}
+#' }
+#' @source Data retrieved from IMF, available at \url{https://www.imf.org/en/Data}.
+"dict_imf"
 
 
 #' Sample Input for the OSEM Model

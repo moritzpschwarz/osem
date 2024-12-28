@@ -14,20 +14,6 @@
 #' @return A tibble with the fitted values as one column.
 #'
 #'
-#'
-#' @examples
-#' sample_data <- dplyr::tibble(
-#'   time = rep(seq.Date(
-#'     from = as.Date("2000-01-01"),
-#'     to = as.Date("2000-12-31"), by = 1
-#'   ), each = 2),
-#'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
-#' )
-#' sample_data_clean <- osem:::clean_data(sample_data, max.ar = 4, max.dl = 4)
-#' estimation <- osem:::estimate_module(sample_data_clean, "yvar", "xvar")
-#' osem:::add_to_original_data(
-#'   sample_data_clean, estimation$best_model,
-#'   dep_var_basename = "yvar")
 add_to_original_data <- function(clean_data,
                                  isat_object,
                                  dep_var_basename = "imports_of_goods_and_services",

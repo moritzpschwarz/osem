@@ -20,28 +20,25 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
 
   # not sure whether can solve without dropping these vars
   # could add back later but not necessary?
-  dat <- data %>% dplyr::select(-dplyr::any_of(c("unit","geo","s_adj")))
+  #dat <- data %>% dplyr::select(-dplyr::any_of(c("unit","geo","s_adj")))
+  dat <- data %>% dplyr::select(dplyr::any_of(c("time","na_item","values")))
 
   for (i in seq_len(nrow(identities))) {
     identity <- identities[i, ]
     dep <- identity$dependent
-    #indep <- identity$independent_eu
     indep <- identity$independent
+
     dat %>%
       tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") -> dat_tmp
 
-    #dat_tmp_names <- names(dat_tmp)
     # make sure the column names are not using * as denominator for NACE codes
     # when parsing this, it would appear that we would need to multiply the values
     # therefore changing the denominator from * to _ only for here
     dat_tmp %>%
-      #dplyr::rename_with(.fn = ~gsub("\\*","_",.)) %>%
       dplyr::mutate(!!dep := eval(parse(text = gsub("\\*","_",indep)))) %>%
-      #setNames(c(dat_tmp_names, dep)) %>%
       dplyr::select(-dplyr::any_of("nace_r2")) %>%
       tidyr::pivot_longer(cols = !"time", names_to = "na_item", values_to = "values") -> dat
   }
-
 
   return(dat %>%
            dplyr::as_tibble() %>%

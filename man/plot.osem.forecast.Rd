@@ -17,7 +17,7 @@
 )
 }
 \arguments{
-\item{x}{An object of class osem.forecast, which is the output from the forecast_model function.}
+\item{x}{An object of class osem.forecast, which is the output from the \link{forecast_model} function.}
 
 \item{title}{Character. Title of the plot. Default is "OSEM Model Forecast".}
 
