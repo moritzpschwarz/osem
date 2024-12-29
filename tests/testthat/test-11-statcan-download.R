@@ -190,18 +190,18 @@ test_that('statcan_load_and_download_forecasting_functionality',{
                      258.9328, 249.9, 569.1207, 560.0878, NA, 253.8, NA, 575.2499))
 
 
-#hindcast model
-hind_cast <- forecast_insample(
-  model_run,
-  sample_share = 0.99,
-  uncertainty_sample = 100,
-  exog_fill_method = "last",
-  quiet = TRUE
-)
+  #hindcast model
+  hind_cast <- forecast_insample(
+    model_run,
+    sample_share = 0.99,
+    uncertainty_sample = 100,
+    exog_fill_method = "last",
+    quiet = TRUE
+  )
 
-expect_s3_class(plot(hind_cast),class = c("gg","ggplot"))
-expect_s3_class(hind_cast$central,"tbl_df")
-expect_identical(round(hind_cast$central$values,4),c(613.8678, 616.3204, 1511.7227, 1514.1753))
+  expect_s3_class(plot(hind_cast),class = c("gg","ggplot"))
+  expect_s3_class(hind_cast$central,"tbl_df")
+  expect_identical(round(hind_cast$central$values,4),c(613.8678, 616.3204, 1511.7227, 1514.1753))
 
 })
 
@@ -227,11 +227,27 @@ test_that("Test behaviour when everything is an identity",{
   )
 
   #toy dictionary for example
-
-  test_imf <- tibble::tribble(
-    ~model_varname, ~full_name, ~database, ~variable_code, ~dataset_id, ~var_col, ~nace_r2, ~geo, ~unit, ~s_adj,~freq,~ref_area,~commodity,~unit_measure,~start_period,~end_period,
-    "HICP_GAS","The PCPS","imf",NA,"PCPS","na_item", NA, NA, NA, NA,"M","W00","POILAPSP","USD",NA,NA,
-    "HICP_Energy","The TEST","imf",NA,"PCPS","na_item", NA, NA, NA, NA,"M","W00","POILAPSP","USD",NA,NA
+  test_imf <- structure(
+    list(
+      model_varname = c("HICP_GAS", "HICP_Energy"),
+      full_name = c("The PCPS", "The TEST"),
+      database = c("imf", "imf"),
+      variable_code = c(NA, NA),
+      dataset_id = c("PCPS", "PCPS"),
+      var_col = c("na_item", "na_item"),
+      nace_r2 = c(NA, NA),
+      geo = c(NA, NA),
+      unit = c(NA, NA),
+      s_adj = c(NA, NA),
+      freq = c("M", "M"),
+      ref_area = c("W00", "W00"),
+      commodity = c("POILAPSP", "POILAPSP"),
+      unit_measure = c("USD", "USD"),
+      start_period = c(NA, NA),
+      end_period = c(NA, NA)
+    ),
+    class = c("tbl_df", "tbl", "data.frame"),
+    row.names = c(NA, -2L)
   )
 
   imf_data_identical_identity <- structure(list(time = structure(c(7305, 7305, 7305, 7395, 7395,

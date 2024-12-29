@@ -320,11 +320,11 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                                                  dplyr::mutate(fit = "Exogenous Forecast"))} else {.}} %>%
       dplyr::select(-"var") %>%
 
-    {if(nrow(all_forecasts_unnested) > 0){
-      dplyr::full_join(all_forecasts_processed_q %>%
-                         dplyr::select(-"fit"),
-                       by = dplyr::join_by("time", "na_item"),
-                       relationship = "many-to-many")} else {.}} %>%
+      {if(nrow(all_forecasts_unnested) > 0){
+        dplyr::full_join(.,all_forecasts_processed_q %>%
+                           dplyr::select(-"fit"),
+                         by = dplyr::join_by("time", "na_item"),
+                         relationship = "many-to-many")} else {.}} %>%
 
       dplyr::mutate(fit = dplyr::case_when(fit == "forecast" ~ "Endogenous Forecast",
                                            fit == "TRUE" ~ "Insample Fit",
