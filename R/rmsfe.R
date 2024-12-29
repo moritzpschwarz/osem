@@ -82,7 +82,7 @@ rmsfe <- function(forecast, data){
 
     dplyr::right_join(forecasts_processed, by = c("time","na_item")) %>%
     dplyr::mutate(residuals = .data$values - .data$forecast) %>%
-    tidyr::drop_na(.data$residuals) %>%
+    tidyr::drop_na("residuals") %>%
     dplyr::summarise(rmsfe = sqrt(mean(.data$residuals^2)), .by = "na_item") -> rmsfe_indv
 
   data %>%
@@ -90,7 +90,7 @@ rmsfe <- function(forecast, data){
 
     dplyr::right_join(forecasts_processed, by = c("time","na_item")) %>%
     dplyr::mutate(residuals = .data$values - .data$forecast) %>%
-    tidyr::drop_na(.data$residuals) %>%
+    tidyr::drop_na("residuals") %>%
     dplyr::summarise(na_item = "Total RMSFE",
                      rmsfe = sqrt(mean(.data$residuals^2))) -> rmsfe_total
 
