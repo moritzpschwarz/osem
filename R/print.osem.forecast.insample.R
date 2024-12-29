@@ -35,9 +35,9 @@ print.osem.forecast.insample <- function(x, plot = TRUE, full_names = FALSE, ...
 
   cat(format(rmsfe_table)[-c(1L,3L)], sep = "\n")
 
-  if(plot){
+  suppressMessages(if(plot){
     try(print(plot(x)))
-  }
+  })
 
 
 }
