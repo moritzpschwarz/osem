@@ -78,6 +78,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   forecasted_unknownexogvalues <- list()
   forecasted_knownexogvalues <- list()
   rmsfe_values <- list()
+  forecast_failures <- list()
 
   for(i in 1:length(all_models)){
     #i = 20
@@ -100,6 +101,10 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
     rmsfe_values[[i]] <- rmsfe(forecast = forecasted_unknownexogvalues[[i]],
                                data = model$processed_input_data) %>%
+      dplyr::bind_cols(dplyr::tibble(start = start, end = end))
+
+    forecast_failures[[i]] <- forecast_failure(forecast = forecasted_unknownexogvalues[[i]],
+                     data = model$processed_input_data) %>%
       dplyr::bind_cols(dplyr::tibble(start = start, end = end))
 
     # forecasted_knownexogvalues[[i]] <- forecast_model(
@@ -182,13 +187,16 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
   out$uncertainty <- overall_to_plot_alls_exp
   out$hist_data <- full_data
+  out$rmsfe <- dplyr::bind_rows(rmsfe_values)
+  out$forecast_failures <- dplyr::bind_rows(forecast_failures)
+
   out$args <- list(sample_share = sample_share,
                    time_to_use = time_to_use,
                    all_times = all_times,
                    dep_vars = overall_to_plot_central_exp$dep_var,
                    model = model,
                    exog_fill_method = exog_fill_method)
-  out$rmsfe <- dplyr::bind_rows(rmsfe_values)
+
 
   class(out) <- "osem.forecast.insample"
 

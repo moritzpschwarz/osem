@@ -25,7 +25,7 @@ print.osem.forecast.insample <- function(x, plot = TRUE, full_names = FALSE, ...
                                                      TRUE ~ x$args$exog_fill_method))
   cat("\n")
 
-
+  cat("-----------------------\n")
   cat("\nRMSFE: \n")
 
   x$rmsfe %>%
@@ -34,6 +34,25 @@ print.osem.forecast.insample <- function(x, plot = TRUE, full_names = FALSE, ...
     dplyr::rename(Start = start) -> rmsfe_table
 
   cat(format(rmsfe_table)[-c(1L,3L)], sep = "\n")
+
+  cat("-----------------------\n")
+  cat("\nForecast Within Uncertainty: \n")
+
+  x$forecast_failures %>%
+    dplyr::mutate(dplyr::across(dplyr::starts_with("failure"),
+                                .fns = ~ dplyr::if_else(. == "Success", 1, 0))) %>%
+    dplyr::summarise(across(dplyr::starts_with("failure"), ~sum(.)/dplyr::n()), .by = "na_item") %>%
+    dplyr::rename_with(.fn = ~gsub("failure","success",.)) %>%
+    tidyr::pivot_longer(-"na_item") %>%
+    tidyr::pivot_wider(names_from = "na_item", values_from = "value") %>%
+    dplyr::mutate(name = dplyr::case_when(name == "success_all" ~ "Forecast within Uncertainty",
+                                          name == "success_95" ~ "Forecast within 95% Uncertainty",
+                                          name == "success_90" ~ "Forecast within 90% Uncertainty",
+                                          name == "success_50" ~ "Forecast within IQR"),
+                  dplyr::across(-"name", scales::percent)) %>%
+    dplyr::rename(Measure = "name") -> forecast_failures_tab
+
+  cat(format(forecast_failures_tab)[-c(1L,3L)], sep = "\n")
 
   suppressMessages(if(plot){
     try(print(plot(x)))
