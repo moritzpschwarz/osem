@@ -29,7 +29,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
     }
     exog_df <- model$full_data %>%
       dplyr::filter(.data$na_item %in% exog_vars) %>%
-      tidyr::drop_na(values) %>%
+      tidyr::drop_na(.data$values) %>%
       dplyr::mutate(last_time = max(.data$time),.by = "na_item") %>%
       dplyr::filter(.data$time == .data$last_time) %>%
       dplyr::select(-"last_time")

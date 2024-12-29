@@ -17,7 +17,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
   df_statcan <- data.frame()
 
   #get the dictionary colnames
-  dict_colnames = colnames(dict)
+  dict_colnames = colnames(osem::dict)
 
   #pulls dataframe of unique database ids
   dataset_id <- to_obtain %>% dplyr::filter(.data$database == "statcan" &
