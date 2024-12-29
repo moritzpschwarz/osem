@@ -27,7 +27,7 @@ forecast_insample(
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
 \value{
-List element.
+An object (list) with the class \code{osem.forecast.insample}. This object contains the central estimates and the uncertainty estimates of the forecasted values as well as the original data.
 }
 \description{
 Forecast model insample to evaluate forecasting performance

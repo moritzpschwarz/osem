@@ -2,7 +2,7 @@
 #' @param sample_share Share of the sample that should be used for the insample forecasting. Must be a numeric and must be either 1 or smaller but larger than 0.
 #' @inheritParams forecast_model
 #'
-#' @return List element.
+#' @return An object (list) with the class \code{osem.forecast.insample}. This object contains the central estimates and the uncertainty estimates of the forecasted values as well as the original data.
 #' @export
 #'
 #'
@@ -77,6 +77,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
   forecasted_unknownexogvalues <- list()
   forecasted_knownexogvalues <- list()
+  rmsfe_values <- list()
 
   for(i in 1:length(all_models)){
     #i = 20
@@ -85,7 +86,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     start <- time_to_use[i]
     end <- time_to_use[length(time_to_use)]
     if(start == end){next}
-    nsteps <- length(seq.Date(from = as.Date(start), to = as.Date(end), by = "quarter"))
+    nsteps <- length(seq.Date(from = as.Date(start), to = as.Date(end), by = "quarter")) - 1
 
 
     if(!quiet){print(paste0("Forecast ", i, " from ", start, " to ", end))}
@@ -97,6 +98,10 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
                                                         exog_fill_method = exog_fill_method,
                                                         quiet = TRUE)
 
+    rmsfe_values[[i]] <- rmsfe(forecast = forecasted_unknownexogvalues[[i]],
+                               data = model$processed_input_data) %>%
+      dplyr::bind_cols(dplyr::tibble(start = start, end = end))
+
     # forecasted_knownexogvalues[[i]] <- forecast_model(
     #   all_models[[i]], n.ahead = nsteps, uncertainty_sample = uncertainty_sample, plot.forecast = FALSE,
     #   exog_predictions = exog_data %>% dplyr::filter(.data$time >= as.Date(start),
@@ -105,6 +110,10 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
   # save(forecasted_unknownexogvalues, file = "forecasted_models.RData")
   # load("forecasted_models.RData")
+
+  if(identical(list(),forecasted_unknownexogvalues)){
+    stop("Not enough models available for insample comparison. Increase the 'sample_share'.")
+  }
 
   overall_to_plot_central <- dplyr::tibble()
   overall_to_plot_alls <- dplyr::tibble()
@@ -164,7 +173,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     overall_to_plot_alls_exp <- NULL
   }
 
-  forecasted_unknownexogvalues[[length(forecasted_unknownexogvalues)]]$orig_model$full_data %>%
+  model$full_data %>%
     dplyr::rename(dep_var = "na_item") %>%
     dplyr::filter(.data$dep_var %in% overall_to_plot_central_exp$dep_var,
                   .data$time > min(overall_to_plot_central$start)) -> full_data
@@ -179,6 +188,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
                    dep_vars = overall_to_plot_central_exp$dep_var,
                    model = model,
                    exog_fill_method = exog_fill_method)
+  out$rmsfe <- dplyr::bind_rows(rmsfe_values)
 
   class(out) <- "osem.forecast.insample"
 
