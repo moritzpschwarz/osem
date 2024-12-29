@@ -3,7 +3,7 @@
 #' @param forecast A forecast object as returned by \code{\link{forecast_model}}.
 #' @param data A tibble or data.frame containing the original data used for estimation.
 #'
-#' @returns A numeric value representing the root mean squared forecast error.
+#' @returns A tibble containing the root mean squared forecast error estimates.
 #'
 #' @examples
 #'
