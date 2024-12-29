@@ -193,7 +193,7 @@ test_that('statcan_load_and_download_forecasting_functionality',{
   #hindcast model
   hind_cast <- forecast_insample(
     model_run,
-    sample_share = 0.99,
+    sample_share = 0.97,
     uncertainty_sample = 100,
     exog_fill_method = "last",
     quiet = TRUE
@@ -201,7 +201,9 @@ test_that('statcan_load_and_download_forecasting_functionality',{
 
   expect_s3_class(plot(hind_cast),class = c("gg","ggplot"))
   expect_s3_class(hind_cast$central,"tbl_df")
-  expect_identical(round(hind_cast$central$values,4),c(613.8678, 616.3204, 1511.7227, 1514.1753))
+  expect_identical(round(hind_cast$central$values,4),
+                   c(629.1365, 614.2235, 628.0411, 1613.2159, 1598.3029, 1612.1205,
+                     591.764, 605.9182, 1497.5098, 1511.6639, 613.8678, 1511.7227))
 
 })
 
