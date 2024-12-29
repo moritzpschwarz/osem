@@ -43,30 +43,69 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
   share_to_show <- 1 - (ifelse((1 - x$args$sample_share) * 2 <= 1, (1 - x$args$sample_share) * 2, 1))
   time_to_show <- x$args$all_times[ceiling(length(x$args$all_times) * share_to_show):length(x$args$all_times)]
 
+  share_to_show_hist <- 1 - (ifelse((1 - (x$args$sample_share - 0.1)) * 2 <= 1, (1 - (x$args$sample_share -  0.1)) * 2, 1))
+  time_to_show_hist <- x$args$all_times[ceiling(length(x$args$all_times) * share_to_show_hist):length(x$args$all_times)]
+
   extract_dep_vars <- unique(x$args$dep_vars)
 
+  historical_data <- x$args$model$processed_input_data %>%
+    dplyr::filter(.data$na_item %in% extract_dep_vars,
+                  .data$time %in% time_to_show_hist) %>%
+    dplyr::rename(dep_var = "na_item")
+
+  centrals <- x$central
+  if(!is.null(x$uncertainty)){uncertainties <- x$uncertainty}
+
+  for(i in unique(x$central$start)){
+    # i = unique(x$central$start)[1]
+
+    hist_intermed <- historical_data %>%
+      dplyr::arrange(dep_var, time) %>%
+      dplyr::mutate(n = 1:dplyr::n(), .by = "dep_var")
+
+    rank_of_i <- hist_intermed %>%
+      dplyr::filter(time == i) %>%
+      dplyr::distinct(.data$n) %>%
+      dplyr::pull(.data$n)
+
+    hist_intermed %>%
+      dplyr::filter(n == rank_of_i) %>%
+      dplyr::select(-"n") %>%
+      dplyr::mutate(start = as.Date(i)) %>%
+      dplyr::bind_rows(centrals,.) -> centrals
+
+    if(!is.null(x$uncertainty)){
+      hist_intermed %>%
+        dplyr::filter(n == rank_of_i) %>%
+        dplyr::select(-"n") %>%
+        dplyr::mutate(min = .data$values,
+                      max = .data$values,
+                      p975 = .data$values,
+                      p025 = .data$values,
+                      p75 = .data$values,
+                      p25 = .data$values) %>%
+        dplyr::mutate(start = as.Date(i)) %>%
+        dplyr::bind_rows(uncertainties,.) -> uncertainties
+    }
+  }
+
   if(!is.null(x$uncertainty)){
-    uncertainty_layers <- list(ggplot2::geom_ribbon(data = x$uncertainty, ggplot2::aes(ymin = .data$min, x = .data$time, ymax = .data$max, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE),
-                               ggplot2::geom_ribbon(data = x$uncertainty, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE),
-                               ggplot2::geom_ribbon(data = x$uncertainty, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE))
+    uncertainty_layers <- list(ggplot2::geom_ribbon(data = uncertainties, ggplot2::aes(ymin = .data$min, x = .data$time, ymax = .data$max, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE),
+                               ggplot2::geom_ribbon(data = uncertainties, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE),
+                               ggplot2::geom_ribbon(data = uncertainties, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE))
   } else {
     uncertainty_layers <- NULL
   }
 
-
-
   ggplot2::ggplot() +
-    ggplot2::geom_line(data = x$hist_data %>%
-                         dplyr::filter(.data$dep_var %in% extract_dep_vars,
-                                       .data$time %in% time_to_show),
-                       #.data$time > as.Date("2010-01-01")),
+    ggplot2::geom_line(data = historical_data,
                        ggplot2::aes(x = .data$time, y = .data$values), linewidth = 1) +
 
     ggplot2::facet_wrap(~dep_var, scales = "free") +
 
     uncertainty_layers +
 
-    ggplot2::geom_line(data = x$central, ggplot2::aes(y = .data$values, x = .data$time, color = as.factor(.data$start)), inherit.aes = FALSE) +
+    ggplot2::geom_line(data = centrals, ggplot2::aes(y = .data$values, x = .data$time, color = as.factor(.data$start)), inherit.aes = FALSE) +
     ggplot2::facet_wrap(~.data$dep_var, scales = "free") +
     #ggplot2::scale_color_brewer(palette = "PRGn") +
     ggplot2::scale_colour_viridis_d() +

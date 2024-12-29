@@ -122,9 +122,6 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     # i = 3
 
     if(is.null(forecasted_unknownexogvalues[[i]])){next}
-    #print(i)
-
-    #plot(forecasted_unknownexogvalues[[i]])
 
     forecasted_unknownexogvalues[[i]]$forecast %>%
       dplyr::select("dep_var","central.estimate") %>%
@@ -179,7 +176,10 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
                   .data$time > min(overall_to_plot_central$start)) -> full_data
 
   out <- list()
-  out$central <- overall_to_plot_central_exp %>% dplyr::rename(values = "value")
+  out$central <- overall_to_plot_central_exp %>%
+    dplyr::rename(values = "value") %>%
+    dplyr::mutate(end = end, .after = "start")
+
   out$uncertainty <- overall_to_plot_alls_exp
   out$hist_data <- full_data
   out$args <- list(sample_share = sample_share,
