@@ -19,38 +19,52 @@ print.osem.forecast.insample <- function(x, plot = TRUE, full_names = FALSE, ...
   cat(paste0("\nInsample Forecast Overview:"))
   cat(paste0("\nForecast Sample Share: ", x$args$sample_share * 100, "%"))
   cat(paste0("\nForecast Horizon: ", min(x$args$time_to_use)," to ",max(x$args$time_to_use)))
-  cat(paste0("\nForecast Method:"), dplyr::case_when(x$args$exog_fill_method == "AR" ~ "AR Model (Outlier and Step Shift Corrected)",
-                                                     x$args$exog_fill_method == "auto" ~ "AR Model run with auto.arima()",
-                                                     x$args$exog_fill_method == "last" ~ "Last Observed Value",
-                                                     TRUE ~ x$args$exog_fill_method))
+
+  fill_method <- dplyr::case_when(x$args$exog_fill_method == "AR" ~ "AR Model (Outlier and Step Shift Corrected)",
+                                  x$args$exog_fill_method == "auto" ~ "AR Model run with auto.arima()",
+                                  x$args$exog_fill_method == "last" ~ "Last Observed Value",
+                                  TRUE ~ x$args$exog_fill_method)
+  # if fill_method is longer than length 1, then list them with commas and & at the end
+  if(length(fill_method) > 1){
+    fill_method <- paste0(paste0(fill_method[1:(length(fill_method)-1)], collapse = ", "), " & ", fill_method[length(fill_method)])
+  }
+
+  cat(paste0("\nForecast Method:"), fill_method)
   cat("\n")
 
   cat("-----------------------\n")
   cat("\nRMSFE: \n")
-
   x$rmsfe %>%
-    tidyr::pivot_wider(id_cols = start, names_from = na_item, values_from = rmsfe) %>%
-    dplyr::relocate(`Total RMSFE`, .after = start) %>%
-    dplyr::rename(Start = start) -> rmsfe_table
+    tidyr::pivot_wider(id_cols = c(.data$start,.data$method),
+                       names_from = .data$na_item,
+                       values_from = .data$rmsfe) %>%
+    dplyr::relocate(`Total RMSFE`, .after = .data$method) %>%
+    dplyr::rename(Start = "start",
+                  Method = "method") -> rmsfe_table
 
   cat(format(rmsfe_table)[-c(1L,3L)], sep = "\n")
 
   cat("-----------------------\n")
   cat("\nForecast Within Uncertainty: \n")
-
   x$forecast_failures %>%
     dplyr::mutate(dplyr::across(dplyr::starts_with("failure"),
                                 .fns = ~ dplyr::if_else(. == "Success", 1, 0))) %>%
-    dplyr::summarise(across(dplyr::starts_with("failure"), ~sum(.)/dplyr::n()), .by = "na_item") %>%
+    dplyr::summarise(across(dplyr::starts_with("failure"), ~sum(.)/dplyr::n()), .by = c("method","na_item")) %>%
     dplyr::rename_with(.fn = ~gsub("failure","success",.)) %>%
-    tidyr::pivot_longer(-"na_item") %>%
-    tidyr::pivot_wider(names_from = "na_item", values_from = "value") %>%
+    tidyr::pivot_longer(-c("na_item","method")) %>%
+    tidyr::pivot_wider(id_cols = c("method","name"), names_from = "na_item", values_from = "value") %>%
     dplyr::mutate(name = dplyr::case_when(name == "success_all" ~ "Forecast within Uncertainty",
                                           name == "success_95" ~ "Forecast within 95% Uncertainty",
                                           name == "success_90" ~ "Forecast within 90% Uncertainty",
                                           name == "success_50" ~ "Forecast within IQR"),
-                  dplyr::across(-"name", scales::percent)) %>%
-    dplyr::rename(Measure = "name") -> forecast_failures_tab
+                  dplyr::across(-c("name","method"), scales::percent)) %>%
+    dplyr::mutate(name = factor(.data$name,levels = c("Forecast within Uncertainty",
+                                                      "Forecast within 95% Uncertainty",
+                                                      "Forecast within 90% Uncertainty",
+                                                      "Forecast within IQR"))) %>%
+    dplyr::arrange(.data$name) %>%
+    dplyr::rename(Measure = "name",
+                  Method = "method")  -> forecast_failures_tab
 
   cat(format(forecast_failures_tab)[-c(1L,3L)], sep = "\n")
 
