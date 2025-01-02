@@ -35,10 +35,10 @@ print.osem.forecast.insample <- function(x, plot = TRUE, full_names = FALSE, ...
   cat("-----------------------\n")
   cat("\nRMSFE: \n")
   x$rmsfe %>%
-    tidyr::pivot_wider(id_cols = c(.data$start,.data$method),
-                       names_from = .data$na_item,
-                       values_from = .data$rmsfe) %>%
-    dplyr::relocate(`Total RMSFE`, .after = "method") %>%
+    tidyr::pivot_wider(id_cols = c("start","method"),
+                       names_from = "na_item",
+                       values_from = "rmsfe") %>%
+    dplyr::relocate(.data$`Total RMSFE`, .after = "method") %>%
     dplyr::rename(Start = "start",
                   Method = "method") -> rmsfe_table
 
@@ -54,7 +54,7 @@ print.osem.forecast.insample <- function(x, plot = TRUE, full_names = FALSE, ...
     x$forecast_failures %>%
       dplyr::mutate(dplyr::across(dplyr::starts_with("failure"),
                                   .fns = ~ dplyr::if_else(. == "Success", 1, 0))) %>%
-      dplyr::summarise(across(dplyr::starts_with("failure"), ~sum(.)/dplyr::n()), .by = c("method","na_item")) %>%
+      dplyr::summarise(dplyr::across(dplyr::starts_with("failure"), ~sum(.)/dplyr::n()), .by = c("method","na_item")) %>%
       dplyr::rename_with(.fn = ~gsub("failure","success",.)) %>%
       tidyr::pivot_longer(-c("na_item","method")) %>%
       tidyr::pivot_wider(id_cols = c("method","name"), names_from = "na_item", values_from = "value") %>%
