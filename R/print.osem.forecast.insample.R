@@ -38,7 +38,7 @@ print.osem.forecast.insample <- function(x, plot = TRUE, full_names = FALSE, ...
     tidyr::pivot_wider(id_cols = c(.data$start,.data$method),
                        names_from = .data$na_item,
                        values_from = .data$rmsfe) %>%
-    dplyr::relocate(`Total RMSFE`, .after = .data$method) %>%
+    dplyr::relocate(`Total RMSFE`, .after = "method") %>%
     dplyr::rename(Start = "start",
                   Method = "method") -> rmsfe_table
 
@@ -46,31 +46,38 @@ print.osem.forecast.insample <- function(x, plot = TRUE, full_names = FALSE, ...
 
   cat("-----------------------\n")
   cat("\nForecast Within Uncertainty: \n")
-  x$forecast_failures %>%
-    dplyr::mutate(dplyr::across(dplyr::starts_with("failure"),
-                                .fns = ~ dplyr::if_else(. == "Success", 1, 0))) %>%
-    dplyr::summarise(across(dplyr::starts_with("failure"), ~sum(.)/dplyr::n()), .by = c("method","na_item")) %>%
-    dplyr::rename_with(.fn = ~gsub("failure","success",.)) %>%
-    tidyr::pivot_longer(-c("na_item","method")) %>%
-    tidyr::pivot_wider(id_cols = c("method","name"), names_from = "na_item", values_from = "value") %>%
-    dplyr::mutate(name = dplyr::case_when(name == "success_all" ~ "Forecast within Uncertainty",
-                                          name == "success_95" ~ "Forecast within 95% Uncertainty",
-                                          name == "success_90" ~ "Forecast within 90% Uncertainty",
-                                          name == "success_50" ~ "Forecast within IQR"),
-                  dplyr::across(-c("name","method"), scales::percent)) %>%
-    dplyr::mutate(name = factor(.data$name,levels = c("Forecast within Uncertainty",
-                                                      "Forecast within 95% Uncertainty",
-                                                      "Forecast within 90% Uncertainty",
-                                                      "Forecast within IQR"))) %>%
-    dplyr::arrange(.data$name) %>%
-    dplyr::rename(Measure = "name",
-                  Method = "method")  -> forecast_failures_tab
 
-  cat(format(forecast_failures_tab)[-c(1L,3L)], sep = "\n")
+  if(is.null(x$forecast_failures[["na_item"]])){
+    cat("No forecast failures estimated (potentially due to entire model being an identity).\n")
+  } else {
 
-  suppressMessages(if(plot){
-    try(print(plot(x)))
-  })
+    x$forecast_failures %>%
+      dplyr::mutate(dplyr::across(dplyr::starts_with("failure"),
+                                  .fns = ~ dplyr::if_else(. == "Success", 1, 0))) %>%
+      dplyr::summarise(across(dplyr::starts_with("failure"), ~sum(.)/dplyr::n()), .by = c("method","na_item")) %>%
+      dplyr::rename_with(.fn = ~gsub("failure","success",.)) %>%
+      tidyr::pivot_longer(-c("na_item","method")) %>%
+      tidyr::pivot_wider(id_cols = c("method","name"), names_from = "na_item", values_from = "value") %>%
+      dplyr::mutate(name = dplyr::case_when(name == "success_all" ~ "Forecast within Uncertainty",
+                                            name == "success_95" ~ "Forecast within 95% Uncertainty",
+                                            name == "success_90" ~ "Forecast within 90% Uncertainty",
+                                            name == "success_50" ~ "Forecast within IQR"),
+                    dplyr::across(-c("name","method"), scales::percent)) %>%
+      dplyr::mutate(name = factor(.data$name,levels = c("Forecast within Uncertainty",
+                                                        "Forecast within 95% Uncertainty",
+                                                        "Forecast within 90% Uncertainty",
+                                                        "Forecast within IQR"))) %>%
+      dplyr::arrange(.data$name) %>%
+      dplyr::rename(Measure = "name",
+                    Method = "method")  -> forecast_failures_tab
+
+    cat(format(forecast_failures_tab)[-c(1L,3L)], sep = "\n")
+
+  }
+
+  try(suppressMessages(if(plot){
+    print(plot(x))
+  }), silent = TRUE)
 
 
 }

@@ -103,7 +103,7 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
   )
 
   centrals <- centrals %>% dplyr::rename(Method = "method")
-  uncertainties <- uncertainties %>% dplyr::rename(Method = "method")
+  if(exists("uncertainties")){uncertainties <- uncertainties %>% dplyr::rename(Method = "method")}
 
   ggplot2::ggplot() +
     ggplot2::geom_line(data = historical_data,

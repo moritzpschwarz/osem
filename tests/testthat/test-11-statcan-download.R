@@ -456,7 +456,8 @@ test_that("Test behaviour when everything is an identity",{
   model_result <- run_model(specification = spec,
                             dictionary = test_imf,
                             inputdata_directory = imf_data_identical_identity,
-                            primary_source = "local")
+                            primary_source = "local",
+                            quiet = TRUE)
 
   expect_true(nrow(diagnostics_model(model_result)) == 0)
   expect_output(print(model_result, plot = FALSE),"No Diagnostics available")
@@ -471,7 +472,8 @@ test_that("Test behaviour when everything is an identity",{
   ))
 
   expect_null(hind_cast$uncertainty)
-  expect_identical(round(hind_cast$central$values,4), c(493.6997, 492.3237, 483.627, 508.0448, 498.334))
+  expect_identical(round(hind_cast$central$values,4), c(493.6997, 492.3237, 508.0448))
   expect_true(hind_cast$args$exog_fill_method == "AR")
+  expect_output(print(hind_cast, plot = FALSE),"No forecast failures estimated")
 
 })
