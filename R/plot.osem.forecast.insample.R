@@ -59,16 +59,16 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
   for(i in unique(x$central$start)){
     # i = unique(x$central$start)[1]
     hist_intermed <- historical_data %>%
-      dplyr::arrange(dep_var, time) %>%
+      dplyr::arrange(.data$dep_var, .data$time) %>%
       dplyr::mutate(n = 1:dplyr::n(), .by = "dep_var")
 
     rank_of_i <- hist_intermed %>%
-      dplyr::filter(time == i) %>%
+      dplyr::filter(.data$time == i) %>%
       dplyr::distinct(.data$n) %>%
       dplyr::pull(.data$n)
 
     hist_intermed %>%
-      dplyr::filter(n == rank_of_i) %>%
+      dplyr::filter(.data$n == rank_of_i) %>%
       dplyr::select(-"n") %>%
       dplyr::mutate(start = as.Date(i)) %>%
       dplyr::cross_join(dplyr::tibble(method = unique(centrals$method))) %>%
@@ -76,7 +76,7 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
 
     if(!is.null(x$uncertainty)){
       hist_intermed %>%
-        dplyr::filter(n == rank_of_i) %>%
+        dplyr::filter(.data$n == rank_of_i) %>%
         dplyr::select(-"n") %>%
         dplyr::mutate(min = .data$values,
                       max = .data$values,
@@ -109,7 +109,7 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
     ggplot2::geom_line(data = historical_data,
                        ggplot2::aes(x = .data$time, y = .data$values), linewidth = 1) +
 
-    ggplot2::facet_wrap(~dep_var, scales = "free") +
+    ggplot2::facet_wrap(~.data$dep_var, scales = "free") +
 
     uncertainty_layers +
 
