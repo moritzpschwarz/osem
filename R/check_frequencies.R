@@ -9,10 +9,10 @@
 check_frequencies <- function(full_data, quiet){
 
   # Within variable frequencies ---------------------------------------------
-
   full_data %>%
     #filter(na_item == "Unemployment") %>%
     dplyr::arrange(.data$na_item, .data$time) %>%
+    tidyr::drop_na("values") %>%
     dplyr::mutate(next_t = dplyr::lead(.data$time),
                   diff_num = as.numeric(.data$next_t - .data$time),
                   diff = dplyr::case_when(.data$diff_num == 1 ~ "day",
@@ -86,24 +86,66 @@ check_frequencies <- function(full_data, quiet){
 
   if(length(frequency) > 1){
 
+    # if(!quiet){
+    #   warning(paste0("\n",
+    #                  "Some observations were aggregated from the data due to different frequencies.\n",
+    #                  "This does not necessarily result in an error but please check the data to make sure that the frequencies are consistent.\n",
+    #                  "Suppress this warning by setting quiet = TRUE.\n"))
+    #   # frq_df %>%
+    #   #   dplyr::distinct(.data$na_item, .data$diff) %>%
+    #   #   tidyr::drop_na("diff")
+    #
+    # }
+
+
     if(all(c("year","3 months") %in% frequency)){
       full_data %>%
+        dplyr::full_join(frq_df %>%
+                           dplyr::distinct(.data$na_item, .data$diff) %>%
+                           tidyr::drop_na("diff"),
+                         by = c("na_item")) %>%
+
         dplyr::mutate(year = lubridate::year(.data$time),
                       quarter = lubridate::quarter(.data$time)) %>%
+        tidyr::drop_na("values") %>%
+
+        # make sure to only aggregate years where all 4 quarters are available or there is already a yearly value
+        dplyr::mutate(n = dplyr::n(), .by = c("na_item","year")) %>%
+        dplyr::filter(.data$n == 4 | .data$diff %in% c("year")) %>% # NA is required here because the diff of the last available annual value is NA
+
         dplyr::mutate(values = sum(.data$values, na.rm = TRUE), .by = c("na_item","year")) %>%
         dplyr::filter(.data$quarter == 1) %>%
-        dplyr::select(-dplyr::all_of(c("year", "quarter"))) -> full_data
-    } else {
-      # frequency == "month" | frequency == "day")
+        dplyr::select(-dplyr::all_of(c("year", "quarter", "n", "diff"))) -> full_data
+    } else if(all(c("month","3 months") %in% frequency)){
+      full_data %>%
+        dplyr::full_join(frq_df %>%
+                           dplyr::distinct(.data$na_item, .data$diff) %>%
+                           tidyr::drop_na("diff"),
+                         by = c("na_item")) %>%
+
+        dplyr::mutate(year = lubridate::year(.data$time),
+                      quarter = lubridate::quarter(.data$time),
+                      month = lubridate::month(.data$time)) %>%
+        tidyr::drop_na("values") %>%
+
+        # make sure to only aggregate years where all 4 quarters are available or there is already a yearly value
+        dplyr::mutate(n = dplyr::n(), .by = c("na_item","year","quarter")) %>%
+        dplyr::filter(.data$n == 3 | .data$diff %in% c("3 months")) %>% # NA is required here because the diff of the last available annual value is NA
+
+        dplyr::mutate(values = sum(.data$values, na.rm = TRUE), .by = c("na_item","year","quarter")) %>%
+        dplyr::filter(.data$month %in%  c(1,4,7,10)) %>%
+        dplyr::select(-dplyr::all_of(c("year", "quarter", "n", "diff", "month"))) -> full_data
+
+      } else {
       stop("Mixed frequency models are not yet implemented. Please check to make sure that all data that you supply to the model (incl. in the dictionary) has the same frequency.")
     }
   } else {
     if(nrow(frq_df)/nrow(frq_df_backup) < 0.9){
       if(!quiet){
         warning(paste0("\n",
-        "Some observations were removed from the data due to different frequencies.\n",
-        "This does not necessarily result in an error but please check the data to make sure that the frequencies are consistent.\n",
-        "Suppress this warning by setting quiet = TRUE.\n"))
+                       "Some observations were removed from the data due to different frequencies.\n",
+                       "This does not necessarily result in an error but please check the data to make sure that the frequencies are consistent.\n",
+                       "Suppress this warning by setting quiet = TRUE.\n"))
       }
     }
     temp_ids <- frq_df %>%

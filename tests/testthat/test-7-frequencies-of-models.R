@@ -37,10 +37,10 @@ quarterly <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), length.
                            FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.1)) %>%
   tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values")
 
-annualy <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "year"),
-                         FinConsExpGov = rnorm(mean = 100, n = length(time)),
-                         HICP_Gas = rnorm(mean = 200, n = length(time)),
-                         FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.1)) %>%
+annually <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "year"),
+                          FinConsExpGov = rnorm(mean = 100, n = length(time)),
+                          HICP_Gas = rnorm(mean = 200, n = length(time)),
+                          FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.1)) %>%
   tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values")
 
 
@@ -67,7 +67,7 @@ test_that("Test the reaction of the model for different frequencies",{
                        quiet = TRUE)
 
   model_a <- run_model(specification = specification,
-                       inputdata_directory = annualy,
+                       inputdata_directory = annually,
                        primary_source = "local",
                        max.ar = 1, max.dl = 0,
                        quiet = TRUE)
@@ -85,6 +85,115 @@ test_that("Test the reaction of the model for different frequencies",{
   expect_equal(unique(rev(fc_a$full_forecast_data$time)), structure(c(12784, 13149, 13514, 13879, 14245, 14610, 14975, 15340, 15706, 16071, 16436, 16801, 17167, 17532, 17897, 18262, 18628, 18993, 19358, 19723, 20089, 20454, 20819, 21184, 21550, 21915, 22280, 22645, 23011, 23376, 23741, 24106, 24472, 24837, 25202, 25567, 25933, 26298, 26663, 27028), class = "Date"))
 })
 
+test_that("Aggregation (Quarterly to Annual)", {
+
+  # A model that contains both quarterly and annual data should estimate the model with the annual data
+  # this dataset also contains one quarter of 2034, which should be removed (because summative aggregation to 2031 is not possible)
+  set.seed(990)
+  quarterly_mix <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = max(annually$time), by = "quarter"),
+                                 HICP_Gas = rnorm(mean = 200/4, n = length(time))) %>%
+    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
+    dplyr::bind_rows(annually %>%
+                       dplyr::filter(na_item != "HICP_Gas"), .)
+
+  model_aqmix <- run_model(specification = specification,
+                          inputdata_directory = quarterly_mix,
+                          primary_source = "local",
+                          max.ar = 1, max.dl = 0, gets_selection = FALSE, plot = FALSE,
+                          quiet = TRUE)
+
+  times_in_aqmix_model <- model_aqmix$full_data %>% tidyr::drop_na("values") %>% dplyr::filter(.data$na_item == "HICP_Gas") %>% dplyr::pull("time")
+
+  # forecasting should be possible because the model is annual
+  fc_aqmix <- forecast_model(model_aqmix, quiet = TRUE, plot = FALSE)
+
+  # because 2034 was removed, we would expect it to be in the nowcast (because the dependent variable is available until 2034) and not in the model
+  expect_true(!as.Date("2034-01-01") %in% times_in_aqmix_model)
+  expect_true(!is.na(fc_aqmix$exog_data_nowcast %>% dplyr::filter(.data$time == as.Date("2034-01-01")) %>% dplyr::pull("HICP_Gas")))
+
+
+  # but if we add three more observations to the quarterly values, they should be there
+  set.seed(990)
+  quarterly_mix2 <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2034-10-01"), by = "quarter"),
+                                  HICP_Gas = rnorm(mean = 200/4, n = length(time))) %>%
+    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
+    dplyr::bind_rows(annually %>%
+                       dplyr::filter(na_item != "HICP_Gas"), .)
+
+  model_aqmix2 <- run_model(specification = specification,
+                           inputdata_directory = quarterly_mix2,
+                           primary_source = "local",
+                           max.ar = 1, max.dl = 0, gets_selection = FALSE,plot = FALSE,
+                           constrain.to.minimum.sample = FALSE, # IMPORTANT HERE
+                           quiet = TRUE)
+
+  times_in_aqmix_model2 <- model_aqmix2$full_data %>% tidyr::drop_na("values") %>% dplyr::filter(.data$na_item == "HICP_Gas") %>% dplyr::pull("time")
+
+  # forecasting should be possible because the model is annual
+  fc_aqmix2 <- forecast_model(model_aqmix2, quiet = TRUE, plot = FALSE)
+
+  # because 2034 is now complete, we would expect it to be in the model and we would not expect a nowcast
+  expect_true(as.Date("2034-01-01") %in% times_in_aqmix_model2)
+
+  # check that no nowcasting was necessary:
+  expect_equal(fc_aqmix2$exog_data_nowcast, fc_aqmix2$exog_data)
+
+})
+
+test_that("Aggregation (Monthly to Quarterly)", {
+
+  # A model that contains both monthly and quarterly data should estimate the model with the quarterly data
+  # this dataset also contains one month of Q2 of 2012, which should be removed (because summative aggregation to Q2 of 2012 is not possible)
+  set.seed(990)
+  mq_mix <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = max(quarterly$time), by = "month"),
+                                 HICP_Gas = rnorm(mean = 200/12, n = length(time))) %>%
+    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
+    dplyr::bind_rows(quarterly %>%
+                       dplyr::filter(na_item != "HICP_Gas"), .)
+
+  model_mqmix <- run_model(specification = specification,
+                          inputdata_directory = mq_mix,
+                          primary_source = "local",
+                          max.ar = 1, max.dl = 0, gets_selection = FALSE, plot = FALSE,
+                          quiet = TRUE)
+
+  times_in_mqmix_model <- model_mqmix$full_data %>% tidyr::drop_na("values") %>% dplyr::filter(.data$na_item == "HICP_Gas") %>% dplyr::pull("time")
+
+  # forecasting should be possible because the model is quarterly
+  fc_mqmix <- forecast_model(model_mqmix, quiet = TRUE, plot = FALSE)
+
+  # because Q2 of 2012 was removed, we would expect it to be in the nowcast (because the dependent variable is available until Q2 of 2012) and not in the model
+  expect_true(!as.Date("2012-04-01") %in% times_in_mqmix_model)
+  expect_true(!is.na(fc_mqmix$exog_data_nowcast %>% dplyr::filter(.data$time == as.Date("2012-04-01")) %>% dplyr::pull("HICP_Gas")))
+
+
+  # but if we add two more observations to the monthly values, now we should have one more Q
+  set.seed(990)
+  mq_mix2 <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2012-06-01"), by = "month"),
+                          HICP_Gas = rnorm(mean = 200/12, n = length(time))) %>%
+    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
+    dplyr::bind_rows(quarterly %>%
+                       dplyr::filter(na_item != "HICP_Gas"), .)
+
+  model_mqmix2 <- run_model(specification = specification,
+                           inputdata_directory = mq_mix2,
+                           primary_source = "local",
+                           max.ar = 1, max.dl = 0, gets_selection = FALSE,plot = FALSE,
+                           constrain.to.minimum.sample = FALSE, # IMPORTANT HERE
+                           quiet = TRUE)
+
+  times_in_mqmix_model2 <- model_mqmix2$full_data %>% tidyr::drop_na("values") %>% dplyr::filter(.data$na_item == "HICP_Gas") %>% dplyr::pull("time")
+
+  # forecasting should be possible because the model is quarterly
+  fc_mqmix2 <- forecast_model(model_mqmix2, quiet = TRUE, plot = FALSE)
+
+  # because 2034 is now complete, we would expect it to be in the model and we would not expect a nowcast
+  expect_true(as.Date("2012-04-01") %in% times_in_mqmix_model2)
+
+  # check that no nowcasting was necessary:
+  expect_equal(fc_mqmix2$exog_data_nowcast, fc_mqmix2$exog_data)
+
+})
 
 
 # Real Data ---------------------------------------------------------------
@@ -352,9 +461,10 @@ test_that("Annual Models run with EUROSTAT data",{
                     max.dl = 1, # for annual models, would not go beyond 1 (otherwise sample is too short)
                     max.block.size = 5,
                     use_logs = "both",
-                    constrain.to.minimum.sample = FALSE)
+                    constrain.to.minimum.sample = FALSE,
+                    quiet = TRUE)
 
-  test_fc <- forecast_model(test, plot = FALSE)
+  test_fc <- forecast_model(test, plot = FALSE, quiet = TRUE)
 
   expect_equal(test_fc$forecast$central.estimate[[1]]$time, structure(c(19723, 20089, 20454, 20819, 21184, 21550, 21915,
                                                                         22280, 22645, 23011), class = "Date"))
