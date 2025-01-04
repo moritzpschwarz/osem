@@ -12,8 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, results='hide'}
-#devtools::install_github("moritzpschwarz/osem", ref = "main")
-library(osem)
+#devtools::install_github("moritzpschwarz/osem", ref = "main_nosuper")
+#library(osem)
+devtools::load_all()
 library(tidyverse)
 ```
 
@@ -129,64 +130,98 @@ spec <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), independen
 
 The dictionary is a tibble that specifies the data sources for the variables in the model. In this example, we only rely on data from Eurostat. The dictionary has to specify the model variable name, more detailed description of the variable, in which database it can be found, the dataset id, and the variable code and column in the dataset. Different datasets have different structures, so further columns can act as filters to select the correct data, such as the data frequency, the unit in which it is measured, the NACE/ISIC code etc. If a filter is not present in a specific dataset, it has to be set to `NA`.
 
-We initialise the dictionary using
-```{r}
-dictionary <- tibble(model_varname = "Supply", full_name = "Total Supply", database = NA, variable_code = NA, dataset_id = NA, var_col = NA, freq = NA, geo = NA, unit = NA, s_adj = NA, nace_r2 = NA, ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA, tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA, partner = NA)
-```
+**Note from Moritz**
 
-The following function is used to add new entries to the dictionary. The function has to be extended whenever a new filter is used for adding a new variable.
+Changed dictionary structure and combined existing ones
+see `small_examples/eurostat_dictionary.R`
 
 ```{r}
-add_dict_entry <- function(dict, model_varname, full_name, database, variable_code, dataset_id, var_col, freq, geo,
-                           unit = NA, s_adj = NA, nace_r2 = NA, ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA,
-                           tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA, partner = NA) {
-  dict %>%
-    add_row(model_varname = model_varname, full_name = full_name, database = database, variable_code = variable_code, 
-            dataset_id = dataset_id, var_col = var_col, freq = freq, geo = geo, unit = unit, s_adj = s_adj, 
-            nace_r2 = nace_r2, ipcc_sector = ipcc_sector, cpa2_1 = cpa2_1, siec = siec, sector = sector, tax = tax, 
-            currency = currency, direct = direct, co_nco = co_nco, train = train, vehicle = vehicle, age = age, partner = partner) %>%
-    return()
-}
+dict_local <- structure(
+  list(
+    model_varname = c("PriceETS", "PriceOil", "HCPI"),
+    full_name = c(
+      "Average Annual EU ETS Price, Nominal",
+      "Average Crude Brent Oil Price in USD, Nominal",
+      "Harmonised Consumer Price Index All Goods"
+    ),
+    database = c("local", "local", "local"),
+    variable_code = c("PriceETS", "PriceOil", NA),
+    var_col = c("na_item", "na_item", NA),
+    freq = c(NA, NA, "q"),
+    geo = c("DE", "DE", NA),
+    n = c(1L, 1L, 2L)
+  ),
+  row.names = c(NA, -3L),
+  class = c("tbl_df", "tbl", "data.frame")
+)
+
+dictionary <- dplyr::bind_rows(dict_identities, dict_eurostat, dict_edgar, dict_local)
 ```
 
-Extend the dictionary with the data required for our model:
 
-```{r}
-dictionary <- dictionary %>% 
-  add_dict_entry("Demand", "Total Demand", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("GDPOutput", "GDP Output Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("GDPExpenditure", "GDP Expenditure Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("Taxes", "Product Taxes", "eurostat", "D21REC", "gov_10a_main", "na_item", "A", "DE", "MIO_EUR", NA, NA, NA, NA, NA, "S13", NA, NA, NA, NA) %>% 
-  add_dict_entry("Subsidies", "Product Subsidies", "eurostat", "D31PAY", "gov_10a_main", "na_item", "A", "DE", "MIO_EUR", NA, NA, NA, NA, NA, "S13", NA, NA, NA, NA) %>% 
-  add_dict_entry("VAAgriculture", "Gross Value Added Agriculture", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "A", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAIndustry", "Gross Value Added Industry except Construction", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "B-E", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAConstruction", "Gross Value Added Construction", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "F", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VARetail", "Gross Value Added Wholesail and Retail Trade, Transportation and Storage, Accommodation and Food Service Activities", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "G-I", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAInformation", "Gross Value Added Information and Communication", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "J", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAFinance", "Gross Value Added Financial and Insurance Activities", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "K", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VARealEstate", "Gross Value Added Real Estate Services", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "L", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAService", "Gross Value Added Professional, Scientific, Technical, Administration and Support Service Activities", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "M_N", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAGov", "Gross Value Added Public Administration, Defence, Education, Human Health and Social Work Activities", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "O-Q", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAOther", "Gross Value Added Other Services", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "R-U", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("ConsHH", "Household and NPISH Final Consumption Expenditure", "eurostat", "P31_S14_S15", "nama_10_gdp", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("ConsGov", "Government Final Consumption Expenditure", "eurostat", "P3_S13", "nama_10_gdp", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("Exports", "Exports of Goods and Services", "eurostat", "P6", "nama_10_gdp", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("Imports", "Imports of Goods and Services", "eurostat", "P7", "nama_10_gdp", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("REER", "Real Effective Exchange Rate", "eurostat", "REER_IC42_CPI", "ert_eff_ic_a", "exch_rt", "A", "DE", "I15", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("PriceETS", "Average Annual EU ETS Price, Nominal", "local", "PriceETS", NA, "na_item", NA, "DE", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("PriceOil", "Average Crude Brent Oil Price in USD, Nominal", "local", "PriceOil", NA, "na_item", NA, "DE", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("IncomeHH", "Gross Disposable Income Households and Non-Profit Institutions Serving Households in Mio EUR", "eurostat", "B6G", "nasa_10_nf_tr", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, "RECV", NA) %>% 
-  add_dict_entry("FinWealthHH", "Household Financial Net Worth in Mio EUR", "eurostat", "BF90", "nasa_10_f_bs", "na_item", "A", "DE", "MIO_EUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, "CO") %>%
-  add_dict_entry("HouseWealthHH", "Household Dwellings Assets", "eurostat", "N111N", "nama_10_nfa_bs", "asset10", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("LandWealthHH", "Household Land Assets", "eurostat", "N211N", "nama_10_nfa_bs", "asset10", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("HCPI", "Harmonised Consumer Price Index All Goods", "eurostat", "CP00", "prc_hicp_aind", "coicop", "A", "DE", "INX_A_AVG", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("CapFormHH", "Gross Fixed Capital Formation Households", "eurostat", "P51G", "nasa_10_nf_tr", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, "PAID", NA) %>% 
-  add_dict_entry("CapFormGov", "Gross Fixed Capital Formation Government", "eurostat", "P51G", "nasa_10_nf_tr", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S13", NA, NA, "PAID", NA) %>% 
-  add_dict_entry("CapFormFirm", "Gross Fixed Capital Non-Financial Corporations", "eurostat", "P51G", "nasa_10_nf_tr", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S11", NA, NA, "PAID", NA) %>% 
-  add_dict_entry("CapFormFinFirm", "Gross Fixed Capital Financial Corporations", "eurostat", "P51G", "nasa_10_nf_tr", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S12", NA, NA, "PAID", NA) %>%
-  add_dict_entry("HousePriceIndex", "House Price Index", "eurostat", "TOTAL", "prc_hpi_a", "purchase", "A", "DE", "I15_A_AVG", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("BuildingPermits", "New Residential Building Permits Square Metre Useful Floor Area", "eurostat", "BPRM_SQM", "sts_cobp_a", "indic_bt", "A", "DE", "MIO_M2", "NSA", NA, NA, "CPA_F41001", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
-```
+
+
+<!-- We initialise the dictionary using -->
+<!-- ```{r} -->
+<!-- dictionary <- tibble(model_varname = "Supply", full_name = "Total Supply", database = NA, variable_code = NA, dataset_id = NA, var_col = NA, freq = NA, geo = NA, unit = NA, s_adj = NA, nace_r2 = NA, ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA, tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA, partner = NA) -->
+<!-- ``` -->
+
+<!-- The following function is used to add new entries to the dictionary. The function has to be extended whenever a new filter is used for adding a new variable. -->
+
+<!-- ```{r} -->
+<!-- add_dict_entry <- function(dict, model_varname, full_name, database, variable_code, dataset_id, var_col, freq, geo, -->
+<!--                            unit = NA, s_adj = NA, nace_r2 = NA, ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA, -->
+<!--                            tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA, partner = NA) { -->
+<!--   dict %>% -->
+<!--     add_row(model_varname = model_varname, full_name = full_name, database = database, variable_code = variable_code,  -->
+<!--             dataset_id = dataset_id, var_col = var_col, freq = freq, geo = geo, unit = unit, s_adj = s_adj,  -->
+<!--             nace_r2 = nace_r2, ipcc_sector = ipcc_sector, cpa2_1 = cpa2_1, siec = siec, sector = sector, tax = tax,  -->
+<!--             currency = currency, direct = direct, co_nco = co_nco, train = train, vehicle = vehicle, age = age, partner = partner) %>% -->
+<!--     return() -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- Extend the dictionary with the data required for our model: -->
+
+<!-- ```{r} -->
+<!-- dictionary <- dictionary %>%  -->
+<!--   add_dict_entry("Demand", "Total Demand", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("GDPOutput", "GDP Output Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("GDPExpenditure", "GDP Expenditure Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("Taxes", "Product Taxes", "eurostat", "D21REC", "gov_10a_main", "na_item", "A", "DE", "MIO_EUR", NA, NA, NA, NA, NA, "S13", NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("Subsidies", "Product Subsidies", "eurostat", "D31PAY", "gov_10a_main", "na_item", "A", "DE", "MIO_EUR", NA, NA, NA, NA, NA, "S13", NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("VAAgriculture", "Gross Value Added Agriculture", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "A", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("VAIndustry", "Gross Value Added Industry except Construction", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "B-E", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("VAConstruction", "Gross Value Added Construction", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "F", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("VARetail", "Gross Value Added Wholesail and Retail Trade, Transportation and Storage, Accommodation and Food Service Activities", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "G-I", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("VAInformation", "Gross Value Added Information and Communication", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "J", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("VAFinance", "Gross Value Added Financial and Insurance Activities", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "K", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("VARealEstate", "Gross Value Added Real Estate Services", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "L", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("VAService", "Gross Value Added Professional, Scientific, Technical, Administration and Support Service Activities", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "M_N", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("VAGov", "Gross Value Added Public Administration, Defence, Education, Human Health and Social Work Activities", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "O-Q", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("VAOther", "Gross Value Added Other Services", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "R-U", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("ConsHH", "Household and NPISH Final Consumption Expenditure", "eurostat", "P31_S14_S15", "nama_10_gdp", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("ConsGov", "Government Final Consumption Expenditure", "eurostat", "P3_S13", "nama_10_gdp", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("Exports", "Exports of Goods and Services", "eurostat", "P6", "nama_10_gdp", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("Imports", "Imports of Goods and Services", "eurostat", "P7", "nama_10_gdp", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("REER", "Real Effective Exchange Rate", "eurostat", "REER_IC42_CPI", "ert_eff_ic_a", "exch_rt", "A", "DE", "I15", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("PriceETS", "Average Annual EU ETS Price, Nominal", "local", "PriceETS", NA, "na_item", NA, "DE", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("PriceOil", "Average Crude Brent Oil Price in USD, Nominal", "local", "PriceOil", NA, "na_item", NA, "DE", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("IncomeHH", "Gross Disposable Income Households and Non-Profit Institutions Serving Households in Mio EUR", "eurostat", "B6G", "nasa_10_nf_tr", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, "RECV", NA) %>%  -->
+<!--   add_dict_entry("FinWealthHH", "Household Financial Net Worth in Mio EUR", "eurostat", "BF90", "nasa_10_f_bs", "na_item", "A", "DE", "MIO_EUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, "CO") %>% -->
+<!--   add_dict_entry("HouseWealthHH", "Household Dwellings Assets", "eurostat", "N111N", "nama_10_nfa_bs", "asset10", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("LandWealthHH", "Household Land Assets", "eurostat", "N211N", "nama_10_nfa_bs", "asset10", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("HCPI", "Harmonised Consumer Price Index All Goods", "eurostat", "CP00", "prc_hicp_aind", "coicop", "A", "DE", "INX_A_AVG", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("CapFormHH", "Gross Fixed Capital Formation Households", "eurostat", "P51G", "nasa_10_nf_tr", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, "PAID", NA) %>%  -->
+<!--   add_dict_entry("CapFormGov", "Gross Fixed Capital Formation Government", "eurostat", "P51G", "nasa_10_nf_tr", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S13", NA, NA, "PAID", NA) %>%  -->
+<!--   add_dict_entry("CapFormFirm", "Gross Fixed Capital Non-Financial Corporations", "eurostat", "P51G", "nasa_10_nf_tr", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S11", NA, NA, "PAID", NA) %>%  -->
+<!--   add_dict_entry("CapFormFinFirm", "Gross Fixed Capital Financial Corporations", "eurostat", "P51G", "nasa_10_nf_tr", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S12", NA, NA, "PAID", NA) %>% -->
+<!--   add_dict_entry("HousePriceIndex", "House Price Index", "eurostat", "TOTAL", "prc_hpi_a", "purchase", "A", "DE", "I15_A_AVG", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  -->
+<!--   add_dict_entry("BuildingPermits", "New Residential Building Permits Square Metre Useful Floor Area", "eurostat", "BPRM_SQM", "sts_cobp_a", "indic_bt", "A", "DE", "MIO_M2", "NSA", NA, NA, "CPA_F41001", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) -->
+<!-- ``` -->
+
+
+
 
 ## Adding Data Manually
 
@@ -267,9 +302,9 @@ We save the manually prepared data as `additional_data.xlsx` in the `data_prep` 
 ```{r}
 model_result <- run_model(
   specification = spec,
-  dictionary = dictionary,
+  dictionary = dictionary %>% mutate(geo = "DE"),
   inputdata_directory = "./small_examples/illustration de/data_prep/",
-  save_to_disk = NULL,
+  save_to_disk = "./small_examples/illustration de/data_prep/downloaded_data.xlsx",
   primary_source = "local",
   trend = FALSE,
   saturation.tpval = 0.01,
@@ -318,90 +353,94 @@ We have some outlying periods. At least we cannot see trending behaviour of the 
 # Forecasting
 
 ```{r}
-model_forecast <- forecast_model(model_result, n.ahead = 5, exog_fill_method = "AR")
+model_forecast <- forecast_model(model_result, n.ahead = 5, exog_fill_method = "auto")
 model_forecast
-```
-Subsidies are exploding, looks like its AR model is not working well. Get errors when trying to specify a different `exog_fill_method`.
 
-# Converting the Model to Quarterly Data
-
-Adjust the function to create the dictionary.
-
-```{r}
-add_dict_entry <- function(dict, model_varname, full_name, database, variable_code, dataset_id, var_col, freq, geo,
-                           unit = NA, s_adj = NA, nace_r2 = NA, ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA,
-                           tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA, 
-                           partner = NA, finpos = NA) {
-  dict %>%
-    add_row(model_varname = model_varname, full_name = full_name, database = database, variable_code = variable_code, 
-            dataset_id = dataset_id, var_col = var_col, freq = freq, geo = geo, unit = unit, s_adj = s_adj, 
-            nace_r2 = nace_r2, ipcc_sector = ipcc_sector, cpa2_1 = cpa2_1, siec = siec, sector = sector, tax = tax, 
-            currency = currency, direct = direct, co_nco = co_nco, train = train, vehicle = vehicle, age = age, 
-            partner = partner, finpos = finpos) %>%
-    return()
-}
+model_forecast_ar <- forecast_model(model_result, n.ahead = 5, exog_fill_method = "AR")
+model_forecast_last <- forecast_model(model_result, n.ahead = 5, exog_fill_method = "last")
 ```
 
-```{r}
-dictionary <- tibble(model_varname = "Supply", full_name = "Total Supply", database = NA, variable_code = NA, dataset_id = NA, var_col = NA, freq = NA, geo = NA, unit = NA, s_adj = NA, nace_r2 = NA, ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA, tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA, partner = NA, finpos = NA) %>% 
-  add_dict_entry("Demand", "Total Demand", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("GDPOutput", "GDP Output Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("GDPExpenditure", "GDP Expenditure Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("Taxes", "Product Taxes", "eurostat", "D21REC", "gov_10q_ggnfa", "na_item", "Q", "DE", "MIO_EUR", "NSA", NA, NA, NA, NA, "S13", NA, NA, NA, NA) %>% 
-  add_dict_entry("Subsidies", "Product Subsidies", "eurostat", "D31PAY", "gov_10q_ggnfa", "na_item", "Q", "DE", "MIO_EUR", "NSA", NA, NA, NA, NA, "S13", NA, NA, NA, NA) %>% 
-  add_dict_entry("VAAgriculture", "Gross Value Added Agriculture", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "A", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAIndustry", "Gross Value Added Industry except Construction", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "B-E", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAConstruction", "Gross Value Added Construction", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "F", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VARetail", "Gross Value Added Wholesail and Retail Trade, Transportation and Storage, Accommodation and Food Service Activities", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "G-I", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAInformation", "Gross Value Added Information and Communication", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "J", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAFinance", "Gross Value Added Financial and Insurance Activities", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "K", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VARealEstate", "Gross Value Added Real Estate Services", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "L", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAService", "Gross Value Added Professional, Scientific, Technical, Administration and Support Service Activities", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "M_N", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAGov", "Gross Value Added Public Administration, Defence, Education, Human Health and Social Work Activities", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "O-Q", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("VAOther", "Gross Value Added Other Services", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "R-U", NA, NA, NA, NA, NA, NA, NA, NA) %>%
-  add_dict_entry("ConsHH", "Household and NPISH Final Consumption Expenditure", "eurostat", "P31_S14_S15", "namq_10_gdp", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("ConsGov", "Government Final Consumption Expenditure", "eurostat", "P3_S13", "namq_10_gdp", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("Exports", "Exports of Goods and Services", "eurostat", "P6", "namq_10_gdp", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("Imports", "Imports of Goods and Services", "eurostat", "P7", "namq_10_gdp", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("REER", "Real Effective Exchange Rate", "eurostat", "REER_IC42_CPI", "ert_eff_ic_q", "exch_rt", "Q", "DE", "I15", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("IncomeHH", "Gross Disposable Income Households and Non-Profit Institutions Serving Households in Mio EUR", "eurostat", "B6G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S14_S15", NA, NA, "RECV", NA) %>% 
-  add_dict_entry("CapFormHH", "Gross Fixed Capital Formation Households", "eurostat", "P51G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S14_S15", NA, NA, "PAID", NA) %>% 
-  add_dict_entry("CapFormGov", "Gross Fixed Capital Formation Government", "eurostat", "P51G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S13", NA, NA, "PAID", NA) %>% 
-  add_dict_entry("CapFormFirm", "Gross Fixed Capital Non-Financial Corporations", "eurostat", "P51G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S11", NA, NA, "PAID", NA) %>% 
-  add_dict_entry("CapFormFinFirm", "Gross Fixed Capital Financial Corporations", "eurostat", "P51G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S12", NA, NA, "PAID", NA) %>%
-  add_dict_entry("FinWealthHH", "Household Financial Net Worth in Mio EUR", "eurostat", "BF90", "nasq_10_f_bs", "na_item", "Q", "DE", "MIO_EUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA, "LIAB") %>% # caution: unlike annual data, this only exists non-consolidated
-  add_dict_entry("HousePriceIndex", "House Price Index", "eurostat", "TOTAL", "prc_hpi_q", "purchase", "Q", "DE", "I15_Q", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("BuildingPermits", "New Residential Building Permits Square Metre Useful Floor Area", "eurostat", "BPRM_SQM", "sts_cobp_q", "indic_bt", "Q", "DE", "I15", "NSA", NA, NA, "CPA_F41001", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% # is index now, not area
-# the following only exist annually  
-#  add_dict_entry("HouseWealthHH", "Household Dwellings Assets", "eurostat", "N111N", "nama_10_nfa_bs", "asset10", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-#  add_dict_entry("LandWealthHH", "Household Land Assets", "eurostat", "N211N", "nama_10_nfa_bs", "asset10", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-# the following only annually or monthly, so constructed myself
-  add_dict_entry("HCPI", "Harmonised Consumer Price Index All Goods", "local", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
-  add_dict_entry("PriceETS", "Average Annual EU ETS Price, Nominal", "local", "PriceETS", NA, "na_item", NA, "DE", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% 
-  add_dict_entry("PriceOil", "Average Crude Brent Oil Price in USD, Nominal", "local", "PriceOil", NA, "na_item", NA, "DE", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA)
-```
+<!-- Subsidies are exploding, looks like its AR model is not working well. Get errors when trying to specify a different `exog_fill_method`. -->
 
-Since HCPI is only available annually or monthly, we create quarterly data ourselves.
+<!-- # Converting the Model to Quarterly Data -->
 
-```{r}
-hicp <- eurostat::get_eurostat("prc_hicp_midx", filters = list(geo = "DE", freq = "M", coicop = "CP00", unit = "I15")) %>% 
-  select(time, values) %>% 
-  mutate(quarter = quarter(time),
-         year = year(time)) %>% 
-  group_by(year, quarter) %>% 
-  summarise(values = mean(values)) %>% 
-  ungroup() %>% 
-  mutate(month = case_when(quarter == 1L ~ "01",
-                           quarter == 2L ~ "04",
-                           quarter == 3L ~ "07",
-                           quarter == 4L ~ "10"),
-         time = as.Date(paste0(year, "-", month, "-01"))) %>%
-  select(time, values) %>% 
-  mutate(geo = "DE",
-         na_item = "HCPI") %>% 
-  arrange(time)
-writexl::write_xlsx(hicp, path = "./small_examples/illustration de/data_prep_quarterly/additional_data.xlsx")
-```
+<!-- Adjust the function to create the dictionary. -->
+
+<!-- ```{r} -->
+<!-- add_dict_entry <- function(dict, model_varname, full_name, database, variable_code, dataset_id, var_col, freq, geo, -->
+<!--                            unit = NA, s_adj = NA, nace_r2 = NA, ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA, -->
+<!--                            tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA,  -->
+<!--                            partner = NA, finpos = NA) { -->
+<!--   dict %>% -->
+<!--     add_row(model_varname = model_varname, full_name = full_name, database = database, variable_code = variable_code,  -->
+<!--             dataset_id = dataset_id, var_col = var_col, freq = freq, geo = geo, unit = unit, s_adj = s_adj,  -->
+<!--             nace_r2 = nace_r2, ipcc_sector = ipcc_sector, cpa2_1 = cpa2_1, siec = siec, sector = sector, tax = tax,  -->
+<!--             currency = currency, direct = direct, co_nco = co_nco, train = train, vehicle = vehicle, age = age,  -->
+<!--             partner = partner, finpos = finpos) %>% -->
+<!--     return() -->
+<!-- } -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- dictionary <- tibble(model_varname = "Supply", full_name = "Total Supply", database = NA, variable_code = NA, dataset_id = NA, var_col = NA, freq = NA, geo = NA, unit = NA, s_adj = NA, nace_r2 = NA, ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA, tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA, partner = NA, finpos = NA) %>% -->
+<!--   add_dict_entry("Demand", "Total Demand", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("GDPOutput", "GDP Output Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("GDPExpenditure", "GDP Expenditure Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("Taxes", "Product Taxes", "eurostat", "D21REC", "gov_10q_ggnfa", "na_item", "Q", "DE", "MIO_EUR", "NSA", NA, NA, NA, NA, "S13", NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("Subsidies", "Product Subsidies", "eurostat", "D31PAY", "gov_10q_ggnfa", "na_item", "Q", "DE", "MIO_EUR", "NSA", NA, NA, NA, NA, "S13", NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("VAAgriculture", "Gross Value Added Agriculture", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "A", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("VAIndustry", "Gross Value Added Industry except Construction", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "B-E", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("VAConstruction", "Gross Value Added Construction", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "F", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("VARetail", "Gross Value Added Wholesail and Retail Trade, Transportation and Storage, Accommodation and Food Service Activities", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "G-I", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("VAInformation", "Gross Value Added Information and Communication", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "J", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("VAFinance", "Gross Value Added Financial and Insurance Activities", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "K", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("VARealEstate", "Gross Value Added Real Estate Services", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "L", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("VAService", "Gross Value Added Professional, Scientific, Technical, Administration and Support Service Activities", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "M_N", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("VAGov", "Gross Value Added Public Administration, Defence, Education, Human Health and Social Work Activities", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "O-Q", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("VAOther", "Gross Value Added Other Services", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "R-U", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("ConsHH", "Household and NPISH Final Consumption Expenditure", "eurostat", "P31_S14_S15", "namq_10_gdp", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("ConsGov", "Government Final Consumption Expenditure", "eurostat", "P3_S13", "namq_10_gdp", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("Exports", "Exports of Goods and Services", "eurostat", "P6", "namq_10_gdp", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("Imports", "Imports of Goods and Services", "eurostat", "P7", "namq_10_gdp", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("REER", "Real Effective Exchange Rate", "eurostat", "REER_IC42_CPI", "ert_eff_ic_q", "exch_rt", "Q", "DE", "I15", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("IncomeHH", "Gross Disposable Income Households and Non-Profit Institutions Serving Households in Mio EUR", "eurostat", "B6G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S14_S15", NA, NA, "RECV", NA) %>% -->
+<!--   add_dict_entry("CapFormHH", "Gross Fixed Capital Formation Households", "eurostat", "P51G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S14_S15", NA, NA, "PAID", NA) %>% -->
+<!--   add_dict_entry("CapFormGov", "Gross Fixed Capital Formation Government", "eurostat", "P51G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S13", NA, NA, "PAID", NA) %>% -->
+<!--   add_dict_entry("CapFormFirm", "Gross Fixed Capital Non-Financial Corporations", "eurostat", "P51G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S11", NA, NA, "PAID", NA) %>% -->
+<!--   add_dict_entry("CapFormFinFirm", "Gross Fixed Capital Financial Corporations", "eurostat", "P51G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S12", NA, NA, "PAID", NA) %>% -->
+<!--   add_dict_entry("FinWealthHH", "Household Financial Net Worth in Mio EUR", "eurostat", "BF90", "nasq_10_f_bs", "na_item", "Q", "DE", "MIO_EUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA, "LIAB") %>% # caution: unlike annual data, this only exists non-consolidated -->
+<!--   add_dict_entry("HousePriceIndex", "House Price Index", "eurostat", "TOTAL", "prc_hpi_q", "purchase", "Q", "DE", "I15_Q", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("BuildingPermits", "New Residential Building Permits Square Metre Useful Floor Area", "eurostat", "BPRM_SQM", "sts_cobp_q", "indic_bt", "Q", "DE", "I15", "NSA", NA, NA, "CPA_F41001", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% # is index now, not area -->
+<!-- # the following only exist annually -->
+<!-- #  add_dict_entry("HouseWealthHH", "Household Dwellings Assets", "eurostat", "N111N", "nama_10_nfa_bs", "asset10", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!-- #  add_dict_entry("LandWealthHH", "Household Land Assets", "eurostat", "N211N", "nama_10_nfa_bs", "asset10", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!-- # the following only annually or monthly, so constructed myself -->
+<!--   add_dict_entry("HCPI", "Harmonised Consumer Price Index All Goods", "local", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("PriceETS", "Average Annual EU ETS Price, Nominal", "local", "PriceETS", NA, "na_item", NA, "DE", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>% -->
+<!--   add_dict_entry("PriceOil", "Average Crude Brent Oil Price in USD, Nominal", "local", "PriceOil", NA, "na_item", NA, "DE", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) -->
+<!-- ``` -->
+
+<!-- Since HCPI is only available annually or monthly, we create quarterly data ourselves. -->
+
+<!-- ```{r} -->
+<!-- hicp <- eurostat::get_eurostat("prc_hicp_midx", filters = list(geo = "DE", freq = "M", coicop = "CP00", unit = "I15")) %>%  -->
+<!--   select(time, values) %>%  -->
+<!--   mutate(quarter = quarter(time), -->
+<!--          year = year(time)) %>%  -->
+<!--   group_by(year, quarter) %>%  -->
+<!--   summarise(values = mean(values)) %>%  -->
+<!--   ungroup() %>%  -->
+<!--   mutate(month = case_when(quarter == 1L ~ "01", -->
+<!--                            quarter == 2L ~ "04", -->
+<!--                            quarter == 3L ~ "07", -->
+<!--                            quarter == 4L ~ "10"), -->
+<!--          time = as.Date(paste0(year, "-", month, "-01"))) %>% -->
+<!--   select(time, values) %>%  -->
+<!--   mutate(geo = "DE", -->
+<!--          na_item = "HCPI") %>%  -->
+<!--   arrange(time) -->
+<!-- writexl::write_xlsx(hicp, path = "./small_examples/illustration de/data_prep_quarterly/additional_data.xlsx") -->
+<!-- ``` -->
 
 Due to data availability, we had to make some changes to the specification.
 
@@ -423,12 +462,65 @@ spec <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), independen
   add_row(type = "n", dependent = "Exports", independent = "REER")
 ```
 
+
+
+# Moritz part
+
+<!-- ```{r} -->
+<!-- moritz_dict <- read_csv("small_examples/illustration de/moritz_dict.csv") -->
+<!-- dictionary <- bind_rows(dictionary, moritz_dict %>% filter(!model_varname %in% unique(dictionary$model_varname))) -->
+<!-- ``` -->
+
+
+```{r}
+# potential further variables to add: 
+# ElectrCons
+
+spec_moritz <- dplyr::tibble(
+  type = c(
+    "n",
+    "n",
+    "n",
+    "n",
+    "n",
+    "n",
+    "n"
+  ),
+  dependent = c(
+    "EmiCO2Industry",
+    "EmiCH4Livestock",
+    "Flights",
+    "EmiCO2Aviation",
+    "RoadFreight",
+    "EmiCO2Road",
+    "EmiCO2Residential"
+  ),
+  independent = c(
+    "VAIndustry",
+    "Subsidies + Slaughter",
+    "ConsHH + HICP_AviaInt",
+    "Flights + ConsHH",
+    "ConsHH + HICP_Diesel + HICP_Petrol + Taxes",
+    "RoadFreight + ConsHH + Taxes + HICP_Diesel + HICP_Petrol",
+    "ConsHH + HICP_Electricity + FinConsExpHH"
+  )
+)
+```
+
+
+```{r}
+spec <- bind_rows(spec, spec_moritz)
+```
+
+
+
+
 ```{r}
 model_result <- run_model(
   specification = spec,
-  dictionary = dictionary,
+  dictionary = dictionary %>% mutate(geo = "DE"),
   inputdata_directory = "./small_examples/illustration de/data_prep_quarterly/",
-  save_to_disk = NULL,
+  save_to_disk = "./small_examples/illustration de/data_prep_quarterly/trial_moritz.xlsx",
   primary_source = "local",
   trend = FALSE,
   saturation.tpval = 0.01,
@@ -437,11 +529,19 @@ model_result <- run_model(
   plot = FALSE
 )
 ```
+
 ```{r}
 model_result
 ```
 
 Assess model fit
+
+**Note from Moritz**
+- Issues with Flights 
+- Issues with CO2 Residential
+
+Both potentially data issues
+
 
 ```{r}
 DInventories_stat <- eurostat::get_eurostat("namq_10_gdp", filters = list(geo = "DE", na_item = "P52", unit = "CP_MEUR", s_adj = "NSA")) %>% 
@@ -472,15 +572,21 @@ ggplot(DInvVal_comp) +
 ```
 This looks pretty good.
 
+
 Forecasting
 
 ```{r}
 model_forecast <- forecast_model(model_result, n.ahead = 12, exog_fill_method = "auto")
+model_forecast2 <- forecast_model(model_result, n.ahead = 12, exog_fill_method = "AR")
+model_forecast3 <- forecast_model(model_result, n.ahead = 12, exog_fill_method = "last")
 model_forecast
 ```
 Error (no error for "auto" if remove HCIP from the equations).
 
 # Adapting Quarterly Model to Austria
+
+**Note from Moritz**: Not run for Austria yet!
+
 
 First, remove HCPI from specification b/c was created manually for Germany.
 
