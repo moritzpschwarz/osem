@@ -32,6 +32,7 @@
 #'
 
 plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
+                                        first_date = NULL,
                                         #exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE,
                                         ...){
 
@@ -43,8 +44,13 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
   share_to_show <- 1 - (ifelse((1 - x$args$sample_share) * 2 <= 1, (1 - x$args$sample_share) * 2, 1))
   time_to_show <- x$args$all_times[ceiling(length(x$args$all_times) * share_to_show):length(x$args$all_times)]
 
-  share_to_show_hist <- 1 - (ifelse((1 - (x$args$sample_share - 0.1)) * 2 <= 1, (1 - (x$args$sample_share -  0.1)) * 2, 1))
-  time_to_show_hist <- x$args$all_times[ceiling(length(x$args$all_times) * share_to_show_hist):length(x$args$all_times)]
+  if(!is.null(first_date)){
+    time_to_show_hist <- time_to_show[time_to_show >= as.Date(first_date)]
+  } else {
+    share_to_show_hist <- 1 - (ifelse((1 - (x$args$sample_share - 0.1)) * 2 <= 1, (1 - (x$args$sample_share -  0.1)) * 2, 1))
+    time_to_show_hist <- x$args$all_times[ceiling(length(x$args$all_times) * share_to_show_hist):length(x$args$all_times)]
+  }
+
 
   extract_dep_vars <- unique(x$args$dep_vars)
 
