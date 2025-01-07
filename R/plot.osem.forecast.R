@@ -82,7 +82,6 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     names %>%
     stringr::str_detect(., "^ln.") -> to_exponentiate
 
-
   central_forecasts %>%
     dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
     dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
@@ -158,12 +157,15 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   # EXOGENOUS FORECASTS --------
   x$exog_data_nowcast %>%
     dplyr::select(-dplyr::any_of(c("q_1","q_2","q_3","q_4"))) %>%
-    tidyr::pivot_longer(-"time", values_to = "values", names_to = "na_item") %>%
-    #dplyr::bind_rows(last_hist_value %>% dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables")) %>%
-    dplyr::arrange(.data$time) %>%
-    dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") %>%
-    {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}} -> exog_forecasts
 
+    {if(ncol(.) > 1){ # checks if any exogenous variables (alternative would be entire model just a collection of AR models)
+      tidyr::pivot_longer(.,-"time", values_to = "values", names_to = "na_item") %>%
+        dplyr::arrange(.data$time) %>%
+        dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") %>%
+        {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}}
+    } else {
+      NULL
+    }} -> exog_forecasts
 
   # LAST VALUES -------------------------------------------------------------
   # here we get the last fitted value
@@ -204,11 +206,12 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   } else {nowcast_present <- NULL}
 
   ## Exogenous Forecasts ---
-  exog_forecasts %>%
-    dplyr::bind_rows(last_hist_value %>%
+  if(!is.null(exog_forecasts)){
+    exog_forecasts %>%
+      dplyr::bind_rows(last_hist_value %>%
                        dplyr::filter(.data$na_item %in% unique(exog_forecasts$na_item))) %>%
-    dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") -> exog_forecasts
-
+      dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") -> exog_forecasts
+  }
 
   ## Central Forecasts ----
 
@@ -268,7 +271,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     dplyr::mutate(fit = factor(.data$fit, levels = c("Observation","Insample Fit", "Nowcast", "Forecast")))
 
   ggplot_options <- list(
-    if (!exclude.exogenous) {ggplot2::geom_line(data = exog_forecasts, ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit))} else {NULL}
+    if (!exclude.exogenous & !is.null(exog_forecasts)) {ggplot2::geom_line(data = exog_forecasts, ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit))} else {NULL}
   )
 
   #"#440154FF" "#3B528BFF" "#21908CFF" "#5DC863FF" "#FDE725FF"
