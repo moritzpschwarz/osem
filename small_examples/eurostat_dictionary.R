@@ -118,7 +118,6 @@ dictionary <- dictionary %>%
   add_dict_entry("GDPExpenditure", "GDP Expenditure Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("Taxes", "Product Taxes", "eurostat", "D21REC", "gov_10q_ggnfa", "na_item", "Q", "DE", "MIO_EUR", "NSA", NA, NA, NA, NA, "S13", NA, NA, NA, NA) %>%
   add_dict_entry("Subsidies", "Product Subsidies", "eurostat", "D31PAY", "gov_10q_ggnfa", "na_item", "Q", "DE", "MIO_EUR", "NSA", NA, NA, NA, NA, "S13", NA, NA, NA, NA) %>%
-  add_dict_entry("TaxesLessSubsidies", "Product Taxes less Product Subsidies", "eurostat", "D21X31", "namq_10_a10", "na_item", "Q", "DE", "MIO_EUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("VAAgriculture", "Gross Value Added Agriculture", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "A", NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("VAIndustry", "Gross Value Added Industry except Construction", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "B-E", NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("VAConstruction", "Gross Value Added Construction", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "CP_MEUR", "NSA", "F", NA, NA, NA, NA, NA, NA, NA, NA) %>%
@@ -182,7 +181,7 @@ jonas_quarterly <- structure(list(model_varname = c("Supply", "Demand", "GDPOutp
                             "eurostat", "eurostat", "eurostat", "eurostat", "eurostat", "eurostat",
                             "eurostat", "eurostat", "eurostat", "local", "local", "local"),
                variable_code = c(NA,
-                                 NA, NA, NA, "D21REC", "D31PAY", "D21XD31", "B1G", "B1G", "B1G", "B1G", "B1G",
+                                 NA, NA, NA, "D21REC", "D31PAY", "D21X31", "B1G", "B1G", "B1G", "B1G", "B1G",
                                  "B1G", "B1G", "B1G", "B1G", "B1G", "P31_S14_S15", "P3_S13", "P6",
                                  "P7", "REER_IC42_CPI", "B6G", "P51G", "P51G", "P51G", "P51G",
                                  "BF90", "TOTAL", "BPRM_SQM", NA, "PriceETS", "PriceOil"),
