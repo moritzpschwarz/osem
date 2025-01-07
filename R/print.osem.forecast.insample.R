@@ -38,7 +38,7 @@ print.osem.forecast.insample <- function(x, plot = TRUE, full_names = FALSE, ...
     tidyr::pivot_wider(id_cols = c("start","method"),
                        names_from = "na_item",
                        values_from = "rmsfe") %>%
-    dplyr::relocate(.data$`Total RMSFE`, .after = "method") %>%
+    dplyr::relocate("Total RMSFE", .after = "method") %>%
     dplyr::rename(Start = "start",
                   Method = "method") -> rmsfe_table
 
