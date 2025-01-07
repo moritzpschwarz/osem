@@ -13,7 +13,7 @@ identity_module <- function(module, data, classification) {
 
   # original specification (identity/definition)
   rhs <- module$independent
-  indep <- strsplits(module$independent, splits = c(" \\+ ", " \\- "))
+  indep <- strsplits(module$independent, splits = c(" \\+ ", " \\- ", " / "))
   indep <- gsub(" ", "", indep)
 
   # new fitted value name

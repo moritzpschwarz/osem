@@ -7,11 +7,15 @@
 #'
 
 strsplits <- function(x, splits, ...) {
-  for (tosplit in splits)
-  {
-    x <- unlist(strsplit(x, tosplit, ...))
+  if (identical(x, "")) {
+    return(NULL)
+  } else {
+    for (tosplit in splits)
+    {
+      x <- unlist(strsplit(x, tosplit, ...))
+    }
+    return(x[!x == ""]) # Remove empty values
   }
-  return(x[!x == ""]) # Remove empty values
 }
 
 
@@ -29,7 +33,7 @@ classify_variables <- function(specification) {
   dep <- specification$dependent
   indep <- specification$independent
 
-  indep <- strsplits(indep, splits = c("\\+", "\\-"))
+  indep <- strsplits(indep, splits = c("\\+", "\\-", "/"))
   indep <- gsub(" ", "", indep)
 
   vars.all <- union(dep, indep)

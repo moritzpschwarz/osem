@@ -64,11 +64,15 @@ check_config_table <- function(config_table) {
 
   # Define a strsplits function that is used below
   strsplits <- function(x, splits, ...) {
-    for (split in splits)
-    {
-      x <- unlist(strsplit(x, split, ...))
+    if (identical(x, "")) {
+      return(NULL)
+    } else {
+      for (split in splits)
+      {
+        x <- unlist(strsplit(x, split, ...))
+      }
+      return(x[!x == ""]) # Remove empty values
     }
-    return(x[!x == ""]) # Remove empty values
   }
 
   # check that there is no direct endogeneity (a RHS variable appears on the LHS in the same equation)
@@ -78,7 +82,7 @@ check_config_table <- function(config_table) {
     # use the splitvars function to separate the specification table into individual pieces in a list
     dplyr::mutate(splitvars = list(strsplits(
       .data$independent,
-      c("\\-", "\\+")
+      c("\\-", "\\+", "/")
     ))) %>%
     dplyr::ungroup() %>%
 
@@ -131,7 +135,7 @@ check_config_table <- function(config_table) {
     dplyr::rowwise() %>%
     dplyr::mutate(splitvars = list(strsplits(
       .data$independent,
-      c("\\-", "\\+")
+      c("\\-", "\\+", "/")
     ))) %>%
     dplyr::ungroup() %>%
 
@@ -219,7 +223,8 @@ check_config_table <- function(config_table) {
     dplyr::arrange(.data$order) %>%
     dplyr::mutate(
       independent = gsub("\\+", " + ", .data$independent),
-      independent = gsub("\\-", " - ", .data$independent)
+      independent = gsub("\\-", " - ", .data$independent),
+      independent = gsub("/", " / ", .data$independent)
     ) %>%
     return()
 }
