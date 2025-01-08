@@ -79,10 +79,19 @@ nowcast_setup_estimated_relationships <- function(model,
             # where there are nowcast values but not original ones, take now the nowcast ones
             dplyr::mutate(values = dplyr::case_when(
               !is.na(.data$values_nowcast) & is.na(.data$values) ~ .data$values_nowcast, TRUE ~ .data$values))
-        } else {.}} %>%
+        } else {.}} -> missing_vals_intermed
 
-        # now we check if we need to log them
-        dplyr::mutate(values = dplyr::case_when(!is.na(.data$values) & grepl("^ln.",.data$na_item) ~ log(.data$values), TRUE ~ .data$values)) %>%
+      missing_vals_intermed %>%
+        # check if any of the values by na_item are below 0
+        dplyr::mutate(log_possible = all(.data$values > 0, na.rm = TRUE), .by = "na_item") %>%
+        dplyr::mutate(values_to_log = dplyr::case_when(.data$log_possible & !is.na(.data$values) & grepl("^ln.",.data$na_item) ~ .data$values,
+                                                       TRUE ~ NA)) %>%
+        # now we check if we need to log them or use asinh
+        dplyr::mutate(values = dplyr::case_when(!is.na(.data$values_to_log) ~ log(.data$values_to_log),
+                                              !.data$log_possible & !is.na(.data$values) & grepl("^ln.",.data$na_item) ~ asinh(.data$values),
+                                              TRUE ~ .data$values)) %>%
+
+        dplyr::select(-c("log_possible","values_to_log")) %>%
 
         dplyr::select("time", "na_item", new_values = "values") %>%
         tidyr::drop_na() -> values_to_replace

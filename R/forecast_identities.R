@@ -37,8 +37,6 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       .[[1]] %>%
       .$use_logs
 
-
-
     identity_logs <- c(identity_logs, ifelse(mvar_logs %in% c("both","x") || is.null(mvar_logs), TRUE, FALSE))
 
     mvar_euname <- model$module_collection %>%
@@ -87,7 +85,7 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
     }
 
 
-    if(ncol(identity_pred)==0){
+    if(ncol(identity_pred) == 0){
       identity_pred <- mvar_tibble
       identity_pred.all <- mvar_all.estimates.tibble
     } else {
@@ -100,13 +98,31 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
 
   # log all the exogenous columns, if any of the estimated columns is logged
   if(any(identity_logs) && !all(identity_logs)){
+
+    # check which column contains any 0 or negative values
+    log_possible <- apply(identity_pred.all, 2, function(column){
+      if(is.list(column)){
+        column <- unlist(column)
+      }
+      all(column > 0)
+    })
+
+    # we need to turn identity_logs around because those that are true already are already logged
+    do_log <- !identity_logs & log_possible
+    do_asinh <- !identity_logs & !log_possible
+
+    log_cols <- names(identity_pred.all)[do_log]
+    asinh_cols <- names(identity_pred.all)[do_asinh]
+
     identity_pred %>%
-      dplyr::mutate(dplyr::across(dplyr::all_of(names(identity_pred)[!identity_logs]),
-                                  .fns = list(ln = log), .names = "{.fn}.{col}")) %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(log_cols),.fns = log, .names = "ln.{.col}")) %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(asinh_cols),.fns = asinh, .names = "ln.{.col}")) %>%
       dplyr::select(-dplyr::all_of(dplyr::all_of(names(identity_pred)[!identity_logs]))) -> identity_pred
 
     identity_pred.all %>%
-      dplyr::mutate(dplyr::across(dplyr::all_of(names(identity_pred.all)[!identity_logs]), ~purrr::map(.,log), .names = "ln.{.col}")) %>%
+      #dplyr::mutate(dplyr::across(dplyr::all_of(names(identity_pred.all)[!identity_logs]), ~purrr::map(.,log), .names = "ln.{.col}")) %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(log_cols), ~purrr::map(.,function(x){log(x)}), .names = "ln.{.col}")) %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(asinh_cols), ~purrr::map(.,function(x){asinh(x)}), .names = "ln.{.col}")) %>%
       dplyr::select(-dplyr::all_of(dplyr::all_of(names(identity_pred.all)[!identity_logs]))) -> identity_pred.all
   }
 
@@ -142,7 +158,7 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
     # an identity is never logged - therefore exponentiate the first column if that is logged
     identity_pred.all[,1, drop = FALSE] %>%
       dplyr::mutate(dplyr::across(1, ~purrr::map(.,exp)))
-  } else{
+  } else {
     identity_pred.all[,1, drop = FALSE]}
 
   for(col_cycle in 2:ncol(identity_pred.all)){
