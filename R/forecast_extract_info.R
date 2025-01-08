@@ -134,7 +134,7 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
       dplyr::mutate(.,
                     #dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
                     #dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
-                    dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = ~ if (any(. <= 0)) {asinh(.)} else {log(.)}, .names = "ln.{.col}")
+                    dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = ~ if (any(. <= 0, na.rm = TRUE)) {asinh(.)} else {log(.)}, .names = "ln.{.col}")
       )
     } else {.}} -> current_pred_raw
 
