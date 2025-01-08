@@ -28,7 +28,7 @@ identity_module <- function(module, data, classification) {
   # translate
   if(nrow(trans) > 0){
     for (i in 1:NROW(trans)) {
-      rhs <- gsub(pattern = trans[i, "var"], replacement = trans[i, "vartrans"], x = rhs)
+      rhs <- gsub(pattern = paste0("\\b", trans[i, "var"], "\\b"), replacement = trans[i, "vartrans"], x = rhs)
     }
   }
 
