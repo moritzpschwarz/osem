@@ -121,16 +121,11 @@
 <span class="r-in"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">spec</span>, dictionary <span class="op">=</span> <span class="cn">NULL</span>,</span></span>
 <span class="r-in"><span>inputdata_directory <span class="op">=</span> <span class="cn">NULL</span>, primary_source <span class="op">=</span> <span class="st">"download"</span>,</span></span>
 <span class="r-in"><span>save_to_disk <span class="op">=</span> <span class="cn">NULL</span>, present <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table namq_10_a10 cached at /tmp/Rtmpb3d2BN/eurostat/19d1eb40c3b65782d7a4291ef4604d7e.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table namq_10_gdp cached at /tmp/Rtmpb3d2BN/eurostat/acb856c710a5db9a66c375d7a439564a.rds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> --- Estimation begins ---</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimating Import = FinConsExpHH + GCapitalForm </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing TOTS = GValueAdd + Import </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing StatDiscrep = TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export </span>
-<span class="r-plt img"><img src="plot.osem-1.png" alt="" width="700" height="433"></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Table namq_10_a10 cached at /tmp/RtmpIiBrWL/eurostat/3b455d4e1db5cf63a9851337edd80f43.rds</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>URL 'https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/namq_10_gdp?format=TSV&amp;compressed=true': Timeout of 120 seconds was reached</span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in eurostat::get_eurostat(id = eurostat_dataset_ids[i], select_time = toupper(freq_dataset)):</span> get_eurostat_raw fails with the id namq_10_gdp</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">a</span><span class="op">)</span></span></span>
-<span class="r-plt img"><img src="plot.osem-2.png" alt="" width="700" height="433"></span>
+<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'a' not found</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
