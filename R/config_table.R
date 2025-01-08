@@ -82,7 +82,7 @@ check_config_table <- function(config_table) {
     # use the splitvars function to separate the specification table into individual pieces in a list
     dplyr::mutate(splitvars = list(strsplits(
       .data$independent,
-      c("\\-", "\\+", "/")
+      c("\\-", "\\+", "/", "\\*")
     ))) %>%
     dplyr::ungroup() %>%
 
@@ -135,7 +135,7 @@ check_config_table <- function(config_table) {
     dplyr::rowwise() %>%
     dplyr::mutate(splitvars = list(strsplits(
       .data$independent,
-      c("\\-", "\\+", "/")
+      c("\\-", "\\+", "/", "\\*")
     ))) %>%
     dplyr::ungroup() %>%
 
@@ -224,7 +224,8 @@ check_config_table <- function(config_table) {
     dplyr::mutate(
       independent = gsub("\\+", " + ", .data$independent),
       independent = gsub("\\-", " - ", .data$independent),
-      independent = gsub("/", " / ", .data$independent)
+      independent = gsub("/", " / ", .data$independent),
+      independent = gsub("\\*", " * ", .data$independent)
     ) %>%
     return()
 }

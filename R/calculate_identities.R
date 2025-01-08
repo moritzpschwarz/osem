@@ -34,8 +34,9 @@ calculate_identities <- function(specification, data, dictionary = NULL) {
     # make sure the column names are not using * as denominator for NACE codes
     # when parsing this, it would appear that we would need to multiply the values
     # therefore changing the denominator from * to _ only for here
+    # UPDATE: do not allow for * in variable names, instead interpret it as multiplication
     dat_tmp %>%
-      dplyr::mutate(!!dep := eval(parse(text = gsub("\\*","_",indep)))) %>%
+      dplyr::mutate(!!dep := eval(parse(text = indep))) %>%
       dplyr::select(-dplyr::any_of("nace_r2")) %>%
       tidyr::pivot_longer(cols = !"time", names_to = "na_item", values_to = "values") -> dat
   }

@@ -13,7 +13,7 @@ identity_module <- function(module, data, classification) {
 
   # original specification (identity/definition)
   rhs <- module$independent
-  indep <- strsplits(module$independent, splits = c(" \\+ ", " \\- ", " / "))
+  indep <- strsplits(module$independent, splits = c(" \\+ ", " \\- ", " / ", " \\* "))
   indep <- gsub(" ", "", indep)
 
   # new fitted value name
@@ -39,8 +39,9 @@ identity_module <- function(module, data, classification) {
   dat_tmp_names <- names(dat_tmp)
 
   dat_tmp %>%
-    dplyr::rename_with(.fn = ~gsub("\\*","_",.)) %>%
-    dplyr::mutate(!!dep.fitted := eval(parse(text = gsub("\\*","_",rhs)))) %>%
+    # Update: do not allow for * in variable name
+    # dplyr::rename_with(.fn = ~gsub("\\*","_",.)) %>%
+    dplyr::mutate(!!dep.fitted := eval(parse(text = rhs))) %>%
     setNames(c(dat_tmp_names, dep.fitted)) -> fitted
 
   return(fitted)
