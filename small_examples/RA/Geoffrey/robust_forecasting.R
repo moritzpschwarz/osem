@@ -59,16 +59,14 @@ srpredictor1 <- function(data,lag,trend,W,H) {
   last_date <- max(time$y)
 
   # Generate the next `H` dates, incrementing by one day, this will need to be updated to handle quarterly increments
-  new_dates <- seq(last_date + 1, by = "month", length.out = H)
-
-  # Append the new dates to the original data frame
-  time <- rbind(time, data.frame(y= new_dates))
+  forecast_horizion_times <- seq(last_date + 1, by = "month", length.out = H)
 
   for(i in 1:lag){
-    df[[paste0("ly",i)]] <- lag(df$y,i)
+    df[[paste0("ly",i)]] <- lag(df$const,i)
   }
-  df <- replace_dates_rowwise(df)
   browser()
+  #df <- replace_dates_rowwise(df)
+
   df <- df[-c(1:lag),]
   x0 <- as.matrix(df$const)
 
@@ -102,14 +100,24 @@ srpredictor1 <- function(data,lag,trend,W,H) {
     }
     browser()
     x2 <- as.matrix(df3)
+    value <- as.data.frame(c(1,sum(x2[(nrow(x2)+1-W):(nrow(x2)),1]),sum(x2[(nrow(x2)-W):(nrow(x2)-1),1]),x2[nrow(x2),]))
     forecasted_value <- (parw %*% c(1,sum(x2[(nrow(x2)+1-W):(nrow(x2)),1]),sum(x2[(nrow(x2)-W):(nrow(x2)-1),1]),x2[nrow(x2),]))
     #update df2
     df2 <- rbind(df2,data.frame("const" = forecasted_value))
     #convert df2 back to df to perform df operations
 
   }
-  #df2[c((nrow(df)+1):nrow(df2)),]
+
+  #combine the forecasts with the time stamps
   browser()
+
+  forecasted_values <- df2[c((nrow(df)+1):nrow(df2)),]
+
+  forecasts <- cbind(data.frame(forecast_horizion_times),data.frame(forecasted_values))
+
+  return(forecasts)
+  #df2[c((nrow(df)+1):nrow(df2)),]
+
 } # Castle Clements and Hendry (2015)
 
 srpredictor2 <- function(data,lag,trend,W,H) {
@@ -181,7 +189,7 @@ srw <- function(data,lag,W,H) {
 lag <- 12     # number of lags
 H <- 12      # number of forecast horizons
 W <- 1       #  Local window smoothing - usually set equal to frequency of series
-trend = TRUE  # linear trend?
+trend = FALSE  # linear trend?
 
 
 
