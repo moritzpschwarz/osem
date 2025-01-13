@@ -229,9 +229,8 @@ forecast_exogenous_values <- function(model, exog_vars,
        || exog_fill_method == "martinez_castle_hendry" || exog_fill_method == "martinez_castle_hendry_rw"))
   {
     if(!quiet){
-      message(paste0("No exogenous values provided. Model will forecast the exogenous values with the auto.arima()."))
+      message(paste0("No exogenous values provided. Model will forecast the exogenous values with the auto.arima() or specified forecasting method."))
     }
-
     exog_df_intermed <- model$full_data %>%
       dplyr::filter(.data$na_item %in% exog_vars) %>%
       dplyr::group_by(.data$na_item) %>%
