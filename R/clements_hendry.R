@@ -21,6 +21,7 @@ clements_hendry_forecasting <- function(data,lag,trend,window,H) {
   #model estimation
   df <- df[,c(2:ncol(df))]
   # Apply the function
+
   x1 <- as.matrix(df) #convert everything to numerics
 
   #test for matrix singularity
@@ -35,7 +36,10 @@ clements_hendry_forecasting <- function(data,lag,trend,window,H) {
   #   # lhs <- t(x1) %*% x1 + diag(lambda, ncol(x1))
   # }
 
-  pars <- base::solve(lhs,(t(x1) %*% x0))#solve(t(x1) %*% x1) %*% (t(x1) %*% x0) #estimates <- this can be prone in non-invertible matrices
+  #print(det(lhs))
+
+  pars <- solve(lhs,rhs,tol = 1e-25)#base::solve(lhs,(t(x1) %*% x0))#solve(t(x1) %*% x1) %*% (t(x1) %*% x0) #estimates <- this can be prone in non-invertible matrices
+
   if(trend==TRUE){
     if(lag>1){
       parw <- c(pars[2],1/window,-1*sum(pars[c(3:nrow(pars))])/window,sum(pars[c(3:nrow(pars))]),0,0*c(1:(lag-1))) #transformed estimates

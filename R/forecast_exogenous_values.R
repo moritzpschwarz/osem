@@ -288,7 +288,7 @@ forecast_exogenous_values <- function(model, exog_vars,
       else { #if not set to auto then we go into the if-else block containing our own robust forecasting routines
         if (is.na(lag) || is.na(trend) || is.na(window) ||
             (!is.logical(trend)) ||
-            (!is.numeric(lag) || lag < 1 || lag != as.integer(lag)) ||
+            (!is.numeric(lag) || lag < 0 || lag != as.integer(lag)) ||
             (!is.numeric(window) || window < 1 || window != as.integer(window))) {
           # Actions to take if any condition is true
           if(!quiet){

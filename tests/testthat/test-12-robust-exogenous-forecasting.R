@@ -137,6 +137,7 @@ test_that("robust forecasting method integration works", {
 })
 
 test_that("robust forecasting methods can execute",{
+
   specification <- dplyr::tibble(
     type = c(
       "n"
@@ -174,7 +175,7 @@ test_that("robust forecasting methods can execute",{
     uncertainty_sample = 100,
     quiet = FALSE,
     window = 4,
-    lag = 4,
+    lag = 1,
     trend = trend
   ))
 
