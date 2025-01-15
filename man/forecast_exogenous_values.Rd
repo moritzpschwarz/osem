@@ -11,7 +11,10 @@ forecast_exogenous_values(
   exog_fill_method,
   ar.fill.max,
   n.ahead,
-  quiet
+  quiet,
+  window,
+  lag,
+  trend
 )
 }
 \arguments{

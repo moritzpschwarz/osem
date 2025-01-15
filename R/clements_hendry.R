@@ -11,12 +11,9 @@ clements_hendry_forecasting <- function(data,lag,trend,window,H) {
     names(df) = c("y","const")
   }
 
-  #browser()
-
   for(i in 1:lag){
     df[[paste0("ly",i)]] <- lag(df$const,i)
   }
-
 
   df <- df[-c(1:lag),]
   x0 <- as.matrix(df$const)
@@ -25,24 +22,37 @@ clements_hendry_forecasting <- function(data,lag,trend,window,H) {
   df <- df[,c(2:ncol(df))]
   # Apply the function
   x1 <- as.matrix(df) #convert everything to numerics
-  pars <- solve(t(x1) %*% x1) %*% (t(x1) %*% x0) #estimates
+
+  #test for matrix singularity
+  lhs <- t(x1) %*% x1
+  rhs <- t(x1) %*% x0
+
+  #browser()
+
+  # if (det(lhs) < 1e-8) {
+  #   stop("Matrix is near-singular. implmenet a regularization factor.")
+  #   # lambda <- 1e-8  # Regularization factor
+  #   # lhs <- t(x1) %*% x1 + diag(lambda, ncol(x1))
+  # }
+
+  pars <- base::solve(lhs,(t(x1) %*% x0))#solve(t(x1) %*% x1) %*% (t(x1) %*% x0) #estimates <- this can be prone in non-invertible matrices
   if(trend==TRUE){
     if(lag>1){
-      parw <- c(pars[2],1/window,-1*sum(pars[c(3:nrow(pars))])/W,sum(pars[c(3:nrow(pars))]),0,0*c(1:(lag-1))) #transformed estimates
+      parw <- c(pars[2],1/window,-1*sum(pars[c(3:nrow(pars))])/window,sum(pars[c(3:nrow(pars))]),0,0*c(1:(lag-1))) #transformed estimates
     } else {
-      parw <- c(pars[2],1/window,-1*sum(pars[c(3:nrow(pars))])/W,sum(pars[c(3:nrow(pars))]),0) #transformed estimates
+      parw <- c(pars[2],1/window,-1*sum(pars[c(3:nrow(pars))])/window,sum(pars[c(3:nrow(pars))]),0) #transformed estimates
     }
 
   } else {
     if(lag>1){
-      parw <- c(0,1/window,-1*sum(pars[c(2:nrow(pars))])/W,sum(pars[c(2:nrow(pars))]),0,0*c(1:(lag-1))) #transformed estimates
+      parw <- c(0,1/window,-1*sum(pars[c(2:nrow(pars))])/window,sum(pars[c(2:nrow(pars))]),0,0*c(1:(lag-1))) #transformed estimates
     } else {
-      parw <- c(0,1/window,-1*sum(pars[c(2:nrow(pars))])/W,sum(pars[c(2:nrow(pars))]),0) #transformed estimates
+      parw <- c(0,1/window,-1*sum(pars[c(2:nrow(pars))])/window,sum(pars[c(2:nrow(pars))]),0) #transformed estimates
     }
   }
 
+
   #forecasting
-  #browser()
   df2 <- df %>% select("const") #make it so it is a data frame
   for(h in 1:H){
     df3 <- df2
@@ -61,8 +71,6 @@ clements_hendry_forecasting <- function(data,lag,trend,window,H) {
   #combine the forecasts with the time stamps
 
   forecasted_values <- df2[c((nrow(df)+1):nrow(df2)),]
-
-  #forecasts <- cbind(data.frame(forecast_horizion_times),data.frame(forecasted_values))
 
   return(forecasted_values)
 

@@ -33,7 +33,7 @@ martinez_castle_hendry_forecasting <- function(data,lag,trend,window,H) {
     forecasted_value <- (parw2 %*% c(1,sum(x2[(nrow(x1)+1-window):(nrow(x1)),1]),x2[nrow(x1),]))
     df2 <- rbind(df2,data.frame("const" = forecasted_value))
   }
-  browser()
+
 
   forecasted_values <- df2[c((nrow(df)+1):nrow(df2)),]
   return(forecasted_values)

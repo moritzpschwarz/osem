@@ -36,7 +36,7 @@ testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to
 lag <- 12     # number of lags
 H <- 12      # number of forecast horizons
 W <- 1       #  Local window smoothing - usually set equal to frequency of series
-trend = FALSE  # linear trend?
+trend = TRUE  # linear trend?
 
 model <- run_model(specification = specification,
                  dictionary = dict,
@@ -47,13 +47,13 @@ forecast <- forecast_model(
   exog_predictions = NULL,
   n.ahead = 10,
   ci.levels = c(0.5, 0.66, 0.95),
-  exog_fill_method = "martinez_castle_hendry_rw",
+  exog_fill_method = "clements_hendry",
   ar.fill.max = 4,
   plot = TRUE,
   uncertainty_sample = 100,
   quiet = FALSE,
-  window = W,
-  lag = lag,
+  window = 4,
+  lag = 4,
   trend = trend
 )
 

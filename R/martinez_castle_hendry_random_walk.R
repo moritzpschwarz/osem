@@ -26,6 +26,6 @@ martinez_castle_hendry_rw_forecasting <- function(data,lag,window,H) {
     forecasted_value <-(parw %*% c(sum(x2[(nrow(x1)+1-window):(nrow(x1)),1]),x2[nrow(x2),]))
     df2 <- rbind(df2,data.frame("const" = forecasted_value))
   }
-  forecasted_value <-  df2[c((nrow(df)+1):nrow(df2)),]
-  return(forecasted_value)
+  forecasted_values <-  df2[c((nrow(df)+1):nrow(df2)),]
+  return(forecasted_values)
 } # Martinez Castle and Hendry (2022): Smooth Random Walk Generalized to multiple lags
