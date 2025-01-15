@@ -68,7 +68,7 @@ test_that("robust forecasting method integration works", {
     trend = trend
   ))
 
-  #test that program stops if lag < 1
+  #test that program stops if lag < 0
   expect_error( forecast_fail <- forecast_model(
     model,
     exog_predictions = NULL,
@@ -80,7 +80,7 @@ test_that("robust forecasting method integration works", {
     uncertainty_sample = 100,
     quiet = FALSE,
     window = 1,
-    lag = 0.5,
+    lag = -1,
     trend = trend
   ))
 
@@ -133,6 +133,44 @@ test_that("robust forecasting method integration works", {
     trend = 10
   ))
 
+  #test that forcast can still run on 'auto'
+  expect_message( forecast_fail <- forecast_model(
+    model,
+    exog_predictions = NULL,
+    n.ahead = 10,
+    ci.levels = c(0.5, 0.66, 0.95),
+    exog_fill_method = "auto",
+    ar.fill.max = 4,
+    plot = FALSE,
+    uncertainty_sample = 100,
+    quiet = FALSE
+  ),regexp = "No exogenous values")
+
+  #test that forcast can still run on AR
+  expect_message( forecast_fail <- forecast_model(
+    model,
+    exog_predictions = NULL,
+    n.ahead = 10,
+    ci.levels = c(0.5, 0.66, 0.95),
+    exog_fill_method = "AR",
+    ar.fill.max = 4,
+    plot = FALSE,
+    uncertainty_sample = 100,
+    quiet = FALSE
+  ),regexp = "No exogenous values")
+
+  #test that forcast can still run on last
+  expect_message( forecast_fail <- forecast_model(
+    model,
+    exog_predictions = NULL,
+    n.ahead = 10,
+    ci.levels = c(0.5, 0.66, 0.95),
+    exog_fill_method = "last",
+    ar.fill.max = 4,
+    plot = FALSE,
+    uncertainty_sample = 100,
+    quiet = FALSE
+  ),regexp = "No exogenous values")
 
 })
 
