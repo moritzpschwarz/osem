@@ -1,3 +1,17 @@
+#' Martinez Castle Clements Hendry robust forecasting method
+#'
+#'
+#' @param data
+#' @param lag
+#' @param trend
+#' @param window
+#' @param H
+#'
+#' @inheritParams forecast_exogenous_values
+#'
+#' @return a list of forecasted values
+#'
+#'
 martinez_castle_hendry_forecasting <- function(data,lag,trend,window,H) {
 
   #prepping data
@@ -17,10 +31,18 @@ martinez_castle_hendry_forecasting <- function(data,lag,trend,window,H) {
 
   #model estimation
   x1 <- as.matrix(df[,c(2:ncol(df))])
-  pars <- solve(t(x1) %*% x1) %*% (t(x1) %*% x0) #estimates
+
+  #test for matrix singularity
+  lhs <- t(x1) %*% x1
+  rhs <- t(x1) %*% x0
+
+  if (det(lhs) < 1e-8) {
+    stop("Matrix is near-singular. implmenet a regularization factor or alter exogenous dataset.")
+  }
+  pars <- solve(lhs,rhs)#solve(t(x1) %*% x1) %*% (t(x1) %*% x0) #estimates
 
   #forecasting
-  df2 <- df %>% select("const") #make it so it is a data frame
+  df2 <- df %>% select("const")
   for(h in 1:H){
     df3 <- df2
     if(trend==TRUE){
@@ -34,7 +56,6 @@ martinez_castle_hendry_forecasting <- function(data,lag,trend,window,H) {
     df2 <- rbind(df2,data.frame("const" = forecasted_value))
   }
 
-
-  forecasted_values <- df2[c((nrow(df)+1):nrow(df2)),]
+  forecasted_values <- df2[c((nrow(df)+1):nrow(df2)),] #extract forecasted values
   return(forecasted_values)
 } # Martinez Castle and Hendry (2022): Smooth Robust Predictor Generalized to multiple lags

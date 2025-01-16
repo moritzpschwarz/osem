@@ -4,7 +4,9 @@ library(readr)
 library(magrittr)
 library(forecast)
 
-# test of auto.airma forecasting
+
+
+# test of forecasting integration
 
 specification <- dplyr::tibble(
   type = c(
@@ -19,7 +21,7 @@ specification <- dplyr::tibble(
 )
 
 set.seed(123)
-testdata <- dplyr::tibble(time = seq.Date(from = as.Date("1900-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
+testdata <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
                           FinConsExpGov = rnorm(mean = 100, n = length(time)),
                           #HICP_Gas = rnorm(mean = 200, n = length(time)),
                           # simulate an AR1 process with rho = 0.3 and call it HICP_Gas
@@ -33,15 +35,24 @@ testdata_2 <- testdata %>%
 
 testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
 
+test <- read_csv("~/Desktop/OSEM/osem/small_examples/RA/Geoffrey/PCEPI.csv")
+
 lag <- 12     # number of lags
 H <- 12      # number of forecast horizons
 W <- 1       #  Local window smoothing - usually set equal to frequency of series
 trend = TRUE  # linear trend?
 
+f1<-clements_hendry_forecasting(test,lag,trend,W,H)
+
+f2<-martinez_castle_hendry_forecasting(test,lag,trend,W,H)
+
+f3<-martinez_castle_hendry_rw_forecasting(test,lag,W,H)
+
 model <- run_model(specification = specification,
                  dictionary = dict,
                  inputdata_directory = testdata,
                  primary_source = "local")
+
 forecast <- forecast_model(
   model,
   exog_predictions = NULL,
@@ -56,6 +67,8 @@ forecast <- forecast_model(
   lag = 4,
   trend = trend
 )
+
+
 
 
 

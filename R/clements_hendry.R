@@ -1,3 +1,18 @@
+#' Clements Hendry robust forecasting method
+#'
+#'
+#' @param data
+#' @param lag
+#' @param trend
+#' @param window
+#' @param H
+#'
+#' @inheritParams forecast_exogenous_values
+#'
+#' @return a list of forecasted values
+#'
+#'
+#'
 clements_hendry_forecasting <- function(data,lag,trend,window,H) {
 
   #prepping data
@@ -28,17 +43,11 @@ clements_hendry_forecasting <- function(data,lag,trend,window,H) {
   lhs <- t(x1) %*% x1
   rhs <- t(x1) %*% x0
 
-  #browser()
+  if (det(lhs) < 1e-8) {
+    stop("Matrix is near-singular. implmenet a regularization factor or alter exogenous dataset.")
+  }
 
-  # if (det(lhs) < 1e-8) {
-  #   stop("Matrix is near-singular. implmenet a regularization factor.")
-  #   # lambda <- 1e-8  # Regularization factor
-  #   # lhs <- t(x1) %*% x1 + diag(lambda, ncol(x1))
-  # }
-
-  #print(det(lhs))
-
-  pars <- solve(lhs,rhs,tol = 1e-25)#base::solve(lhs,(t(x1) %*% x0))#solve(t(x1) %*% x1) %*% (t(x1) %*% x0) #estimates <- this can be prone in non-invertible matrices
+  pars <- solve(lhs,rhs) #solve(t(x1) %*% x1) %*% (t(x1) %*% x0) #estimates <- this can be prone in non-invertible matrices
 
   if(trend==TRUE){
     if(lag>1){
@@ -54,7 +63,6 @@ clements_hendry_forecasting <- function(data,lag,trend,window,H) {
       parw <- c(0,1/window,-1*sum(pars[c(2:nrow(pars))])/window,sum(pars[c(2:nrow(pars))]),0) #transformed estimates
     }
   }
-
 
   #forecasting
   df2 <- df %>% select("const") #make it so it is a data frame
@@ -72,9 +80,7 @@ clements_hendry_forecasting <- function(data,lag,trend,window,H) {
 
   }
 
-  #combine the forecasts with the time stamps
-
-  forecasted_values <- df2[c((nrow(df)+1):nrow(df2)),]
+  forecasted_values <- df2[c((nrow(df)+1):nrow(df2)),] #extract forecasted values
 
   return(forecasted_values)
 

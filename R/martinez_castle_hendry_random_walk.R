@@ -1,3 +1,18 @@
+#' Martinez Castle Clements Hendry robust forecasting method
+#'
+#'
+#' @param data
+#' @param lag
+#' @param trend
+#' @param window
+#' @param H
+#'
+#' @inheritParams forecast_exogenous_values
+#'
+#' @return a list of forecasted values
+#'
+#'
+
 martinez_castle_hendry_rw_forecasting <- function(data,lag,window,H) {
 
   #prepping data
@@ -12,7 +27,16 @@ martinez_castle_hendry_rw_forecasting <- function(data,lag,window,H) {
 
   #model estimation
   x1 <- as.matrix(df[,c(2:ncol(df))])
-  pars <- solve(t(x1) %*% x1) %*% (t(x1) %*% x0) #estimates
+
+  #test for matrix singularity
+  lhs <- t(x1) %*% x1
+  rhs <- t(x1) %*% x0
+
+  if (det(lhs) < 1e-8) {
+    stop("Matrix is near-singular. implmenet a regularization factor or alter exogenous dataset.")
+  }
+
+  pars <- solve(lhs,rhs) #solve(t(x1) %*% x1) %*% (t(x1) %*% x0) #estimates
   parw <- c((1-sum(pars[c(2:nrow(pars))]))/window,pars[c(2:nrow(pars))]) #transformed estimates
 
   #forecasting
