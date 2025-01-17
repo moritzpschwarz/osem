@@ -44,7 +44,7 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'osem.forecast.insample'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, title <span class="op">=</span> <span class="st">"OSEM Insample Hindcasts"</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, title <span class="op">=</span> <span class="st">"OSEM Insample Hindcasts"</span>, first_date <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -57,6 +57,10 @@
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
 <dd><p>Character. Title of the plot. Default is "OSEM Model Forecast".</p></dd>
+
+
+<dt id="arg-first-date">first_date<a class="anchor" aria-label="anchor" href="#arg-first-date"></a></dt>
+<dd><p>Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
@@ -88,10 +92,10 @@
 <span class="r-in"><span>inputdata_directory <span class="op">=</span> <span class="cn">NULL</span>, primary_source <span class="op">=</span> <span class="st">"download"</span>,</span></span>
 <span class="r-in"><span>save_to_disk <span class="op">=</span> <span class="cn">NULL</span>, present <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Dataset query already saved in cache_list.json...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Reading cache file /tmp/RtmpIiBrWL/eurostat/3b455d4e1db5cf63a9851337edd80f43.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table  namq_10_a10  read from cache file:  /tmp/RtmpIiBrWL/eurostat/3b455d4e1db5cf63a9851337edd80f43.rds</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Reading cache file /tmp/RtmpbuuNcJ/eurostat/473540e432cf2ccac1f85d391e1990a5.rds</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Table  namq_10_a10  read from cache file:  /tmp/RtmpbuuNcJ/eurostat/473540e432cf2ccac1f85d391e1990a5.rds</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Dataset query already saved in cache_list.json...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table namq_10_gdp cached at /tmp/RtmpIiBrWL/eurostat/0f3f05bbfb06eb86b91ba882dc5d3829.rds</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Table namq_10_gdp cached at /tmp/RtmpbuuNcJ/eurostat/039376933d6ce2175d10d375faabd6f9.rds</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> --- Estimation begins ---</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Estimating Import = FinConsExpHH + GCapitalForm </span>

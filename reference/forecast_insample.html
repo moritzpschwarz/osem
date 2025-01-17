@@ -70,7 +70,7 @@
 
 
 <dt id="arg-exog-fill-method">exog_fill_method<a class="anchor" aria-label="anchor" href="#arg-exog-fill-method"></a></dt>
-<dd><p>Character, either 'AR', 'auto', or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used. 'auto' is an <code><a href="https://pkg.robjhyndman.com/forecast/reference/auto.arima.html" class="external-link">auto.arima</a></code> model.</p></dd>
+<dd><p>Character vector that contains the methods to fill the exogenous variables. Default is "AR" but can also contain multiple methods, e.g. c("AR","auto").</p></dd>
 
 
 <dt id="arg-plot">plot<a class="anchor" aria-label="anchor" href="#arg-plot"></a></dt>
@@ -83,7 +83,7 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>List element.</p>
+    <p>An object (list) with the class <code>osem.forecast.insample</code>. This object contains the central estimates and the uncertainty estimates of the forecasted values as well as the original data.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
