@@ -1,8 +1,9 @@
 #' Forecast model insample to evaluate forecasting performance
 #' @param sample_share Share of the sample that should be used for the insample forecasting. Must be a numeric and must be either 1 or smaller but larger than 0.
+#' @param exog_fill_method Character vector that contains the methods to fill the exogenous variables. Default is "AR" but can also contain multiple methods, e.g. c("AR","auto").
 #' @inheritParams forecast_model
 #'
-#' @return List element.
+#' @return An object (list) with the class \code{osem.forecast.insample}. This object contains the central estimates and the uncertainty estimates of the forecasted values as well as the original data.
 #' @export
 #'
 #'
@@ -27,6 +28,9 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   # With those times, we can now find the share to forecast
   all_times <- seq(time_minmax$min,time_minmax$max, by = "quarter")
   time_to_use <- all_times[ceiling(length(all_times)*sample_share):length(all_times)]
+
+
+  # Run the models -----------------------------------------------------------
 
   all_models <- list()
   for(j in 1:length(time_to_use)){
@@ -64,7 +68,6 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     }
   }
 
-
   model$processed_input_data %>%
     dplyr::distinct(dplyr::across("na_item")) %>%
     dplyr::pull("na_item") -> all_data_vars
@@ -75,82 +78,101 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     dplyr::filter(.data$na_item %in% exog_vars) -> exog_data
 
 
+  # Forecast ----------------------------------------------------------------
+
   forecasted_unknownexogvalues <- list()
-  forecasted_knownexogvalues <- list()
+  rmsfe_values <- list()
+  forecast_failures <- list()
 
   for(i in 1:length(all_models)){
-    #i = 20
     if(is.null(all_models[[i]])){next}
 
     start <- time_to_use[i]
     end <- time_to_use[length(time_to_use)]
     if(start == end){next}
-    nsteps <- length(seq.Date(from = as.Date(start), to = as.Date(end), by = "quarter"))
-
+    nsteps <- length(seq.Date(from = as.Date(start), to = as.Date(end), by = "quarter")) - 1
 
     if(!quiet){print(paste0("Forecast ", i, " from ", start, " to ", end))}
 
-    forecasted_unknownexogvalues[[i]] <- forecast_model(model = all_models[[i]],
-                                                        n.ahead = nsteps,
-                                                        uncertainty_sample = uncertainty_sample,
-                                                        plot = FALSE,
-                                                        exog_fill_method = exog_fill_method,
-                                                        quiet = TRUE)
+    # here starts the loop for the different exog_fill_methods
+    intermed_list <- vector(mode = "list", length = length(exog_fill_method))
+    names(intermed_list) <- exog_fill_method
 
-    # forecasted_knownexogvalues[[i]] <- forecast_model(
-    #   all_models[[i]], n.ahead = nsteps, uncertainty_sample = uncertainty_sample, plot.forecast = FALSE,
-    #   exog_predictions = exog_data %>% dplyr::filter(.data$time >= as.Date(start),
-    #                                                  .data$time <= as.Date(end)))
+    intermed_rmsfe <- vector(mode = "list", length = length(exog_fill_method))
+    names(intermed_rmsfe) <- exog_fill_method
+
+    intermed_failure <- vector(mode = "list", length = length(exog_fill_method))
+    names(intermed_failure) <- exog_fill_method
+
+    for(forecast_method in exog_fill_method){
+      #forecasted_unknownexogvalues[[i]]
+      intermed_list[[forecast_method]] <- forecast_model(model = all_models[[i]],
+                                                         n.ahead = nsteps,
+                                                         uncertainty_sample = uncertainty_sample,
+                                                         plot = FALSE,
+                                                         exog_fill_method = forecast_method,
+                                                         quiet = TRUE)
+
+      intermed_rmsfe[[forecast_method]] <- rmsfe(forecast = intermed_list[[forecast_method]],
+                                                 data = model$processed_input_data) %>%
+        dplyr::bind_cols(dplyr::tibble(start = start, end = end, method = forecast_method))
+
+      intermed_failure[[forecast_method]] <- forecast_failure(forecast = intermed_list[[forecast_method]],
+                                                              data = model$processed_input_data) %>%
+        dplyr::bind_cols(dplyr::tibble(start = start, end = end, method = forecast_method))
+    }
+
+    forecasted_unknownexogvalues[[i]] <- intermed_list
+    rmsfe_values[[i]] <- dplyr::bind_rows(intermed_rmsfe)
+    forecast_failures[[i]] <- dplyr::bind_rows(intermed_failure)
   }
 
-  # save(forecasted_unknownexogvalues, file = "forecasted_models.RData")
-  # load("forecasted_models.RData")
+  if(identical(list(),forecasted_unknownexogvalues)){
+    stop("Not enough models available for insample comparison. Increase the 'sample_share'.")
+  }
 
   overall_to_plot_central <- dplyr::tibble()
   overall_to_plot_alls <- dplyr::tibble()
 
   for(i in 1:length(forecasted_unknownexogvalues)){
     # i = 3
+    for (forecast_method in exog_fill_method) {
+      if(is.null(forecasted_unknownexogvalues[[i]])){next}
 
-    if(is.null(forecasted_unknownexogvalues[[i]])){next}
-    #print(i)
+      forecasted_unknownexogvalues[[i]][[forecast_method]]$forecast %>%
+        dplyr::select("dep_var","central.estimate") %>%
+        dplyr::mutate(start = time_to_use[i]) %>%
+        tidyr::unnest("central.estimate") %>%
+        tidyr::pivot_longer(-c("dep_var", "start", "time")) %>%
+        tidyr::drop_na("value") -> centrals
 
-    #plot(forecasted_unknownexogvalues[[i]])
+      # this should also work if there are no estimates for uncertainty
+      # so this could result in alls remaining empty (no rows)
+      # this might happen, if the model only consists of identities and hence
+      # there would not be any uncertainty
+      forecasted_unknownexogvalues[[i]][[forecast_method]]$forecast %>%
+        dplyr::select("dep_var","all.estimates") %>%
+        dplyr::mutate(start = time_to_use[i]) %>%
+        dplyr::mutate(quantiles = purrr::map(.data$all.estimates, function(x){
+          if(!is.null(x)){
+            tidyr::pivot_longer(x, -"time") %>%
+              dplyr::summarise(max = max(.data$value),
+                               min = min(.data$value),
+                               p975 = stats::quantile(.data$value, probs = 0.975),
+                               p025 = stats::quantile(.data$value, probs = 0.025),
+                               p75 = stats::quantile(.data$value, probs = 0.75),
+                               p25 = stats::quantile(.data$value, probs = 0.25), .by = "time") %>%
+              tidyr::pivot_longer(-"time", names_to = "quantile")
+          }
+        })) %>%
+        dplyr::select(-"all.estimates") %>%
+        dplyr::full_join(centrals %>%
+                           dplyr::distinct(.data$dep_var, .data$name), by = "dep_var") %>%
+        tidyr::unnest("quantiles") -> alls
 
-    forecasted_unknownexogvalues[[i]]$forecast %>%
-      dplyr::select("dep_var","central.estimate") %>%
-      dplyr::mutate(start = time_to_use[i]) %>%
-      tidyr::unnest("central.estimate") %>%
-      tidyr::pivot_longer(-c("dep_var", "start", "time")) %>%
-      tidyr::drop_na("value") -> centrals
-
-    # this should also work if there are no estimates for uncertainty
-    # so this could result in alls remaining empty (no rows)
-    # this might happen, if the model only consists of identities and hence
-    # there would not be any uncertainty
-    forecasted_unknownexogvalues[[i]]$forecast %>%
-      dplyr::select("dep_var","all.estimates") %>%
-      dplyr::mutate(start = time_to_use[i]) %>%
-      dplyr::mutate(quantiles = purrr::map(.data$all.estimates, function(x){
-        if(!is.null(x)){
-          tidyr::pivot_longer(x, -"time") %>%
-            dplyr::summarise(max = max(.data$value),
-                             min = min(.data$value),
-                             p975 = stats::quantile(.data$value, probs = 0.975),
-                             p025 = stats::quantile(.data$value, probs = 0.025),
-                             p75 = stats::quantile(.data$value, probs = 0.75),
-                             p25 = stats::quantile(.data$value, probs = 0.25), .by = "time") %>%
-            tidyr::pivot_longer(-"time", names_to = "quantile")
-        }
-      })) %>%
-      dplyr::select(-"all.estimates") %>%
-      dplyr::full_join(centrals %>%
-                         dplyr::distinct(.data$dep_var, .data$name), by = "dep_var") %>%
-      tidyr::unnest("quantiles") -> alls
-
-    dplyr::bind_rows(overall_to_plot_central, centrals) -> overall_to_plot_central
-    dplyr::bind_rows(overall_to_plot_alls, alls) -> overall_to_plot_alls
-
+      dplyr::bind_rows(overall_to_plot_central, centrals %>% dplyr::mutate(method = forecast_method)) -> overall_to_plot_central
+      dplyr::bind_rows(overall_to_plot_alls, alls%>% dplyr::mutate(method = forecast_method)) -> overall_to_plot_alls
+    }
   }
 
   overall_to_plot_central %>%
@@ -159,26 +181,33 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   if(nrow(overall_to_plot_alls)>0){
     overall_to_plot_alls %>%
       dplyr::mutate(value = ifelse(grepl("^ln.", .data$name), exp(.data$value), .data$value)) %>%
-      tidyr::pivot_wider(id_cols = c("dep_var","name","start","time"), names_from = "quantile", values_from = "value") -> overall_to_plot_alls_exp
+      tidyr::pivot_wider(id_cols = c("dep_var","name","start","time", "method"), names_from = "quantile", values_from = "value") -> overall_to_plot_alls_exp
   } else {
     overall_to_plot_alls_exp <- NULL
   }
 
-  forecasted_unknownexogvalues[[length(forecasted_unknownexogvalues)]]$orig_model$full_data %>%
+  model$full_data %>%
     dplyr::rename(dep_var = "na_item") %>%
     dplyr::filter(.data$dep_var %in% overall_to_plot_central_exp$dep_var,
                   .data$time > min(overall_to_plot_central$start)) -> full_data
 
   out <- list()
-  out$central <- overall_to_plot_central_exp %>% dplyr::rename(values = "value")
+  out$central <- overall_to_plot_central_exp %>%
+    dplyr::rename(values = "value") %>%
+    dplyr::mutate(end = end, .after = "start")
+
   out$uncertainty <- overall_to_plot_alls_exp
   out$hist_data <- full_data
+  out$rmsfe <- dplyr::bind_rows(rmsfe_values)
+  out$forecast_failures <- dplyr::bind_rows(forecast_failures)
+
   out$args <- list(sample_share = sample_share,
                    time_to_use = time_to_use,
                    all_times = all_times,
                    dep_vars = overall_to_plot_central_exp$dep_var,
                    model = model,
                    exog_fill_method = exog_fill_method)
+
 
   class(out) <- "osem.forecast.insample"
 

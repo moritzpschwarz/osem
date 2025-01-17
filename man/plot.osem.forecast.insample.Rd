@@ -4,12 +4,14 @@
 \alias{plot.osem.forecast.insample}
 \title{Plot an Insample-Forecast of the OSEM Model}
 \usage{
-\method{plot}{osem.forecast.insample}(x, title = "OSEM Insample Hindcasts", ...)
+\method{plot}{osem.forecast.insample}(x, title = "OSEM Insample Hindcasts", first_date = NULL, ...)
 }
 \arguments{
 \item{x}{An object of class osem.forecast.insample, which is the output from the \link{forecast_insample} function.}
 
 \item{title}{Character. Title of the plot. Default is "OSEM Model Forecast".}
+
+\item{first_date}{Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.}
 
 \item{...}{Additional arguments passed to the plotting function.}
 }
