@@ -28,6 +28,7 @@
 <url><loc>http://moritzschwarz.org/osem/reference/estimate_module.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_exogenous_values.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_extract_info.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/reference/forecast_failure.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_identities.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_insample.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/forecast_model.html</loc></url>
@@ -49,7 +50,9 @@
 <url><loc>http://moritzschwarz.org/osem/reference/plot.osem.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/present_model.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/print.osem.forecast.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/reference/print.osem.forecast.insample.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/print.osem.html</loc></url>
+<url><loc>http://moritzschwarz.org/osem/reference/rmsfe.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/run_model.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/run_module.html</loc></url>
 <url><loc>http://moritzschwarz.org/osem/reference/run_shiny.html</loc></url>
