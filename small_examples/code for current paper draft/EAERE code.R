@@ -157,7 +157,7 @@ for(country in c("AT")){
     #coef_omit = "iis|sis|q_[0-9]+",
     coef_map = coef_order,
     gof_omit = "R",
-    #output = "latex",
+    output = "latex",
     title = "Final models run for each sub-module for the illustrative example of Austria.",
     notes = "Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.",
     stars = TRUE,
@@ -228,36 +228,11 @@ for(country in c("AT")){
 
   f2_insample <- forecast_insample(model, sample_share = .96, exog_fill_method = forecast_method)
 
-  extract_dep_vars <- f2_insample$central %>% distinct(dep_var) %>% pull
-
-  ggplot2::ggplot() +
-    ggplot2::geom_line(data = model$full_data %>%
-                         rename(dep_var = na_item) %>%
-                         filter(dep_var %in% extract_dep_vars,
-                                time > as.Date("2010-01-01")),
-                       ggplot2::aes(x = .data$time, y = .data$values), linewidth = 1) +
-
-    ggplot2::facet_wrap(~dep_var, scales = "free") +
-    ggplot2::geom_ribbon(data = f2_insample$uncertainty, ggplot2::aes(ymin = .data$min, x = .data$time, ymax = .data$max, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
-    ggplot2::geom_ribbon(data = f2_insample$uncertainty, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
-    ggplot2::geom_ribbon(data = f2_insample$uncertainty, ggplot2::aes(ymin = .data$p25, x = .data$time, ymax = .data$p75, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE) +
-
-    ggplot2::geom_line(data = f2_insample$central, ggplot2::aes(y = .data$value, x = .data$time, color = as.factor(.data$start)), inherit.aes = FALSE) +
-    ggplot2::facet_wrap(~.data$dep_var, scales = "free") +
-    #ggplot2::scale_color_brewer(palette = "PRGn") +
-    ggplot2::scale_colour_viridis_d() +
-    ggplot2::coord_cartesian(expand = TRUE) +
-
-    ggplot2::labs(x = NULL, y = NULL, title = "Automatic Forecasting Hindcasts") +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(legend.position = "none",
-                   text = element_text(family = "Myriad Pro"),
-                   panel.grid.major.x = ggplot2::element_blank(),
-                   panel.grid.minor.x = ggplot2::element_blank(),
-                   panel.grid.minor.y = ggplot2::element_blank()) -> p
+  plot(f2_insample, first_date = "2015-01-01") -> p
 
 
   ggsave(p, width = 7, height = 5, file = paste0(fig_path,"EAERE_hindcast_",country,".pdf"), device = cairo_pdf)
+  ggsave(p, width = 7, height = 5, file = paste0(fig_path,"EAERE_hindcast_",country,".png"))
 }
 
 
@@ -291,8 +266,9 @@ f2_data <- plot(f2, exclude.exogenous = FALSE, grepl_variables = "Combustion|Ele
 
 #viridis::viridis(4)
 man_cols <- c(Observation = "#440154FF",
-              `Endogenous Forecast` = "#31688EFF",
+              `Nowcast` = "#31688EFF",
               `Exogenous Forecast` = "#35B779FF",
+              `Forecast` = "#35B779FF",
               `Insample Fit` = "#FDE725FF")
 
 
@@ -300,9 +276,11 @@ f2_data %>%
   mutate(name = "AR Forecast") %>%
   bind_rows(f2_high_data %>%
               mutate(name = NA) %>%
-              mutate(name = case_when(na_item == "EmiCO2Combustion" & type == "Exogeneous Forecast" ~ "Scenario Price",
+              mutate(name = case_when(na_item == "EmiCO2Combustion" & type == "Forecast" ~ "Scenario Price",
                                       na_item == "HICP_Electricity" ~ "Scenario Price",
                                       TRUE ~ name))) %>%
+
+  filter(na_item %in% c("EmiCO2Combustion","HICP_Electricity")) %>%
 
   ggplot(aes(x = time, y = values, linetype = name, color = type)) +
   geom_line() +
@@ -323,12 +301,14 @@ f2_data %>%
                  panel.grid.major.x = ggplot2::element_blank(),
                  panel.grid.minor.x = ggplot2::element_blank(),
                  panel.grid.minor.y = ggplot2::element_blank()) +
-  labs(title = "Illustrative Example for Austria", subtitle = "Showing the <span style = color:#440154FF>Observed</span>, <span style = color:#FDE725FF>Fitted</span> and <span style = color:#21908CFF>Forecasted</span> Values incl. Exogenous Variables.<br>Dotted line is scenario run with HICP_Electricity = 400. Solid lines are an AR forecast.") +
+  labs(title = "Illustrative Example for Austria",
+       subtitle = "Showing the <span style = color:#440154FF>Observed</span>, <span style = color:#FDE725FF>Fitted</span>,  <span style = color:#31688EFF>Nowcasted</span>, and <span style = color:#21908CFF>Forecasted</span> Values incl. Exogenous Variables.<br>Dotted line is scenario run with HICP_Electricity = 400. Solid lines are an AR forecast.") +
   theme(text = element_text(family = "Myriad Pro"),
         plot.subtitle = element_markdown()) -> p
 
 
-ggsave(p, width = 7, height = 5, file = fig_path,"EAERE_scenario.pdf", device = cairo_pdf)
+ggsave(p, width = 7, height = 5, file = paste0(fig_path,"EAERE_scenario.pdf"), device = cairo_pdf)
+ggsave(p, width = 7, height = 5, file = paste0(fig_path,"EAERE_scenario.png"))
 
 
 f2_data %>%
