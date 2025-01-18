@@ -148,7 +148,7 @@ model_result <- run_model(
   dictionary = dictionary %>% mutate(geo = "DE"),
   inputdata_directory = "./small_examples/illustration de/data_prep_quarterly_nominal_real/",
   save_to_disk = "./small_examples/illustration de/data_saved/data_quarterly_nominal_real.xlsx",
-  primary_source = "download",
+  primary_source = "local",
   trend = TRUE,
   saturation.tpval = 0.01,
   gets_selection = FALSE,
@@ -161,7 +161,9 @@ model_result <- run_model(
 # alternative idea: model HICP, maybe there selected spec is more useful, then transform to inflation afterwards
 
 
-
+f1 <- forecast_model(model_result, exog_fill_method = "last")
+f2 <- forecast_model(model_result, exog_fill_method = "auto")
+f3 <- forecast_model(model_result, exog_fill_method = "AR")
 
 
 

@@ -9,6 +9,9 @@
 #'
 forecast_identities <- function(model, exog_df_ready, current_spec, prediction_list, uncertainty_sample){
 
+
+  # Assembling the data -----------------------------------------------------
+
   identity_pred <- dplyr::tibble()
   identity_pred <- exog_df_ready %>%
     dplyr::select(dplyr::all_of(current_spec$independent[current_spec$independent %in% names(exog_df_ready)]))
@@ -126,9 +129,12 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       dplyr::select(-dplyr::all_of(dplyr::all_of(names(identity_pred.all)[!identity_logs]))) -> identity_pred.all
   }
 
+  # Constructing the identity (central) -------------------------------------
+
+
   # sum the identities
-  cols_to_cycle <- gsub(" ","",strsplits(unique(current_spec$independent_orig), c("\\+", "\\-")))
-  operators <- stringr::str_extract_all(string = unique(current_spec$independent_orig), pattern = "\\+|\\-")[[1]]
+  cols_to_cycle <- gsub(" ","",strsplits(unique(current_spec$independent_orig), c("\\-", "\\+", "/", "\\*")))
+  operators <- stringr::str_extract_all(string = unique(current_spec$independent_orig), pattern = "\\+|\\-|/|\\*")[[1]]
 
   if(length(cols_to_cycle) != (length(operators)+1)){warning("Identity might be falsely calculated. Check operators.")}
 
@@ -148,9 +154,15 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       identity_pred_final <- identity_pred_final + cur_col_cycle
     } else if(operators[col_cycle-1] == "-"){
       identity_pred_final <- identity_pred_final - cur_col_cycle
+    } else if(operators[col_cycle-1] == "*"){
+      identity_pred_final <- identity_pred_final * cur_col_cycle
+    } else if(operators[col_cycle-1] == "/"){
+      identity_pred_final <- identity_pred_final / cur_col_cycle
     } else {stop("Error in calculating Identity.")}
 
   }
+
+  # Constructing the identity (uncertainty) -------------------------------------
 
   # repeat the same for .all estimates
   # get the first column of the identity
@@ -178,7 +190,6 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
         } else {
           tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
 
-
     } else if(operators[col_cycle-1] == "-"){
 
       identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) -
@@ -188,8 +199,31 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
         } else {
           tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
 
-    } else {stop("Error in calculating Identity.")}
+    } else if(operators[col_cycle-1] == "*"){
+
+      identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) *
+        {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
+          tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
+            dplyr::pull(1)
+        } else {
+          tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
+
+    } else if(operators[col_cycle-1] == "/" ){
+
+      identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) /
+        {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
+          tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
+            dplyr::pull(1)
+        } else {
+          tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
+    } else {
+      stop("Error in calculating Identity.")}
   }
+
+
+  # Preparing output --------------------------------------------------------
+
+
 
   outvarname <- paste0(#if(any(identity_logs) && !all(identity_logs)){"ln."} else {""},
     current_spec %>% dplyr::pull("dependent") %>% unique) #%>% tolower)
