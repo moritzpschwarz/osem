@@ -96,7 +96,6 @@ forecast_model <- function(model,
   # cycling through each module
   for(i in seq(model$module_order$order)){
     # i = 1
-
     current_spec <- model$module_order %>%
       dplyr::filter(.data$order == i) %>%
 
@@ -107,7 +106,7 @@ forecast_model <- function(model,
       dplyr::mutate(independent = gsub(" ", "", .data$independent)) %>%
 
       dplyr::rowwise() %>%
-      dplyr::mutate(independent = list(strsplits(.data$independent,c("\\-", "\\+")))) %>%
+      dplyr::mutate(independent = list(strsplits(.data$independent,c("\\-", "\\+", "/", "\\*")))) %>%
 
       # following line added to deal with AR models when ind_vars is a list of NULL
       dplyr::bind_rows(dplyr::tibble(independent = list(""))) %>%

@@ -123,6 +123,7 @@ run_model <- function(specification,
 
   if(any(grepl("\\-|\\+|\\*|\\/|\\^",dictionary$model_varname))){stop("The 'model_varname' column in the Dictionary cannot contain any of the following characters: + - / * ^")}
   if(any(grepl("\\-|\\+|\\*|\\/|\\^",specification$dependent))){stop("The 'dependent' column in the specification cannot contain any of the following characters: + - / * ^")}
+  if(any(grepl("\\-|\\*|\\/|\\^",specification$independent[specification$type == "n"]))){stop("The 'independent' column of estimated equations (type = 'n') in the specification cannot contain any of the following characters: - / * ^.\nThis is only possible for identities (type = 'd').")}
 
 
   if(!is.null(save_to_disk)){
