@@ -144,7 +144,7 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
 
     dplyr::mutate(
       !!unique(current_spec$dependent) := purrr::pmap(
-        .l = dplyr::cur_data(),
+        .l = dplyr::pick(dplyr::everything()),
         .f = function(...) {
           env <- list2env(list(...))
           eval(parse(text = unique(current_spec$independent_orig)), envir = env)
