@@ -139,7 +139,8 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
 
   identity_pred_final.all <- identity_pred.all %>%
     dplyr::mutate(dplyr::across(dplyr::starts_with("ln."), ~purrr::map(., function(x){exp(x)}))) %>%
-    dplyr::rename_with(.cols = dplyr::starts_with("ln."), .fn = ~gsub("ln\\.|\\.all","",.)) %>%
+    dplyr::rename_with(.cols = c(dplyr::starts_with("ln."), dplyr::ends_with(".all")),
+                       .fn = ~gsub("ln\\.|\\.all","",.)) %>%
 
     dplyr::mutate(
       !!unique(current_spec$dependent) := purrr::pmap(
@@ -150,7 +151,8 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
         }
       )
     ) %>%
-    dplyr::select(dplyr::all_of(unique(current_spec$dependent)))
+    dplyr::select(dplyr::all_of(unique(current_spec$dependent))) %>%
+    tidyr::unnest(cols = dplyr::everything())
 
 
   # # sum the identities
@@ -243,8 +245,6 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
 
 
   # Preparing output --------------------------------------------------------
-
-
 
   outvarname <- paste0(#if(any(identity_logs) && !all(identity_logs)){"ln."} else {""},
     current_spec %>% dplyr::pull("dependent") %>% unique) #%>% tolower)
