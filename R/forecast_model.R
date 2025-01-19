@@ -301,7 +301,6 @@ forecast_model <- function(model,
       central_estimate <- identity_setup$central_estimate
       prediction_list <- identity_setup$prediction_list
 
-      names(identity_pred_final) <- unique(current_spec$dependent)
       prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::tibble(yhat = identity_pred_final[,1])))
       prediction_list[prediction_list$order == i, "data"] <- dplyr::tibble(data = list(dplyr::bind_cols(identity_pred_final, identity_pred)))
       prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(data = list(central_estimate))

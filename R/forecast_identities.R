@@ -131,94 +131,115 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
 
   # Constructing the identity (central) -------------------------------------
 
+  identity_pred_final <- identity_pred %>%
+    dplyr::mutate(dplyr::across(dplyr::starts_with("ln."), exp)) %>%
+    dplyr::rename_with(.cols = dplyr::starts_with("ln."), .fn = ~gsub("ln\\.","",.)) %>%
+    dplyr::mutate(!!unique(current_spec$dependent) := eval(parse(text = unique(current_spec$independent_orig)))) %>%
+    dplyr::select(dplyr::all_of(unique(current_spec$dependent)))
 
-  # sum the identities
-  cols_to_cycle <- gsub(" ","",strsplits(unique(current_spec$independent_orig), c("\\-", "\\+", "/", "\\*")))
-  operators <- stringr::str_extract_all(string = unique(current_spec$independent_orig), pattern = "\\+|\\-|/|\\*")[[1]]
+  identity_pred_final.all <- identity_pred.all %>%
+    dplyr::mutate(dplyr::across(dplyr::starts_with("ln."), ~purrr::map(., function(x){exp(x)}))) %>%
+    dplyr::rename_with(.cols = dplyr::starts_with("ln."), .fn = ~gsub("ln\\.|\\.all","",.)) %>%
 
-  if(length(cols_to_cycle) != (length(operators)+1)){warning("Identity might be falsely calculated. Check operators.")}
+    dplyr::mutate(
+      !!unique(current_spec$dependent) := purrr::pmap(
+        .l = dplyr::cur_data(),
+        .f = function(...) {
+          env <- list2env(list(...))
+          eval(parse(text = unique(current_spec$independent_orig)), envir = env)
+        }
+      )
+    ) %>%
+    dplyr::select(dplyr::all_of(unique(current_spec$dependent)))
 
-  # get the first column of the identity
-  identity_pred_final <- if(grepl("^ln\\.",names(identity_pred[,1, drop = FALSE]))){
-    # an identity is never logged - therefore exponentiate the first column if that is logged
-    exp(identity_pred[,1, drop = FALSE])
-  } else{
-    identity_pred[,1, drop = FALSE]}
 
-  for(col_cycle in 2:ncol(identity_pred)){
-    cur_col_cycle <- identity_pred[,col_cycle, drop = FALSE]
-    # an identity is never logged - therefore exponentiate the first column if that is logged
-    if(grepl("^ln\\.",names(cur_col_cycle))){cur_col_cycle <- exp(cur_col_cycle)}
+  # # sum the identities
+  # cols_to_cycle <- gsub(" ","",strsplits(unique(current_spec$independent_orig), c("\\-", "\\+", "/", "\\*")))
+  # operators <- stringr::str_extract_all(string = unique(current_spec$independent_orig), pattern = "\\+|\\-|/|\\*")[[1]]
+  #
+  # if(length(cols_to_cycle) != (length(operators)+1)){warning("Identity might be falsely calculated. Check operators.")}
+  #
+  # # get the first column of the identity
+  # identity_pred_final <- if(grepl("^ln\\.",names(identity_pred[,1, drop = FALSE]))){
+  #   # an identity is never logged - therefore exponentiate the first column if that is logged
+  #   exp(identity_pred[,1, drop = FALSE])
+  # } else{
+  #   identity_pred[,1, drop = FALSE]}
+  #
+  # for(col_cycle in 2:ncol(identity_pred)){
+  #   cur_col_cycle <- identity_pred[,col_cycle, drop = FALSE]
+  #   # an identity is never logged - therefore exponentiate the first column if that is logged
+  #   if(grepl("^ln\\.",names(cur_col_cycle))){cur_col_cycle <- exp(cur_col_cycle)}
+  #
+  #   if(operators[col_cycle-1] == "+"){
+  #     identity_pred_final <- identity_pred_final + cur_col_cycle
+  #   } else if(operators[col_cycle-1] == "-"){
+  #     identity_pred_final <- identity_pred_final - cur_col_cycle
+  #   } else if(operators[col_cycle-1] == "*"){
+  #     identity_pred_final <- identity_pred_final * cur_col_cycle
+  #   } else if(operators[col_cycle-1] == "/"){
+  #     identity_pred_final <- identity_pred_final / cur_col_cycle
+  #   } else {stop("Error in calculating Identity.")}
+  #
+  # }
 
-    if(operators[col_cycle-1] == "+"){
-      identity_pred_final <- identity_pred_final + cur_col_cycle
-    } else if(operators[col_cycle-1] == "-"){
-      identity_pred_final <- identity_pred_final - cur_col_cycle
-    } else if(operators[col_cycle-1] == "*"){
-      identity_pred_final <- identity_pred_final * cur_col_cycle
-    } else if(operators[col_cycle-1] == "/"){
-      identity_pred_final <- identity_pred_final / cur_col_cycle
-    } else {stop("Error in calculating Identity.")}
-
-  }
-
-  # Constructing the identity (uncertainty) -------------------------------------
-
-  # repeat the same for .all estimates
-  # get the first column of the identity
-  identity_pred_final.all <- if(grepl("^ln\\.",names(identity_pred.all[,1, drop = FALSE]))){
-    # an identity is never logged - therefore exponentiate the first column if that is logged
-    identity_pred.all[,1, drop = FALSE] %>%
-      dplyr::mutate(dplyr::across(1, ~purrr::map(.,exp)))
-  } else {
-    identity_pred.all[,1, drop = FALSE]}
-
-  for(col_cycle in 2:ncol(identity_pred.all)){
-    cur_col_cycle <- identity_pred.all[,col_cycle, drop = FALSE]
-    # an identity is never logged - therefore exponentiate the first column if that is logged
-    if(grepl("^ln\\.",names(cur_col_cycle))){
-      cur_col_cycle <- cur_col_cycle %>%
-        dplyr::mutate(dplyr::across(1, ~purrr::map(.,exp)))
-    }
-
-    if(operators[col_cycle-1] == "+"){
-
-      identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) +
-        {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
-            dplyr::pull(1)
-        } else {
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
-
-    } else if(operators[col_cycle-1] == "-"){
-
-      identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) -
-        {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
-            dplyr::pull(1)
-        } else {
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
-
-    } else if(operators[col_cycle-1] == "*"){
-
-      identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) *
-        {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
-            dplyr::pull(1)
-        } else {
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
-
-    } else if(operators[col_cycle-1] == "/" ){
-
-      identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) /
-        {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
-            dplyr::pull(1)
-        } else {
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
-    } else {
-      stop("Error in calculating Identity.")}
-  }
+  # # Constructing the identity (uncertainty) -------------------------------------
+  #
+  # # repeat the same for .all estimates
+  # # get the first column of the identity
+  # identity_pred_final.all <- if(grepl("^ln\\.",names(identity_pred.all[,1, drop = FALSE]))){
+  #   # an identity is never logged - therefore exponentiate the first column if that is logged
+  #   identity_pred.all[,1, drop = FALSE] %>%
+  #     dplyr::mutate(dplyr::across(1, ~purrr::map(.,exp)))
+  # } else {
+  #   identity_pred.all[,1, drop = FALSE]}
+  #
+  # for(col_cycle in 2:ncol(identity_pred.all)){
+  #   cur_col_cycle <- identity_pred.all[,col_cycle, drop = FALSE]
+  #   # an identity is never logged - therefore exponentiate the first column if that is logged
+  #   if(grepl("^ln\\.",names(cur_col_cycle))){
+  #     cur_col_cycle <- cur_col_cycle %>%
+  #       dplyr::mutate(dplyr::across(1, ~purrr::map(.,exp)))
+  #   }
+  #
+  #   if(operators[col_cycle-1] == "+"){
+  #
+  #     identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) +
+  #       {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
+  #         tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
+  #           dplyr::pull(1)
+  #       } else {
+  #         tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
+  #
+  #   } else if(operators[col_cycle-1] == "-"){
+  #
+  #     identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) -
+  #       {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
+  #         tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
+  #           dplyr::pull(1)
+  #       } else {
+  #         tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
+  #
+  #   } else if(operators[col_cycle-1] == "*"){
+  #
+  #     identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) *
+  #       {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
+  #         tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
+  #           dplyr::pull(1)
+  #       } else {
+  #         tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
+  #
+  #   } else if(operators[col_cycle-1] == "/" ){
+  #
+  #     identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) /
+  #       {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
+  #         tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
+  #           dplyr::pull(1)
+  #       } else {
+  #         tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
+  #   } else {
+  #     stop("Error in calculating Identity.")}
+  # }
 
 
   # Preparing output --------------------------------------------------------
@@ -229,7 +250,7 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
     current_spec %>% dplyr::pull("dependent") %>% unique) #%>% tolower)
 
   dplyr::tibble(time = exog_df_ready %>% dplyr::pull(.data$time),
-                value = as.numeric(identity_pred_final[,1])) %>%
+                value = identity_pred_final[,1, drop = TRUE]) %>%
     setNames(c("time",outvarname)) -> central_estimate
 
   # if there are uncertainties, then the columns must be larger than 1
@@ -247,7 +268,7 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
 
   out <- list()
   out$identity_pred <- identity_pred
-  out$identity_pred_final <- identity_pred_final
+  out$identity_pred_final <- identity_pred_final %>% setNames(outvarname)
   out$identity_pred_final.all <- identity_pred_final.all
   out$central_estimate <- central_estimate
   out$prediction_list <- prediction_list
