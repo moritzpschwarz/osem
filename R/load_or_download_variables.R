@@ -319,7 +319,7 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
       stop("Issue with automatic EUROSTAT download. Likely cause is a lack of/an unstable internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")
     }
     # extract each variable that we are looking for in this dataset and apply filters
-    indices <- which(to_obtain$database == "eurostat" & to_obtain$dataset_id == eurostat_dataset_ids[i])
+    indices <- which(to_obtain$database == "eurostat" & to_obtain$dataset_id == eurostat_dataset_ids[i] & to_obtain$found == FALSE)
     for (j in indices) {
       # under which column is the variable stored?
       varcolname <- to_obtain$var_col[j]
@@ -406,6 +406,7 @@ download_edgar <- function(to_obtain, quiet) {
     dplyr::pull(.data$dataset_id) %>%
     unique()
   # these should be links
+
   if (length(edgar_dataset_ids) != sum(grepl(pattern = "^http", x = edgar_dataset_ids))) {
     stop("Database 'edgar' should be a link and therefore start with 'http'.")
   }
@@ -699,7 +700,7 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
 
   }
 
-  return(list(df = df_local, to_obtain = to_obtain))
+  return(list(df = df_local %>% dplyr::distinct(), to_obtain = to_obtain))
 
 }
 
