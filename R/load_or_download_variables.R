@@ -256,7 +256,7 @@ load_or_download_variables <- function(specification,
     # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
   }
 
-  return(full)
+  return(full %>% dplyr::distinct())
 
 }
 
