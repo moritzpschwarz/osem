@@ -58,7 +58,7 @@ forecast_model <- function(model,
                            trend = NA){
 
   if(!isa(model, "osem")){stop("Forecasting only possible with an osem object. Execute 'run_model' to get such an object.")}
-  if(!is.null(exog_fill_method) & !exog_fill_method %in% c("AR","last","auto","clements_hendry","martinez_castle_hendry","martinez_castle_hendry_rw")){stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR', 'auto', or 'last'.")}
+  if(!is.null(exog_fill_method) & !exog_fill_method %in% c("AR","last","auto","clements_hendry","martinez_castle_hendry","martinez_castle_hendry_rw")){stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR', 'auto', or 'last' or one of the other specified method.")}
   if(!is.null(ar.fill.max) & (!is.integer(as.integer(ar.fill.max)) | ar.fill.max < 1)){stop("The option 'ar.fill.max' can either be NULL or must be an integer that is larger than 0.")}
 
   # 1. Determine Exogenous Variables and wrangle future values ---------------

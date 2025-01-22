@@ -40,7 +40,7 @@ test <- read_csv("~/Desktop/OSEM/osem/small_examples/RA/Geoffrey/PCEPI.csv")
 lag <- 12     # number of lags
 H <- 12      # number of forecast horizons
 W <- 1       #  Local window smoothing - usually set equal to frequency of series
-trend = TRUE  # linear trend?
+trend = FALSE  # linear trend?
 
 f1<-clements_hendry_forecasting(test,lag,trend,W,H)
 
@@ -68,10 +68,32 @@ forecast <- forecast_model(
   trend = trend
 )
 
+forecast <- forecast_model(
+  model,
+  exog_predictions = NULL,
+  n.ahead = 10,
+  ci.levels = c(0.5, 0.66, 0.95),
+  exog_fill_method = "martinez_castle_hendry",
+  ar.fill.max = 4,
+  plot = TRUE,
+  uncertainty_sample = 100,
+  quiet = FALSE,
+  window = 4,
+  lag = 4,
+  trend = trend
+)
 
-
-
-
-
-
-
+forecast <- forecast_model(
+  model,
+  exog_predictions = NULL,
+  n.ahead = 10,
+  ci.levels = c(0.5, 0.66, 0.95),
+  exog_fill_method = "martinez_castle_hendry_rw",
+  ar.fill.max = 4,
+  plot = TRUE,
+  uncertainty_sample = 100,
+  quiet = FALSE,
+  window = 4,
+  lag = 4,
+  trend = trend
+)
