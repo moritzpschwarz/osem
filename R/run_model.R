@@ -194,6 +194,8 @@ run_model <- function(specification,
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order)
 
+  opts_df <- module_order
+
   # initialise storage of estimation results
   module_collection <- module_order %>%
     dplyr::mutate(dataset = list(NA_complex_),
@@ -232,8 +234,11 @@ run_model <- function(specification,
       max.block.size = max.block.size,
       gets_selection = gets_selection,
       selection.tpval = selection.tpval,
+      opts_df = opts_df,
       quiet = quiet
     )
+
+    opts_df <- module_estimate$opts_df
 
     # store module estimates dataset, including fitted values
     module_collection[module_collection$order == i, "dataset"] <- dplyr::tibble(dataset = list(module_estimate$data))
@@ -269,6 +274,7 @@ run_model <- function(specification,
   out$processed_input_data <- full_data
   out$full_data <- tmp_data
   out$dictionary <- dictionary
+  out$opts_df <- opts_df
 
   out <- new_osem(out)
 

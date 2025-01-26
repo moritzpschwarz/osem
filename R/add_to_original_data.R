@@ -10,14 +10,17 @@
 #' @param ardl_or_ecm Either 'ardl' or 'ecm' to determine whether to estimate
 #'   the model as an Autoregressive Distributed Lag Function (ardl) or as an
 #'   Equilibrium Correction Model (ecm).
-#'
+#' @param opts_df Internal object containing detailed options and information on individual modules.
+#' @inheritParams run_module
 #' @return A tibble with the fitted values as one column.
 #'
 #'
 add_to_original_data <- function(clean_data,
                                  isat_object,
                                  dep_var_basename = "imports_of_goods_and_services",
-                                 ardl_or_ecm = "ardl") {
+                                 ardl_or_ecm = "ardl",
+                                 opts_df,
+                                 module) {
   if (!"index" %in% names(clean_data)) {
     stop("Clean Data Object should have an index i.e. a 1:nrow(clean_data) column that allows us to join the estimated data again with model$aux$y.index.")
   }
@@ -26,40 +29,49 @@ add_to_original_data <- function(clean_data,
     dplyr::full_join(dplyr::tibble(
       time = isat_object$aux$y.index,
       fitted = as.numeric(isat_object$mean.fit)
-    ), by = "time") %>%
-    {
-      if (ardl_or_ecm == "ecm") {
-        dplyr::mutate(.,
-                      fitted.cumsum = dplyr::case_when(
-                        is.na(.data$fitted) & is.na(dplyr::lead(.data$fitted)) ~ 0,
-                        # ATTENTION TODO: here change by Moritz: used to be paste0("L.",dep_var_basename)
-                        is.na(.data$fitted) & !is.na(dplyr::lead(.data$fitted)) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
-                        !is.na(.data$fitted) ~ .data$fitted
-                      ),
-                      fitted.cumsum = cumsum(.data$fitted.cumsum),
-                      fitted.cumsum = ifelse(is.na(.data$fitted.cumsum), NA, .data$fitted.cumsum)
-        )
-      } else {
-        .
-      }
-    } %>%
-    {
-      if (ardl_or_ecm == "ecm") {
-        if(grepl("ln\\.",isat_object$aux$y.name)){
-          dplyr::mutate(., fitted.level = exp(.data$fitted.cumsum))
-        } else {
-          dplyr::mutate(., fitted.level = .data$fitted.cumsum)
-        }
-      } else if (ardl_or_ecm == "ardl") {
-        if(grepl("ln\\.",isat_object$aux$y.name)){
-          dplyr::mutate(., fitted.level = exp(.data$fitted))
-        } else {
-          dplyr::mutate(., fitted.level = .data$fitted)
-        }
-      } else {
-        .
-      }
-    } -> intermed
+    ), by = "time") -> intermed_init
+
+  opts_df %>%
+    dplyr::filter(.data$index == module$index) %>%
+    dplyr::pull("log_opts") %>%
+    dplyr::first() %>%
+    dplyr::select(dplyr::all_of(module$dependent)) %>%
+    dplyr::pull() -> dependent_log_opts
+
+  if (ardl_or_ecm == "ecm") {
+    dplyr::mutate(intermed_init,
+                  fitted.cumsum = dplyr::case_when(
+                    is.na(.data$fitted) & is.na(dplyr::lead(.data$fitted)) ~ 0,
+
+                    is.na(.data$fitted) & !is.na(dplyr::lead(.data$fitted)) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
+                    !is.na(.data$fitted) ~ .data$fitted
+                  ),
+                  fitted.cumsum = cumsum(.data$fitted.cumsum),
+                  fitted.cumsum = ifelse(is.na(.data$fitted.cumsum), NA, .data$fitted.cumsum)) -> intermed_ecm
+
+    fitted_vals <- if(dependent_log_opts == "log"){
+      exp(intermed_ecm$fitted.cumsum)
+    } else if(dependent_log_opts == "asinh"){
+      sinh(intermed_ecm$fitted.cumsum)
+    } else if(is.na(dependent_log_opts)){
+      intermed_ecm$fitted.cumsum
+    }
+  }
+
+  if (ardl_or_ecm == "ardl") {
+
+    fitted_vals <- if(dependent_log_opts == "log"){
+      exp(intermed_init$fitted)
+    } else if(dependent_log_opts == "asinh"){
+      sinh(intermed_init$fitted)
+    } else if(is.na(dependent_log_opts)){
+      intermed_init$fitted
+    }
+
+  }
+
+  intermed_init %>%
+    dplyr::mutate(fitted.level = fitted_vals) -> intermed
 
   # intermed %>% ggplot2::ggplot(ggplot2::aes(x = as.Date(time))) + ggplot2::geom_line(ggplot2::aes(y = fitted.level), col = "blue") + ggplot2::geom_line(ggplot2::aes(y = p5g))
 

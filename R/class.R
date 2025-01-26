@@ -36,15 +36,16 @@ validate_osem <- function(x) {
   val <- unclass(x)
 
 
-  stopifnot(length(val) == 6L)
-  stopifnot(length(names(val)) == 6L)
-  stopifnot(identical(names(val), c("args", "module_order", "module_collection","processed_input_data", "full_data", "dictionary")))
+  stopifnot(length(val) == 7L)
+  stopifnot(length(names(val)) == 7L)
+  stopifnot(identical(names(val), c("args", "module_order", "module_collection","processed_input_data", "full_data", "dictionary", "opts_df")))
   stopifnot(identical(class(val$args), "list"))
   stopifnot(any(class(val$module_order) %in% c("tbl_df", "tbl", "data.frame")))
   stopifnot(any(class(val$module_collection) %in% c("tbl_df", "tbl", "data.frame")))
   stopifnot(any(class(val$full_data) %in% c("tbl_df", "tbl", "data.frame")))
   stopifnot(any(class(val$processed_input_data) %in% c("tbl_df", "tbl", "data.frame")))
   stopifnot(any(class(val$dictionary) %in% c("tbl_df", "tbl", "data.frame")))
+  stopifnot(any(class(val$opts_df) %in% c("tbl_df", "tbl", "data.frame")))
 
   # could & should add many more checks: number of columns in module_order etc.
   # but since is likely to change in the future, don't implement all of them

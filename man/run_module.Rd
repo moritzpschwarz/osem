@@ -18,6 +18,7 @@ run_module(
   max.block.size = 20,
   gets_selection = TRUE,
   selection.tpval = 0.01,
+  opts_df,
   quiet
 )
 }
@@ -52,6 +53,8 @@ As returned by \link{classify_variables}.}
 \item{gets_selection}{Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.}
 
 \item{selection.tpval}{Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.}
+
+\item{opts_df}{Internal object containing detailed options and information on individual modules.}
 
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
