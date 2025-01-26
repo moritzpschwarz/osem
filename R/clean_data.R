@@ -30,7 +30,7 @@ clean_data <- function(raw_data,
                        trend = TRUE,
                        opts_df,
                        module,
-                       use_logs) {
+                       use_logs = "both") {
 
   raw_data %>%
     dplyr::select("na_item", "time", "values") %>%
