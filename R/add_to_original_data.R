@@ -49,24 +49,16 @@ add_to_original_data <- function(clean_data,
                   fitted.cumsum = cumsum(.data$fitted.cumsum),
                   fitted.cumsum = ifelse(is.na(.data$fitted.cumsum), NA, .data$fitted.cumsum)) -> intermed_ecm
 
-    fitted_vals <- if(dependent_log_opts == "log"){
-      exp(intermed_ecm$fitted.cumsum)
-    } else if(dependent_log_opts == "asinh"){
-      sinh(intermed_ecm$fitted.cumsum)
-    } else if(is.na(dependent_log_opts)){
-      intermed_ecm$fitted.cumsum
-    }
+    fitted_vals <- fitted_vals <- dplyr::case_when(is.na(dependent_log_opts) ~ intermed_ecm$fitted.cumsum,
+                                                   dependent_log_opts == "log" ~ exp(intermed_ecm$fitted.cumsum),
+                                                   dependent_log_opts == "asinh" ~ sinh(intermed_ecm$fitted.cumsum))
   }
 
   if (ardl_or_ecm == "ardl") {
 
-    fitted_vals <- if(dependent_log_opts == "log"){
-      exp(intermed_init$fitted)
-    } else if(dependent_log_opts == "asinh"){
-      sinh(intermed_init$fitted)
-    } else if(is.na(dependent_log_opts)){
-      intermed_init$fitted
-    }
+    fitted_vals <- dplyr::case_when(is.na(dependent_log_opts) ~ intermed_init$fitted,
+                                    dependent_log_opts == "log" ~ exp(intermed_init$fitted),
+                                    dependent_log_opts == "asinh" ~ sinh(intermed_init$fitted))
 
   }
 
