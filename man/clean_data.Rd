@@ -11,7 +11,7 @@ clean_data(
   trend = TRUE,
   opts_df,
   module,
-  use_logs = "both"
+  use_logs
 )
 }
 \arguments{
@@ -37,14 +37,4 @@ A tibble with the cleaned data.
 }
 \description{
 Prepare the clean dataframe for modelling
-}
-\examples{
-sample_data <- dplyr::tibble(
-  time = rep(seq.Date(
-    from = as.Date("2000-01-01"),
-    to = as.Date("2000-12-31"), by = 1
-  ), each = 2),
-  na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
-)
-osem:::clean_data(sample_data, max.ar = 4, max.dl = 4)
 }
