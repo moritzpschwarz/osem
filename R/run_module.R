@@ -51,7 +51,8 @@ run_module <- function(
 
     out <- list(model = NULL,
                 data = moduledata,
-                args = NULL)
+                args = NULL,
+                opts_df = opts_df)
 
   } else if(module$type == "n") {
 
