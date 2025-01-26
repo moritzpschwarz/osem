@@ -11,7 +11,7 @@ clean_data(
   trend = TRUE,
   opts_df,
   module,
-  use_logs
+  use_logs = "both"
 )
 }
 \arguments{
