@@ -6,6 +6,7 @@
 #' @param module A row of the specification table.
 #' @param data A tibble or data.frame containing the full data for the OSEM
 #'   model.
+#' @param opts_df Internal object containing detailed options and information on individual modules.
 #' @inheritParams identify_module_data
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
@@ -36,11 +37,12 @@ run_module <- function(
     max.block.size = 20,
     gets_selection = TRUE,
     selection.tpval = 0.01,
+    opts_df,
     quiet) {
 
   raw_data <- identify_module_data(module, classification, data)
 
-  # if is identity/definition equation, run simple summation
+  # if is identity/definition equation, run simple parse
   if (module$type == "d") {
 
     moduledata <- identity_module(module = module,
@@ -49,13 +51,17 @@ run_module <- function(
 
     out <- list(model = NULL,
                 data = moduledata,
-                args = NULL)#
-    #list(use_logs = match.arg(use_logs)))
+                args = NULL)
 
   } else if(module$type == "n") {
 
     # prepare data (create regressors)
-    clean_df <- clean_data(raw_data = raw_data, max.ar = max.ar, max.dl = max.dl, trend = trend)
+    clean_data_output <- clean_data(raw_data = raw_data, max.ar = max.ar, max.dl = max.dl, trend = trend,
+                                    opts_df = opts_df,
+                                    module = module,
+                                    use_logs = use_logs)
+    clean_df <- clean_data_output$df
+    opts_df <- clean_data_output$opts_df
 
     # extract base variable names (and convert to lower case because janitor::clean_names() does so)
     dep <- module$dependent
@@ -83,14 +89,17 @@ run_module <- function(
     moduledata <- add_to_original_data(clean_data = clean_df,
                                        isat_object = estimated_module$best_model,
                                        dep_var_basename = dep,
-                                       ardl_or_ecm = estimated_module$args$ardl_or_ecm)
+                                       ardl_or_ecm = estimated_module$args$ardl_or_ecm,
+                                       opts_df = opts_df,
+                                       module = module)
 
     out <- list(model = estimated_module$best_model,
                 data = moduledata,
                 args = estimated_module$args,
                 indep = gsub(" ", "", strsplits(module$independent, splits = c("\\+", "\\-"))),
                 dep = module$dependent,
-                diagnostics = list(super.exogeneity = estimated_module$superex_test))
+                diagnostics = list(super.exogeneity = estimated_module$superex_test),
+                opts_df = opts_df)
 
   } # end "n"
 

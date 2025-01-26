@@ -4,7 +4,15 @@
 \alias{clean_data}
 \title{Prepare the clean dataframe for modelling}
 \usage{
-clean_data(raw_data, max.ar = 4, max.dl = 2, trend = TRUE)
+clean_data(
+  raw_data,
+  max.ar = 4,
+  max.dl = 2,
+  trend = TRUE,
+  opts_df,
+  module,
+  use_logs
+)
 }
 \arguments{
 \item{raw_data}{A tibble or data.frame with the y variable and the x
@@ -17,6 +25,12 @@ variables. Needs to have a column called 'time', which is of class
 \item{max.dl}{Integer. The maximum number of lags to use for the independent variables (the distributed lags).}
 
 \item{trend}{Logical. Should a trend be added? Default is TRUE.}
+
+\item{opts_df}{Internal object containing detailed options and information on individual modules.}
+
+\item{module}{A row of the specification table.}
+
+\item{use_logs}{To decide whether to log any variables. Must be one of 'both', 'y', 'x', or 'none'. Default is 'both'.}
 }
 \value{
 A tibble with the cleaned data.
