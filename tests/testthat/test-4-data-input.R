@@ -184,7 +184,7 @@ test_that("download_edgar works correctly", {
     dplyr::filter(nobs == 3L) %>%
     dplyr::select(-year, -quarter, -nobs) %>%
     dplyr::mutate(na_item = "EmiCO2Combustion") %>%
-    as.data.frame()
+    dplyr::relocate("time","geo","na_item","values")
   expect_identical(a$df %>% dplyr::filter(na_item == "EmiCO2Combustion"), manual)
 
 })

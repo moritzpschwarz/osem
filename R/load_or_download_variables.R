@@ -557,7 +557,10 @@ download_edgar <- function(to_obtain, quiet) {
           # code exists already, simply filter on it
           sub <- sub %>%
             dplyr::filter(.data$ipcc_code_2006_for_standard_report == to_obtain$ipcc_sector[j]) %>%
-            dplyr::select(-"ipcc_code_2006_for_standard_report")
+            dplyr::select(-"ipcc_code_2006_for_standard_report") %>%
+            dplyr::group_by(.data$geo, .data$time) %>%
+            dplyr::summarise(values = sum(.data$values, na.rm = TRUE)) %>%
+            dplyr::ungroup()
         } else {
           # code does not exist, check sub-codes
           ipcc_subcodes <- stringr::str_subset(string = ipcc_codes_available,
@@ -603,7 +606,12 @@ download_edgar <- function(to_obtain, quiet) {
     unlink(file.path(tmp_extract, filename))
   } # end for datasets
 
-  return(list(df = df_edgar, to_obtain = to_obtain))
+  # pad the edgar data with 0
+  df_edgar %>%
+    tidyr::pivot_wider(id_cols = c("time","geo"), names_from = "na_item", values_from = "values", values_fill = 0) %>%
+    tidyr::pivot_longer(-c("time","geo"), values_to = "values", names_to = "na_item") -> df_edgar_out
+
+  return(list(df = df_edgar_out, to_obtain = to_obtain))
 
 }
 
