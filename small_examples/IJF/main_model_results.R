@@ -41,16 +41,18 @@ spec_econ <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), indep
 
 spec_envi <- tibble(
   type = "n", dependent = "EmiCO2ManInd", independent = "RealVAIndustry + HICPlocal") %>%
-  add_row(type = "n", dependent = "EmiCH4Livestock", independent = "Slaughter + RealCapFormHH + RealConsHH") %>%
-  #add_row(type = "n", dependent = "Flights", independent = "RealConsHH + HICP_AviaInt") %>%
+
+  add_row(type = "n", dependent = "Flights", independent = "RealConsHH + FinWealthHH +  HICP_AviaInt") %>%
   add_row(type = "n", dependent = "EmiCO2CivAvi", independent = "HICPlocal + RealConsHH + RealVAService") %>%
   add_row(type = "n", dependent = "RoadFreight", independent = "RealConsHH + HICPlocal + RealVAService") %>%
   add_row(type = "n", dependent = "EmiCO2RoaTra", independent = "RoadFreight + RealConsHH + HICPlocal") %>%
   add_row(type = "n", dependent = "EmiCO2Residential", independent = "RealConsHH + HICP_Electricity") %>%
   add_row(type = "n", dependent = "ElectrCons", independent = "RealConsHH + HICP_Electricity") %>%
-  add_row(type = "n", dependent = "EmiCO2ElecHeat", independent = "ElectrCons + RealVAIndustry + RealCapFormHH + HICP_Electricity") %>%
-  add_row(type = "d", dependent = "EmiCO2Total", independent = "EmiCO2ElecHeat + EmiCO2RoaTra + EmiCO2ManInd + EmiCO2OilandGas + EmiCO2PetrRef + EmiCO2WatNav + EmiCO2CivAvi + EmiCO2GlassProd + EmiCO2LimeProd + EmiCO2OthTransp + EmiCO2Rail + EmiCO2Residential + EmiCO2SolidFuel + EmiCO2OthCarb + EmiCO2CemPro + EmiCO2ChemInd + EmiCO2Liming + EmiCO2MetalInd + EmiCO2NonEnergProd + EmiCO2UreaApp + EmiCO2Waste")
-
+  add_row(type = "n", dependent = "EmiCO2ElecHeat", independent = "ElectrCons + RealVAIndustry + RealCapFormHH") %>%
+  add_row(type = "d", dependent = "EmiCO2Total", independent = "EmiCO2ElecHeat + EmiCO2RoaTra + EmiCO2ManInd + EmiCO2OilandGas + EmiCO2PetrRef + EmiCO2WatNav + EmiCO2CivAvi + EmiCO2GlassProd + EmiCO2LimeProd + EmiCO2OthTransp + EmiCO2Rail + EmiCO2Residential + EmiCO2SolidFuel + EmiCO2OthCarb + EmiCO2CemPro + EmiCO2ChemInd + EmiCO2Liming + EmiCO2MetalInd + EmiCO2NonEnergProd + EmiCO2UreaApp + EmiCO2Waste") %>%
+  add_row(type = "d", dependent = "EmiCH4Total", independent = "EmiCH4ElecHeat + EmiCH4PetrRef + EmiCH4ManInd + EmiCH4CivAvi + EmiCH4RoaTra + EmiCH4Rail + EmiCH4WatNav + EmiCH4OthTransp + EmiCH4Residential + EmiCH4SolidFuel + EmiCH4OilandGas + EmiCH4ChemInd + EmiCH4MetalInd + EmiCH4EntericFerment + EmiCH4ManureMgmt + EmiCH4BiomassBurn + EmiCH4SolidWaste + EmiCH4BioWasteTreat + EmiCH4Waste + EmiCH4Wastewater") %>%
+  add_row(type = "d", dependent = "EmiCH4Livestock", independent = "EmiCH4EntericFerment + EmiCH4ManureMgmt") %>%
+  add_row(type = "n", dependent = "EmiCH4EntericFerment", independent = "Slaughter + RealConsHH + RealVAAgriculture")
 
 spec_extended <- spec_econ %>% bind_rows(spec_envi)
 
@@ -90,6 +92,8 @@ dictionary <- dplyr::bind_rows(dict_identities, dict_eurostat, dict_edgar, dict_
 
 for(country in c("DE","AT","FR", "DK")){
 
+  if(file.exists(paste0("./small_examples/IJF/", country, "/model.RData"))){next}
+
   # country = "DE"
 
   # jobs to do:
@@ -124,7 +128,7 @@ for(country in c("DE","AT","FR", "DK")){
     mutate(geo = country,
            na_item = "PriceETS") %>%
     arrange(time)
-  writexl::write_xlsx(ets, path = paste0("./small_examples/IJF/",country,"/ets.xlsx"))
+  write_csv(ets, file = paste0("./small_examples/IJF/",country,"/ets.csv"))
 
   # quarterly Brent oil prices in USD -> later convert to EUR
   oil <- read_csv("small_examples/IJF/general_data/fred_brent_oil_prices.csv") %>%
@@ -142,14 +146,14 @@ for(country in c("DE","AT","FR", "DK")){
     mutate(geo = country,
            na_item = "PriceOil") %>%
     arrange(time)
-  writexl::write_xlsx(oil, path = paste0("./small_examples/IJF/",country,"/oil.xlsx"))
+  write_csv(oil, file = paste0("./small_examples/IJF/",country,"/oil.csv"))
 
   # factor when converting nominal to real (otherwise "100" is interpreted as a variable name)
   fct <- tibble(time = seq(as.Date("1980-01-01"), as.Date("2024-12-31"), by = "quarter"),
                 geo = country,
                 na_item = "Factor",
                 values = 100)
-  writexl::write_xlsx(fct, path = paste0("./small_examples/IJF/",country,"/fct.xlsx"))
+  write_csv(fct, file = paste0("./small_examples/IJF/",country,"/fct.csv"))
 
   # hicp
   hicp <- eurostat::get_eurostat("prc_hicp_midx", filters = list(geo = country, freq = "M", coicop = "CP00", unit = "I15")) %>%
@@ -168,7 +172,7 @@ for(country in c("DE","AT","FR", "DK")){
     mutate(geo = country,
            na_item = "HICPlocal") %>%
     arrange(time)
-  writexl::write_xlsx(hicp, path = paste0("./small_examples/IJF/",country,"/hicp.xlsx"))
+  write_csv(hicp, file = paste0("./small_examples/IJF/",country,"/hicp.csv"))
 
   # inflation, ideally we calculate this inside the model from HICP level data: (HICP - L1.HICP) / L1.HICP
   # but I think we have not implemented more general algebra at the moment
@@ -182,7 +186,7 @@ for(country in c("DE","AT","FR", "DK")){
     mutate(geo = country,
            na_item = "Inflation") %>%
     arrange(time)
-  writexl::write_xlsx(inf, path = paste0("./small_examples/IJF/",country,"/inflation.xlsx"))
+  write_csv(inf, file = paste0("./small_examples/IJF/",country,"/inflation.csv"))
 
   cap_form_manual <- eurostat::get_eurostat("nasq_10_nf_tr") %>%
     filter(geo == country) %>%
@@ -201,7 +205,7 @@ for(country in c("DE","AT","FR", "DK")){
     select(time = TIME_PERIOD, CapFormGov) %>%
     pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
 
-    writexl::write_xlsx(path = paste0("./small_examples/IJF/", country, "/capformgov.xlsx"))
+    write_csv(file = paste0("./small_examples/IJF/", country, "/capformgov.csv"))
 
   # Run the model -----------------------------------------------------------
 
@@ -210,7 +214,7 @@ for(country in c("DE","AT","FR", "DK")){
     dictionary = dictionary %>%
       mutate(geo = country),
     inputdata_directory = paste0("./small_examples/IJF/", country),
-    save_to_disk = paste0("./small_examples/IJF/", country, "/data.xlsx"),
+    save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
     primary_source = "local",
     trend = TRUE,
     saturation.tpval = 0.01,
@@ -224,3 +228,23 @@ for(country in c("DE","AT","FR", "DK")){
   #fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
 }
 
+
+
+
+
+# to do after call
+# EU ETS to ElectrCons
+# Policy variable for EU ETS
+# EmiCO2Road ManuInd ElecHeat
+# ElectrCons
+# Email to all: enviro equations and ask to look at different combinations --> Moritz --> DONE
+# add methane --> Moritz --> DONE
+# solve asinh --> Moritz --> DONE
+# start presentation --> Moritz
+
+# modelling real --> Jonas
+# think about inflation --> Jonas
+
+
+
+# go through the document and accept changes --> Moritz --> DONE
