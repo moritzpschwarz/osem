@@ -1,13 +1,14 @@
 #' Visualize dependence between modules
 #'
 #' @param model A model of class 'osem'
+#' @param layout Character. The layout of the network graph as per the \code{ggraph} package. Default is "kk", try "auto", "fr" (Fruchterman-Reingold), or "dh" (Davidson-Harel).
 #'
 #' @return Returns a network graph illustrating the dependence between the
 #'   different modules.
 #'
 #' @export
 
-network <- function(model) {
+network <- function(model, layout = "kk") {
 
   # dependency check because only listed as "Suggests"
   if (!requireNamespace("ggraph", quietly = TRUE)) {
@@ -94,7 +95,7 @@ network <- function(model) {
     tidygraph::activate(!!as.symbol("nodes")) %>%
     dplyr::inner_join(y = class, by = c("name" = "var"))
 
-  out <- ggraph::ggraph(graph_df, layout = "kk") +
+  out <- ggraph::ggraph(graph_df, layout = layout) +
     ggraph::geom_node_point(ggplot2::aes(color = class), size = 3) +
     ggraph::geom_edge_link(ggplot2::aes(edge_linetype = as.factor(.data$weight)),
                            arrow = ggplot2::arrow(length = ggplot2::unit(2, 'mm')),

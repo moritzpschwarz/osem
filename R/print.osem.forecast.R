@@ -28,10 +28,26 @@ print.osem.forecast <- function(x, plot = TRUE, full_names = FALSE, ...){
 
   cat("\nCentral Forecast Estimates: \n")
 
-  dplyr::bind_rows(x$forecast$central.estimate) %>%
-    tidyr::pivot_longer(-"time") %>%
-    tidyr::drop_na("value") %>%
-    tidyr::pivot_wider(id_cols = "time") %>%
+  # get log information
+  x$orig_model$opts_df %>%
+    dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
+      opts[,dep, drop = TRUE]
+    })) %>%
+    tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
+    tidyr::replace_na(list(log_opts_dependent = "none")) %>%
+    dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+
+  x$forecast %>%
+    dplyr::select("dep_var", "central.estimate") %>%
+    tidyr::unnest("central.estimate") %>%
+    tidyr::pivot_longer(-c("time","dep_var")) %>%
+    tidyr::drop_na() %>%
+    dplyr::full_join(log_opts_processed, by = "dep_var") %>%
+    dplyr::mutate(value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
+                                           .data$log_opt == "asinh" ~ sinh(.data$value),
+                                           .data$log_opt == "none" ~ .data$value)) %>%
+    dplyr::select(-c("name", "log_opt")) %>%
+    tidyr::pivot_wider(id_cols = "time", names_from = "dep_var") %>%
     dplyr::rename("Date" = "time") %>%
     dplyr::arrange(.data$Date) -> fcast_table
 

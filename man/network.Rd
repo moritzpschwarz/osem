@@ -4,10 +4,12 @@
 \alias{network}
 \title{Visualize dependence between modules}
 \usage{
-network(model)
+network(model, layout = "kk")
 }
 \arguments{
 \item{model}{A model of class 'osem'}
+
+\item{layout}{Character. The layout of the network graph as per the \code{ggraph} package. Default is "kk", try "auto", "fr" (Fruchterman-Reingold), or "dh" (Davidson-Harel).}
 }
 \value{
 Returns a network graph illustrating the dependence between the
