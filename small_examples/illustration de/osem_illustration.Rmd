@@ -110,7 +110,7 @@ We now need to translate the model into a specification that can be used by the 
 
 ```{r}
 spec <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), independent = c("GDPOutput + Imports", "GDPExpenditure + Imports")) %>% 
-  add_row(type = "d", dependent = "GDPOutput", independent = "VA + Taxes - Subsidies") %>%
+  add_row(type = "d", dependent = "GDPOutput", independent = "VA + ATaxesA - ASubsidiesA") %>%
   add_row(type = "d", dependent = "VA", independent = "VAAgriculture + VAIndustry + VAConstruction + VARetail + VAInformation + VAFinance + VARealEstate + VAService + VAGov + VAOther") %>% 
   add_row(type = "n", dependent = "VAIndustry", independent = "ConsHH + ConsGov + CapForm") %>% # + PriceOil + PriceETS") %>%
   add_row(type = "n", dependent = "VARetail", independent = "ConsHH + ConsGov + CapForm") %>%
@@ -240,7 +240,7 @@ model_result <- run_model(
   dictionary = dictionary %>% mutate(geo = "DE"),
   inputdata_directory = "./small_examples/illustration de/data_prep/",
   save_to_disk = "./small_examples/illustration de/data_prep/downloaded_data.xlsx",
-  primary_source = "local",
+  primary_source = "download",
   trend = FALSE,
   saturation.tpval = 0.01,
   gets_selection = FALSE,
@@ -304,7 +304,7 @@ Due to data availability, we had to make some changes to the specification.
 
 ```{r}
 spec <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), independent = c("GDPOutput + Imports", "GDPExpenditure + Imports")) %>% 
-  add_row(type = "d", dependent = "GDPOutput", independent = "VA + Taxes - Subsidies") %>%
+  add_row(type = "d", dependent = "GDPOutput", independent = "VA + TaxesLessSubsidies") %>%
   add_row(type = "d", dependent = "VA", independent = "VAAgriculture + VAIndustry + VAConstruction + VARetail + VAInformation + VAFinance + VARealEstate + VAService + VAGov + VAOther") %>% 
   add_row(type = "n", dependent = "VAIndustry", independent = "ConsHH + ConsGov + CapForm") %>% # + PriceOil + PriceETS") %>%
   add_row(type = "n", dependent = "VARetail", independent = "ConsHH + ConsGov + CapForm") %>%
@@ -355,11 +355,11 @@ spec_moritz <- dplyr::tibble(
   ),
   independent = c(
     "VAIndustry",
-    "Subsidies + Slaughter",
+    "Slaughter",
     "ConsHH + HICP_AviaInt",
     "Flights + ConsHH",
-    "ConsHH + HICP_Diesel + HICP_Petrol + Taxes",
-    "RoadFreight + ConsHH + Taxes + HICP_Diesel + HICP_Petrol",
+    "ConsHH + HICP_Diesel + HICP_Petrol",
+    "RoadFreight + ConsHH + HICP_Diesel + HICP_Petrol",
     "ConsHH + HICP_Electricity + FinConsExpHH"
   )
 )
@@ -379,7 +379,7 @@ model_result <- run_model(
   dictionary = dictionary %>% mutate(geo = "DE"),
   inputdata_directory = "./small_examples/illustration de/data_prep_quarterly/",
   save_to_disk = "./small_examples/illustration de/data_prep_quarterly/trial_moritz.xlsx",
-  primary_source = "local",
+  primary_source = "download",
   trend = FALSE,
   saturation.tpval = 0.01,
   gets_selection = FALSE,

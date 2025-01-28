@@ -22,8 +22,8 @@ dictionary <- dictionary %>%
   add_dict_entry("Demand", "Total Demand", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("GDPOutput", "GDP Output Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("GDPExpenditure", "GDP Expenditure Approach", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
-  add_dict_entry("Taxes", "Product Taxes", "eurostat", "D21", "nama_10_gdp", "na_item", "A", "DE", "MIO_EUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
-  add_dict_entry("Subsidies", "Product Subsidies", "eurostat", "D31", "nama_10_gdp", "na_item", "A", "DE", "MIO_EUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("ATaxesA", "Product Taxes", "eurostat", "D21", "nama_10_gdp", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("ASubsidiesA", "Product Subsidies", "eurostat", "D31", "nama_10_gdp", "na_item", "A", "DE", "CP_MEUR", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("VAAgriculture", "Gross Value Added Agriculture", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "A", NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("VAIndustry", "Gross Value Added Industry except Construction", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "B-E", NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("VAConstruction", "Gross Value Added Construction", "eurostat", "B1G", "nama_10_a10", "na_item", "A", "DE", "CP_MEUR", NA, "F", NA, NA, NA, NA, NA, NA, NA, NA) %>%
@@ -140,7 +140,25 @@ dictionary <- dictionary %>%
   add_dict_entry("CapFormFinFirm", "Gross Fixed Capital Financial Corporations", "eurostat", "P51G", "nasq_10_nf_tr", "na_item", "Q", "DE", "CP_MEUR", "NSA", NA, NA, NA, NA, "S12", NA, NA, "PAID", NA) %>%
   add_dict_entry("FinWealthHH", "Household Financial Net Worth in Mio EUR", "eurostat", "BF90", "nasq_10_f_bs", "na_item", "Q", "DE", "MIO_EUR", NA, NA, NA, NA, NA, "S14_S15", NA, NA, NA, NA, NA, NA, NA, NA, "LIAB") %>% # caution: unlike annual data, this only exists non-consolidated
   add_dict_entry("HousePriceIndex", "House Price Index", "eurostat", "TOTAL", "prc_hpi_q", "purchase", "Q", "DE", "I15_Q", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
-  add_dict_entry("BuildingPermits", "New Residential Building Permits Square Metre Useful Floor Area", "eurostat", "BPRM_SQM", "sts_cobp_q", "indic_bt", "Q", "DE", "I15", "NSA", NA, NA, "CPA_F41001", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) # is index now compared to annual data, not area
+  add_dict_entry("BuildingPermits", "New Residential Building Permits Square Metre Useful Floor Area", "eurostat", "BPRM_SQM", "sts_cobp_q", "indic_bt", "Q", "DE", "I15", "NSA", NA, NA, "CPA_F41001", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%  # is index now compared to annual data, not area
+  add_dict_entry("DFVAAgriculture", "Deflator VAAgriculture", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "PD15_EUR", "NSA", "A", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFVAIndustry", "Deflator VAIndustry", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "PD15_EUR", "NSA", "B-E", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFVAConstruction", "Deflator VAConstruction", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "PD15_EUR", "NSA", "F", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFVARetail", "Deflator VARetail", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "PD15_EUR", "NSA", "G-I", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFVAInformation", "Deflator VAInformation", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "PD15_EUR", "NSA", "J", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFVAFinance", "Deflator VAFinance", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "PD15_EUR", "NSA", "K", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFVARealEstate", "Deflator VARealEstate", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "PD15_EUR", "NSA", "L", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFVAService", "Deflator VAService", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "PD15_EUR", "NSA", "M_N", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFVAGov", "Deflator VAGov", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "PD15_EUR", "NSA", "O-Q", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFVAOther", "Deflator VAOther", "eurostat", "B1G", "namq_10_a10", "na_item", "Q", "DE", "PD15_EUR", "NSA", "R-U", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFExports", "DF Exports", "eurostat", "P6", "namq_10_gdp", "na_item", "Q", "DE", "PD15_EUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFImports", "DF Imports", "eurostat", "P7", "namq_10_gdp", "na_item", "Q", "DE", "PD15_EUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFTaxesLessSubsidies", "Deflator TaxesLessSubsidies", "eurostat", "D21X31", "namq_10_gdp", "na_item", "Q", "DE", "PD15_EUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFConsHH", "Deflator ConsHH", "eurostat", "P31_S14_S15", "namq_10_gdp", "na_item", "Q", "DE", "PD15_EUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFCapForm", "Deflator CapForm", "eurostat", "P51G", "namq_10_gdp", "na_item", "Q", "DE", "PD15_EUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("DFGDP", "Deflator GDP", "eurostat", "B1GQ", "namq_10_gdp", "na_item", "Q", "DE", "PD15_EUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
+  add_dict_entry("URate", "Total Unemployment Rate Labour Force", "eurostat", "T", "une_rt_q", "sex", "Q", "DE", "PC_ACT", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, "Y15-74", NA, NA)
+
 
 
 
@@ -186,7 +204,7 @@ jonas_quarterly <- structure(list(model_varname = c("Supply", "Demand", "GDPOutp
                                  "P7", "REER_IC42_CPI", "B6G", "P51G", "P51G", "P51G", "P51G",
                                  "BF90", "TOTAL", "BPRM_SQM", NA, "PriceETS", "PriceOil"),
                dataset_id = c(NA,
-                              NA, NA, NA, "gov_10q_ggnfa", "gov_10q_ggnfa", "namq_10_a10", "namq_10_a10",
+                              NA, NA, NA, "gov_10q_ggnfa", "gov_10q_ggnfa", "namq_10_gdp", "namq_10_a10",
                               "namq_10_a10", "namq_10_a10", "namq_10_a10", "namq_10_a10", "namq_10_a10",
                               "namq_10_a10", "namq_10_a10", "namq_10_a10", "namq_10_a10", "namq_10_gdp",
                               "namq_10_gdp", "namq_10_gdp", "namq_10_gdp", "ert_eff_ic_q",

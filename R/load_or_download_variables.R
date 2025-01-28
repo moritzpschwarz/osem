@@ -256,7 +256,7 @@ load_or_download_variables <- function(specification,
     # I believe zoo in gets deals with unbalanced inside time period (could be wrong)
   }
 
-  return(full)
+  return(full %>% dplyr::distinct())
 
 }
 
@@ -319,7 +319,7 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
       stop("Issue with automatic EUROSTAT download. Likely cause is a lack of/an unstable internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")
     }
     # extract each variable that we are looking for in this dataset and apply filters
-    indices <- which(to_obtain$database == "eurostat" & to_obtain$dataset_id == eurostat_dataset_ids[i])
+    indices <- which(to_obtain$database == "eurostat" & to_obtain$dataset_id == eurostat_dataset_ids[i] & to_obtain$found == FALSE)
     for (j in indices) {
       # under which column is the variable stored?
       varcolname <- to_obtain$var_col[j]
@@ -406,6 +406,7 @@ download_edgar <- function(to_obtain, quiet) {
     dplyr::pull(.data$dataset_id) %>%
     unique()
   # these should be links
+
   if (length(edgar_dataset_ids) != sum(grepl(pattern = "^http", x = edgar_dataset_ids))) {
     stop("Database 'edgar' should be a link and therefore start with 'http'.")
   }
@@ -556,7 +557,10 @@ download_edgar <- function(to_obtain, quiet) {
           # code exists already, simply filter on it
           sub <- sub %>%
             dplyr::filter(.data$ipcc_code_2006_for_standard_report == to_obtain$ipcc_sector[j]) %>%
-            dplyr::select(-"ipcc_code_2006_for_standard_report")
+            dplyr::select(-"ipcc_code_2006_for_standard_report") %>%
+            dplyr::group_by(.data$geo, .data$time) %>%
+            dplyr::summarise(values = sum(.data$values, na.rm = TRUE)) %>%
+            dplyr::ungroup()
         } else {
           # code does not exist, check sub-codes
           ipcc_subcodes <- stringr::str_subset(string = ipcc_codes_available,
@@ -602,7 +606,12 @@ download_edgar <- function(to_obtain, quiet) {
     unlink(file.path(tmp_extract, filename))
   } # end for datasets
 
-  return(list(df = df_edgar, to_obtain = to_obtain))
+  # pad the edgar data with 0
+  df_edgar %>%
+    tidyr::pivot_wider(id_cols = c("time","geo"), names_from = "na_item", values_from = "values", values_fill = 0) %>%
+    tidyr::pivot_longer(-c("time","geo"), values_to = "values", names_to = "na_item") -> df_edgar_out
+
+  return(list(df = df_edgar_out, to_obtain = to_obtain))
 
 }
 
@@ -699,7 +708,7 @@ load_locally <- function(to_obtain, inputdata_directory, quiet) {
 
   }
 
-  return(list(df = df_local, to_obtain = to_obtain))
+  return(list(df = df_local %>% dplyr::distinct(), to_obtain = to_obtain))
 
 }
 

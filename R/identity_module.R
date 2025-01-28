@@ -13,7 +13,7 @@ identity_module <- function(module, data, classification) {
 
   # original specification (identity/definition)
   rhs <- module$independent
-  indep <- strsplits(module$independent, splits = c(" \\+ ", " \\- "))
+  indep <- strsplits(module$independent, splits = c(" \\+ ", " \\- ", " / ", " \\* "))
   indep <- gsub(" ", "", indep)
 
   # new fitted value name
@@ -28,7 +28,7 @@ identity_module <- function(module, data, classification) {
   # translate
   if(nrow(trans) > 0){
     for (i in 1:NROW(trans)) {
-      rhs <- gsub(pattern = trans[i, "var"], replacement = trans[i, "vartrans"], x = rhs)
+      rhs <- gsub(pattern = paste0("\\b", trans[i, "var"], "\\b"), replacement = trans[i, "vartrans"], x = rhs)
     }
   }
 
@@ -39,8 +39,7 @@ identity_module <- function(module, data, classification) {
   dat_tmp_names <- names(dat_tmp)
 
   dat_tmp %>%
-    dplyr::rename_with(.fn = ~gsub("\\*","_",.)) %>%
-    dplyr::mutate(!!dep.fitted := eval(parse(text = gsub("\\*","_",rhs)))) %>%
+    dplyr::mutate(!!dep.fitted := eval(parse(text = rhs))) %>%
     setNames(c(dat_tmp_names, dep.fitted)) -> fitted
 
   return(fitted)

@@ -8,7 +8,9 @@ add_to_original_data(
   clean_data,
   isat_object,
   dep_var_basename = "imports_of_goods_and_services",
-  ardl_or_ecm = "ardl"
+  ardl_or_ecm = "ardl",
+  opts_df,
+  module
 )
 }
 \arguments{
@@ -25,6 +27,10 @@ front of the name).}
 \item{ardl_or_ecm}{Either 'ardl' or 'ecm' to determine whether to estimate
 the model as an Autoregressive Distributed Lag Function (ardl) or as an
 Equilibrium Correction Model (ecm).}
+
+\item{opts_df}{Internal object containing detailed options and information on individual modules.}
+
+\item{module}{A row of the specification table.}
 }
 \value{
 A tibble with the fitted values as one column.
