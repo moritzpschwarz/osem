@@ -52,13 +52,17 @@ forecast_failure <- function(forecast, data){
   }
 
   # get log information
-  forecast$orig_model$opts_df %>%
-    dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
-      opts[,dep, drop = TRUE]
-    })) %>%
-    tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
-    tidyr::replace_na(list(log_opts_dependent = "none")) %>%
-    dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+  if(!is.null(forecast$orig_model$opts_df[["log_opts"]])){
+    forecast$orig_model$opts_df %>%
+      dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
+        opts[,dep, drop = TRUE]
+      })) %>%
+      tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
+      tidyr::replace_na(list(log_opts_dependent = "none")) %>%
+      dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+  } else {
+    log_opts_processed <- dplyr::tibble(dep_var = forecast$orig_model$opts_df$dependent, log_opt = "none")
+  }
 
   # # CENTRAL FORECASTS --------
   # # get the central forecasts
@@ -82,8 +86,8 @@ forecast_failure <- function(forecast, data){
     dplyr::full_join(log_opts_processed, by = "dep_var") %>%
     tidyr::unnest("all.estimates") %>%
     dplyr::mutate(dplyr::across(dplyr::starts_with("run_"), ~dplyr::case_when(.data$log_opt == "log" ~ exp(.),
-                                                                             .data$log_opt == "asinh" ~ sinh(.),
-                                                                             .data$log_opt == "none" ~ .))) %>%
+                                                                              .data$log_opt == "asinh" ~ sinh(.),
+                                                                              .data$log_opt == "none" ~ .))) %>%
     dplyr::select(-"log_opt") -> all_forecasts_unnested
 
   if(nrow(all_forecasts_unnested) > 0){

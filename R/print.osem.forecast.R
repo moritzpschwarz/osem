@@ -29,13 +29,17 @@ print.osem.forecast <- function(x, plot = TRUE, full_names = FALSE, ...){
   cat("\nCentral Forecast Estimates: \n")
 
   # get log information
-  x$orig_model$opts_df %>%
-    dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
-      opts[,dep, drop = TRUE]
-    })) %>%
-    tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
-    tidyr::replace_na(list(log_opts_dependent = "none")) %>%
-    dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+  if(!is.null(x$orig_model$opts_df[["log_opts"]])){
+    x$orig_model$opts_df %>%
+      dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
+        opts[,dep, drop = TRUE]
+      })) %>%
+      tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
+      tidyr::replace_na(list(log_opts_dependent = "none")) %>%
+      dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+  } else {
+    log_opts_processed <- dplyr::tibble(dep_var = x$orig_model$opts_df$dependent, log_opt = "none")
+  }
 
   x$forecast %>%
     dplyr::select("dep_var", "central.estimate") %>%
