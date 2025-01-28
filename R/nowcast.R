@@ -210,13 +210,18 @@ nowcasting <- function(model, exog_df_ready, frequency){
                                        n.ahead = length(cur_target_dates), plot = FALSE,
                                        ci.levels = NULL, n.sim = 1)
 
-
-        vars_not_full_analysis %>%
-          dplyr::filter(.data$order == ord) %>% dplyr::pull("model.args") %>% dplyr::first() %>% .$use_logs -> log_use
+        model$opts_df %>%
+          dplyr::filter(.data$order == ord) %>%
+          dplyr::pull("log_opts") %>%
+          dplyr::first() %>%
+          dplyr::select(dplyr::all_of(dep_var)) %>%
+          dplyr::pull() -> log_opts
 
         # add the data to the full data and the processed input data
         dplyr::tibble(time = as.Date(cur_target_dates), values = as.numeric(pred_obj)) %>%
-          dplyr::mutate(values = dplyr::case_when(log_use == "both" | log_use == "y" ~ exp(.data$values), TRUE ~ .data$values),
+          dplyr::mutate(values = dplyr::case_when(log_opts == "log" ~ exp(.data$values),
+                                                  log_opts == "asinh" ~ sinh(.data$values),
+                                                  log_opts == "none" ~ .data$values),
                         na_item = dep_var,.after = "time") -> data_to_add
 
 
