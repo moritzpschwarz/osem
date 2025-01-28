@@ -68,57 +68,50 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
       dplyr::filter(.data$na_item %in% when_excluding_exog) -> plot_df
   }
 
+  # get log information
+  x$orig_model$opts_df %>%
+    dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
+      opts[,dep, drop = TRUE]
+    })) %>%
+    tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
+    tidyr::replace_na(list(log_opts_dependent = "none")) %>%
+    dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+
   # CENTRAL FORECASTS --------
   # get the central forecasts
   x$forecast %>%
-    dplyr::select("central.estimate") %>%
+    dplyr::select("dep_var", "central.estimate") %>%
     tidyr::unnest("central.estimate") %>%
-    tidyr::pivot_longer(-"time") %>%
+    tidyr::pivot_longer(-c("time","dep_var")) %>%
     tidyr::drop_na() %>%
-    tidyr::pivot_wider(id_cols = "time", names_from = "name", values_from = "value") -> central_forecasts
-
-  # find out which of the central forecasts should be exponentiated (because they were run in ln)
-  central_forecasts %>%
-    names %>%
-    stringr::str_detect(., "^ln.") -> to_exponentiate
-
-  central_forecasts %>%
-    dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
-    dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
-
-    tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
-    dplyr::full_join(x$orig_model$module_order %>%
-                       dplyr::select("dependent") %>%
-                       dplyr::rename(na_item = "dependent"), by = "na_item") %>%
-
-    dplyr::mutate(fit = "forecast") -> forecasts_processed
+    dplyr::full_join(log_opts_processed, by = "dep_var") %>%
+    dplyr::mutate(value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
+                                           .data$log_opt == "asinh" ~ sinh(.data$value),
+                                           .data$log_opt == "none" ~ .data$value)) %>%
+    dplyr::select(-c("name", "log_opt")) %>%
+    dplyr::rename(values = "value",
+                  na_item = "dep_var") %>%
+    dplyr::mutate(fit = "forecast")-> forecasts_processed
 
   # ALL FORECASTS --------
   # Dealing with uncertainty (all forecasts)
   # unnest the set of all estimates from the original object
   x$forecast %>%
     dplyr::select("dep_var", "all.estimates") %>%
-    tidyr::unnest("all.estimates") -> all_forecasts_unnested
+    dplyr::full_join(log_opts_processed, by = "dep_var") %>%
+    tidyr::unnest("all.estimates") %>%
+    dplyr::mutate(dplyr::across(dplyr::starts_with("run_"), ~dplyr::case_when(.data$log_opt == "log" ~ exp(.),
+                                                                              .data$log_opt == "asinh" ~ sinh(.),
+                                                                              .data$log_opt == "none" ~ .))) %>%
+    dplyr::select(-"log_opt") %>%
+    tidyr::pivot_longer(-c("time", "dep_var")) -> all_forecasts_unnested
 
   if(nrow(all_forecasts_unnested) > 0){
     all_forecasts_unnested %>%
-      tidyr::pivot_longer(-c("time", "dep_var")) -> all_forecasts
-
-    dplyr::tibble(dep_var = names(central_forecasts),
-                  expo = to_exponentiate,
-                  #all = c("time",unique(all_forecasts$dep_var))) -> to_exponentiate_tibble
-                  all = c("time",unique(x$forecast$dep_var))) -> to_exponentiate_tibble
-
-    all_forecasts %>%
-      dplyr::mutate(value = dplyr::case_when(.data$dep_var %in% to_exponentiate_tibble$all[to_exponentiate_tibble$expo == TRUE] ~ exp(.data$value),
-                                             TRUE ~ .data$value)) %>%
       dplyr::rename(na_item = "dep_var", values = "value") %>%
-      dplyr::full_join(x$orig_model$module_order %>%
-                         dplyr::select("dependent") %>%
-                         dplyr::rename(na_item = "dependent"), by = "na_item") %>%
-      dplyr::mutate(fit = "Forecast Uncertainty") -> all_forecasts_processed
 
-    all_forecasts_processed %>%
+      dplyr::mutate(fit = "Forecast Uncertainty")  %>%
+
       tidyr::drop_na("time") %>%
       dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
       dplyr::summarise(
@@ -127,30 +120,14 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
         p975 = stats::quantile(.data$values, probs = 0.975),
         p025 = stats::quantile(.data$values, probs = 0.025),
         p75 = stats::quantile(.data$values, probs = 0.75),
-        p25 = stats::quantile(.data$values, probs = 0.25)) -> all_forecasts_processed_q
+        p25 = stats::quantile(.data$values, probs = 0.25)) %>%
+      dplyr::ungroup() -> all_forecasts_processed_q
   }
 
   # NOWCASTS --------
   if(!is.null(x$nowcast_data)) {
     x$nowcast_data %>%
-      tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") -> nowcasted_data
-
-    # find out which of the central forecasts should be exponentiated (because they were run in ln)
-    nowcasted_data %>%
-      names %>%
-      stringr::str_detect(., "^ln.") -> to_exponentiate
-
-    nowcasted_data %>%
-      dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(nowcasted_data)[to_exponentiate]), exp)) %>%
-      dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
-
-      tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
-      dplyr::left_join(x$orig_model$module_order %>%
-                         dplyr::select("dependent") %>%
-                         dplyr::rename(na_item = "dependent"), by = "na_item") %>%
-
       dplyr::mutate(fit = "nowcast") -> nowcast_processed
-
   } else {nowcast_processed <- NULL}
 
 
@@ -209,7 +186,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   if(!is.null(exog_forecasts)){
     exog_forecasts %>%
       dplyr::bind_rows(last_hist_value %>%
-                       dplyr::filter(.data$na_item %in% unique(exog_forecasts$na_item))) %>%
+                         dplyr::filter(.data$na_item %in% unique(exog_forecasts$na_item))) %>%
       dplyr::mutate(fit = "Forecast/Assumption of\nExogenous Variables") -> exog_forecasts
   }
 
@@ -337,6 +314,9 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                                            TRUE ~ fit)) %>%
       dplyr::rename(type = "fit") %>%
       dplyr::arrange(dplyr::desc(.data$time), .data$na_item, .data$type) %>%
+      dplyr::relocate(c("time", "na_item", "values", "type", "p95", "p05", "p975",
+                        "p025", "p75", "p25")) %>%
+
       return()
   } else {
     if(interactive){

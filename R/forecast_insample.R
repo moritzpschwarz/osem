@@ -139,12 +139,27 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     for (forecast_method in exog_fill_method) {
       if(is.null(forecasted_unknownexogvalues[[i]])){next}
 
+      opts_df <- forecasted_unknownexogvalues[[i]][[forecast_method]]$orig_model$opts_df
+
+      opts_df %>%
+        dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
+          opts[,dep, drop = TRUE]
+        })) %>%
+        tidyr::unnest("log_opts_dependent") %>%
+        dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+
+
       forecasted_unknownexogvalues[[i]][[forecast_method]]$forecast %>%
         dplyr::select("dep_var","central.estimate") %>%
         dplyr::mutate(start = time_to_use[i]) %>%
+        dplyr::full_join(log_opts_processed, by = "dep_var") %>%
         tidyr::unnest("central.estimate") %>%
-        tidyr::pivot_longer(-c("dep_var", "start", "time")) %>%
-        tidyr::drop_na("value") -> centrals
+        tidyr::pivot_longer(-c("dep_var", "start", "time","log_opt")) %>%
+        tidyr::drop_na("value") %>%
+        dplyr::mutate(value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
+                                               .data$log_opt == "asinh" ~ sinh(.data$value),
+                                               .data$log_opt == "none" ~ .data$value)) %>%
+        dplyr::select(-c("name","log_opt"))-> centrals
 
       # this should also work if there are no estimates for uncertainty
       # so this could result in alls remaining empty (no rows)
@@ -153,6 +168,8 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
       forecasted_unknownexogvalues[[i]][[forecast_method]]$forecast %>%
         dplyr::select("dep_var","all.estimates") %>%
         dplyr::mutate(start = time_to_use[i]) %>%
+        dplyr::full_join(log_opts_processed, by = "dep_var") %>%
+
         dplyr::mutate(quantiles = purrr::map(.data$all.estimates, function(x){
           if(!is.null(x)){
             tidyr::pivot_longer(x, -"time") %>%
@@ -166,33 +183,32 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
           }
         })) %>%
         dplyr::select(-"all.estimates") %>%
-        dplyr::full_join(centrals %>%
-                           dplyr::distinct(.data$dep_var, .data$name), by = "dep_var") %>%
-        tidyr::unnest("quantiles") -> alls
+
+        tidyr::unnest("quantiles") %>%
+        dplyr::mutate(value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
+                                               .data$log_opt == "asinh" ~ sinh(.data$value),
+                                               .data$log_opt == "none" ~ .data$value)) %>%
+        dplyr::select(-"log_opt") -> alls
 
       dplyr::bind_rows(overall_to_plot_central, centrals %>% dplyr::mutate(method = forecast_method)) -> overall_to_plot_central
       dplyr::bind_rows(overall_to_plot_alls, alls%>% dplyr::mutate(method = forecast_method)) -> overall_to_plot_alls
     }
   }
 
-  overall_to_plot_central %>%
-    dplyr::mutate(value = ifelse(grepl("^ln.", .data$name), exp(.data$value), .data$value)) -> overall_to_plot_central_exp
-
   if(nrow(overall_to_plot_alls)>0){
     overall_to_plot_alls %>%
-      dplyr::mutate(value = ifelse(grepl("^ln.", .data$name), exp(.data$value), .data$value)) %>%
-      tidyr::pivot_wider(id_cols = c("dep_var","name","start","time", "method"), names_from = "quantile", values_from = "value") -> overall_to_plot_alls_exp
+      tidyr::pivot_wider(id_cols = c("dep_var","start","time", "method"), names_from = "quantile", values_from = "value") -> overall_to_plot_alls_exp
   } else {
     overall_to_plot_alls_exp <- NULL
   }
 
   model$full_data %>%
     dplyr::rename(dep_var = "na_item") %>%
-    dplyr::filter(.data$dep_var %in% overall_to_plot_central_exp$dep_var,
+    dplyr::filter(.data$dep_var %in% overall_to_plot_central$dep_var,
                   .data$time > min(overall_to_plot_central$start)) -> full_data
 
   out <- list()
-  out$central <- overall_to_plot_central_exp %>%
+  out$central <- overall_to_plot_central %>%
     dplyr::rename(values = "value") %>%
     dplyr::mutate(end = end, .after = "start")
 
@@ -204,7 +220,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   out$args <- list(sample_share = sample_share,
                    time_to_use = time_to_use,
                    all_times = all_times,
-                   dep_vars = overall_to_plot_central_exp$dep_var,
+                   dep_vars = overall_to_plot_central$dep_var,
                    model = model,
                    exog_fill_method = exog_fill_method)
 
