@@ -123,6 +123,7 @@ run_model <- function(specification,
 
   if(any(grepl("\\-|\\+|\\*|\\/|\\^",dictionary$model_varname))){stop("The 'model_varname' column in the Dictionary cannot contain any of the following characters: + - / * ^")}
   if(any(grepl("\\-|\\+|\\*|\\/|\\^",specification$dependent))){stop("The 'dependent' column in the specification cannot contain any of the following characters: + - / * ^")}
+  if(any(grepl("\\-|\\*|\\/|\\^",specification$independent[specification$type == "n"]))){stop("The 'independent' column of estimated equations (type = 'n') in the specification cannot contain any of the following characters: - / * ^.\nThis is only possible for identities (type = 'd').")}
 
 
   if(!is.null(save_to_disk)){
@@ -193,6 +194,8 @@ run_model <- function(specification,
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order)
 
+  opts_df <- module_order
+
   # initialise storage of estimation results
   module_collection <- module_order %>%
     dplyr::mutate(dataset = list(NA_complex_),
@@ -231,8 +234,11 @@ run_model <- function(specification,
       max.block.size = max.block.size,
       gets_selection = gets_selection,
       selection.tpval = selection.tpval,
+      opts_df = opts_df,
       quiet = quiet
     )
+
+    opts_df <- module_estimate$opts_df
 
     # store module estimates dataset, including fitted values
     module_collection[module_collection$order == i, "dataset"] <- dplyr::tibble(dataset = list(module_estimate$data))
@@ -268,6 +274,7 @@ run_model <- function(specification,
   out$processed_input_data <- full_data
   out$full_data <- tmp_data
   out$dictionary <- dictionary
+  out$opts_df <- opts_df
 
   out <- new_osem(out)
 

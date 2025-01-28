@@ -207,7 +207,7 @@ determine_variables <- function(specification, dictionary) {
     # each element of character vector may contain formula, e.g. "A + B", must split
     vars <- strsplits(
       indep[i],
-      c(" \\- ", " \\+ "))
+      c(" \\- ", " \\+ ", " / ", " \\* "))
     indep.set <- union(indep.set, vars)
   }
   indep.set <- gsub(" ", "", indep.set)

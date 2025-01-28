@@ -7,34 +7,78 @@
 #' @param max.ar Integer. The maximum number of lags to use for the AR terms. as well as for the independent variables.
 #' @param max.dl Integer. The maximum number of lags to use for the independent variables (the distributed lags).
 #' @param trend Logical. Should a trend be added? Default is TRUE.
-#'
+#' @param opts_df Internal object containing detailed options and information on individual modules.
+#' @inheritParams run_module
+#' @inheritParams run_model
 #'
 #' @return A tibble with the cleaned data.
 #'
 #'
-#' @examples
-#' sample_data <- dplyr::tibble(
-#'   time = rep(seq.Date(
-#'     from = as.Date("2000-01-01"),
-#'     to = as.Date("2000-12-31"), by = 1
-#'   ), each = 2),
-#'   na_item = rep(c("yvar", "xvar"), 366), values = rnorm(366 * 2, mean = 100)
-#' )
-#' osem:::clean_data(sample_data, max.ar = 4, max.dl = 4)
 
 clean_data <- function(raw_data,
                        max.ar = 4,
                        max.dl = 2,
-                       trend = TRUE) {
+                       trend = TRUE,
+                       opts_df,
+                       module,
+                       use_logs) {
 
   raw_data %>%
     dplyr::select("na_item", "time", "values") %>%
     tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
-    #janitor::clean_names() %>%
-    #dplyr::rename_with(.fn = tolower) %>%
-    dplyr::arrange(.data$time) %>%
+
+    dplyr::arrange(.data$time) -> raw_data_processed
+
+  # save the relevant information whether Log or asinh transformation is needed in opts_df
+  if(use_logs == "none"){
+    raw_data_processed %>%
+      dplyr::mutate(dplyr::across(-"time", ~NA)) %>%
+      dplyr::select(-"time") %>%
+      dplyr::distinct() %>%
+      tidyr::nest() %>%
+      setNames("log_opts") %>%
+      dplyr::bind_cols(module,.) -> log_opts_new
+  }
+
+  if(use_logs == "y"){
+    raw_data_processed %>%
+      dplyr::mutate(dplyr::across(-"time", ~dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
+      dplyr::mutate(dplyr::across(-dplyr::all_of(module$dependent), ~NA)) %>%
+      dplyr::select(-"time") %>%
+      dplyr::distinct() %>%
+      tidyr::nest() %>%
+      setNames("log_opts") %>%
+      dplyr::bind_cols(module,.) -> log_opts_new
+  }
+
+  if(use_logs == "x"){
+    raw_data_processed %>%
+      dplyr::mutate(dplyr::across(-"time", ~dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(module$dependent), ~NA)) %>%
+      dplyr::select(-"time") %>%
+      dplyr::distinct() %>%
+      tidyr::nest() %>%
+      setNames("log_opts") %>%
+      dplyr::bind_cols(module,.) -> log_opts_new
+  }
+
+  if(use_logs == "both"){
+    raw_data_processed %>%
+      dplyr::mutate(dplyr::across(-"time", ~dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
+      dplyr::select(-"time") %>%
+      dplyr::distinct() %>%
+      tidyr::nest() %>%
+      setNames("log_opts") %>%
+      dplyr::bind_cols(module,.) -> log_opts_new
+  }
+
+  if(!"log_opts" %in% names(opts_df)){opts_df <- opts_df %>% dplyr::mutate(log_opts = NA)}
+
+  opts_df %>%
+    dplyr::mutate(log_opts = dplyr::case_when(.data$index == module$index ~ log_opts_new$log_opts, TRUE ~ .data$log_opts)) -> opts_df
+
+  raw_data_processed %>%
     dplyr::mutate(
-      # dplyr::across(-"time", list(ln = log), .names = "{.fn}.{.col}"),
       dplyr::across(-"time", .fns = ~ if (any(. <= 0, na.rm = TRUE)) {asinh(.)} else {log(.)}, .names = "ln.{.col}"),
       dplyr::across(-"time", list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
     ) -> intermed
@@ -59,6 +103,10 @@ clean_data <- function(raw_data,
     ) %>%
     {if(trend){dplyr::mutate(.,trend = as.numeric(as.factor(.data$time)),.after = "time")} else {.}} -> cleaned_data
 
-  return(cleaned_data)
+  out <- list()
+  out$df <- cleaned_data
+  out$opts_df <- opts_df
+
+  return(out)
 
 }

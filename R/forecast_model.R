@@ -96,7 +96,6 @@ forecast_model <- function(model,
   # cycling through each module
   for(i in seq(model$module_order$order)){
     # i = 1
-
     current_spec <- model$module_order %>%
       dplyr::filter(.data$order == i) %>%
 
@@ -107,7 +106,7 @@ forecast_model <- function(model,
       dplyr::mutate(independent = gsub(" ", "", .data$independent)) %>%
 
       dplyr::rowwise() %>%
-      dplyr::mutate(independent = list(strsplits(.data$independent,c("\\-", "\\+")))) %>%
+      dplyr::mutate(independent = list(strsplits(.data$independent,c("\\-", "\\+", "/", "\\*")))) %>%
 
       # following line added to deal with AR models when ind_vars is a list of NULL
       dplyr::bind_rows(dplyr::tibble(independent = list(""))) %>%
@@ -302,8 +301,7 @@ forecast_model <- function(model,
       central_estimate <- identity_setup$central_estimate
       prediction_list <- identity_setup$prediction_list
 
-      names(identity_pred_final) <- unique(current_spec$dependent)
-      prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::tibble(yhat = identity_pred_final[,1])))
+      prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::tibble(yhat = identity_pred_final[,1, drop = TRUE])))
       prediction_list[prediction_list$order == i, "data"] <- dplyr::tibble(data = list(dplyr::bind_cols(identity_pred_final, identity_pred)))
       prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(data = list(central_estimate))
       prediction_list[prediction_list$order == i, "all.estimates"] <- dplyr::tibble(data = list(identity_pred_final.all))

@@ -9,12 +9,14 @@
 #'
 forecast_identities <- function(model, exog_df_ready, current_spec, prediction_list, uncertainty_sample){
 
+
+  # Assembling the data -----------------------------------------------------
+
   identity_pred <- dplyr::tibble()
   identity_pred <- exog_df_ready %>%
     dplyr::select(dplyr::all_of(current_spec$independent[current_spec$independent %in% names(exog_df_ready)]))
 
   identity_pred.all <- identity_pred
-  identity_logs <- c(rep(FALSE,length(current_spec$independent[current_spec$independent %in% names(exog_df_ready)])))
 
   # check which x variables are needed in this module, but are not fully exogenous
   missing_vars <- current_spec$independent[!current_spec$independent %in% names(exog_df_ready)]
@@ -31,27 +33,35 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       dplyr::pull("predict.isat_object") %>%
       .[[1]] -> mvar_model_obj
 
-    mvar_logs <- model$module_collection %>%
+    mvar_log <- model$opts_df %>%
       dplyr::filter(.data$index == mvar_model_index) %>%
-      .$model.args %>%
+      .$log_opts %>%
       .[[1]] %>%
-      .$use_logs
-
-    identity_logs <- c(identity_logs, ifelse(mvar_logs %in% c("both","x") || is.null(mvar_logs), TRUE, FALSE))
+      {if(is.null(.)){
+        "none"
+      } else {
+        dplyr::select(.,dplyr::all_of(mvar)) %>%
+          dplyr::pull()}}
 
     mvar_euname <- model$module_collection %>%
       dplyr::filter(.data$index == mvar_model_index) %>%
       dplyr::pull("dependent")
 
-    mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
-
+    ## Get earlier data for individual estimates --------------
     mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
-      setNames(mvar_name)
+      dplyr::mutate(data = dplyr::case_when(mvar_log == "log" ~ exp(data),
+                                            mvar_log == "asinh" ~ sinh(data),
+                                            mvar_log == "none" ~ data)) %>%
+      setNames(mvar_euname)
 
+    ## Get earlier data for all estimates --------------
     prediction_list %>%
       dplyr::filter(.data$index == mvar_model_index) %>%
       dplyr::pull("all.estimates") %>%
-      .[[1]] -> prediction_list.mvar.all
+      .[[1]] %>%
+      dplyr::mutate(dplyr::across(-"time", ~dplyr::case_when(mvar_log == "log" ~ exp(.),
+                                                             mvar_log == "asinh" ~ sinh(.),
+                                                             mvar_log == "none" ~ .)))-> prediction_list.mvar.all
 
     # if the all estimates are not yet stored, use the central estimate
     if(!is.null(prediction_list.mvar.all)){
@@ -59,29 +69,34 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
         dplyr::select(-"time") -> mvar_all.estimates
 
       # name all the individual estimates
-      colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
+      colnames(mvar_all.estimates) <- paste0(mvar_euname,".all.",seq(uncertainty_sample))
 
       # get all the individual estimates into a column of a tibble
       mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
         dplyr::mutate(index = 1:dplyr::n()) %>%
         tidyr::nest(data = -"index") %>%
         dplyr::select(-"index") %>%
-        setNames(paste0(mvar_name,".all"))
+        setNames(paste0(mvar_euname,".all"))
+
     } else {
+
       prediction_list %>%
         dplyr::filter(.data$index == mvar_model_index) %>%
         dplyr::pull("central.estimate") %>%
         .[[1]] %>%
-        dplyr::select(-"time") -> mvar_all.estimates
+        dplyr::select(-"time") %>%
+        dplyr::mutate(dplyr::across(1, ~dplyr::case_when(mvar_log == "log" ~ exp(.),
+                                                         mvar_log == "asinh" ~ sinh(.),
+                                                         mvar_log == "none" ~ .))) -> mvar_all.estimates
 
       # name all the individual estimates
-      colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
+      colnames(mvar_all.estimates) <- paste0(mvar_euname,".all.",seq(uncertainty_sample))
 
       # get all the individual estimates into a column of a tibble
       mvar_all.estimates.tibble <- dplyr::as_tibble(mvar_all.estimates) %>%
         dplyr::mutate(index = 1:dplyr::n()) %>%
         dplyr::select(-"index") %>%
-        setNames(paste0(mvar_name,".all"))
+        setNames(paste0(mvar_euname,".all"))
     }
 
 
@@ -92,110 +107,38 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       identity_pred <- dplyr::bind_cols(identity_pred,mvar_tibble)
       identity_pred.all <- dplyr::bind_cols(identity_pred.all,mvar_all.estimates.tibble)
     }
-
-
   }
 
-  # log all the exogenous columns, if any of the estimated columns is logged
-  if(any(identity_logs) && !all(identity_logs)){
+  # Constructing the identity (central) -------------------------------------
 
-    # check which column contains any 0 or negative values
-    log_possible <- apply(identity_pred.all, 2, function(column){
-      if(is.list(column)){
-        column <- unlist(column)
-      }
-      all(column > 0)
-    })
+  identity_pred_final <- identity_pred %>%
+    dplyr::mutate(!!unique(current_spec$dependent) := eval(parse(text = unique(current_spec$independent_orig)))) %>%
+    dplyr::select(dplyr::all_of(unique(current_spec$dependent)))
 
-    # we need to turn identity_logs around because those that are true already are already logged
-    do_log <- !identity_logs & log_possible
-    do_asinh <- !identity_logs & !log_possible
+  identity_pred_final.all <- identity_pred.all %>%
 
-    log_cols <- names(identity_pred.all)[do_log]
-    asinh_cols <- names(identity_pred.all)[do_asinh]
+    dplyr::rename_with(.cols = dplyr::everything(), .fn = ~gsub("\\.all","",.)) %>%
 
-    identity_pred %>%
-      dplyr::mutate(dplyr::across(dplyr::all_of(log_cols),.fns = log, .names = "ln.{.col}")) %>%
-      dplyr::mutate(dplyr::across(dplyr::all_of(asinh_cols),.fns = asinh, .names = "ln.{.col}")) %>%
-      dplyr::select(-dplyr::all_of(dplyr::all_of(names(identity_pred)[!identity_logs]))) -> identity_pred
-
-    identity_pred.all %>%
-      #dplyr::mutate(dplyr::across(dplyr::all_of(names(identity_pred.all)[!identity_logs]), ~purrr::map(.,log), .names = "ln.{.col}")) %>%
-      dplyr::mutate(dplyr::across(dplyr::all_of(log_cols), ~purrr::map(.,function(x){log(x)}), .names = "ln.{.col}")) %>%
-      dplyr::mutate(dplyr::across(dplyr::all_of(asinh_cols), ~purrr::map(.,function(x){asinh(x)}), .names = "ln.{.col}")) %>%
-      dplyr::select(-dplyr::all_of(dplyr::all_of(names(identity_pred.all)[!identity_logs]))) -> identity_pred.all
-  }
-
-  # sum the identities
-  cols_to_cycle <- gsub(" ","",strsplits(unique(current_spec$independent_orig), c("\\+", "\\-")))
-  operators <- stringr::str_extract_all(string = unique(current_spec$independent_orig), pattern = "\\+|\\-")[[1]]
-
-  if(length(cols_to_cycle) != (length(operators)+1)){warning("Identity might be falsely calculated. Check operators.")}
-
-  # get the first column of the identity
-  identity_pred_final <- if(grepl("^ln\\.",names(identity_pred[,1, drop = FALSE]))){
-    # an identity is never logged - therefore exponentiate the first column if that is logged
-    exp(identity_pred[,1, drop = FALSE])
-  } else{
-    identity_pred[,1, drop = FALSE]}
-
-  for(col_cycle in 2:ncol(identity_pred)){
-    cur_col_cycle <- identity_pred[,col_cycle, drop = FALSE]
-    # an identity is never logged - therefore exponentiate the first column if that is logged
-    if(grepl("^ln\\.",names(cur_col_cycle))){cur_col_cycle <- exp(cur_col_cycle)}
-
-    if(operators[col_cycle-1] == "+"){
-      identity_pred_final <- identity_pred_final + cur_col_cycle
-    } else if(operators[col_cycle-1] == "-"){
-      identity_pred_final <- identity_pred_final - cur_col_cycle
-    } else {stop("Error in calculating Identity.")}
-
-  }
-
-  # repeat the same for .all estimates
-  # get the first column of the identity
-  identity_pred_final.all <- if(grepl("^ln\\.",names(identity_pred.all[,1, drop = FALSE]))){
-    # an identity is never logged - therefore exponentiate the first column if that is logged
-    identity_pred.all[,1, drop = FALSE] %>%
-      dplyr::mutate(dplyr::across(1, ~purrr::map(.,exp)))
-  } else {
-    identity_pred.all[,1, drop = FALSE]}
-
-  for(col_cycle in 2:ncol(identity_pred.all)){
-    cur_col_cycle <- identity_pred.all[,col_cycle, drop = FALSE]
-    # an identity is never logged - therefore exponentiate the first column if that is logged
-    if(grepl("^ln\\.",names(cur_col_cycle))){
-      cur_col_cycle <- cur_col_cycle %>%
-        dplyr::mutate(dplyr::across(1, ~purrr::map(.,exp)))
-    }
-
-    if(operators[col_cycle-1] == "+"){
-
-      identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) +
-        {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
-            dplyr::pull(1)
-        } else {
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
+    dplyr::mutate(
+      !!unique(current_spec$dependent) := purrr::pmap(
+        .l = dplyr::pick(dplyr::everything()),
+        .f = function(...) {
+          env <- list2env(list(...))
+          eval(parse(text = unique(current_spec$independent_orig)), envir = env)
+        }
+      )
+    ) %>%
+    dplyr::select(dplyr::all_of(unique(current_spec$dependent))) %>%
+    tidyr::unnest(cols = dplyr::everything())
 
 
-    } else if(operators[col_cycle-1] == "-"){
-
-      identity_pred_final.all <- tidyr::unnest(identity_pred_final.all, cols = dplyr::everything()) -
-        {if(ncol(tidyr::unnest(cur_col_cycle, cols = dplyr::everything())) == 1){
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything()) %>%
-            dplyr::pull(1)
-        } else {
-          tidyr::unnest(cur_col_cycle, cols = dplyr::everything())}}
-
-    } else {stop("Error in calculating Identity.")}
-  }
+  # Preparing output --------------------------------------------------------
 
   outvarname <- paste0(#if(any(identity_logs) && !all(identity_logs)){"ln."} else {""},
     current_spec %>% dplyr::pull("dependent") %>% unique) #%>% tolower)
 
   dplyr::tibble(time = exog_df_ready %>% dplyr::pull(.data$time),
-                value = as.numeric(identity_pred_final[,1])) %>%
+                value = identity_pred_final[,1, drop = TRUE]) %>%
     setNames(c("time",outvarname)) -> central_estimate
 
   # if there are uncertainties, then the columns must be larger than 1
@@ -213,7 +156,7 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
 
   out <- list()
   out$identity_pred <- identity_pred
-  out$identity_pred_final <- identity_pred_final
+  out$identity_pred_final <- identity_pred_final %>% setNames(outvarname)
   out$identity_pred_final.all <- identity_pred_final.all
   out$central_estimate <- central_estimate
   out$prediction_list <- prediction_list
