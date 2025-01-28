@@ -69,13 +69,17 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   }
 
   # get log information
-  x$orig_model$opts_df %>%
-    dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
-      opts[,dep, drop = TRUE]
-    })) %>%
-    tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
-    tidyr::replace_na(list(log_opts_dependent = "none")) %>%
-    dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+  if(!is.null(x$orig_model$opts_df[["log_opts"]])){
+    x$orig_model$opts_df %>%
+      dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
+        opts[,dep, drop = TRUE]
+      })) %>%
+      tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
+      tidyr::replace_na(list(log_opts_dependent = "none")) %>%
+      dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+  } else {
+    log_opts_processed <- dplyr::tibble(dep_var = x$orig_model$opts_df$dependent, log_opt = "none")
+  }
 
   # CENTRAL FORECASTS --------
   # get the central forecasts
@@ -103,11 +107,11 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     dplyr::mutate(dplyr::across(dplyr::starts_with("run_"), ~dplyr::case_when(.data$log_opt == "log" ~ exp(.),
                                                                               .data$log_opt == "asinh" ~ sinh(.),
                                                                               .data$log_opt == "none" ~ .))) %>%
-    dplyr::select(-"log_opt") %>%
-    tidyr::pivot_longer(-c("time", "dep_var")) -> all_forecasts_unnested
+    dplyr::select(-"log_opt") -> all_forecasts_unnested
 
   if(nrow(all_forecasts_unnested) > 0){
     all_forecasts_unnested %>%
+      tidyr::pivot_longer(-c("time", "dep_var")) %>%
       dplyr::rename(na_item = "dep_var", values = "value") %>%
 
       dplyr::mutate(fit = "Forecast Uncertainty")  %>%
@@ -297,6 +301,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
 
   if(return.data){
     # prepare a nice dataset to be spit out
+
     plotting_df_ready %>%
       {if(!exclude.exogenous){dplyr::bind_rows(.,exog_forecasts %>%
                                                  dplyr::mutate(fit = "Exogenous Forecast"))} else {.}} %>%
@@ -314,8 +319,8 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                                            TRUE ~ fit)) %>%
       dplyr::rename(type = "fit") %>%
       dplyr::arrange(dplyr::desc(.data$time), .data$na_item, .data$type) %>%
-      dplyr::relocate(c("time", "na_item", "values", "type", "p95", "p05", "p975",
-                        "p025", "p75", "p25")) %>%
+      dplyr::relocate(dplyr::any_of(c("time", "na_item", "values", "type", "p95", "p05", "p975",
+                        "p025", "p75", "p25"))) %>% # here any_of because with only identity the percentiles don't exist
 
       return()
   } else {

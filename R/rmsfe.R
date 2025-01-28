@@ -53,13 +53,18 @@ rmsfe <- function(forecast, data){
   # CENTRAL FORECASTS --------
   # get the central forecasts
   # get log information
-  forecast$orig_model$opts_df %>%
-    dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
-      opts[,dep, drop = TRUE]
-    })) %>%
-    tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
-    tidyr::replace_na(list(log_opts_dependent = "none")) %>%
-    dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+  if(!is.null(forecast$orig_model$opts_df[["log_opts"]])){
+    forecast$orig_model$opts_df %>%
+      dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
+        opts[,dep, drop = TRUE]
+      })) %>%
+      tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
+      tidyr::replace_na(list(log_opts_dependent = "none")) %>%
+      dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+  } else {
+    log_opts_processed <- dplyr::tibble(dep_var = forecast$orig_model$opts_df$dependent, log_opt = "none")
+  }
+
 
   # # CENTRAL FORECASTS --------
   # # get the central forecasts

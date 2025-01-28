@@ -78,8 +78,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     dplyr::filter(.data$na_item %in% exog_vars) -> exog_data
 
 
-  # Forecast ----------------------------------------------------------------
-
+  # Forecast Loop ----------------------------------------------------------------
   forecasted_unknownexogvalues <- list()
   rmsfe_values <- list()
   forecast_failures <- list()
@@ -106,17 +105,22 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
     for(forecast_method in exog_fill_method){
       #forecasted_unknownexogvalues[[i]]
+
+      # Run the forecast --------------------------------------------------------
+
+
       intermed_list[[forecast_method]] <- forecast_model(model = all_models[[i]],
                                                          n.ahead = nsteps,
                                                          uncertainty_sample = uncertainty_sample,
                                                          plot = FALSE,
                                                          exog_fill_method = forecast_method,
                                                          quiet = TRUE)
-
+      # RMSFE
       intermed_rmsfe[[forecast_method]] <- rmsfe(forecast = intermed_list[[forecast_method]],
                                                  data = model$processed_input_data) %>%
         dplyr::bind_cols(dplyr::tibble(start = start, end = end, method = forecast_method))
 
+      # Forecast Failures
       intermed_failure[[forecast_method]] <- forecast_failure(forecast = intermed_list[[forecast_method]],
                                                               data = model$processed_input_data) %>%
         dplyr::bind_cols(dplyr::tibble(start = start, end = end, method = forecast_method))
@@ -134,19 +138,26 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   overall_to_plot_central <- dplyr::tibble()
   overall_to_plot_alls <- dplyr::tibble()
 
+  # Prepare output ----------------------------------------------------------
+
   for(i in 1:length(forecasted_unknownexogvalues)){
     # i = 3
     for (forecast_method in exog_fill_method) {
       if(is.null(forecasted_unknownexogvalues[[i]])){next}
 
+      # get log information
       opts_df <- forecasted_unknownexogvalues[[i]][[forecast_method]]$orig_model$opts_df
-
-      opts_df %>%
-        dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
-          opts[,dep, drop = TRUE]
-        })) %>%
-        tidyr::unnest("log_opts_dependent") %>%
-        dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+      if(!is.null(opts_df[["log_opts"]])){
+        opts_df %>%
+          dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
+            opts[,dep, drop = TRUE]
+          })) %>%
+          tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
+          tidyr::replace_na(list(log_opts_dependent = "none")) %>%
+          dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+      } else {
+        log_opts_processed <- dplyr::tibble(dep_var = forecasted_unknownexogvalues[[i]][[forecast_method]]$orig_model$opts_df$dependent, log_opt = "none")
+      }
 
 
       forecasted_unknownexogvalues[[i]][[forecast_method]]$forecast %>%
@@ -185,9 +196,11 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
         dplyr::select(-"all.estimates") %>%
 
         tidyr::unnest("quantiles") %>%
-        dplyr::mutate(value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
-                                               .data$log_opt == "asinh" ~ sinh(.data$value),
-                                               .data$log_opt == "none" ~ .data$value)) %>%
+
+        {if(nrow(.) > 0){
+          dplyr::mutate(.,value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
+                                                                .data$log_opt == "asinh" ~ sinh(.data$value),
+                                                                .data$log_opt == "none" ~ .data$value))} else {.}} %>%
         dplyr::select(-"log_opt") -> alls
 
       dplyr::bind_rows(overall_to_plot_central, centrals %>% dplyr::mutate(method = forecast_method)) -> overall_to_plot_central
