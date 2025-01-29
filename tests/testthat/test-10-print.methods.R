@@ -46,9 +46,9 @@ test_that("print methods are working", {
   expect_output(print(mod_fcst, plot = FALSE), "Central Forecast Estimates")
   expect_output(print(mod_fcst, plot = FALSE), "Forecast Method")
   expect_output(print(mod_fcst, plot = FALSE), "AR Model")
-  expect_output(print(mod_fcst, plot = FALSE), "ln.FinConsExpGov")
-  expect_output(print(mod_fcst, plot = FALSE), "4.61")
-  expect_output(print(mod_fcst, plot = FALSE), "4.39")
+  expect_output(print(mod_fcst, plot = FALSE), "FinConsExpGov")
+  expect_output(print(mod_fcst, plot = FALSE), "100")
+  expect_output(print(mod_fcst, plot = FALSE), "80.3")
 
 })
 
