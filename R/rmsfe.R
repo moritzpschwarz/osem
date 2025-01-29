@@ -52,29 +52,34 @@ rmsfe <- function(forecast, data){
 
   # CENTRAL FORECASTS --------
   # get the central forecasts
+  # get log information
+  if(!is.null(forecast$orig_model$opts_df[["log_opts"]])){
+    forecast$orig_model$opts_df %>%
+      dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
+        opts[,dep, drop = TRUE]
+      })) %>%
+      tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
+      tidyr::replace_na(list(log_opts_dependent = "none")) %>%
+      dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+  } else {
+    log_opts_processed <- dplyr::tibble(dep_var = forecast$orig_model$opts_df$dependent, log_opt = "none")
+  }
+
+
+  # # CENTRAL FORECASTS --------
+  # # get the central forecasts
   forecast$forecast %>%
-    dplyr::select("central.estimate") %>%
+    dplyr::select("dep_var", "central.estimate") %>%
     tidyr::unnest("central.estimate") %>%
-    tidyr::pivot_longer(-"time") %>%
+    tidyr::pivot_longer(-c("time","dep_var")) %>%
     tidyr::drop_na() %>%
-    tidyr::pivot_wider(id_cols = "time", names_from = "name", values_from = "value") -> central_forecasts
-
-  # find out which of the central forecasts should be exponentiated (because they were run in ln)
-  central_forecasts %>%
-    names %>%
-    stringr::str_detect(., "^ln.") -> to_exponentiate
-
-
-  central_forecasts %>%
-    dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
-    dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
-
-    tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
-    dplyr::full_join(forecast$orig_model$module_order %>%
-                       dplyr::select("dependent") %>%
-                       dplyr::rename(na_item = "dependent"), by = "na_item") %>%
-
-    dplyr::rename(forecast = "values") -> forecasts_processed
+    dplyr::full_join(log_opts_processed, by = "dep_var") %>%
+    dplyr::mutate(value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
+                                           .data$log_opt == "asinh" ~ sinh(.data$value),
+                                           .data$log_opt == "none" ~ .data$value)) %>%
+    dplyr::select(-c("name", "log_opt")) %>%
+    dplyr::rename(forecast = "value",
+                  na_item = "dep_var") -> forecasts_processed
 
 
   data %>%

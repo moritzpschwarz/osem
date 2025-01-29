@@ -51,50 +51,49 @@ forecast_failure <- function(forecast, data){
     stop("Input object not of type 'osem.forecast'. Run 'forecast_model' again and use the output of that function.")
   }
 
+  # get log information
+  if(!is.null(forecast$orig_model$opts_df[["log_opts"]])){
+    forecast$orig_model$opts_df %>%
+      dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
+        opts[,dep, drop = TRUE]
+      })) %>%
+      tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
+      tidyr::replace_na(list(log_opts_dependent = "none")) %>%
+      dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
+  } else {
+    log_opts_processed <- dplyr::tibble(dep_var = forecast$orig_model$opts_df$dependent, log_opt = "none")
+  }
+
   # # CENTRAL FORECASTS --------
   # # get the central forecasts
   forecast$forecast %>%
-    dplyr::select("central.estimate") %>%
+    dplyr::select("dep_var", "central.estimate") %>%
     tidyr::unnest("central.estimate") %>%
-    tidyr::pivot_longer(-"time") %>%
+    tidyr::pivot_longer(-c("time","dep_var")) %>%
     tidyr::drop_na() %>%
-    tidyr::pivot_wider(id_cols = "time", names_from = "name", values_from = "value") -> central_forecasts
-
-  # find out which of the central forecasts should be exponentiated (because they were run in ln)
-  central_forecasts %>%
-    names %>%
-    stringr::str_detect(., "^ln.") -> to_exponentiate
-
-
-  central_forecasts %>%
-    dplyr::mutate(dplyr::across(.cols = dplyr::all_of(names(central_forecasts)[to_exponentiate]), exp)) %>%
-    dplyr::rename_with(.fn = ~gsub("ln.","",.)) %>%
-
-    tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "values") %>%
-    dplyr::full_join(forecast$orig_model$module_order %>%
-                       dplyr::select("dependent") %>%
-                       dplyr::rename(na_item = "dependent"), by = "na_item") %>%
-
-    dplyr::rename(forecast = "values") -> forecasts_processed
+    dplyr::full_join(log_opts_processed, by = "dep_var") %>%
+    dplyr::mutate(value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
+                                           .data$log_opt == "asinh" ~ sinh(.data$value),
+                                           .data$log_opt == "none" ~ .data$value)) %>%
+    dplyr::select(-c("name", "log_opt")) %>%
+    dplyr::rename(forecast = "value") -> forecasts_processed
 
   # ALL FORECASTS --------
   # Dealing with uncertainty (all forecasts)
   # unnest the set of all estimates from the original object
   forecast$forecast %>%
     dplyr::select("dep_var", "all.estimates") %>%
-    tidyr::unnest("all.estimates") -> all_forecasts_unnested
+    dplyr::full_join(log_opts_processed, by = "dep_var") %>%
+    tidyr::unnest("all.estimates") %>%
+    dplyr::mutate(dplyr::across(dplyr::starts_with("run_"), ~dplyr::case_when(.data$log_opt == "log" ~ exp(.),
+                                                                              .data$log_opt == "asinh" ~ sinh(.),
+                                                                              .data$log_opt == "none" ~ .))) %>%
+    dplyr::select(-"log_opt") -> all_forecasts_unnested
 
   if(nrow(all_forecasts_unnested) > 0){
     all_forecasts_unnested %>%
-      tidyr::pivot_longer(-c("time", "dep_var")) -> all_forecasts
+      tidyr::pivot_longer(-c("time", "dep_var"))  %>%
 
-    dplyr::tibble(dep_var = names(central_forecasts),
-                  expo = to_exponentiate,
-                  all = c("time",unique(forecast$forecast$dep_var))) -> to_exponentiate_tibble
-
-    all_forecasts %>%
-      dplyr::mutate(value = dplyr::case_when(.data$dep_var %in% to_exponentiate_tibble$all[to_exponentiate_tibble$expo == TRUE] ~ exp(.data$value),
-                                             TRUE ~ .data$value)) %>%
       dplyr::rename(na_item = "dep_var", values = "value") %>%
       dplyr::full_join(forecast$orig_model$module_order %>%
                          dplyr::select("dependent") %>%
