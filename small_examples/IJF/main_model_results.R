@@ -34,9 +34,9 @@ spec_econ <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), indep
   add_row(type = "d", dependent = "RealCapFormHH", independent = "CapFormHH / DFCapForm * Factor") %>% # cannot find deflator specific for households, use general deflator for  Gross Fixed Capital Formation (better to use house prices?)
   add_row(type = "d", dependent = "RealConsHH", independent = "ConsHH / DFConsHH * Factor") %>%
   # can explicitly model deflators if want to (example GDP deflator)
-  add_row(type = "n", dependent = "DFGDP", independent = "") %>%
+  add_row(type = "n", dependent = "DFGDP", independent = "") #%>%
   # add simple Phillips curve
-  add_row(type = "n", dependent = "Inflation", independent = "URate + PriceOil")
+  #add_row(type = "n", dependent = "Inflation", independent = "URate + PriceOil")
 
 
 spec_envi <- tibble(
@@ -188,24 +188,24 @@ for(country in c("DE","AT","FR", "DK")){
     arrange(time)
   write_csv(inf, file = paste0("./small_examples/IJF/",country,"/inflation.csv"))
 
-  cap_form_manual <- eurostat::get_eurostat("nasq_10_nf_tr") %>%
-    filter(geo == country) %>%
-    filter(unit == "CP_MEUR", na_item == "P51G", s_adj == "NSA")
-
-  capform_total <- cap_form_manual %>%
-    filter(sector == "S1")
-
-  capform_remainder <- cap_form_manual %>%
-    filter(sector != "S1") %>%
-    summarise(remainder = sum(values), .by = "TIME_PERIOD")
-
-  capform_total %>%
-    full_join(capform_remainder,by = "TIME_PERIOD") %>%
-    mutate(CapFormGov = values - remainder) %>%
-    select(time = TIME_PERIOD, CapFormGov) %>%
-    pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
-
-    write_csv(file = paste0("./small_examples/IJF/", country, "/capformgov.csv"))
+  # cap_form_manual <- eurostat::get_eurostat("nasq_10_nf_tr") %>%
+  #   filter(geo == country) %>%
+  #   filter(unit == "CP_MEUR", na_item == "P51G", s_adj == "NSA")
+  #
+  # capform_total <- cap_form_manual %>%
+  #   filter(sector == "S1")
+  #
+  # capform_remainder <- cap_form_manual %>%
+  #   filter(sector != "S1") %>%
+  #   summarise(remainder = sum(values), .by = "TIME_PERIOD")
+  #
+  # capform_total %>%
+  #   full_join(capform_remainder,by = "TIME_PERIOD") %>%
+  #   mutate(CapFormGov = values - remainder) %>%
+  #   select(time = TIME_PERIOD, CapFormGov) %>%
+  #   pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
+  #
+  #   write_csv(file = paste0("./small_examples/IJF/", country, "/capformgov.csv"))
 
   # Run the model -----------------------------------------------------------
 

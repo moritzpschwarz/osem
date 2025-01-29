@@ -1,9 +1,15 @@
 library(tidyverse)
 library(kableExtra)
+library(osem)
+
+
+vars_to_grab <- "ElectrCons|EmiCO2RoaTra|EmiCO2ManInd|EmiCO2ElecHeat"
+no_modles_in_one_table <- 6
 
 
 for(country in c("DE","AT","FR", "DK")){
 
+  print(country)
   # country = "DE"
 
   # to do:
@@ -15,14 +21,73 @@ for(country in c("DE","AT","FR", "DK")){
   # fix Flights and Inflation
 
 
+  # Loading the model -------------------------------------------------------
+
+
   load(paste0("./small_examples/IJF/", country, "/model.RData"))
 
-  plot(model_result_ext)
+  country_long <- case_when(country == "DE" ~ "Germany",
+                            country == "DK" ~ "Denmark",
+                            country == "AT" ~ "Austria",
+                            country == "FR" ~ "France")
 
-  plot(model_result_ext, grepl_variables = "EmiCO2")
+
+  # Model plots -------------------------------------------------------------
+
+
+  ## Huge Model plot ---------------------------------------------------------
+
+  plot(model_result_ext, title = paste0("OSEM Model Output for ",country_long)) %>%
+    ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model",".pdf"), width = 12, height = 10)
+
+
+  ## Model plot with selected variables ---------------------------------------------------------
+  plot(model_result_ext, grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) %>%
+    ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected",".pdf"), width = 7, height = 5)
+
+
+  # Same Model Plot from 2015 -----------------------------------------------
+  plot(model_result_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) %>%
+    ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected_2015",".pdf"), width = 7, height = 5)
+
+
+  # Forecast ----------------------------------------------------------------
 
   fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
 
+  # Forecast Plot -----------------------------------------------------------
+
+  plot(fc_ext, title = paste0("Forecast for ",country_long)) %>%
+    ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast",".pdf"), width = 12, height = 10)
+
+  # Forecast Plot with selected variables -----------------------------------------------------------
+  plot(fc_ext, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) %>%
+    ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected",".pdf"), width = 7, height = 5)
+
+  # Forecast Plot with selected variables -----------------------------------------------------------
+  plot(fc_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) %>%
+    ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015",".pdf"), width = 7, height = 5)
+
+  # # Insample Forecasting ----------------------------------------------------
+  #
+  # insample <- forecast_insample(model_result_ext, sample_share = .95, exog_fill_method = c("AR","auto"))
+  #
+  # # Insample Forecasting Plots ----------------------------------------------------
+  #
+  # plot(insample, title = paste0("Insample Forecasting for ",country_long)) %>%
+  #   ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample",".pdf"), width = 7, height = 5)
+  #
+  # # Insample Forecasting Plots with selected variables ----------------------------------------------------
+  #
+  # plot(insample, grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long)) %>%
+  #   ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected",".pdf"), width = 7, height = 5)
+  #
+  # # Insample Forecasting Plots with selected variables ----------------------------------------------------
+  #
+  # plot(insample, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long)) %>%
+  #   ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected_2015",".pdf"), width = 7, height = 5)
+
+  # Regression Summary ------------------------------------------------------
 
   # remove NULL results
   model_list <- model_result_ext$module_collection$model[!sapply(model_result_ext$module_collection$model, is.null)]
@@ -61,52 +126,171 @@ for(country in c("DE","AT","FR", "DK")){
     arrange(base_num, base, desc(term)) %>%
     pull(term) -> coef_order
 
-  table_output <- modelsummary::modelsummary(
-    model_list,
-    #coef_omit = "iis|sis|q_[0-9]+",
-    coef_map = coef_order,
-    gof_omit = "R",
-    #output = "latex",
-    title = "Final models run for each sub-module for the illustrative example of Austria.",
-    notes = "Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.",
-    stars = TRUE,
-  )
 
-  table_output
+  # To disable `siunitx` and prevent `modelsummary` from wrapping numeric entries in `\num{}`, call:
+  #   options("modelsummary_format_numeric_latex" = "plain")
 
-  # this output can go straight into the latex
-  table_change(table_output, label = "tab:regression_summary")
+  no_of_tables <- ceiling(length(model_list)/no_modles_in_one_table)
 
+  for(i in 1:no_of_tables){
+    # i = 1
+    model_list[(i-1)*10+1:min(i*10,length(model_list))] -> model_list_temp
 
-  # -- Diagnostics
+    table_output <- modelsummary::modelsummary(
+      model_list,
+      #coef_omit = "iis|sis|q_[0-9]+",
+      coef_map = coef_order,
+      gof_omit = "R",
+      output = "latex",
+      title = paste0("Final models run for each sub-module for ",country_long, ". Part ",i,"."),
+      notes = "Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.",
+      stars = TRUE,
+    )
+
+    # this output can go straight into the latex
+    table_change(table_output, label = paste0("tab:regression_summary",country,"_",i)) %>%
+      writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Regression_Summary_",i,".tex"))
+  }
+
+  # Diagnostics ------------------------------------------------------------
+
 
   diagnostics_model(model_result_ext) %>%
     rename(Module = module) %>%
-    #kable(format = "latex",booktabs = TRUE, digits = 3, label = "diagnostics", caption = "Diagnostic results for each sub-module.") %>%
-    kable(booktabs = TRUE, digits = 3, label = "diagnostics", caption = "Diagnostic results for each sub-module.") %>%
-    kable_styling()
+    kable(format = "latex",booktabs = TRUE, digits = 3, label = "diagnostics", caption = paste0("Diagnostic results for each sub-module for ",country_long,".")) %>%
+    #"Diagnostic results for each sub-module.") %>%
+    #kable(booktabs = TRUE, digits = 3, label = "diagnostics", caption = "Diagnostic results for each sub-module.") %>%
+    kable_styling() %>%
+    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Diagnostics.tex"))
 
 
-  diagnostics_model(model_result_ext) %>%
-    mutate(across(c(AR,ARCH, `Super Exogeneity`), ~ round(.,4))) %>%
-    DT::datatable() %>%
-    DT::formatStyle(columns = c("AR", "ARCH", "Super Exogeneity"),
-                    backgroundColor = DT::styleInterval(cuts = c(0.01, 0.05), values = c("lightcoral", "lightsalmon", "lightgreen"))) %>%
-    DT::formatRound(columns = c("AR", "ARCH", "Share of Indicators"),
-                    digits = 4)
+  # diagnostics_model(model_result_ext) %>%
+  #   mutate(across(c(AR,ARCH, `Super Exogeneity`), ~ round(.,4))) %>%
+  #   DT::datatable() %>%
+  #   DT::formatStyle(columns = c("AR", "ARCH", "Super Exogeneity"),
+  #                   backgroundColor = DT::styleInterval(cuts = c(0.01, 0.05), values = c("lightcoral", "lightsalmon", "lightgreen"))) %>%
+  #   DT::formatRound(columns = c("AR", "ARCH", "Share of Indicators"),
+  #                   digits = 4)
 
+  model_result_ext %>%
+      network(layout = "fr") -> p
 
-
-
-  (model_result_ext %>%
-    network() -> p)
-
-  # ggsave(p, width = 7, height = 5, file = paste0("small_examples/EMCC 24/",country,"/Network",".pdf"))
-  # ggsave(p, width = 7, height = 5, file = paste0("small_examples/EMCC 24/",country,"/Network",".png"), bg = "white")
+  ggsave(p, width = 7, height = 5, file = paste0("small_examples/IJF/figures_overleaf/", country, "_Network",".pdf"), bg = "white")
 
 
 
-  insample <- forecast_insample(model_result_ext, sample_share = .96, exog_fill_method = c("AR","auto"))
+  # insample <- forecast_insample(model_result_ext, sample_share = .96, exog_fill_method = c("AR","auto"))
 
 
 }
+
+
+
+
+
+# Combine all tex files ---------------------------------------------------
+
+# Specify the directory containing .tex files
+tex_dir <- "small_examples/IJF/tables_overleaf"
+
+# Specify the output file
+output_file <- "small_examples/IJF/tables_overleaf/combined_inputs.tex"
+
+# Get all .tex files in the directory (excluding the output file itself)
+tex_files <- list.files(tex_dir, pattern = "\\.tex$", full.names = TRUE)
+tex_files <- tex_files[basename(tex_files) != basename(output_file)]
+
+# Create the combined .tex file
+file_conn <- file(output_file, "w")
+
+# Loop through each .tex file and copy its content
+for (tex_file in tex_files) {
+  # Write a comment indicating the start of the file content
+  writeLines(paste0("% ---- Start of ", basename(tex_file), " ----"), file_conn)
+
+  # Read the content of the .tex file
+  tex_content <- readLines(tex_file)
+
+  # Write the content to the combined file
+  writeLines(tex_content, file_conn)
+
+  # Write a comment indicating the end of the file content
+  writeLines(paste0("% ---- End of ", basename(tex_file), " ----\n"), file_conn)
+}
+
+# Close the file connection
+close(file_conn)
+
+cat("Combined file created with content copied:", output_file, "\n")
+
+
+
+# Combine all figures -----------------------------------------------------
+
+# List of countries
+countries <- c("AT", "DK", "DE", "FR")
+
+# Output file
+output_file <- "small_examples/IJF/figures_overleaf/figures.tex"
+
+# Open connection to the output file
+file_conn <- file(output_file, "w")
+
+# Loop through each country and write the LaTeX code
+for (country in countries) {
+  # Define the LaTeX code for this country
+  country_code <- paste0("
+\\begin{figure}
+    \\centering
+    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Model.pdf}
+    \\caption{}
+    \\label{fig:", country, "_entire_model}
+\\end{figure}
+
+\\begin{figure}
+    \\centering
+    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Model_Selected.pdf}
+    \\caption{}
+    \\label{fig:", country, "_selected_model}
+\\end{figure}
+
+\\begin{figure}
+    \\centering
+    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Model_Selected_2015.pdf}
+    \\caption{}
+    \\label{fig:", country, "_selected_model_2015}
+\\end{figure}
+
+\\begin{figure}
+    \\centering
+    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast.pdf}
+    \\caption{}
+    \\label{fig:", country, "_entire_forecast}
+\\end{figure}
+
+\\begin{figure}
+    \\centering
+    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_Selected.pdf}
+    \\caption{}
+    \\label{fig:", country, "_selected_forecast}
+\\end{figure}
+
+\\begin{figure}
+    \\centering
+    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_Selected_2015.pdf}
+    \\caption{}
+    \\label{fig:", country, "_selected_forecast_2015}
+\\end{figure}")
+
+  # Write the LaTeX code to the file
+  writeLines(country_code, file_conn)
+}
+
+# Close the file connection
+close(file_conn)
+
+cat("Figures LaTeX file generated:", output_file, "\n")
+
+
+
+
