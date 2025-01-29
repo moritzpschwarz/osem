@@ -75,6 +75,10 @@ plot.osem <- function(x,
 
   plotting_df_ready <- plot_df %>%
 
+    dplyr::mutate(fit = dplyr::case_when(fit == "TRUE" ~ "Insample Fit",
+                                         fit == "FALSE" ~ "Observation"),
+                  fit = factor(fit, levels = c("Observation","Insample Fit"))) %>%
+
     {if(order.as.run){
       dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$module_order$dependent)) %>%
         tidyr::drop_na("na_item") %>%
@@ -84,7 +88,13 @@ plot.osem <- function(x,
 
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}}
 
+  colors <- c(
+    "Insample Fit" = "#FDE725FF",
+    "Observation" = "#440154FF"
+  )
+
   plotting_df_ready %>%
+
     ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
 
     ggplot2::geom_line(linewidth = 1, na.rm = TRUE) +
@@ -96,7 +106,8 @@ plot.osem <- function(x,
     ggplot2::labs(x = NULL, y = NULL, title = title) +
 
     ggplot2::scale_y_continuous(labels = scales::label_comma()) +
-    ggplot2::scale_color_viridis_d() +
+    #ggplot2::scale_color_viridis_d() +
+    ggplot2::scale_color_manual(values = colors) +
 
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "none",
