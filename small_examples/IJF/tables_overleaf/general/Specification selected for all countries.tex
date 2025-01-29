@@ -1,0 +1,26 @@
+\begin{table}
+\centering\centering
+\caption{Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models. The full model specification table is available in the Appendix.}
+\centering
+\fontsize{7}{9}\selectfont
+\begin{tabular}[t]{rll>{\raggedright\arraybackslash}p{7cm}}
+\toprule
+Model & Type & Dependent & Independent\\
+\midrule
+5 & Estimated & VAIndustry & f(ConsHH, ConsGov, CapForm, PriceOil, PriceETS)\\
+13 & Estimated & ConsHH & f(IncomeHH, HICPlocal, FinWealthHH)\\
+14 & Identity & CapForm & CapFormHH + CapFormFirm + CapFormFinFirm + CapFormGov\\
+15 & Estimated & CapFormHH & f(IncomeHH, HICPlocal, HousePriceIndex, BuildingPermits)\\
+18 & Identity & RealVAIndustry & VAIndustry / DFVAIndustry * 100\\
+\addlinespace
+27 & Identity & RealCapForm & CapForm / DFCapForm * 100\\
+28 & Identity & RealCapFormHH & CapFormHH / DFCapForm * 100\\
+29 & Identity & RealConsHH & ConsHH / DFConsHH * 100\\
+31 & Estimated & EmiCO2ManInd & f(RealVAIndustry, HICPlocal)\\
+35 & Estimated & EmiCO2RoaTra & f(RoadFreight, RealConsHH, HICPlocal)\\
+\addlinespace
+37 & Estimated & ElectrCons & f(RealConsHH, HICP\_Electricity)\\
+38 & Estimated & EmiCO2ElecHeat & f(ElectrCons, RealVAIndustry, RealCapFormHH)\\
+\bottomrule
+\end{tabular}
+\end{table}

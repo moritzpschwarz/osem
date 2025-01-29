@@ -1,0 +1,48 @@
+\begin{table}
+\label{tab:regression_summaryDK_2}
+\centering\centering
+\caption{Final OSEM Model result for each module for Denmark. Part 2.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
+\toprule
+  & VAGov & DFGDP & VAIndustry & VARetail & VARealEstate\\
+\midrule
+ar1 & \num{0.199}** & \num{0.878}*** & \num{0.211}* & \num{0.605}*** & \\
+ & (\num{0.062}) & (\num{0.034}) & (\num{0.082}) & (\num{0.059}) & \\
+mconst & \num{0.679}** & \num{0.450}*** & \num{-5.146}* & \num{-0.784} & \num{8.890}***\\
+ & (\num{0.231}) & (\num{0.124}) & (\num{2.189}) & (\num{1.011}) & (\num{0.641})\\
+trend & \num{0.000} & \num{0.001}*** & \num{-0.004}** & \num{0.000} & \num{0.010}***\\
+ & (\num{0.000}) & (\num{0.000}) & (\num{0.001}) & (\num{0.001}) & (\num{0.001})\\
+ln.CapForm &  &  & \num{-0.001} & \num{0.072} & \num{-0.042}\\
+ &  &  & (\num{0.077}) & (\num{0.077}) & (\num{0.044})\\
+L1.ln.CapForm &  &  & \num{-0.101} & \num{-0.165}* & \\
+ &  &  & (\num{0.079}) & (\num{0.068}) & \\
+ln.ConsGov & \num{0.381}*** &  & \num{-0.318}+ & \num{-0.072} & \num{-0.125}*\\
+ & (\num{0.032}) &  & (\num{0.183}) & (\num{0.187}) & (\num{0.061})\\
+L1.ln.ConsGov & \num{0.219}*** &  & \num{-0.506}* & \num{-0.186} & \\
+ & (\num{0.046}) &  & (\num{0.211}) & (\num{0.194}) & \\
+ln.ConsHH & \num{0.224}*** &  & \num{1.335}*** & \num{0.753}*** & \num{-0.033}\\
+ & (\num{0.038}) &  & (\num{0.267}) & (\num{0.211}) & (\num{0.081})\\
+L1.ln.ConsHH & \num{-0.128}*** &  & \num{0.812}** & \num{0.002} & \\
+ & (\num{0.036}) &  & (\num{0.256}) & (\num{0.241}) & \\
+ln.HousePriceIndex &  &  &  &  & \num{0.011}\\
+ &  &  &  &  & (\num{0.041})\\
+ln.PriceETS &  &  & \num{0.006} &  & \\
+ &  &  & (\num{0.005}) &  \vphantom{1} & \\
+L1.ln.PriceETS &  &  & \num{-0.006} &  & \\
+ &  &  & (\num{0.005}) &  & \\
+ln.PriceOil &  &  & \num{-0.070}* &  & \\
+ &  &  & (\num{0.029}) &  & \\
+L1.ln.PriceOil &  &  & \num{0.055}* &  & \\
+ &  &  & (\num{0.025}) &  & \\
+\midrule
+Num.Obs. & \num{134} & \num{134} & \num{78} & \num{102} & \num{79}\\
+AIC & \num{-944.7} & \num{-942.4} & \num{-329.7} & \num{-408.0} & \num{-462.3}\\
+BIC & \num{-892.5} & \num{-898.9} & \num{-280.2} & \num{-358.1} & \num{-424.4}\\
+Log.Lik. & \num{490.332} & \num{486.202} & \num{185.849} & \num{222.998} & \num{247.169}\\
+\bottomrule
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

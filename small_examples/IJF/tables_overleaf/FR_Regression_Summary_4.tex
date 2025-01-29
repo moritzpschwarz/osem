@@ -1,0 +1,48 @@
+\begin{table}
+\label{tab:regression_summaryFR_4}
+\centering\centering
+\caption{Final OSEM Model result for each module for France. Part 4.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
+\toprule
+  & EmiCO2CivAvi & RoadFreight & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
+\midrule
+ar1 &  &  & \num{0.902}*** & \num{0.708}*** & \\
+ &  &  & (\num{0.036}) & (\num{0.060}) & \\
+mconst & \num{-7.054}*** & \num{4.259}** & \num{0.067} & \num{3.047}*** & \num{9.028}+\\
+ & (\num{1.942}) & (\num{1.410}) & (\num{0.634}) & (\num{0.776}) & (\num{5.383})\\
+trend & \num{-0.004}*** & \num{0.000} & \num{-0.001}* & \num{0.000} & \num{-0.021}***\\
+ & (\num{0.001}) & (\num{0.001}) & (\num{0.001}) & (\num{0.000}) & (\num{0.003})\\
+ln.ElectrCons &  &  &  &  & \num{1.290}**\\
+ &  &  &  &  & (\num{0.389})\\
+ln.HICPlocal & \num{0.449}** & \num{-0.559}** & \num{0.151} & \num{0.076} & \\
+ & (\num{0.164}) & (\num{0.192}) & (\num{0.540}) & (\num{0.231}) & \\
+L1.ln.HICPlocal &  &  & \num{-0.003} & \num{-0.091} & \\
+ &  &  & (\num{0.554}) & (\num{0.227}) & \\
+ln.RealCapFormHH &  &  &  &  & \num{1.629}***\\
+ &  &  &  &  & (\num{0.319})\\
+ln.RealConsHH & \num{0.364}* & \num{0.195} &  & \num{-0.004} & \\
+ & (\num{0.166}) & (\num{0.141}) &  & (\num{0.046}) & \\
+L1.ln.RealConsHH &  &  &  & \num{0.050} & \\
+ &  &  &  & (\num{0.045}) & \\
+ln.RealVAIndustry &  &  & \num{0.001} &  & \num{-2.495}***\\
+ &  &  & (\num{0.067}) &  & (\num{0.431})\\
+L1.ln.RealVAIndustry &  &  & \num{0.039} &  & \\
+ &  &  & (\num{0.067}) &  & \\
+ln.RealVAService & \num{0.725}*** & \num{0.614}*** &  &  & \\
+ & (\num{0.103}) & (\num{0.135}) &  &  & \\
+ln.RoadFreight &  &  &  & \num{-0.016} & \\
+ &  &  &  & (\num{0.021}) & \\
+L1.ln.RoadFreight &  &  &  & \num{-0.037}+ & \\
+ &  &  &  & (\num{0.020}) & \\
+\midrule
+Num.Obs. & \num{112} & \num{102} & \num{111} & \num{99} & \num{64}\\
+AIC & \num{-485.9} & \num{-441.4} & \num{-521.4} & \num{-692.2} & \num{-106.6}\\
+BIC & \num{-426.1} & \num{-399.4} & \num{-480.7} & \num{-642.9} & \num{-80.7}\\
+Log.Lik. & \num{264.929} & \num{236.718} & \num{275.682} & \num{365.115} & \num{65.307}\\
+\bottomrule
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

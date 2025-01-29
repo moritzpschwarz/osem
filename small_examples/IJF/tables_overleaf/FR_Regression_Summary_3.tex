@@ -1,0 +1,44 @@
+\begin{table}
+\label{tab:regression_summaryFR_3}
+\centering\centering
+\caption{Final OSEM Model result for each module for France. Part 3.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & Flights & EmiCO2Residential & ElectrCons & EmiCH4EntericFerment\\
+\midrule
+ar1 &  &  &  & \num{0.988}***\\
+ &  &  &  & \vphantom{1} (\num{0.017})\\
+mconst & \num{-15.669}*** & \num{16.644}** & \num{4.050}* & \num{0.297}+\\
+ & (\num{3.526}) & (\num{5.998}) & (\num{1.799}) & (\num{0.162})\\
+trend & \num{-0.006}** & \num{-0.001} & \num{-0.002}+ & \num{0.000}*\\
+ & (\num{0.001}) & (\num{0.003}) & (\num{0.001}) & (\num{0.000})\\
+ln.FinWealthHH & \num{-0.198} &  &  & \\
+ & (\num{0.172}) &  &  & \\
+ln.HICP\_AviaInt & \num{0.207} &  &  & \\
+ & (\num{0.176}) &  &  & \\
+ln.HICP\_Electricity &  & \num{-0.718}*** & \num{-0.031} & \\
+ &  & (\num{0.188}) & (\num{0.118}) & \\
+ln.RealConsHH & \num{2.373}*** & \num{-0.161} & \num{0.673}*** & \num{-0.009}\\
+ & (\num{0.363}) & (\num{0.449}) & (\num{0.144}) & (\num{0.017})\\
+L1.ln.RealConsHH &  &  &  & \num{0.010}\\
+ &  &  &  & (\num{0.017})\\
+ln.RealVAAgriculture &  &  &  & \num{-0.003}\\
+ &  &  &  & (\num{0.016})\\
+L1.ln.RealVAAgriculture &  &  &  & \num{0.006}\\
+ &  &  &  & (\num{0.015})\\
+ln.Slaughter &  &  &  & \num{-0.009}\\
+ &  &  &  & (\num{0.012})\\
+L1.ln.Slaughter &  &  &  & \num{-0.032}**\\
+ &  &  &  & (\num{0.011})\\
+\midrule
+Num.Obs. & \num{39} & \num{112} & \num{67} & \num{175}\\
+AIC & \num{-199.1} & \num{-181.8} & \num{-284.6} & \num{-1334.4}\\
+BIC & \num{-154.1} & \num{-149.1} & \num{-262.5} & \num{-1280.6}\\
+Log.Lik. & \num{126.532} & \num{102.878} & \num{152.286} & \num{684.197}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

@@ -1,0 +1,100 @@
+\begin{table}
+\label{tab:regression_summaryAT_1}
+\centering\centering
+\caption{Final OSEM Model result for each module for Austria. Part 1.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
+\toprule
+  & Imports & ConsHH & CapFormHH & Exports & VAService\\
+\midrule
+ar1 & \num{0.854}*** & \num{-0.168}* & \num{0.322}** & \num{0.685}*** & \num{0.266}***\\
+ & (\num{0.033}) & (\num{0.065}) & (\num{0.099}) & (\num{0.070}) & (\num{0.056})\\
+ar2 &  & \num{0.040} &  & \num{0.468}*** & \num{-0.218}***\\
+ &  & (\num{0.062}) &  & (\num{0.081}) & (\num{0.050})\\
+ar3 &  & \num{-0.104}+ &  & \num{-0.236}* & \num{0.204}***\\
+ &  & (\num{0.062}) &  & (\num{0.093}) & (\num{0.051})\\
+ar4 &  & \num{0.681}*** &  & \num{0.016} & \num{0.589}***\\
+ &  & (\num{0.064}) &  & (\num{0.069}) & (\num{0.054})\\
+mconst & \num{2.453}*** & \num{2.257}** & \num{-1.894} & \num{1.754} & \num{-1.926}*\\
+ & (\num{0.667}) & (\num{0.757}) & (\num{2.468}) & (\num{1.094}) & (\num{0.968})\\
+trend & \num{0.002}*** & \num{0.001} & \num{-0.003} & \num{0.001} & \num{0.000}\\
+ & (\num{0.000}) & (\num{0.001}) & (\num{0.004}) & (\num{0.001}) & (\num{0.001})\\
+ln.BuildingPermits &  &  & \num{0.026} &  & \\
+ &  &  & (\num{0.044}) &  & \\
+L1.ln.BuildingPermits &  &  & \num{-0.031} &  & \\
+ &  &  & (\num{0.048}) &  & \\
+ln.ConsGov &  &  &  &  & \num{-0.166}\\
+ &  &  &  &  & (\num{0.111})\\
+L4.ln.ConsGov &  &  &  &  & \num{0.173}\\
+ &  &  &  &  & (\num{0.118})\\
+L3.ln.ConsGov &  &  &  &  & \num{0.110}\\
+ &  &  &  &  & (\num{0.098})\\
+L2.ln.ConsGov &  &  &  &  & \num{0.019}\\
+ &  &  &  &  & \vphantom{1} (\num{0.092})\\
+L1.ln.ConsGov &  &  &  &  & \num{0.043}\\
+ &  &  &  &  & (\num{0.090})\\
+ln.ConsHH &  &  &  &  & \num{0.755}***\\
+ &  &  &  &  & (\num{0.140})\\
+L4.ln.ConsHH &  &  &  &  & \num{-0.931}***\\
+ &  &  &  &  & (\num{0.091})\\
+L3.ln.ConsHH &  &  &  &  & \num{0.165}+\\
+ &  &  &  &  & (\num{0.089})\\
+L2.ln.ConsHH &  &  &  &  & \num{0.297}**\\
+ &  &  &  &  & (\num{0.108})\\
+L1.ln.ConsHH &  &  &  &  & \num{-0.143}\\
+ &  &  &  &  & (\num{0.092})\\
+ln.FinWealthHH &  & \num{0.125} &  &  & \\
+ &  & (\num{0.084}) &  &  & \\
+L4.ln.FinWealthHH &  & \num{0.070} &  &  & \\
+ &  & (\num{0.080}) &  &  & \\
+L3.ln.FinWealthHH &  & \num{-0.088} &  &  & \\
+ &  & (\num{0.107}) &  &  \vphantom{2} & \\
+L2.ln.FinWealthHH &  & \num{0.099} &  &  & \\
+ &  & (\num{0.107}) &  &  \vphantom{1} & \\
+L1.ln.FinWealthHH &  & \num{-0.057} &  &  & \\
+ &  & (\num{0.107}) &  &  & \\
+ln.HICPlocal &  & \num{1.617}*** & \num{0.070} &  & \\
+ &  & (\num{0.285}) & (\num{1.193}) &  & \\
+L4.ln.HICPlocal &  & \num{-0.453} &  &  & \\
+ &  & (\num{0.289}) &  &  & \\
+L3.ln.HICPlocal &  & \num{-0.100} &  &  & \\
+ &  & (\num{0.460}) &  &  & \\
+L2.ln.HICPlocal &  & \num{0.055} &  &  & \\
+ &  & (\num{0.452}) &  &  & \\
+L1.ln.HICPlocal &  & \num{-0.992}* & \num{-1.196} &  & \\
+ &  & (\num{0.467}) & (\num{1.229}) &  & \\
+ln.HousePriceIndex &  &  & \num{1.071}** &  & \\
+ &  &  & (\num{0.365}) &  & \\
+L1.ln.HousePriceIndex &  &  & \num{-0.507} &  & \\
+ &  &  & (\num{0.416}) &  & \\
+ln.IncomeHH &  & \num{0.181}** & \num{0.414}* &  & \\
+ &  & (\num{0.057}) & (\num{0.192}) &  & \\
+L4.ln.IncomeHH &  & \num{-0.164}** &  &  & \\
+ &  & (\num{0.052}) &  &  & \\
+L3.ln.IncomeHH &  & \num{0.014} &  &  & \\
+ &  & (\num{0.046}) &  &  & \\
+L2.ln.IncomeHH &  & \num{-0.093}* &  &  & \\
+ &  & (\num{0.045}) &  &  & \\
+L1.ln.IncomeHH &  & \num{0.143}** & \num{0.555}** &  & \\
+ &  & (\num{0.047}) & (\num{0.192}) &  & \\
+ln.REER & \num{-0.505}* &  &  & \num{-0.602}* & \\
+ & (\num{0.255}) &  &  & (\num{0.299}) & \\
+L4.ln.REER &  &  &  & \num{-0.292} & \\
+ &  &  &  & (\num{0.277}) & \\
+L3.ln.REER &  &  &  & \num{-0.181} & \\
+ &  &  &  & (\num{0.413}) & \\
+L2.ln.REER &  &  &  & \num{1.684}*** & \\
+ &  &  &  & (\num{0.421}) & \\
+L1.ln.REER & \num{0.275} &  &  & \num{-0.851}+ & \\
+ & (\num{0.248}) &  &  & (\num{0.431}) & \\
+\midrule
+Num.Obs. & \num{118} & \num{99} & \num{54} & \num{115} & \num{115}\\
+AIC & \num{-526.0} & \num{-626.0} & \num{-233.8} & \num{-495.3} & \num{-557.4}\\
+BIC & \num{-490.0} & \num{-545.6} & \num{-194.1} & \num{-434.9} & \num{-488.7}\\
+Log.Lik. & \num{275.990} & \num{344.011} & \num{136.925} & \num{269.663} & \num{303.678}\\
+\bottomrule
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

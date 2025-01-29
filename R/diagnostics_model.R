@@ -73,8 +73,10 @@ diagnostics_model <- function(model) {
     diag[i, "Share of Indicators"] <- (diag[i, "IIS"] + diag[i, "SIS"]) / diag[i, "n"]
 
     # record other test objects (currently super.exogeneity, in the future cointegration)
-    if(is.list(other.test.objects[[i]]$super.exogeneity)){
-      diag[i, "Super Exogeneity"] <- other.test.objects[[i]]$super.exogeneity$p.value
+    super.ex_obj <- other.test.objects[[names(models[i])]][["super.exogeneity"]]
+
+    if(is.list(super.ex_obj)){
+      diag[i, "Super Exogeneity"] <- super.ex_obj$p.value
     } else {
       diag[i, "Super Exogeneity"] <- NA
     }

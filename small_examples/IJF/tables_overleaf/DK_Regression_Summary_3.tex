@@ -1,0 +1,60 @@
+\begin{table}
+\label{tab:regression_summaryDK_3}
+\centering\centering
+\caption{Final OSEM Model result for each module for Denmark. Part 3.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & Flights & EmiCO2Residential & ElectrCons & EmiCH4EntericFerment\\
+\midrule
+ar1 & \num{0.734}*** &  & \num{-0.009} & \num{0.913}***\\
+ & (\num{0.090}) &  & (\num{0.083}) & (\num{0.034})\\
+ar2 & \num{-0.205}* &  & \num{-0.293}*** & \\
+ & (\num{0.086}) &  & (\num{0.076}) & \\
+mconst & \num{-19.229}** & \num{2.040} & \num{6.579}*** & \num{0.978}**\\
+ & (\num{5.807}) & (\num{3.541}) & (\num{1.252}) & (\num{0.331})\\
+trend & \num{-0.025}*** & \num{-0.010}*** & \num{-0.003}*** & \num{0.000}*\\
+ & (\num{0.005}) & (\num{0.002}) & (\num{0.000}) & (\num{0.000})\\
+ln.FinWealthHH & \num{0.671}* &  &  & \\
+ & (\num{0.266}) &  &  & \\
+L2.ln.FinWealthHH & \num{0.207} &  &  & \\
+ & (\num{0.248}) &  &  & \\
+L1.ln.FinWealthHH & \num{-0.365} &  &  & \\
+ & (\num{0.331}) &  &  & \\
+ln.HICP\_AviaInt & \num{-0.136} &  &  & \\
+ & (\num{0.166}) &  &  & \\
+L2.ln.HICP\_AviaInt & \num{-0.106} &  &  & \\
+ & (\num{0.146}) &  &  & \\
+L1.ln.HICP\_AviaInt & \num{0.157} &  &  & \\
+ & (\num{0.199}) &  &  & \\
+ln.HICP\_Electricity &  & \num{-0.033} & \num{-0.079}* & \\
+ &  & (\num{0.097}) & (\num{0.034}) & \\
+L2.ln.HICP\_Electricity &  &  & \num{-0.136}*** & \\
+ &  &  & (\num{0.037}) & \\
+L1.ln.HICP\_Electricity &  &  & \num{0.106}* & \\
+ &  &  & (\num{0.043}) & \\
+ln.RealConsHH & \num{-0.090} & \num{0.726}* & \num{0.080} & \num{-0.011}\\
+ & (\num{0.674}) & (\num{0.359}) & (\num{0.114}) & (\num{0.035})\\
+L2.ln.RealConsHH & \num{0.331} &  & \num{0.200}+ & \\
+ & (\num{0.535}) &  & (\num{0.103}) & \\
+L1.ln.RealConsHH & \num{1.838}* &  & \num{0.341}** & \num{-0.057}\\
+ & (\num{0.793}) &  & (\num{0.112}) & (\num{0.035})\\
+ln.RealVAAgriculture &  &  &  & \num{-0.003}\\
+ &  &  &  & \vphantom{1} (\num{0.005})\\
+L1.ln.RealVAAgriculture &  &  &  & \num{0.002}\\
+ &  &  &  & (\num{0.005})\\
+ln.Slaughter &  &  &  & \num{-0.008}\\
+ &  &  &  & (\num{0.013})\\
+L1.ln.Slaughter &  &  &  & \num{0.009}\\
+ &  &  &  & (\num{0.012})\\
+\midrule
+Num.Obs. & \num{56} & \num{112} & \num{65} & \num{131}\\
+AIC & \num{-168.2} & \num{-173.0} & \num{-359.9} & \num{-946.4}\\
+BIC & \num{-119.6} & \num{-137.6} & \num{-320.8} & \num{-891.8}\\
+Log.Lik. & \num{108.092} & \num{99.475} & \num{197.954} & \num{492.190}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

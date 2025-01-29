@@ -1,0 +1,46 @@
+\begin{table}
+\label{tab:regression_summaryAT_3}
+\centering\centering
+\caption{Final OSEM Model result for each module for Austria. Part 3.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & Flights & EmiCO2Residential & ElectrCons & EmiCH4EntericFerment\\
+\midrule
+ar1 &  &  & \num{0.298}*** & \num{0.975}***\\
+ &  &  & (\num{0.084}) & (\num{0.016})\\
+mconst & \num{-18.319} & \num{15.469}*** & \num{5.833}*** & \num{0.196}\\
+ & (\num{13.975}) & (\num{3.068}) & (\num{0.944}) & (\num{0.132})\\
+trend & \num{-0.037}** & \num{-0.003}+ & \num{0.001}+ & \num{0.000}\\
+ & (\num{0.011}) & (\num{0.001}) & (\num{0.000}) & (\num{0.000})\\
+ln.FinWealthHH & \num{1.636} &  &  & \\
+ & (\num{0.978}) &  &  & \\
+ln.HICP\_AviaInt & \num{0.340} &  &  & \\
+ & (\num{0.218}) &  &  & \\
+ln.HICP\_Electricity &  & \num{-0.130} & \num{0.110}+ & \\
+ &  & (\num{0.192}) & (\num{0.056}) & \\
+L1.ln.HICP\_Electricity &  &  & \num{-0.138}* & \\
+ &  &  & (\num{0.054}) & \\
+ln.RealConsHH & \num{0.921} & \num{-0.557}+ & \num{0.140} & \num{0.008}\\
+ & (\num{0.889}) & (\num{0.287}) & (\num{0.090}) & (\num{0.009})\\
+L1.ln.RealConsHH &  &  & \num{-0.034} & \num{-0.023}*\\
+ &  &  & (\num{0.077}) & (\num{0.009})\\
+ln.RealVAAgriculture &  &  &  & \num{0.001}\\
+ &  &  &  & \vphantom{1} (\num{0.003})\\
+L1.ln.RealVAAgriculture &  &  &  & \num{0.007}*\\
+ &  &  &  & (\num{0.003})\\
+ln.Slaughter &  &  &  & \num{0.012}\\
+ &  &  &  & (\num{0.008})\\
+L1.ln.Slaughter &  &  &  & \num{-0.012}\\
+ &  &  &  & (\num{0.007})\\
+\midrule
+Num.Obs. & \num{47} & \num{112} & \num{66} & \num{115}\\
+AIC & \num{-94.1} & \num{-230.3} & \num{-380.7} & \num{-1018.0}\\
+BIC & \num{-68.2} & \num{-189.5} & \num{-345.7} & \num{-963.1}\\
+Log.Lik. & \num{61.066} & \num{130.136} & \num{206.359} & \num{529.019}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

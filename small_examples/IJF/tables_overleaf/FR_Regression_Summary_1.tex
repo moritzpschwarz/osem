@@ -1,0 +1,88 @@
+\begin{table}
+\label{tab:regression_summaryFR_1}
+\centering\centering
+\caption{Final OSEM Model result for each module for France. Part 1.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
+\toprule
+  & Imports & ConsHH & CapFormHH & Exports & VAService\\
+\midrule
+ar1 & \num{0.931}*** & \num{0.431}*** & \num{0.300}*** & \num{0.681}*** & \num{0.528}***\\
+ & (\num{0.030}) & (\num{0.064}) & (\num{0.071}) & (\num{0.035}) & (\num{0.066})\\
+ar2 &  & \num{0.377}*** &  &  & \num{-0.289}***\\
+ &  & (\num{0.048}) &  &  & (\num{0.074})\\
+ar3 &  & \num{-0.170}* &  &  & \num{0.113}\\
+ &  & (\num{0.071}) &  &  & (\num{0.074})\\
+ar4 &  &  &  &  & \num{0.351}***\\
+ &  &  &  &  & (\num{0.061})\\
+mconst & \num{0.699} & \num{-0.022} & \num{3.873}* & \num{4.770}*** & \num{0.579}*\\
+ & (\num{0.549}) & (\num{0.310}) & (\num{1.496}) & (\num{0.654}) & (\num{0.234})\\
+trend & \num{0.001}* & \num{0.000} & \num{0.004}*** & \num{0.003}*** & \num{0.002}***\\
+ & (\num{0.000}) & (\num{0.000}) & (\num{0.001}) & (\num{0.000}) & (\num{0.000})\\
+ln.BuildingPermits &  &  & \num{-0.013} &  & \\
+ &  &  & (\num{0.032}) &  & \\
+L1.ln.BuildingPermits &  &  & \num{0.015} &  & \\
+ &  &  & (\num{0.029}) &  & \\
+ln.ConsGov &  &  &  &  & \num{0.220}*\\
+ &  &  &  &  & (\num{0.086})\\
+L4.ln.ConsGov &  &  &  &  & \num{0.308}***\\
+ &  &  &  &  & (\num{0.083})\\
+L3.ln.ConsGov &  &  &  &  & \num{-0.070}\\
+ &  &  &  &  & \vphantom{1} (\num{0.107})\\
+L2.ln.ConsGov &  &  &  &  & \num{0.167}\\
+ &  &  &  &  & (\num{0.107})\\
+L1.ln.ConsGov &  &  &  &  & \num{-0.674}***\\
+ &  &  &  &  & (\num{0.095})\\
+ln.ConsHH &  &  &  &  & \num{0.922}***\\
+ &  &  &  &  & (\num{0.055})\\
+L4.ln.ConsHH &  &  &  &  & \num{-0.585}***\\
+ &  &  &  &  & (\num{0.073})\\
+L3.ln.ConsHH &  &  &  &  & \num{-0.042}\\
+ &  &  &  &  & (\num{0.074})\\
+L2.ln.ConsHH &  &  &  &  & \num{0.070}\\
+ &  &  &  &  & \vphantom{1} (\num{0.077})\\
+L1.ln.ConsHH &  &  &  &  & \num{-0.136}+\\
+ &  &  &  &  & (\num{0.077})\\
+ln.FinWealthHH &  & \num{0.095}*** &  &  & \\
+ &  & (\num{0.025}) &  &  \vphantom{1} & \\
+L3.ln.FinWealthHH &  & \num{-0.035} &  &  & \\
+ &  & (\num{0.025}) &  &  & \\
+L2.ln.FinWealthHH &  & \num{0.057}+ &  &  & \\
+ &  & (\num{0.033}) &  &  \vphantom{1} & \\
+L1.ln.FinWealthHH &  & \num{-0.054} &  &  & \\
+ &  & (\num{0.033}) &  &  & \\
+ln.HICPlocal &  & \num{0.910}*** & \num{-0.499} &  & \\
+ &  & (\num{0.183}) & (\num{0.714}) &  & \\
+L3.ln.HICPlocal &  & \num{0.064} &  &  & \\
+ &  & (\num{0.200}) &  &  & \\
+L2.ln.HICPlocal &  & \num{-0.297} &  &  & \\
+ &  & (\num{0.308}) &  &  & \\
+L1.ln.HICPlocal &  & \num{-0.647}* & \num{-0.242} &  & \\
+ &  & (\num{0.304}) & (\num{0.766}) &  & \\
+ln.HousePriceIndex &  &  & \num{1.463}*** &  & \\
+ &  &  & (\num{0.311}) &  & \\
+L1.ln.HousePriceIndex &  &  & \num{-0.823}** &  & \\
+ &  &  & (\num{0.287}) &  & \\
+ln.IncomeHH &  & \num{0.082}+ & \num{0.143} &  & \\
+ &  & (\num{0.042}) & (\num{0.165}) &  & \\
+L3.ln.IncomeHH &  & \num{0.047} &  &  & \\
+ &  & (\num{0.045}) &  &  \vphantom{1} & \\
+L2.ln.IncomeHH &  & \num{0.048} &  &  & \\
+ &  & (\num{0.045}) &  &  & \\
+L1.ln.IncomeHH &  & \num{0.101}+ & \num{0.102} &  & \\
+ &  & (\num{0.054}) & (\num{0.164}) &  & \\
+ln.REER & \num{-0.533}** &  &  & \num{-0.753}*** & \\
+ & (\num{0.184}) &  &  & (\num{0.203}) & \\
+L1.ln.REER & \num{0.537}** &  &  & \num{0.406}+ & \\
+ & (\num{0.184}) &  &  & (\num{0.205}) & \\
+\midrule
+Num.Obs. & \num{122} & \num{100} & \num{75} & \num{122} & \num{175}\\
+AIC & \num{-565.4} & \num{-737.9} & \num{-372.0} & \num{-529.6} & \num{-1048.9}\\
+BIC & \num{-520.5} & \num{-657.2} & \num{-330.3} & \num{-495.9} & \num{-963.4}\\
+Log.Lik. & \num{298.688} & \num{399.961} & \num{203.998} & \num{276.783} & \num{551.432}\\
+\bottomrule
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}
