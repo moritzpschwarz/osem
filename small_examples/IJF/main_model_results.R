@@ -174,6 +174,31 @@ for(country in c("DE","AT","FR", "DK")){
     arrange(time)
   write_csv(hicp, file = paste0("./small_examples/IJF/",country,"/hicp.csv"))
 
+  # import price index
+  data <- imf.data::load_datasets("PCTOT")
+  imports <- data$get_series(freq="M",ref_area = country,indicator = "m",type="R_RW_IX")
+  columns <- colnames(imports) # columns[1] = TIME_PERIOD, columns[2] = 'the unique identifier that represents the values of the data row'
+  value_colname <- columns[2]
+  #add na_item (model_varname)
+  imports <- imports %>% dplyr::mutate(na_item = "import_price_index")
+  #convert the value column into numeric
+  imports <- imports %>%
+    dplyr::mutate(VALUE = as.numeric(.data[[value_colname]]))
+
+  #drop old uniquely identified value column
+  imports <- imports %>%
+    dplyr::select(.,-dplyr::all_of(value_colname))
+
+  #rename REF_DATE to time
+  imports <- imports %>% dplyr::rename("time" = "TIME_PERIOD")
+
+  # rename VALUE to values
+  imports <- imports %>% dplyr::rename("values" = "VALUE")
+
+  write_csv(hicp, file = paste0("./small_examples/IJF/",country,"/import_price_index.csv"))
+
+  #end of adding imports price index
+
   # inflation, ideally we calculate this inside the model from HICP level data: (HICP - L1.HICP) / L1.HICP
   # but I think we have not implemented more general algebra at the moment
   inf <- hicp %>%
