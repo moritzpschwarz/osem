@@ -1,58 +1,32 @@
 \begin{table}
 \label{tab:regression_summaryDK_4}
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark. Part 4.}
+\caption{Final OSEM Model result for selected modules for Denmark.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
   & ElectrCons & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
 \midrule
-ar1 & \num{-0.009} & \num{0.848}*** & \num{0.983}*** & \num{0.396}***\\
- & (\num{0.083}) & (\num{0.053}) & (\num{0.026}) & (\num{0.098})\\
-ar2 & \num{-0.293}*** &  &  & \\
- & (\num{0.076}) &  &  & \\
-mconst & \num{6.579}*** & \num{1.989}*** & \num{0.241} & \num{-6.229}\\
- & (\num{1.252}) & (\num{0.531}) & (\num{0.474}) & (\num{6.146})\\
-trend & \num{-0.003}*** & \num{0.001}** & \num{0.000} & \num{-0.019}***\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) & (\num{0.004})\\
-ln.ElectrCons &  &  &  & \num{0.498}\\
- &  &  &  & (\num{0.590})\\
-L1.ln.ElectrCons &  &  &  & \num{0.990}\\
- &  &  &  & (\num{0.658})\\
-ln.HICP\_Electricity & \num{-0.079}* &  &  & \\
- & (\num{0.034}) &  &  & \\
-L2.ln.HICP\_Electricity & \num{-0.136}*** &  &  & \\
- & (\num{0.037}) &  &  & \\
-L1.ln.HICP\_Electricity & \num{0.106}* &  &  & \\
- & (\num{0.043}) &  &  & \\
-ln.HICPlocal &  & \num{-0.237} & \num{-0.228} & \\
- &  & (\num{0.340}) & (\num{0.182}) & \\
-L1.ln.HICPlocal &  & \num{-0.044} & \num{0.222} & \\
- &  & (\num{0.356}) & (\num{0.188}) & \\
-ln.RealCapFormHH &  &  &  & \num{-0.091}\\
- &  &  &  & (\num{0.247})\\
-L1.ln.RealCapFormHH &  &  &  & \num{0.107}\\
- &  &  &  & (\num{0.230})\\
-ln.RealConsHH & \num{0.080} &  & \num{-0.015} & \\
- & (\num{0.114}) &  & (\num{0.061}) & \\
-L2.ln.RealConsHH & \num{0.200}+ &  &  & \\
- & (\num{0.103}) &  &  & \\
-L1.ln.RealConsHH & \num{0.341}** &  & \num{-0.021} & \\
- & (\num{0.112}) &  & (\num{0.061}) & \\
-ln.RealVAIndustry &  & \num{0.128}** &  & \num{1.277}**\\
- &  & (\num{0.047}) &  & (\num{0.433})\\
-L1.ln.RealVAIndustry &  & \num{-0.108}* &  & \num{-1.163}**\\
- &  & (\num{0.049}) &  & (\num{0.406})\\
-ln.RoadFreight &  &  & \num{0.002} & \\
- &  &  & (\num{0.014}) & \\
-L1.ln.RoadFreight &  &  & \num{0.024} & \\
- &  &  & (\num{0.015}) & \\
+ar1 &  & \num{0.961}*** & \num{0.996}*** & \\
+ &  & (\num{0.020}) & (\num{0.000}) & \\
+mconst & \num{10.279}*** & \num{0.714}* &  & \\
+ & (\num{0.115}) & (\num{0.358}) &  & \\
+trend & \num{-0.001}*** & \num{0.000} &  & \num{-0.019}***\\
+ & (\num{0.000}) & (\num{0.000}) &  & (\num{0.002})\\
+ln.ElectrCons &  &  &  & \num{1.294}***\\
+ &  &  &  & (\num{0.038})\\
+ln.HICP\_Electricity & \num{-0.155}*** &  &  & \\
+ & (\num{0.021}) &  &  & \\
+ln.HICPlocal &  & \num{-0.117} &  & \\
+ &  & (\num{0.071}) &  & \\
+ln.PriceETS &  &  &  & \num{0.054}+\\
+ &  &  &  & (\num{0.027})\\
 \midrule
-Num.Obs. & \num{65} & \num{111} & \num{99} & \num{63}\\
-AIC & \num{-359.9} & \num{-556.3} & \num{-625.2} & \num{-98.9}\\
-BIC & \num{-320.8} & \num{-515.7} & \num{-581.1} & \num{-66.7}\\
-Log.Lik. & \num{197.954} & \num{293.169} & \num{329.609} & \num{64.442}\\
+Num.Obs. & \num{67} & \num{112} & \num{215} & \num{64}\\
+AIC & \num{-339.0} & \num{-581.9} & \num{-1331.3} & \num{-92.9}\\
+BIC & \num{-317.0} & \num{-552.0} & \num{-1294.2} & \num{-64.8}\\
+Log.Lik. & \num{179.505} & \num{301.972} & \num{676.644} & \num{59.448}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\

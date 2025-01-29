@@ -2,6 +2,7 @@ library(tidyverse)
 library(kableExtra)
 library(osem)
 library(ggtext)
+library(modelsummary)
 
 vars_to_grab <- "ElectrCons|EmiCO2RoaTra|EmiCO2ManInd|EmiCO2ElecHeat|RealVAIndustry|RealConsHH"
 vars_for_spec_table <- paste0(vars_to_grab, "|VAIndustry|HICP|CapForm|CapFormHH")
@@ -25,7 +26,9 @@ for(country in c("DE","AT","FR","DK")){
   # Loading the model -------------------------------------------------------
 
 
-  load(paste0("./small_examples/IJF/", country, "/model.RData"))
+  load(paste0("./small_examples/IJF/", country, "/model_sel.RData"))
+
+  model_result_ext <- model_result_ext_sel
 
   country_long <- case_when(country == "DE" ~ "Germany",
                             country == "DK" ~ "Denmark",
@@ -88,53 +91,53 @@ for(country in c("DE","AT","FR","DK")){
   mod_subtitle <- "Showing the <span style = color:#440154FF>Observed</span> and <span style = color:#FDE725FF>Fitted</span> values."
   fc_subtitle <- "Showing the <span style = color:#440154FF>Observed</span>, <span style = color:#FDE725FF>Fitted</span>, <span style = color:#35B779FF>Nowcasted</span>, and <span style = color:#3B528BFF>Forecasted</span> values."
 
-  ## Huge Model plot ---------------------------------------------------------
-
-  plot(model_result_ext, title = paste0("OSEM Model Output for ",country_long)) +
-    labs(subtitle = mod_subtitle) +
-    theme(plot.subtitle = element_markdown()) -> p
-  ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model",".pdf"), width = 12, height = 10)
-
-  ## Model plot with selected variables ---------------------------------------------------------
-  plot(model_result_ext, grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) +
-    labs(subtitle = mod_subtitle) +
-    theme(plot.subtitle = element_markdown()) -> p
-    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected",".pdf"), width = 7, height = 5)
-
-
-  # Same Model Plot from 2015 -----------------------------------------------
-  plot(model_result_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) +
-    labs(subtitle = mod_subtitle) +
-    theme(plot.subtitle = element_markdown()) -> p
-    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected_2015",".pdf"), width = 7, height = 5)
-
-
-  # Forecast ----------------------------------------------------------------
-  set.seed(8899)
-  fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
-
-  # Forecast Plot -----------------------------------------------------------
-
-  plot(fc_ext, title = paste0("Forecast for ",country_long)) +
-    labs(subtitle = fc_subtitle) +
-    theme(plot.subtitle = element_markdown()) -> p
-    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast",".pdf"), width = 12, height = 10)
-
-  # Forecast Plot with selected variables -----------------------------------------------------------
-  plot(fc_ext, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) +
-    labs(subtitle = fc_subtitle) +
-    theme(plot.subtitle = element_markdown()) -> p
-    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected",".pdf"), width = 7, height = 5)
-
-  # Forecast Plot with selected variables -----------------------------------------------------------
-  plot(fc_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) +
-    labs(subtitle = fc_subtitle) +
-    theme(plot.subtitle = element_markdown()) -> p
-    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015",".pdf"), width = 7, height = 5)
-
-  # # Insample Forecasting ----------------------------------------------------
+  # ## Huge Model plot ---------------------------------------------------------
   #
-  # insample <- forecast_insample(model_result_ext, sample_share = .95, exog_fill_method = c("AR","auto"))
+  # plot(model_result_ext, title = paste0("OSEM Model Output for ",country_long)) +
+  #   labs(subtitle = mod_subtitle) +
+  #   theme(plot.subtitle = element_markdown()) -> p
+  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model",".pdf"), width = 12, height = 10)
+  #
+  # ## Model plot with selected variables ---------------------------------------------------------
+  # plot(model_result_ext, grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) +
+  #   labs(subtitle = mod_subtitle) +
+  #   theme(plot.subtitle = element_markdown()) -> p
+  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected",".pdf"), width = 7, height = 5)
+  #
+  #
+  # # Same Model Plot from 2015 -----------------------------------------------
+  # plot(model_result_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) +
+  #   labs(subtitle = mod_subtitle) +
+  #   theme(plot.subtitle = element_markdown()) -> p
+  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected_2015",".pdf"), width = 7, height = 5)
+  #
+  #
+  # # Forecast ----------------------------------------------------------------
+  # set.seed(8899)
+  # fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
+  #
+  # # Forecast Plot -----------------------------------------------------------
+  #
+  # plot(fc_ext, title = paste0("Forecast for ",country_long)) +
+  #   labs(subtitle = fc_subtitle) +
+  #   theme(plot.subtitle = element_markdown()) -> p
+  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast",".pdf"), width = 12, height = 10)
+  #
+  # # Forecast Plot with selected variables -----------------------------------------------------------
+  # plot(fc_ext, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) +
+  #   labs(subtitle = fc_subtitle) +
+  #   theme(plot.subtitle = element_markdown()) -> p
+  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected",".pdf"), width = 7, height = 5)
+  #
+  # # Forecast Plot with selected variables -----------------------------------------------------------
+  # plot(fc_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) +
+  #   labs(subtitle = fc_subtitle) +
+  #   theme(plot.subtitle = element_markdown()) -> p
+  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015",".pdf"), width = 7, height = 5)
+  #
+  # # Insample Forecasting ----------------------------------------------------
+  # set.seed(8899)
+  # insample <- forecast_insample(model_result_ext, sample_share = .96, exog_fill_method = c("auto"))
   #
   # # Insample Forecasting Plots ----------------------------------------------------
   #
@@ -260,15 +263,51 @@ for(country in c("DE","AT","FR","DK")){
   #   DT::formatRound(columns = c("AR", "ARCH", "Share of Indicators"),
   #                   digits = 4)
 
-  set.seed(1234)
-  model_result_ext %>%
-    network(layout = "fr") -> p
-
-  ggsave(p, width = 8, height = 10, file = paste0("small_examples/IJF/figures_overleaf/", country, "_Network",".pdf"), bg = "white")
+  # set.seed(1234)
+  # model_result_ext %>%
+  #   network(layout = "fr") -> p
+  #
+  # ggsave(p, width = 8, height = 10, file = paste0("small_examples/IJF/figures_overleaf/", country, "_Network",".pdf"), bg = "white")
 
 
 
   #insample <- forecast_insample(model_result_ext, sample_share = .99, exog_fill_method = c("AR","auto"))
+
+
+  # Summary Statistics ------------------------------------------------------
+
+  summary_stats <- datasummary_skim(model_result_ext$processed_input_data %>%
+                                      pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
+                                      as.data.frame(), histogram = FALSE, output = "latex_tabular")
+
+  table_change(summary_stats, label = paste0("tab:summarystats_",country)) %>%
+    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Summary_Statistics.tex"))
+
+
+
+
+  # Scenario ----------------------------------------------------------------
+
+  base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "auto")
+
+  base_fc$exog_data_nowcast %>%
+    mutate(PriceETS = PriceETS + 100) -> exog_data_new
+
+
+  scen_fc <- forecast_model(model_result_ext_sel, exog_predictions = exog_data_new)
+
+  base_df <- plot(base_fc, grepl_variables = "EmiCO2Total", return.data = TRUE)
+  scen_df <- plot(scen_fc, grepl_variables = "EmiCO2Total", return.data = TRUE)
+
+
+  base_df %>%
+    select(time, base = values) %>%
+    bind_cols(scen_df %>%
+                select(scen = values)) %>%
+    mutate(diff = base - scen) %>%
+    summarise(sum(base, na.rm = TRUE),
+              sum(diff, na.rm = TRUE))
+
 
 
 }
@@ -395,5 +434,6 @@ cat("Figures LaTeX file generated:", output_file, "\n")
 # why is a lot of super.exog NA? --> DONE
 # variable table
 # check network graph - real VA and selected --> DONE
-# fix insample forecasting
-# legend
+# fix insample forecasting --> DONE
+# legend --> DONE
+# take away the trend

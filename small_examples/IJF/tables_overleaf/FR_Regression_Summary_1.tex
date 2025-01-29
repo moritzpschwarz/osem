@@ -8,79 +8,51 @@
 \toprule
   & Imports & ConsHH & CapFormHH & Exports & VAService\\
 \midrule
-ar1 & \num{0.931}*** & \num{0.431}*** & \num{0.300}*** & \num{0.681}*** & \num{0.528}***\\
- & (\num{0.030}) & (\num{0.064}) & (\num{0.071}) & (\num{0.035}) & (\num{0.066})\\
-ar2 &  & \num{0.377}*** &  &  & \num{-0.289}***\\
- &  & (\num{0.048}) &  &  & (\num{0.074})\\
-ar3 &  & \num{-0.170}* &  &  & \num{0.113}\\
- &  & (\num{0.071}) &  &  & (\num{0.074})\\
-ar4 &  &  &  &  & \num{0.351}***\\
+ar1 & \num{0.994}*** & \num{0.506}*** & \num{0.627}*** & \num{0.805}*** & \num{0.498}***\\
+ & (\num{0.005}) & (\num{0.049}) & (\num{0.080}) & (\num{0.037}) & (\num{0.042})\\
+ar2 &  & \num{0.388}*** &  &  & \num{-0.145}***\\
+ &  & (\num{0.042}) &  &  & (\num{0.034})\\
+ar3 &  & \num{-0.204}*** &  &  & \\
+ &  & (\num{0.059}) &  &  & \\
+ar4 &  &  &  &  & \num{0.373}***\\
+ &  &  &  &  & (\num{0.039})\\
+mconst &  &  & \num{2.920}** & \num{3.215}*** & \\
+ &  &  & (\num{0.953}) & (\num{0.679}) & \\
+trend &  &  & \num{0.002}** & \num{0.002}*** & \num{0.001}***\\
+ &  &  & (\num{0.001}) & (\num{0.000}) & (\num{0.000})\\
+ln.ConsGov &  &  &  &  & \num{0.190}**\\
+ &  &  &  &  & (\num{0.071})\\
+L4.ln.ConsGov &  &  &  &  & \num{0.270}***\\
+ &  &  &  &  & (\num{0.057})\\
+L1.ln.ConsGov &  &  &  &  & \num{-0.634}***\\
  &  &  &  &  & (\num{0.061})\\
-mconst & \num{0.699} & \num{-0.022} & \num{3.873}* & \num{4.770}*** & \num{0.579}*\\
- & (\num{0.549}) & (\num{0.310}) & (\num{1.496}) & (\num{0.654}) & (\num{0.234})\\
-trend & \num{0.001}* & \num{0.000} & \num{0.004}*** & \num{0.003}*** & \num{0.002}***\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.001}) & (\num{0.000}) & (\num{0.000})\\
-ln.BuildingPermits &  &  & \num{-0.013} &  & \\
- &  &  & (\num{0.032}) &  & \\
-L1.ln.BuildingPermits &  &  & \num{0.015} &  & \\
- &  &  & (\num{0.029}) &  & \\
-ln.ConsGov &  &  &  &  & \num{0.220}*\\
- &  &  &  &  & (\num{0.086})\\
-L4.ln.ConsGov &  &  &  &  & \num{0.308}***\\
- &  &  &  &  & (\num{0.083})\\
-L3.ln.ConsGov &  &  &  &  & \num{-0.070}\\
- &  &  &  &  & \vphantom{1} (\num{0.107})\\
-L2.ln.ConsGov &  &  &  &  & \num{0.167}\\
- &  &  &  &  & (\num{0.107})\\
-L1.ln.ConsGov &  &  &  &  & \num{-0.674}***\\
- &  &  &  &  & (\num{0.095})\\
-ln.ConsHH &  &  &  &  & \num{0.922}***\\
- &  &  &  &  & (\num{0.055})\\
-L4.ln.ConsHH &  &  &  &  & \num{-0.585}***\\
- &  &  &  &  & (\num{0.073})\\
-L3.ln.ConsHH &  &  &  &  & \num{-0.042}\\
- &  &  &  &  & (\num{0.074})\\
-L2.ln.ConsHH &  &  &  &  & \num{0.070}\\
- &  &  &  &  & \vphantom{1} (\num{0.077})\\
-L1.ln.ConsHH &  &  &  &  & \num{-0.136}+\\
- &  &  &  &  & (\num{0.077})\\
-ln.FinWealthHH &  & \num{0.095}*** &  &  & \\
- &  & (\num{0.025}) &  &  \vphantom{1} & \\
-L3.ln.FinWealthHH &  & \num{-0.035} &  &  & \\
- &  & (\num{0.025}) &  &  & \\
-L2.ln.FinWealthHH &  & \num{0.057}+ &  &  & \\
- &  & (\num{0.033}) &  &  \vphantom{1} & \\
-L1.ln.FinWealthHH &  & \num{-0.054} &  &  & \\
- &  & (\num{0.033}) &  &  & \\
-ln.HICPlocal &  & \num{0.910}*** & \num{-0.499} &  & \\
- &  & (\num{0.183}) & (\num{0.714}) &  & \\
-L3.ln.HICPlocal &  & \num{0.064} &  &  & \\
- &  & (\num{0.200}) &  &  & \\
-L2.ln.HICPlocal &  & \num{-0.297} &  &  & \\
- &  & (\num{0.308}) &  &  & \\
-L1.ln.HICPlocal &  & \num{-0.647}* & \num{-0.242} &  & \\
- &  & (\num{0.304}) & (\num{0.766}) &  & \\
-ln.HousePriceIndex &  &  & \num{1.463}*** &  & \\
- &  &  & (\num{0.311}) &  & \\
-L1.ln.HousePriceIndex &  &  & \num{-0.823}** &  & \\
- &  &  & (\num{0.287}) &  & \\
-ln.IncomeHH &  & \num{0.082}+ & \num{0.143} &  & \\
- &  & (\num{0.042}) & (\num{0.165}) &  & \\
-L3.ln.IncomeHH &  & \num{0.047} &  &  & \\
- &  & (\num{0.045}) &  &  \vphantom{1} & \\
-L2.ln.IncomeHH &  & \num{0.048} &  &  & \\
- &  & (\num{0.045}) &  &  & \\
-L1.ln.IncomeHH &  & \num{0.101}+ & \num{0.102} &  & \\
- &  & (\num{0.054}) & (\num{0.164}) &  & \\
-ln.REER & \num{-0.533}** &  &  & \num{-0.753}*** & \\
- & (\num{0.184}) &  &  & (\num{0.203}) & \\
-L1.ln.REER & \num{0.537}** &  &  & \num{0.406}+ & \\
- & (\num{0.184}) &  &  & (\num{0.205}) & \\
+ln.ConsHH &  &  &  &  & \num{0.925}***\\
+ &  &  &  &  & (\num{0.048})\\
+L4.ln.ConsHH &  &  &  &  & \num{-0.544}***\\
+ &  &  &  &  & (\num{0.058})\\
+ln.FinWealthHH &  & \num{0.052}*** &  &  & \\
+ &  & (\num{0.007}) &  &  & \\
+ln.HICPlocal &  & \num{0.784}*** & \num{-0.317}+ &  & \\
+ &  & (\num{0.178}) & (\num{0.160}) &  & \\
+L1.ln.HICPlocal &  & \num{-0.860}*** &  &  & \\
+ &  & (\num{0.178}) &  &  & \\
+ln.HousePriceIndex &  &  & \num{0.972}*** &  & \\
+ &  &  & (\num{0.219}) &  & \\
+L1.ln.HousePriceIndex &  &  & \num{-0.554}* &  & \\
+ &  &  & (\num{0.241}) &  & \\
+ln.IncomeHH &  & \num{0.112}** &  &  & \\
+ &  & (\num{0.041}) &  &  & \\
+L1.ln.IncomeHH &  & \num{0.160}** &  &  & \\
+ &  & (\num{0.050}) &  &  & \\
+ln.REER & \num{-0.598}** &  &  & \num{-0.264}** & \\
+ & (\num{0.184}) &  &  & (\num{0.090}) & \\
+L1.ln.REER & \num{0.615}** &  &  &  & \\
+ & (\num{0.184}) &  &  &  & \\
 \midrule
-Num.Obs. & \num{122} & \num{100} & \num{75} & \num{122} & \num{175}\\
-AIC & \num{-565.4} & \num{-737.9} & \num{-372.0} & \num{-529.6} & \num{-1048.9}\\
-BIC & \num{-520.5} & \num{-657.2} & \num{-330.3} & \num{-495.9} & \num{-963.4}\\
-Log.Lik. & \num{298.688} & \num{399.961} & \num{203.998} & \num{276.783} & \num{551.432}\\
+Num.Obs. & \num{122} & \num{103} & \num{78} & \num{123} & \num{175}\\
+AIC & \num{-562.3} & \num{-754.7} & \num{-407.3} & \num{-516.7} & \num{-1071.0}\\
+BIC & \num{-523.0} & \num{-696.7} & \num{-367.3} & \num{-488.6} & \num{-1001.4}\\
+Log.Lik. & \num{295.133} & \num{399.356} & \num{220.669} & \num{268.349} & \num{557.494}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\

@@ -33,6 +33,7 @@
 
 plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
                                         first_date = NULL,
+                                        grepl_variables = NULL,
                                         #exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE,
                                         ...){
 
@@ -45,7 +46,7 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
   time_to_show <- x$args$all_times[ceiling(length(x$args$all_times) * share_to_show):length(x$args$all_times)]
 
   if(!is.null(first_date)){
-    time_to_show_hist <- time_to_show[time_to_show >= as.Date(first_date)]
+    time_to_show_hist <- x$args$all_times[x$args$all_times >= as.Date(first_date)]
   } else {
     share_to_show_hist <- 1 - (ifelse((1 - (x$args$sample_share - 0.1)) * 2 <= 1, (1 - (x$args$sample_share -  0.1)) * 2, 1))
     time_to_show_hist <- x$args$all_times[ceiling(length(x$args$all_times) * share_to_show_hist):length(x$args$all_times)]
@@ -96,6 +97,25 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
     }
   }
 
+
+  centrals <- centrals %>%
+    dplyr::rename(Method = "method") %>%
+    {if(!is.null(grepl_variables)){
+      dplyr::filter(.,grepl(grepl_variables, .data$dep_var))
+    } else {.}}
+
+  if(exists("uncertainties")){
+    uncertainties <- uncertainties %>%
+      dplyr::rename(Method = "method") %>%
+      {if(!is.null(grepl_variables)){
+        dplyr::filter(.,grepl(grepl_variables, .data$dep_var))
+      } else {.}}
+  }
+
+  hist_data_ready <- if(!is.null(grepl_variables)){
+    historical_data %>% dplyr::filter(.,grepl(grepl_variables, .data$dep_var))
+  } else {historical_data}
+
   if(!is.null(x$uncertainty)){
     uncertainty_layers <- list(ggplot2::geom_ribbon(data = uncertainties, ggplot2::aes(ymin = .data$min, x = .data$time, ymax = .data$max, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE),
                                ggplot2::geom_ribbon(data = uncertainties, ggplot2::aes(ymin = .data$p025, x = .data$time, ymax = .data$p975, fill = as.factor(.data$start)), linewidth = 0.1, alpha = 0.1, inherit.aes = FALSE),
@@ -105,14 +125,11 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
   }
 
   legend_options <- list(
-    ggplot2::theme(legend.position = dplyr::if_else(length(unique(centrals$method))>1, "bottom","none"))
+    ggplot2::theme(legend.position = dplyr::if_else(length(unique(centrals$Method))>1, "bottom","none"))
   )
 
-  centrals <- centrals %>% dplyr::rename(Method = "method")
-  if(exists("uncertainties")){uncertainties <- uncertainties %>% dplyr::rename(Method = "method")}
-
   ggplot2::ggplot() +
-    ggplot2::geom_line(data = historical_data,
+    ggplot2::geom_line(data = hist_data_ready,
                        ggplot2::aes(x = .data$time, y = .data$values), linewidth = 1) +
 
     ggplot2::facet_wrap(~.data$dep_var, scales = "free") +

@@ -1,9 +1,9 @@
 \begin{table}
 \centering\centering
-\caption{Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models.}
+\caption{\label{tab:spec_full}Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models.}
 \centering
-\fontsize{7}{9}\selectfont
-\begin{tabular}[t]{rll>{\raggedright\arraybackslash}p{7cm}}
+\fontsize{8}{10}\selectfont
+\begin{tabular}[t]{rll>{\raggedright\arraybackslash}p{10cm}}
 \toprule
 Model & Type & Dependent & Independent\\
 \midrule
@@ -50,8 +50,8 @@ Model & Type & Dependent & Independent\\
 35 & Estimated & EmiCO2RoaTra & f(RoadFreight, RealConsHH, HICPlocal)\\
 \addlinespace
 36 & Estimated & EmiCO2Residential & f(RealConsHH, HICP\_Electricity)\\
-37 & Estimated & ElectrCons & f(RealConsHH, HICP\_Electricity)\\
-38 & Estimated & EmiCO2ElecHeat & f(ElectrCons, RealVAIndustry, RealCapFormHH)\\
+37 & Estimated & ElectrCons & f(RealConsHH, HICP\_Electricity, PriceETS)\\
+38 & Estimated & EmiCO2ElecHeat & f(ElectrCons, RealVAIndustry, RealCapFormHH, PriceETS)\\
 39 & Identity & EmiCO2Total & EmiCO2ElecHeat + EmiCO2RoaTra + EmiCO2ManInd + EmiCO2OilandGas + EmiCO2PetrRef + EmiCO2WatNav + EmiCO2CivAvi + EmiCO2GlassProd + EmiCO2LimeProd + EmiCO2OthTransp + EmiCO2Rail + EmiCO2Residential + EmiCO2SolidFuel + EmiCO2OthCarb + EmiCO2CemPro + EmiCO2ChemInd + EmiCO2Liming + EmiCO2MetalInd + EmiCO2NonEnergProd + EmiCO2UreaApp + EmiCO2Waste\\
 40 & Identity & EmiCH4Total & EmiCH4ElecHeat + EmiCH4PetrRef + EmiCH4ManInd + EmiCH4CivAvi + EmiCH4RoaTra + EmiCH4Rail + EmiCH4WatNav + EmiCH4OthTransp + EmiCH4Residential + EmiCH4SolidFuel + EmiCH4OilandGas + EmiCH4ChemInd + EmiCH4MetalInd + EmiCH4EntericFerment + EmiCH4ManureMgmt + EmiCH4BiomassBurn + EmiCH4SolidWaste + EmiCH4BioWasteTreat + EmiCH4Waste + EmiCH4Wastewater\\
 \addlinespace

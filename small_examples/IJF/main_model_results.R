@@ -242,6 +242,22 @@ for(country in c("DE","AT","FR", "DK")){
   save(model_result_ext_sel, file = paste0("./small_examples/IJF/", country, "/model_sel.RData"))
 
 
+  model_result_ext_sel_notrend <- run_model(
+    specification = spec_extended,
+    dictionary = dictionary %>%
+      mutate(geo = country),
+    inputdata_directory = paste0("./small_examples/IJF/", country),
+    save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
+    primary_source = "local",
+    trend = FALSE,
+    saturation.tpval = 0.01,
+    gets_selection = TRUE,
+    constrain.to.minimum.sample = FALSE,
+    plot = FALSE
+  )
+
+  save(model_result_ext_sel_notrend, file = paste0("./small_examples/IJF/", country, "/model_sel_notrend.RData"))
+
   #fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
 }
 

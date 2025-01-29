@@ -8,39 +8,33 @@
 \toprule
   & EmiCO2CivAvi & RoadFreight & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
 \midrule
-ar1 &  &  & \num{0.902}*** & \num{0.708}*** & \\
- &  &  & (\num{0.036}) & (\num{0.060}) & \\
-mconst & \num{-7.054}*** & \num{4.259}** & \num{0.067} & \num{3.047}*** & \num{9.028}+\\
- & (\num{1.942}) & (\num{1.410}) & (\num{0.634}) & (\num{0.776}) & (\num{5.383})\\
-trend & \num{-0.004}*** & \num{0.000} & \num{-0.001}* & \num{0.000} & \num{-0.021}***\\
- & (\num{0.001}) & (\num{0.001}) & (\num{0.001}) & (\num{0.000}) & (\num{0.003})\\
-ln.ElectrCons &  &  &  &  & \num{1.290}**\\
- &  &  &  &  & (\num{0.389})\\
-ln.HICPlocal & \num{0.449}** & \num{-0.559}** & \num{0.151} & \num{0.076} & \\
- & (\num{0.164}) & (\num{0.192}) & (\num{0.540}) & (\num{0.231}) & \\
-L1.ln.HICPlocal &  &  & \num{-0.003} & \num{-0.091} & \\
- &  &  & (\num{0.554}) & (\num{0.227}) & \\
-ln.RealCapFormHH &  &  &  &  & \num{1.629}***\\
- &  &  &  &  & (\num{0.319})\\
-ln.RealConsHH & \num{0.364}* & \num{0.195} &  & \num{-0.004} & \\
- & (\num{0.166}) & (\num{0.141}) &  & (\num{0.046}) & \\
-L1.ln.RealConsHH &  &  &  & \num{0.050} & \\
- &  &  &  & (\num{0.045}) & \\
-ln.RealVAIndustry &  &  & \num{0.001} &  & \num{-2.495}***\\
- &  &  & (\num{0.067}) &  & (\num{0.431})\\
-L1.ln.RealVAIndustry &  &  & \num{0.039} &  & \\
- &  &  & (\num{0.067}) &  & \\
-ln.RealVAService & \num{0.725}*** & \num{0.614}*** &  &  & \\
- & (\num{0.103}) & (\num{0.135}) &  &  & \\
-ln.RoadFreight &  &  &  & \num{-0.016} & \\
- &  &  &  & (\num{0.021}) & \\
-L1.ln.RoadFreight &  &  &  & \num{-0.037}+ & \\
- &  &  &  & (\num{0.020}) & \\
+ar1 &  &  & \num{0.925}*** & \num{1.003}*** & \\
+ &  &  & (\num{0.027}) & (\num{0.019}) & \\
+mconst & \num{-1.959}* & \num{5.508}*** &  & \num{-0.032} & \\
+ & (\num{0.986}) & (\num{0.720}) &  & (\num{0.165}) & \\
+trend & \num{-0.002}* &  & \num{-0.001}** &  & \num{-0.007}***\\
+ & (\num{0.001}) &  & (\num{0.000}) &  & (\num{0.002})\\
+ln.ElectrCons &  &  &  &  & \num{1.760}***\\
+ &  &  &  &  & (\num{0.256})\\
+ln.HICPlocal &  & \num{-0.628}*** &  &  & \\
+ &  & (\num{0.129}) &  &  & \\
+L1.ln.HICPlocal &  &  & \num{0.218}** &  & \\
+ &  &  & (\num{0.074}) &  & \\
+ln.PriceETS &  &  &  &  & \num{-0.084}**\\
+ &  &  &  &  & (\num{0.025})\\
+ln.RealCapFormHH &  &  &  &  & \num{1.283}***\\
+ &  &  &  &  & (\num{0.313})\\
+ln.RealVAIndustry &  &  &  &  & \num{-2.058}***\\
+ &  &  &  &  & (\num{0.484})\\
+ln.RealVAService & \num{0.788}*** & \num{0.746}*** &  &  & \\
+ & (\num{0.099}) & (\num{0.108}) &  &  & \\
+L1.ln.RoadFreight &  &  &  & \num{-0.007} & \\
+ &  &  &  & (\num{0.008}) & \\
 \midrule
-Num.Obs. & \num{112} & \num{102} & \num{111} & \num{99} & \num{64}\\
-AIC & \num{-485.9} & \num{-441.4} & \num{-521.4} & \num{-692.2} & \num{-106.6}\\
-BIC & \num{-426.1} & \num{-399.4} & \num{-480.7} & \num{-642.9} & \num{-80.7}\\
-Log.Lik. & \num{264.929} & \num{236.718} & \num{275.682} & \num{365.115} & \num{65.307}\\
+Num.Obs. & \num{176} & \num{102} & \num{111} & \num{99} & \num{64}\\
+AIC & \num{-609.3} & \num{-423.3} & \num{-527.5} & \num{-684.6} & \num{-88.3}\\
+BIC & \num{-564.9} & \num{-391.8} & \num{-497.7} & \num{-656.0} & \num{-68.8}\\
+Log.Lik. & \num{318.649} & \num{223.656} & \num{274.755} & \num{353.283} & \num{53.135}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\

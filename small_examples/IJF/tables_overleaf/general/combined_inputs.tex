@@ -7,28 +7,28 @@
 \toprule
 Module & AR & ARCH & Super Exogeneity & IIS & SIS & n & Share of Indicators\\
 \midrule
-Imports & 0.495 & 0.308 & 0.000 & 2 & 2 & 118 & 0.034\\
-ConsHH & 0.026 & 0.666 & 0.029 & 6 & 0 & 99 & 0.061\\
-CapFormHH & 0.225 & 0.769 &  & 5 & 0 & 54 & 0.093\\
-Exports & 0.007 & 0.804 & 0.000 & 1 & 6 & 115 & 0.061\\
-VAService & 0.102 & 0.413 &  & 3 & 2 & 115 & 0.043\\
+Imports & 0.336 & 0.456 &  & 2 & 2 & 118 & 0.034\\
+ConsHH & 0.011 & 0.936 & 0.065 & 6 & 0 & 99 & 0.061\\
+CapFormHH & 0.370 & 0.407 &  & 5 & 2 & 59 & 0.119\\
+Exports & 0.779 & 0.547 & 0.000 & 2 & 4 & 116 & 0.052\\
+VAService & 0.073 & 0.202 & 0.011 & 2 & 3 & 115 & 0.043\\
 \addlinespace
-VAGov & 0.007 & 0.136 &  & 4 & 1 & 115 & 0.043\\
-DFGDP & 0.554 & 0.113 &  & 2 & 3 & 117 & 0.043\\
-VAIndustry & 0.041 & 0.990 &  & 2 & 1 & 79 & 0.038\\
-VARetail & 0.821 & 0.924 & 0.134 & 5 & 1 & 102 & 0.059\\
-VARealEstate & 0.025 & 0.568 & 0.000 & 2 & 1 & 58 & 0.052\\
+VAGov & 0.011 & 0.263 & 0.022 & 3 & 6 & 115 & 0.078\\
+DFGDP & 0.313 & 0.155 &  & 3 & 3 & 117 & 0.051\\
+VAIndustry & 0.012 & 0.802 & 0.004 & 1 & 2 & 103 & 0.029\\
+VARetail & 0.981 & 0.107 & 0.013 & 6 & 1 & 103 & 0.068\\
+VARealEstate & 0.993 & 0.270 & 0.000 & 2 & 5 & 102 & 0.069\\
 \addlinespace
-Flights & 0.621 & 0.092 &  & 1 & 4 & 47 & 0.106\\
-EmiCO2Residential & 0.756 & 0.162 & 0.197 & 1 & 6 & 112 & 0.062\\
-ElectrCons & 0.035 & 0.868 & 0.032 & 1 & 4 & 66 & 0.076\\
-EmiCH4EntericFerment & 0.526 & 0.270 & 0.000 & 7 & 0 & 115 & 0.061\\
-EmiCO2CivAvi & 0.989 & 0.624 & 0.000 & 5 & 0 & 111 & 0.045\\
+Flights & 0.065 & 0.800 &  & 18 & 0 & 47 & 0.383\\
+EmiCO2Residential & 0.118 & 0.981 & 0.518 & 0 & 5 & 116 & 0.043\\
+ElectrCons & 0.165 & 0.596 & 0.082 & 1 & 1 & 66 & 0.030\\
+EmiCH4EntericFerment & 0.697 & 0.232 & 0.097 & 4 & 0 & 115 & 0.035\\
+EmiCO2CivAvi & 0.680 & 0.522 & 0.014 & 4 & 0 & 115 & 0.035\\
 \addlinespace
-RoadFreight & 0.122 & 0.188 & 0.001 & 0 & 7 & 102 & 0.069\\
-EmiCO2ManInd & 0.838 & 0.299 & 0.035 & 7 & 0 & 111 & 0.063\\
-EmiCO2RoaTra & 0.904 & 0.466 & 0.000 & 7 & 0 & 99 & 0.071\\
-EmiCO2ElecHeat & 0.452 & 0.761 & 0.065 & 1 & 1 & 63 & 0.032\\
+RoadFreight & 0.113 & 0.006 & 0.004 & 1 & 6 & 102 & 0.069\\
+EmiCO2ManInd & 0.935 & 0.147 &  & 10 & 0 & 215 & 0.047\\
+EmiCO2RoaTra & 0.987 & 0.462 & 0.018 & 7 & 0 & 99 & 0.071\\
+EmiCO2ElecHeat & 0.495 & 0.519 & 0.251 & 1 & 1 & 63 & 0.032\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -45,91 +45,47 @@ EmiCO2ElecHeat & 0.452 & 0.761 & 0.065 & 1 & 1 & 63 & 0.032\\
 \toprule
   & Imports & ConsHH & CapFormHH & Exports & VAService\\
 \midrule
-ar1 & \num{0.854}*** & \num{-0.168}* & \num{0.322}** & \num{0.685}*** & \num{0.266}***\\
- & (\num{0.033}) & (\num{0.065}) & (\num{0.099}) & (\num{0.070}) & (\num{0.056})\\
-ar2 &  & \num{0.040} &  & \num{0.468}*** & \num{-0.218}***\\
- &  & (\num{0.062}) &  & (\num{0.081}) & (\num{0.050})\\
-ar3 &  & \num{-0.104}+ &  & \num{-0.236}* & \num{0.204}***\\
- &  & (\num{0.062}) &  & (\num{0.093}) & (\num{0.051})\\
-ar4 &  & \num{0.681}*** &  & \num{0.016} & \num{0.589}***\\
- &  & (\num{0.064}) &  & (\num{0.069}) & (\num{0.054})\\
-mconst & \num{2.453}*** & \num{2.257}** & \num{-1.894} & \num{1.754} & \num{-1.926}*\\
- & (\num{0.667}) & (\num{0.757}) & (\num{2.468}) & (\num{1.094}) & (\num{0.968})\\
-trend & \num{0.002}*** & \num{0.001} & \num{-0.003} & \num{0.001} & \num{0.000}\\
- & (\num{0.000}) & (\num{0.001}) & (\num{0.004}) & (\num{0.001}) & (\num{0.001})\\
-ln.BuildingPermits &  &  & \num{0.026} &  & \\
- &  &  & (\num{0.044}) &  & \\
-L1.ln.BuildingPermits &  &  & \num{-0.031} &  & \\
- &  &  & (\num{0.048}) &  & \\
-ln.ConsGov &  &  &  &  & \num{-0.166}\\
- &  &  &  &  & (\num{0.111})\\
-L4.ln.ConsGov &  &  &  &  & \num{0.173}\\
- &  &  &  &  & (\num{0.118})\\
-L3.ln.ConsGov &  &  &  &  & \num{0.110}\\
- &  &  &  &  & (\num{0.098})\\
-L2.ln.ConsGov &  &  &  &  & \num{0.019}\\
- &  &  &  &  & \vphantom{1} (\num{0.092})\\
-L1.ln.ConsGov &  &  &  &  & \num{0.043}\\
- &  &  &  &  & (\num{0.090})\\
-ln.ConsHH &  &  &  &  & \num{0.755}***\\
- &  &  &  &  & (\num{0.140})\\
-L4.ln.ConsHH &  &  &  &  & \num{-0.931}***\\
- &  &  &  &  & (\num{0.091})\\
-L3.ln.ConsHH &  &  &  &  & \num{0.165}+\\
- &  &  &  &  & (\num{0.089})\\
-L2.ln.ConsHH &  &  &  &  & \num{0.297}**\\
- &  &  &  &  & (\num{0.108})\\
-L1.ln.ConsHH &  &  &  &  & \num{-0.143}\\
- &  &  &  &  & (\num{0.092})\\
-ln.FinWealthHH &  & \num{0.125} &  &  & \\
- &  & (\num{0.084}) &  &  & \\
-L4.ln.FinWealthHH &  & \num{0.070} &  &  & \\
- &  & (\num{0.080}) &  &  & \\
-L3.ln.FinWealthHH &  & \num{-0.088} &  &  & \\
- &  & (\num{0.107}) &  &  \vphantom{2} & \\
-L2.ln.FinWealthHH &  & \num{0.099} &  &  & \\
- &  & (\num{0.107}) &  &  \vphantom{1} & \\
-L1.ln.FinWealthHH &  & \num{-0.057} &  &  & \\
- &  & (\num{0.107}) &  &  & \\
-ln.HICPlocal &  & \num{1.617}*** & \num{0.070} &  & \\
- &  & (\num{0.285}) & (\num{1.193}) &  & \\
-L4.ln.HICPlocal &  & \num{-0.453} &  &  & \\
- &  & (\num{0.289}) &  &  & \\
-L3.ln.HICPlocal &  & \num{-0.100} &  &  & \\
- &  & (\num{0.460}) &  &  & \\
-L2.ln.HICPlocal &  & \num{0.055} &  &  & \\
- &  & (\num{0.452}) &  &  & \\
-L1.ln.HICPlocal &  & \num{-0.992}* & \num{-1.196} &  & \\
- &  & (\num{0.467}) & (\num{1.229}) &  & \\
-ln.HousePriceIndex &  &  & \num{1.071}** &  & \\
- &  &  & (\num{0.365}) &  & \\
-L1.ln.HousePriceIndex &  &  & \num{-0.507} &  & \\
- &  &  & (\num{0.416}) &  & \\
-ln.IncomeHH &  & \num{0.181}** & \num{0.414}* &  & \\
- &  & (\num{0.057}) & (\num{0.192}) &  & \\
-L4.ln.IncomeHH &  & \num{-0.164}** &  &  & \\
- &  & (\num{0.052}) &  &  & \\
-L3.ln.IncomeHH &  & \num{0.014} &  &  & \\
- &  & (\num{0.046}) &  &  & \\
-L2.ln.IncomeHH &  & \num{-0.093}* &  &  & \\
+ar1 & \num{0.882}*** & \num{-0.170}*** & \num{0.326}*** & \num{0.632}*** & \num{0.272}***\\
+ & (\num{0.031}) & (\num{0.035}) & (\num{0.082}) & (\num{0.064}) & (\num{0.048})\\
+ar2 &  &  &  & \num{0.579}*** & \num{-0.154}**\\
+ &  &  &  & (\num{0.065}) & (\num{0.047})\\
+ar3 &  & \num{-0.143}** &  & \num{-0.209}*** & \num{0.221}***\\
+ &  & (\num{0.054}) &  & (\num{0.052}) & (\num{0.045})\\
+ar4 &  & \num{0.693}*** &  &  & \num{0.617}***\\
+ &  & (\num{0.040}) &  &  & (\num{0.053})\\
+mconst & \num{1.113}*** & \num{3.632}*** &  &  & \\
+ & (\num{0.299}) & (\num{0.316}) &  &  & \\
+trend & \num{0.001}*** & \num{0.003}*** &  &  & \num{0.001}\\
+ & (\num{0.000}) & (\num{0.000}) &  &  & (\num{0.001})\\
+ln.ConsHH &  &  &  &  & \num{0.610}***\\
+ &  &  &  &  & (\num{0.109})\\
+L4.ln.ConsHH &  &  &  &  & \num{-0.874}***\\
+ &  &  &  &  & (\num{0.084})\\
+L2.ln.ConsHH &  &  &  &  & \num{0.282}**\\
+ &  &  &  &  & (\num{0.099})\\
+ln.HICPlocal &  & \num{1.532}*** &  &  & \\
+ &  & (\num{0.237}) &  &  & \\
+L4.ln.HICPlocal &  & \num{-0.561}*** &  &  & \\
+ &  & (\num{0.106}) &  &  & \\
+L1.ln.HICPlocal &  & \num{-0.959}** & \num{-1.066}*** &  & \\
+ &  & (\num{0.282}) & (\num{0.148}) &  & \\
+ln.HousePriceIndex &  &  & \num{0.503}*** &  & \\
+ &  &  & (\num{0.061}) &  & \\
+ln.IncomeHH &  & \num{0.211}*** & \num{0.461}*** &  & \\
+ &  & (\num{0.043}) & (\num{0.114}) &  & \\
+L4.ln.IncomeHH &  & \num{-0.157}*** &  &  & \\
  &  & (\num{0.045}) &  &  & \\
-L1.ln.IncomeHH &  & \num{0.143}** & \num{0.555}** &  & \\
- &  & (\num{0.047}) & (\num{0.192}) &  & \\
-ln.REER & \num{-0.505}* &  &  & \num{-0.602}* & \\
- & (\num{0.255}) &  &  & (\num{0.299}) & \\
-L4.ln.REER &  &  &  & \num{-0.292} & \\
- &  &  &  & (\num{0.277}) & \\
-L3.ln.REER &  &  &  & \num{-0.181} & \\
- &  &  &  & (\num{0.413}) & \\
-L2.ln.REER &  &  &  & \num{1.684}*** & \\
- &  &  &  & (\num{0.421}) & \\
-L1.ln.REER & \num{0.275} &  &  & \num{-0.851}+ & \\
- & (\num{0.248}) &  &  & (\num{0.431}) & \\
+L1.ln.IncomeHH &  & \num{0.166}*** & \num{0.279}* &  & \\
+ &  & (\num{0.034}) & (\num{0.127}) &  & \\
+ln.REER &  &  &  & \num{-0.715}*** & \\
+ &  &  &  & (\num{0.195}) & \\
+L2.ln.REER &  &  &  & \num{0.723}*** & \\
+ &  &  &  & (\num{0.184}) & \\
 \midrule
-Num.Obs. & \num{118} & \num{99} & \num{54} & \num{115} & \num{115}\\
-AIC & \num{-526.0} & \num{-626.0} & \num{-233.8} & \num{-495.3} & \num{-557.4}\\
-BIC & \num{-490.0} & \num{-545.6} & \num{-194.1} & \num{-434.9} & \num{-488.7}\\
-Log.Lik. & \num{275.990} & \num{344.011} & \num{136.925} & \num{269.663} & \num{303.678}\\
+Num.Obs. & \num{118} & \num{99} & \num{59} & \num{116} & \num{115}\\
+AIC & \num{-522.0} & \num{-635.6} & \num{-266.8} & \num{-493.0} & \num{-561.6}\\
+BIC & \num{-491.6} & \num{-583.7} & \num{-233.5} & \num{-454.5} & \num{-514.9}\\
+Log.Lik. & \num{272.019} & \num{337.815} & \num{149.381} & \num{260.516} & \num{297.786}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -148,55 +104,35 @@ Log.Lik. & \num{275.990} & \num{344.011} & \num{136.925} & \num{269.663} & \num{
 \toprule
   & VAGov & DFGDP & VAIndustry & VARetail & VARealEstate\\
 \midrule
-ar1 & \num{0.212}*** & \num{0.500}*** &  & \num{0.312}** & \num{0.698}***\\
- & (\num{0.059}) & (\num{0.074}) &  & (\num{0.095}) & (\num{0.068})\\
-ar2 & \num{0.078} & \num{0.269}*** &  &  & \\
- & (\num{0.051}) & (\num{0.074}) &  &  & \\
-ar3 & \num{-0.089}+ &  &  &  & \\
- & (\num{0.054}) &  &  &  & \\
-ar4 & \num{0.322}*** &  &  &  & \\
- & (\num{0.065}) &  &  &  & \\
-mconst & \num{0.002} & \num{0.873}*** & \num{0.924} & \num{-4.560}*** & \num{1.912}**\\
- & (\num{0.361}) & (\num{0.171}) & (\num{1.179}) & (\num{0.957}) & (\num{0.548})\\
-trend & \num{0.001}+ & \num{0.001}*** & \num{-0.001} & \num{-0.004}*** & \num{0.005}***\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.001}) & (\num{0.001}) & (\num{0.001})\\
-ln.CapForm &  &  & \num{0.520}*** & \num{0.203}** & \num{-0.078}**\\
- &  &  & (\num{0.074}) & (\num{0.063}) & (\num{0.028})\\
-L1.ln.CapForm &  &  &  & \num{-0.160}* & \num{-0.084}**\\
- &  &  &  & (\num{0.067}) & (\num{0.030})\\
-ln.ConsGov & \num{0.554}*** &  & \num{-0.326}* & \num{-0.059} & \num{-0.051}\\
- & (\num{0.051}) &  & (\num{0.129}) & (\num{0.093}) & (\num{0.046})\\
-L4.ln.ConsGov & \num{-0.230}*** &  &  &  & \\
- & (\num{0.066}) &  &  &  & \\
-L3.ln.ConsGov & \num{0.037} &  &  &  & \\
- & (\num{0.050}) &  &  &  \vphantom{1} & \\
-L2.ln.ConsGov & \num{0.012} &  &  &  & \\
- & (\num{0.050}) &  &  &  & \\
-L1.ln.ConsGov & \num{-0.064} &  &  & \num{0.095} & \num{-0.067}\\
- & (\num{0.053}) &  &  & (\num{0.086}) & (\num{0.050})\\
-ln.ConsHH & \num{0.061} &  & \num{0.658}*** & \num{1.017}*** & \num{0.109}***\\
- & (\num{0.039}) &  & (\num{0.109}) & (\num{0.068}) & (\num{0.024})\\
-L4.ln.ConsHH & \num{-0.060} &  &  &  & \\
- & (\num{0.037}) &  &  &  & \\
-L3.ln.ConsHH & \num{0.184}*** &  &  &  & \\
- & (\num{0.039}) &  &  &  & \\
-L2.ln.ConsHH & \num{-0.037} &  &  &  & \\
- & (\num{0.043}) &  &  &  & \\
-L1.ln.ConsHH & \num{-0.014} &  &  & \num{0.031} & \num{0.148}***\\
- & (\num{0.040}) &  &  & (\num{0.119}) & (\num{0.027})\\
-ln.HousePriceIndex &  &  &  &  & \num{0.019}\\
- &  &  &  &  & (\num{0.060})\\
-L1.ln.HousePriceIndex &  &  &  &  & \num{-0.033}\\
- &  &  &  &  & (\num{0.050})\\
-ln.PriceETS &  &  & \num{-0.005} &  & \\
- &  &  & (\num{0.003}) &  & \\
-ln.PriceOil &  &  & \num{-0.005} &  & \\
- &  &  & (\num{0.013}) &  & \\
+ar1 & \num{0.003} & \num{0.515}*** &  & \num{0.369}*** & \num{0.911}***\\
+ & (\num{0.027}) & (\num{0.073}) &  & (\num{0.054}) & (\num{0.028})\\
+ar2 &  & \num{0.280}*** &  &  & \\
+ &  & (\num{0.073}) &  &  & \\
+ar4 & \num{0.513}*** &  &  &  & \\
+ & (\num{0.047}) &  &  &  & \\
+mconst &  & \num{0.769}*** & \num{1.364}*** & \num{-2.908}*** & \num{0.602}**\\
+ &  & (\num{0.174}) & (\num{0.257}) & (\num{0.709}) & (\num{0.211})\\
+trend & \num{0.001}*** & \num{0.001}*** &  & \num{-0.002}** & \num{0.001}***\\
+ & (\num{0.000}) & (\num{0.000}) &  & (\num{0.001}) & (\num{0.000})\\
+ln.CapForm &  &  & \num{0.493}*** & \num{0.052} & \num{-0.019}\\
+ &  &  & (\num{0.057}) & (\num{0.032}) & (\num{0.014})\\
+L1.ln.CapForm &  &  &  &  & \num{-0.034}*\\
+ &  &  &  &  & (\num{0.014})\\
+ln.ConsGov & \num{0.593}*** &  & \num{-0.401}*** &  & \num{-0.052}**\\
+ & (\num{0.042}) &  & (\num{0.071}) &  & (\num{0.019})\\
+L4.ln.ConsGov & \num{-0.287}*** &  &  &  & \\
+ & (\num{0.055}) &  &  &  & \\
+ln.ConsHH &  &  & \num{0.692}*** & \num{0.838}*** & \num{0.055}**\\
+ &  &  & (\num{0.073}) & (\num{0.080}) & (\num{0.017})\\
+L3.ln.ConsHH & \num{0.142}*** &  &  &  & \\
+ & (\num{0.025}) &  &  &  & \\
+L1.ln.ConsHH &  &  &  &  & \num{0.040}*\\
+ &  &  &  &  & (\num{0.016})\\
 \midrule
-Num.Obs. & \num{115} & \num{117} & \num{79} & \num{102} & \num{58}\\
-AIC & \num{-747.8} & \num{-821.8} & \num{-337.4} & \num{-540.6} & \num{-457.3}\\
-BIC & \num{-679.2} & \num{-785.9} & \num{-304.2} & \num{-490.8} & \num{-420.2}\\
-Log.Lik. & \num{398.892} & \num{423.888} & \num{182.698} & \num{289.314} & \num{246.662}\\
+Num.Obs. & \num{115} & \num{117} & \num{103} & \num{103} & \num{102}\\
+AIC & \num{-762.9} & \num{-825.6} & \num{-455.5} & \num{-563.4} & \num{-790.2}\\
+BIC & \num{-710.7} & \num{-787.0} & \num{-426.5} & \num{-521.2} & \num{-745.5}\\
+Log.Lik. & \num{400.437} & \num{426.817} & \num{238.746} & \num{297.694} & \num{412.080}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -215,37 +151,27 @@ Log.Lik. & \num{398.892} & \num{423.888} & \num{182.698} & \num{289.314} & \num{
 \toprule
   & Flights & EmiCO2Residential & ElectrCons & EmiCH4EntericFerment\\
 \midrule
-ar1 &  &  & \num{0.298}*** & \num{0.975}***\\
- &  &  & (\num{0.084}) & (\num{0.016})\\
-mconst & \num{-18.319} & \num{15.469}*** & \num{5.833}*** & \num{0.196}\\
- & (\num{13.975}) & (\num{3.068}) & (\num{0.944}) & (\num{0.132})\\
-trend & \num{-0.037}** & \num{-0.003}+ & \num{0.001}+ & \num{0.000}\\
- & (\num{0.011}) & (\num{0.001}) & (\num{0.000}) & (\num{0.000})\\
-ln.FinWealthHH & \num{1.636} &  &  & \\
- & (\num{0.978}) &  &  & \\
-ln.HICP\_AviaInt & \num{0.340} &  &  & \\
- & (\num{0.218}) &  &  & \\
-ln.HICP\_Electricity &  & \num{-0.130} & \num{0.110}+ & \\
- &  & (\num{0.192}) & (\num{0.056}) & \\
-L1.ln.HICP\_Electricity &  &  & \num{-0.138}* & \\
- &  &  & (\num{0.054}) & \\
-ln.RealConsHH & \num{0.921} & \num{-0.557}+ & \num{0.140} & \num{0.008}\\
- & (\num{0.889}) & (\num{0.287}) & (\num{0.090}) & (\num{0.009})\\
-L1.ln.RealConsHH &  &  & \num{-0.034} & \num{-0.023}*\\
- &  &  & (\num{0.077}) & (\num{0.009})\\
-ln.RealVAAgriculture &  &  &  & \num{0.001}\\
- &  &  &  & \vphantom{1} (\num{0.003})\\
-L1.ln.RealVAAgriculture &  &  &  & \num{0.007}*\\
- &  &  &  & (\num{0.003})\\
-ln.Slaughter &  &  &  & \num{0.012}\\
- &  &  &  & (\num{0.008})\\
-L1.ln.Slaughter &  &  &  & \num{-0.012}\\
- &  &  &  & (\num{0.007})\\
+ar1 &  &  & \num{0.238}*** & \num{0.981}***\\
+ &  &  & (\num{0.043}) & (\num{0.010})\\
+mconst &  & \num{20.010}*** & \num{6.900}*** & \num{0.141}**\\
+ &  & (\num{1.477}) & (\num{0.431}) & (\num{0.044})\\
+trend & \num{-0.021}*** &  &  & \\
+ & (\num{0.001}) &  &  & \\
+ln.HICP\_AviaInt & \num{0.127} &  &  & \\
+ & (\num{0.136}) &  &  & \\
+ln.HICP\_Electricity &  &  & \num{0.106}** & \\
+ &  &  & (\num{0.037}) & \\
+L1.ln.PriceETS &  &  & \num{-0.014}*** & \\
+ &  &  & (\num{0.003}) & \\
+ln.RealConsHH & \num{1.042}*** & \num{-1.096}*** &  & \\
+ & (\num{0.085}) & (\num{0.141}) &  & \\
+L1.ln.Slaughter &  &  &  & \num{-0.018}***\\
+ &  &  &  & (\num{0.004})\\
 \midrule
-Num.Obs. & \num{47} & \num{112} & \num{66} & \num{115}\\
-AIC & \num{-94.1} & \num{-230.3} & \num{-380.7} & \num{-1018.0}\\
-BIC & \num{-68.2} & \num{-189.5} & \num{-345.7} & \num{-963.1}\\
-Log.Lik. & \num{61.066} & \num{130.136} & \num{206.359} & \num{529.019}\\
+Num.Obs. & \num{47} & \num{116} & \num{66} & \num{115}\\
+AIC & \num{-119.0} & \num{-219.5} & \num{-353.1} & \num{-965.8}\\
+BIC & \num{-78.3} & \num{-191.9} & \num{-333.4} & \num{-943.8}\\
+Log.Lik. & \num{81.484} & \num{119.730} & \num{185.563} & \num{490.876}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -264,45 +190,33 @@ Log.Lik. & \num{61.066} & \num{130.136} & \num{206.359} & \num{529.019}\\
 \toprule
   & EmiCO2CivAvi & RoadFreight & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
 \midrule
-ar1 & \num{0.983}*** &  & \num{0.920}*** & \num{0.957}*** & \num{0.090}\\
- & (\num{0.024}) &  & (\num{0.035}) & (\num{0.028}) & (\num{0.106})\\
-mconst & \num{-0.959} & \num{7.759}*** & \num{0.793} & \num{0.296} & \num{2.025}\\
- & (\num{1.284}) & (\num{1.329}) & (\num{0.488}) & (\num{0.575}) & (\num{5.424})\\
-trend & \num{0.000} & \num{0.003}* & \num{0.000} & \num{0.001} & \num{-0.012}***\\
- & (\num{0.001}) & (\num{0.001}) & (\num{0.000}) & (\num{0.000}) & (\num{0.002})\\
-ln.ElectrCons &  &  &  &  & \num{-1.137}\\
- &  &  &  &  & (\num{0.854})\\
-L1.ln.ElectrCons &  &  &  &  & \num{1.882}*\\
- &  &  &  &  & (\num{0.837})\\
-ln.HICPlocal & \num{0.113} & \num{-0.834}*** & \num{-0.221} & \num{-0.282} & \\
- & (\num{0.488}) & (\num{0.145}) & (\num{0.264}) & (\num{0.275}) & \\
-L1.ln.HICPlocal & \num{-0.128} &  & \num{0.125} & \num{0.210} & \\
- & (\num{0.516}) &  & (\num{0.288}) & (\num{0.281}) & \\
-ln.RealCapFormHH &  &  &  &  & \num{0.331}\\
- &  &  &  &  & (\num{0.322})\\
-L1.ln.RealCapFormHH &  &  &  &  & \num{-0.807}*\\
- &  &  &  &  & (\num{0.336})\\
-ln.RealConsHH & \num{0.001} & \num{0.297}* &  & \num{-0.073} & \\
- & (\num{0.088}) & (\num{0.146}) &  & (\num{0.049}) & \\
-L1.ln.RealConsHH & \num{0.198}+ &  &  & \num{0.077} & \\
- & (\num{0.105}) &  &  & (\num{0.056}) & \\
-ln.RealVAIndustry &  &  & \num{0.055} &  & \num{1.376}**\\
- &  &  & (\num{0.046}) &  & (\num{0.512})\\
-L1.ln.RealVAIndustry &  &  & \num{-0.025} &  & \num{-0.866}\\
- &  &  & (\num{0.042}) &  & (\num{0.520})\\
-ln.RealVAService & \num{-0.052} & \num{0.175}* &  &  & \\
- & (\num{0.048}) & (\num{0.075}) &  &  & \\
-L1.ln.RealVAService & \num{-0.074}+ &  &  &  & \\
- & (\num{0.043}) &  &  &  & \\
-ln.RoadFreight &  &  &  & \num{0.106}** & \\
- &  &  &  & (\num{0.034}) & \\
-L1.ln.RoadFreight &  &  &  & \num{-0.085}** & \\
- &  &  &  & (\num{0.031}) & \\
+ar1 & \num{0.979}*** &  & \num{1.010}*** & \num{0.990}*** & \\
+ & (\num{0.013}) &  & (\num{0.000}) & (\num{0.006}) & \\
+mconst & \num{0.199} & \num{8.979}*** &  &  & \\
+ & (\num{0.287}) & (\num{0.386}) &  &  & \\
+trend &  &  &  &  & \num{-0.010}***\\
+ &  &  &  &  & (\num{0.001})\\
+L1.ln.ElectrCons &  &  &  &  & \num{2.261}***\\
+ &  &  &  &  & (\num{0.227})\\
+ln.HICPlocal &  & \num{-0.595}*** &  &  & \\
+ &  & (\num{0.092}) &  &  & \\
+ln.PriceETS &  &  &  &  & \num{0.092}***\\
+ &  &  &  &  & (\num{0.022})\\
+L1.ln.RealCapFormHH &  &  &  &  & \num{-1.391}***\\
+ &  &  &  &  & (\num{0.269})\\
+L1.ln.RealConsHH & \num{0.007} &  &  &  & \\
+ & (\num{0.034}) &  &  &  & \\
+ln.RealVAService & \num{-0.024}+ & \num{0.319}*** &  &  & \\
+ & (\num{0.014}) & (\num{0.038}) &  &  & \\
+ln.RoadFreight &  &  &  & \num{0.076}** & \\
+ &  &  &  & (\num{0.028}) \vphantom{1} & \\
+L1.ln.RoadFreight &  &  &  & \num{-0.074}** & \\
+ &  &  &  & (\num{0.028}) & \\
 \midrule
-Num.Obs. & \num{111} & \num{102} & \num{111} & \num{99} & \num{63}\\
-AIC & \num{-528.2} & \num{-392.3} & \num{-632.3} & \num{-580.4} & \num{-97.1}\\
-BIC & \num{-479.4} & \num{-350.3} & \num{-583.6} & \num{-528.5} & \num{-64.9}\\
-Log.Lik. & \num{282.080} & \num{212.141} & \num{334.164} & \num{310.184} & \num{63.528}\\
+Num.Obs. & \num{115} & \num{102} & \num{215} & \num{99} & \num{63}\\
+AIC & \num{-504.9} & \num{-390.7} & \num{-1118.4} & \num{-585.1} & \num{-109.6}\\
+BIC & \num{-480.2} & \num{-356.6} & \num{-1067.8} & \num{-548.8} & \num{-90.3}\\
+Log.Lik. & \num{261.474} & \num{208.374} & \num{574.195} & \num{306.548} & \num{63.791}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -314,52 +228,38 @@ Log.Lik. & \num{282.080} & \num{212.141} & \num{334.164} & \num{310.184} & \num{
 \begin{table}
 \label{tab:regression_summaryAT_4}
 \centering\centering
-\caption{Final OSEM Model result for each module for Austria. Part 4.}
+\caption{Final OSEM Model result for selected modules for Austria.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
   & ElectrCons & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
 \midrule
-ar1 & \num{0.298}*** & \num{0.920}*** & \num{0.957}*** & \num{0.090}\\
- & (\num{0.084}) & (\num{0.035}) & (\num{0.028}) & (\num{0.106})\\
-mconst & \num{5.833}*** & \num{0.793} & \num{0.296} & \num{2.025}\\
- & (\num{0.944}) & (\num{0.488}) & (\num{0.575}) & (\num{5.424})\\
-trend & \num{0.001}+ & \num{0.000} & \num{0.001} & \num{-0.012}***\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) & (\num{0.002})\\
-ln.ElectrCons &  &  &  & \num{-1.137}\\
- &  &  &  & (\num{0.854})\\
-L1.ln.ElectrCons &  &  &  & \num{1.882}*\\
- &  &  &  & (\num{0.837})\\
-ln.HICP\_Electricity & \num{0.110}+ &  &  & \\
- & (\num{0.056}) &  &  & \\
-L1.ln.HICP\_Electricity & \num{-0.138}* &  &  & \\
- & (\num{0.054}) &  &  & \\
-ln.HICPlocal &  & \num{-0.221} & \num{-0.282} & \\
- &  & (\num{0.264}) & (\num{0.275}) & \\
-L1.ln.HICPlocal &  & \num{0.125} & \num{0.210} & \\
- &  & (\num{0.288}) & (\num{0.281}) & \\
-ln.RealCapFormHH &  &  &  & \num{0.331}\\
- &  &  &  & (\num{0.322})\\
-L1.ln.RealCapFormHH &  &  &  & \num{-0.807}*\\
- &  &  &  & (\num{0.336})\\
-ln.RealConsHH & \num{0.140} &  & \num{-0.073} & \\
- & (\num{0.090}) &  & (\num{0.049}) & \\
-L1.ln.RealConsHH & \num{-0.034} &  & \num{0.077} & \\
- & (\num{0.077}) &  & (\num{0.056}) & \\
-ln.RealVAIndustry &  & \num{0.055} &  & \num{1.376}**\\
- &  & (\num{0.046}) &  & (\num{0.512})\\
-L1.ln.RealVAIndustry &  & \num{-0.025} &  & \num{-0.866}\\
- &  & (\num{0.042}) &  & (\num{0.520})\\
-ln.RoadFreight &  &  & \num{0.106}** & \\
- &  &  & (\num{0.034}) & \\
-L1.ln.RoadFreight &  &  & \num{-0.085}** & \\
- &  &  & (\num{0.031}) & \\
+ar1 & \num{0.238}*** & \num{1.010}*** & \num{0.990}*** & \\
+ & (\num{0.043}) & (\num{0.000}) & (\num{0.006}) & \\
+mconst & \num{6.900}*** &  &  & \\
+ & (\num{0.431}) &  &  & \\
+trend &  &  &  & \num{-0.010}***\\
+ &  &  &  & (\num{0.001})\\
+L1.ln.ElectrCons &  &  &  & \num{2.261}***\\
+ &  &  &  & (\num{0.227})\\
+ln.HICP\_Electricity & \num{0.106}** &  &  & \\
+ & (\num{0.037}) &  &  & \\
+ln.PriceETS &  &  &  & \num{0.092}***\\
+ &  &  &  & (\num{0.022})\\
+L1.ln.PriceETS & \num{-0.014}*** &  &  & \\
+ & (\num{0.003}) &  &  & \\
+L1.ln.RealCapFormHH &  &  &  & \num{-1.391}***\\
+ &  &  &  & (\num{0.269})\\
+ln.RoadFreight &  &  & \num{0.076}** & \\
+ &  &  & (\num{0.028}) \vphantom{1} & \\
+L1.ln.RoadFreight &  &  & \num{-0.074}** & \\
+ &  &  & (\num{0.028}) & \\
 \midrule
-Num.Obs. & \num{66} & \num{111} & \num{99} & \num{63}\\
-AIC & \num{-380.7} & \num{-632.3} & \num{-580.4} & \num{-97.1}\\
-BIC & \num{-345.7} & \num{-583.6} & \num{-528.5} & \num{-64.9}\\
-Log.Lik. & \num{206.359} & \num{334.164} & \num{310.184} & \num{63.528}\\
+Num.Obs. & \num{66} & \num{215} & \num{99} & \num{63}\\
+AIC & \num{-353.1} & \num{-1118.4} & \num{-585.1} & \num{-109.6}\\
+BIC & \num{-333.4} & \num{-1067.8} & \num{-548.8} & \num{-90.3}\\
+Log.Lik. & \num{185.563} & \num{574.195} & \num{306.548} & \num{63.791}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -376,28 +276,28 @@ Log.Lik. & \num{206.359} & \num{334.164} & \num{310.184} & \num{63.528}\\
 \toprule
 Module & AR & ARCH & Super Exogeneity & IIS & SIS & n & Share of Indicators\\
 \midrule
-Imports & 0.059 & 0.714 & 0.003 & 2 & 2 & 122 & 0.033\\
-ConsHH & 0.692 & 0.828 & 0.000 & 6 & 6 & 101 & 0.119\\
-CapFormHH & 0.680 & 0.621 & 0.000 & 6 & 2 & 74 & 0.108\\
-Exports & 0.090 & 0.210 & 0.003 & 2 & 4 & 122 & 0.049\\
-VAService & 0.183 & 0.808 & 0.420 & 3 & 2 & 132 & 0.038\\
+Imports & 0.444 & 0.350 & 0.003 & 2 & 4 & 122 & 0.049\\
+ConsHH & 0.037 & 0.249 & 0.106 & 10 & 0 & 102 & 0.098\\
+CapFormHH & 0.936 & 0.557 & 0.104 & 3 & 1 & 78 & 0.051\\
+Exports & 0.212 & 0.239 & 0.004 & 2 & 4 & 123 & 0.049\\
+VAService & 0.261 & 0.935 & 0.005 & 3 & 6 & 132 & 0.068\\
 \addlinespace
-VAGov & 0.388 & 0.869 & 0.041 & 6 & 3 & 133 & 0.068\\
-DFGDP & 0.644 & 0.011 &  & 3 & 2 & 133 & 0.038\\
-VAIndustry & 0.383 & 0.767 & 0.000 & 0 & 3 & 79 & 0.038\\
-VARetail & 0.400 & 0.340 &  & 0 & 6 & 103 & 0.058\\
-VARealEstate & 0.535 & 0.799 &  & 0 & 6 & 79 & 0.076\\
+VAGov & 0.751 & 0.000 & 0.001 & 7 & 1 & 133 & 0.060\\
+DFGDP & 0.969 & 0.024 &  & 8 & 5 & 133 & 0.098\\
+VAIndustry & 0.118 & 0.384 &  & 0 & 5 & 103 & 0.049\\
+VARetail & 0.000 & 0.037 & 0.022 & 0 & 5 & 103 & 0.049\\
+VARealEstate & 0.474 & 0.554 &  & 0 & 5 & 79 & 0.063\\
 \addlinespace
-Flights & 0.085 & 0.774 &  & 10 & 2 & 38 & 0.316\\
-EmiCO2Residential & 0.638 & 0.642 & 0.585 & 2 & 3 & 112 & 0.045\\
-ElectrCons & 0.734 & 0.494 & 0.010 & 5 & 0 & 66 & 0.076\\
-EmiCH4EntericFerment & 0.690 & 0.184 & 0.000 & 4 & 0 & 131 & 0.031\\
-EmiCO2CivAvi & 0.969 & 0.408 &  & 4 & 0 & 111 & 0.036\\
+Flights & 0.000 & 0.044 & 0.294 & 4 & 0 & 90 & 0.044\\
+EmiCO2Residential & 0.656 & 0.995 &  & 5 & 5 & 216 & 0.046\\
+ElectrCons & 0.612 & 0.909 & 0.005 & 5 & 0 & 66 & 0.076\\
+EmiCH4EntericFerment & 0.210 & 0.080 &  & 6 & 1 & 215 & 0.033\\
+EmiCO2CivAvi & 0.971 & 0.475 &  & 6 & 0 & 215 & 0.028\\
 \addlinespace
-RoadFreight & 0.055 & 0.500 & 0.001 & 0 & 6 & 102 & 0.059\\
-EmiCO2ManInd & 0.959 & 0.358 & 0.012 & 6 & 0 & 111 & 0.054\\
-EmiCO2RoaTra & 0.123 & 0.492 &  & 7 & 0 & 99 & 0.071\\
-EmiCO2ElecHeat & 0.176 & 0.164 &  & 0 & 7 & 64 & 0.109\\
+RoadFreight & 0.022 & 0.586 & 0.001 & 1 & 6 & 102 & 0.069\\
+EmiCO2ManInd & 0.918 & 0.190 &  & 9 & 0 & 215 & 0.042\\
+EmiCO2RoaTra & 0.491 & 0.295 &  & 12 & 0 & 215 & 0.056\\
+EmiCO2ElecHeat & 0.572 & 0.095 & 0.006 & 7 & 4 & 76 & 0.145\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -414,67 +314,37 @@ EmiCO2ElecHeat & 0.176 & 0.164 &  & 0 & 7 & 64 & 0.109\\
 \toprule
   & Imports & ConsHH & CapFormHH & Exports & VAService\\
 \midrule
-ar1 & \num{0.849}*** & \num{0.559}*** & \num{0.402}*** & \num{0.744}*** & \num{0.816}***\\
- & (\num{0.035}) & (\num{0.050}) & (\num{0.072}) & (\num{0.042}) & (\num{0.067})\\
-ar2 &  & \num{-0.028} &  &  & \num{0.139}\\
- &  & (\num{0.050}) &  &  & (\num{0.091})\\
-ar3 &  &  &  &  & \num{-0.077}\\
- &  &  &  &  & (\num{0.069})\\
-mconst & \num{1.996}** & \num{1.605}*** & \num{-3.048} & \num{4.026}*** & \num{-0.715}\\
- & (\num{0.608}) & (\num{0.445}) & (\num{2.442}) & (\num{0.727}) & (\num{0.582})\\
-trend & \num{0.002}*** & \num{0.001}+ & \num{-0.005}** & \num{0.003}*** & \num{0.000}\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.002}) & (\num{0.001}) & (\num{0.000})\\
-ln.BuildingPermits &  &  & \num{0.059} &  & \\
- &  &  & (\num{0.044}) &  & \\
-L1.ln.BuildingPermits &  &  & \num{0.005} &  & \\
- &  &  & (\num{0.031}) &  & \\
-ln.ConsGov &  &  &  &  & \num{0.259}***\\
- &  &  &  &  & (\num{0.063})\\
-L3.ln.ConsGov &  &  &  &  & \num{0.483}***\\
- &  &  &  &  & (\num{0.054})\\
-L2.ln.ConsGov &  &  &  &  & \num{-0.095}\\
- &  &  &  &  & (\num{0.067})\\
-L1.ln.ConsGov &  &  &  &  & \num{-0.643}***\\
- &  &  &  &  & \vphantom{1} (\num{0.079})\\
-ln.ConsHH &  &  &  &  & \num{0.545}***\\
- &  &  &  &  & (\num{0.079})\\
-L3.ln.ConsHH &  &  &  &  & \num{-0.232}**\\
- &  &  &  &  & (\num{0.082})\\
-L2.ln.ConsHH &  &  &  &  & \num{-0.129}\\
- &  &  &  &  & (\num{0.106})\\
-L1.ln.ConsHH &  &  &  &  & \num{-0.019}\\
- &  &  &  &  & (\num{0.114})\\
-ln.FinWealthHH &  & \num{0.025} &  &  & \\
- &  & (\num{0.019}) &  &  & \\
-L2.ln.FinWealthHH &  & \num{-0.012} &  &  & \\
- &  & (\num{0.020}) &  &  & \\
-L1.ln.FinWealthHH &  & \num{0.006} &  &  & \\
- &  & (\num{0.027}) &  &  & \\
-ln.HICPlocal &  & \num{-0.118} & \num{-0.414} &  & \\
- &  & (\num{0.092}) & (\num{0.505}) &  & \\
-L2.ln.HICPlocal &  & \num{0.043} &  &  & \\
- &  & (\num{0.091}) &  &  & \\
-L1.ln.HICPlocal &  & \num{0.121} & \num{0.900} &  & \\
- &  & (\num{0.127}) & (\num{0.540}) &  & \\
-ln.HousePriceIndex &  &  & \num{0.288} &  & \\
- &  &  & (\num{0.231}) &  & \\
-L1.ln.HousePriceIndex &  &  & \num{0.045} &  & \\
- &  &  & (\num{0.238}) &  & \\
-ln.IncomeHH &  & \num{0.805}*** & \num{0.844}** &  & \\
- &  & (\num{0.048}) & (\num{0.315}) &  & \\
-L2.ln.IncomeHH &  & \num{-0.088} &  &  & \\
- &  & (\num{0.062}) &  &  & \\
-L1.ln.IncomeHH &  & \num{-0.425}*** & \num{-0.377} &  & \\
- &  & (\num{0.074}) & (\num{0.347}) &  & \\
-ln.REER & \num{-0.725}*** &  &  & \num{-0.477}** & \\
- & (\num{0.170}) &  &  & (\num{0.152}) & \\
-L1.ln.REER & \num{0.660}*** &  &  & \num{0.186} & \\
- & (\num{0.172}) &  &  & (\num{0.162}) & \\
+ar1 & \num{0.883}*** & \num{0.427}*** & \num{0.375}*** & \num{0.718}*** & \num{0.660}***\\
+ & (\num{0.035}) & (\num{0.025}) & (\num{0.069}) & (\num{0.042}) & (\num{0.055})\\
+mconst & \num{1.456}* & \num{1.875}*** &  & \num{4.435}*** & \num{-0.805}*\\
+ & (\num{0.620}) & (\num{0.134}) &  & (\num{0.698}) & (\num{0.323})\\
+trend & \num{0.001}** & \num{0.001}*** &  & \num{0.003}*** & \\
+ & (\num{0.000}) & (\num{0.000}) &  & (\num{0.001}) & \\
+ln.ConsGov &  &  &  &  & \num{0.253}***\\
+ &  &  &  &  & (\num{0.049})\\
+L3.ln.ConsGov &  &  &  &  & \num{0.419}***\\
+ &  &  &  &  & (\num{0.039})\\
+L1.ln.ConsGov &  &  &  &  & \num{-0.511}***\\
+ &  &  &  &  & (\num{0.055})\\
+ln.ConsHH &  &  &  &  & \num{0.496}***\\
+ &  &  &  &  & (\num{0.058})\\
+L3.ln.ConsHH &  &  &  &  & \num{-0.282}***\\
+ &  &  &  &  & (\num{0.051})\\
+L1.ln.HousePriceIndex &  &  & \num{0.225}*** &  & \\
+ &  &  & (\num{0.032}) &  & \\
+ln.IncomeHH &  & \num{0.796}*** & \num{0.427}*** &  & \\
+ &  & (\num{0.035}) & (\num{0.048}) &  & \\
+L1.ln.IncomeHH &  & \num{-0.389}*** &  &  & \\
+ &  & (\num{0.044}) &  &  & \\
+ln.REER & \num{-0.683}*** &  &  & \num{-0.320}*** & \\
+ & (\num{0.164}) &  &  & (\num{0.071}) & \\
+L1.ln.REER & \num{0.651}*** &  &  &  & \\
+ & (\num{0.165}) &  &  &  & \\
 \midrule
-Num.Obs. & \num{122} & \num{101} & \num{74} & \num{122} & \num{132}\\
-AIC & \num{-536.9} & \num{-847.2} & \num{-346.4} & \num{-563.1} & \num{-753.8}\\
-BIC & \num{-500.4} & \num{-771.4} & \num{-293.5} & \num{-521.1} & \num{-690.4}\\
-Log.Lik. & \num{281.451} & \num{452.601} & \num{196.222} & \num{296.557} & \num{398.919}\\
+Num.Obs. & \num{122} & \num{102} & \num{78} & \num{123} & \num{132}\\
+AIC & \num{-546.1} & \num{-857.9} & \num{-333.3} & \num{-560.6} & \num{-786.1}\\
+BIC & \num{-504.0} & \num{-808.0} & \num{-307.4} & \num{-524.0} & \num{-728.5}\\
+Log.Lik. & \num{288.047} & \num{447.951} & \num{177.649} & \num{293.296} & \num{413.063}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -493,39 +363,33 @@ Log.Lik. & \num{281.451} & \num{452.601} & \num{196.222} & \num{296.557} & \num{
 \toprule
   & VAGov & DFGDP & VAIndustry & VARetail & VARealEstate\\
 \midrule
-ar1 & \num{0.398}*** & \num{0.628}*** &  &  & \\
- & (\num{0.062}) & (\num{0.068}) &  &  & \\
-ar2 & \num{0.292}*** & \num{0.313}*** &  &  & \\
- & (\num{0.062}) & (\num{0.066}) &  &  & \\
-mconst & \num{-0.290} & \num{0.245}*** & \num{-1.634} & \num{-3.384}*** & \num{9.433}***\\
- & (\num{0.192}) & (\num{0.071}) & (\num{1.699}) & (\num{0.502}) & (\num{1.275})\\
-trend & \num{0.000} & \num{0.000}*** & \num{-0.001} & \num{0.000} & \num{0.010}***\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.002}) & (\num{0.000}) & (\num{0.001})\\
-ln.CapForm &  &  & \num{0.630}*** & \num{0.171}*** & \num{0.057}\\
- &  &  & (\num{0.098}) & (\num{0.026}) & (\num{0.041})\\
-ln.ConsGov & \num{0.767}*** &  & \num{-0.087} & \num{0.029} & \num{-0.311}**\\
- & (\num{0.028}) &  & (\num{0.133}) & (\num{0.031}) & (\num{0.112})\\
-L2.ln.ConsGov & \num{-0.213}*** &  &  &  & \\
- & (\num{0.058}) &  &  &  \vphantom{1} & \\
-L1.ln.ConsGov & \num{-0.315}*** &  &  &  & \\
+ar1 & \num{0.321}*** & \num{0.588}*** &  &  & \\
+ & (\num{0.055}) & (\num{0.054}) &  &  & \\
+ar2 & \num{0.210}*** & \num{0.346}*** &  &  & \\
+ & (\num{0.048}) & (\num{0.052}) &  &  & \\
+mconst & \num{-0.737}*** & \num{0.269}** &  & \num{-2.622}*** & \num{13.409}***\\
+ & (\num{0.113}) & (\num{0.097}) &  & (\num{0.236}) & (\num{0.389})\\
+trend &  & \num{0.000}** &  &  & \num{0.013}***\\
+ &  & (\num{0.000}) &  &  & (\num{0.000})\\
+ln.CapForm &  &  & \num{0.526}*** & \num{0.219}*** & \\
+ &  &  & (\num{0.059}) & (\num{0.024}) & \\
+ln.ConsGov & \num{0.809}*** &  & \num{-0.125}+ &  & \num{-0.374}***\\
+ & (\num{0.018}) &  & (\num{0.063}) &  & (\num{0.045})\\
+L2.ln.ConsGov & \num{-0.179}*** &  &  &  & \\
+ & (\num{0.049}) &  &  &  & \\
+L1.ln.ConsGov & \num{-0.240}*** &  &  &  & \\
  & (\num{0.052}) &  &  &  & \\
-ln.ConsHH & \num{0.042} &  & \num{0.581}*** & \num{0.972}*** & \num{0.344}***\\
- & (\num{0.048}) &  & (\num{0.094}) & (\num{0.043}) & (\num{0.071})\\
-L2.ln.ConsHH & \num{0.125}** &  &  &  & \\
- & (\num{0.043}) &  &  &  & \\
-L1.ln.ConsHH & \num{-0.082} &  &  &  & \\
- & (\num{0.058}) &  &  &  & \\
-ln.HousePriceIndex &  &  &  &  & \num{-0.300}***\\
- &  &  &  &  & (\num{0.026})\\
-ln.PriceETS &  &  & \num{-0.004} &  & \\
- &  &  & (\num{0.003}) &  & \\
-ln.PriceOil &  &  & \num{0.002} &  & \\
- &  &  & (\num{0.011}) &  & \\
+ln.ConsHH &  &  & \num{0.559}*** & \num{0.896}*** & \num{0.108}**\\
+ &  &  & (\num{0.054}) & (\num{0.033}) & (\num{0.036})\\
+L2.ln.ConsHH & \num{0.126}*** &  &  &  & \\
+ & (\num{0.023}) &  &  &  & \\
+ln.HousePriceIndex &  &  &  &  & \num{-0.286}***\\
+ &  &  &  &  & (\num{0.024})\\
 \midrule
-Num.Obs. & \num{133} & \num{133} & \num{79} & \num{103} & \num{79}\\
-AIC & \num{-958.0} & \num{-965.7} & \num{-374.6} & \num{-646.2} & \num{-500.3}\\
-BIC & \num{-891.6} & \num{-928.1} & \num{-341.4} & \num{-606.6} & \num{-462.4}\\
-Log.Lik. & \num{502.020} & \num{495.837} & \num{201.276} & \num{338.084} & \num{266.160}\\
+Num.Obs. & \num{133} & \num{133} & \num{103} & \num{103} & \num{79}\\
+AIC & \num{-945.5} & \num{-997.8} & \num{-503.4} & \num{-606.8} & \num{-498.3}\\
+BIC & \num{-893.5} & \num{-939.9} & \num{-471.7} & \num{-577.9} & \num{-467.5}\\
+Log.Lik. & \num{490.764} & \num{518.878} & \num{263.679} & \num{314.417} & \num{262.131}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -544,37 +408,27 @@ Log.Lik. & \num{502.020} & \num{495.837} & \num{201.276} & \num{338.084} & \num{
 \toprule
   & Flights & EmiCO2Residential & ElectrCons & EmiCH4EntericFerment\\
 \midrule
-ar1 &  &  & \num{0.397}*** & \num{1.013}***\\
- &  &  & (\num{0.090}) & (\num{0.019})\\
-mconst & \num{18.252} & \num{20.105}*** & \num{4.266}** & \num{0.581}+\\
- & (\num{10.825}) & (\num{5.753}) & (\num{1.437}) & (\num{0.335})\\
-trend & \num{0.020}** & \num{-0.005}* & \num{0.000} & \num{0.000}\\
- & (\num{0.006}) & (\num{0.002}) & (\num{0.000}) & (\num{0.000})\\
-ln.FinWealthHH & \num{-1.011}** &  &  & \\
- & (\num{0.289}) &  &  & \\
-ln.HICP\_AviaInt & \num{-0.144} &  &  & \\
- & (\num{0.283}) &  &  & \\
-ln.HICP\_Electricity &  & \num{0.196} & \num{-0.108} & \\
- &  & (\num{0.177}) & (\num{0.108}) & \\
-L1.ln.HICP\_Electricity &  &  & \num{-0.112} & \\
- &  &  & (\num{0.112}) & \\
-ln.RealConsHH & \num{0.467} & \num{-0.726} & \num{0.498}*** & \num{-0.005}\\
- & (\num{0.842}) & (\num{0.449}) & (\num{0.118}) & (\num{0.029})\\
-L1.ln.RealConsHH &  &  & \num{-0.186} & \num{-0.042}\\
- &  &  & (\num{0.127}) & (\num{0.029})\\
-ln.RealVAAgriculture &  &  &  & \num{0.019}+\\
- &  &  &  & \vphantom{1} (\num{0.010})\\
-L1.ln.RealVAAgriculture &  &  &  & \num{-0.017}+\\
- &  &  &  & (\num{0.010})\\
-ln.Slaughter &  &  &  & \num{-0.006}\\
- &  &  &  & \vphantom{1} (\num{0.012})\\
-L1.ln.Slaughter &  &  &  & \num{-0.010}\\
- &  &  &  & (\num{0.012})\\
+ar1 &  &  & \num{0.364}*** & \num{0.999}***\\
+ &  &  & (\num{0.076}) & (\num{0.000})\\
+mconst & \num{53.791}*** & \num{11.569}*** & \num{3.199}** & \\
+ & (\num{7.692}) & (\num{0.023}) & (\num{1.071}) & \\
+trend & \num{0.029}** & \num{-0.003}*** &  & \\
+ & (\num{0.009}) & (\num{0.000}) &  & \\
+ln.FinWealthHH & \num{-3.117}*** &  &  & \\
+ & (\num{0.609}) &  &  & \\
+ln.HICP\_Electricity &  &  & \num{-0.228}*** & \\
+ &  &  & (\num{0.034}) & \\
+ln.PriceETS &  &  & \num{0.025}*** & \\
+ &  &  & (\num{0.006}) & \\
+L1.ln.PriceETS &  &  & \num{-0.023}** & \\
+ &  &  & (\num{0.007}) & \\
+ln.RealConsHH &  &  & \num{0.432}*** & \\
+ &  &  & (\num{0.091}) & \\
 \midrule
-Num.Obs. & \num{38} & \num{112} & \num{66} & \num{131}\\
-AIC & \num{-144.6} & \num{-189.6} & \num{-321.2} & \num{-976.3}\\
-BIC & \num{-110.2} & \num{-154.3} & \num{-286.1} & \num{-927.5}\\
-Log.Lik. & \num{93.281} & \num{107.805} & \num{176.579} & \num{505.174}\\
+Num.Obs. & \num{90} & \num{216} & \num{66} & \num{215}\\
+AIC & \num{63.4} & \num{-328.8} & \num{-331.0} & \num{-1571.2}\\
+BIC & \num{85.9} & \num{-274.8} & \num{-298.1} & \num{-1530.8}\\
+Log.Lik. & \num{-22.697} & \num{180.415} & \num{180.489} & \num{797.621}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -593,41 +447,27 @@ Log.Lik. & \num{93.281} & \num{107.805} & \num{176.579} & \num{505.174}\\
 \toprule
   & EmiCO2CivAvi & RoadFreight & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
 \midrule
-ar1 & \num{0.968}*** &  & \num{0.914}*** & \num{0.971}*** & \\
- & (\num{0.017}) &  & (\num{0.031}) & (\num{0.037}) & \\
-mconst & \num{-3.492} & \num{4.859}** & \num{0.853}+ & \num{2.159}** & \num{5.197}**\\
- & (\num{2.285}) & (\num{1.475}) & (\num{0.477}) & (\num{0.658}) & (\num{1.906})\\
-trend & \num{-0.001} & \num{0.002}* & \num{0.000} & \num{0.000}* & \num{-0.007}***\\
- & (\num{0.001}) & (\num{0.001}) & (\num{0.000}) & (\num{0.000}) & (\num{0.001})\\
-ln.ElectrCons &  &  &  &  & \num{0.412}*\\
- &  &  &  &  & (\num{0.174})\\
-ln.HICPlocal & \num{-1.009}+ & \num{-0.919}*** & \num{-0.057} & \num{0.318}+ & \\
- & (\num{0.562}) & (\num{0.108}) & (\num{0.186}) & (\num{0.164}) & \\
-L1.ln.HICPlocal & \num{1.037}+ &  & \num{-0.025} & \num{-0.348}* & \\
- & (\num{0.592}) &  & (\num{0.200}) & (\num{0.172}) & \\
-ln.RealCapFormHH &  &  &  &  & \num{-0.123}\\
- &  &  &  &  & (\num{0.168})\\
-ln.RealConsHH & \num{0.259} & \num{0.432}** &  & \num{-0.088} & \\
- & (\num{0.193}) & (\num{0.153}) &  & (\num{0.063}) & \\
-L1.ln.RealConsHH & \num{0.087} &  &  & \num{-0.046} & \\
- & (\num{0.193}) &  &  & (\num{0.060}) & \\
-ln.RealVAIndustry &  &  & \num{0.026} &  & \num{0.319}*\\
- &  &  & (\num{0.036}) &  & (\num{0.126})\\
-L1.ln.RealVAIndustry &  &  & \num{0.012} &  & \\
- &  &  & (\num{0.036}) &  & \\
-ln.RealVAService & \num{-0.298}+ & \num{0.404}** &  &  & \\
- & (\num{0.151}) & (\num{0.132}) &  &  & \\
-L1.ln.RealVAService & \num{0.231} &  &  &  & \\
- & (\num{0.147}) &  &  &  & \\
-ln.RoadFreight &  &  &  & \num{0.004} & \\
- &  &  &  & (\num{0.034}) & \\
-L1.ln.RoadFreight &  &  &  & \num{-0.016} & \\
- &  &  &  & (\num{0.031}) & \\
+ar1 & \num{1.000}*** &  & \num{1.006}*** & \num{0.990}*** & \\
+ & (\num{0.001}) &  & (\num{0.000}) & (\num{0.003}) & \\
+mconst &  & \num{7.211}*** &  & \num{0.029} & \num{6.783}***\\
+ &  & (\num{1.233}) &  & (\num{0.033}) & (\num{1.203})\\
+trend &  & \num{0.002}* &  &  & \num{-0.009}***\\
+ &  & (\num{0.001}) &  &  & (\num{0.001})\\
+ln.HICPlocal &  & \num{-0.469}*** &  &  & \\
+ &  & (\num{0.132}) &  &  & \\
+ln.PriceETS &  &  &  &  & \num{-0.017}**\\
+ &  &  &  &  & (\num{0.005})\\
+ln.RealConsHH &  & \num{0.566}*** &  &  & \\
+ &  & (\num{0.081}) &  &  & \\
+ln.RealVAIndustry &  &  &  &  & \num{0.511}***\\
+ &  &  &  &  & (\num{0.110})\\
+ln.RealVAService &  & \num{-0.132} &  &  & \\
+ &  & (\num{0.096}) &  &  & \\
 \midrule
-Num.Obs. & \num{111} & \num{102} & \num{111} & \num{99} & \num{64}\\
-AIC & \num{-464.8} & \num{-468.6} & \num{-673.7} & \num{-645.6} & \num{-223.7}\\
-BIC & \num{-418.7} & \num{-429.2} & \num{-627.7} & \num{-593.7} & \num{-189.1}\\
-Log.Lik. & \num{249.406} & \num{249.306} & \num{353.871} & \num{342.816} & \num{127.845}\\
+Num.Obs. & \num{215} & \num{102} & \num{215} & \num{215} & \num{76}\\
+AIC & \num{-682.5} & \num{-457.6} & \num{-1171.8} & \num{-1414.6} & \num{-254.5}\\
+BIC & \num{-655.5} & \num{-418.2} & \num{-1124.6} & \num{-1353.9} & \num{-210.2}\\
+Log.Lik. & \num{349.253} & \num{243.784} & \num{599.905} & \num{725.281} & \num{146.249}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -639,48 +479,34 @@ Log.Lik. & \num{249.406} & \num{249.306} & \num{353.871} & \num{342.816} & \num{
 \begin{table}
 \label{tab:regression_summaryDE_4}
 \centering\centering
-\caption{Final OSEM Model result for each module for Germany. Part 4.}
+\caption{Final OSEM Model result for selected modules for Germany.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
   & ElectrCons & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
 \midrule
-ar1 & \num{0.397}*** & \num{0.914}*** & \num{0.971}*** & \\
- & (\num{0.090}) & (\num{0.031}) & (\num{0.037}) & \\
-mconst & \num{4.266}** & \num{0.853}+ & \num{2.159}** & \num{5.197}**\\
- & (\num{1.437}) & (\num{0.477}) & (\num{0.658}) & (\num{1.906})\\
-trend & \num{0.000} & \num{0.000} & \num{0.000}* & \num{-0.007}***\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) & (\num{0.001})\\
-ln.ElectrCons &  &  &  & \num{0.412}*\\
- &  &  &  & (\num{0.174})\\
-ln.HICP\_Electricity & \num{-0.108} &  &  & \\
- & (\num{0.108}) &  &  & \\
-L1.ln.HICP\_Electricity & \num{-0.112} &  &  & \\
- & (\num{0.112}) &  &  & \\
-ln.HICPlocal &  & \num{-0.057} & \num{0.318}+ & \\
- &  & (\num{0.186}) & (\num{0.164}) & \\
-L1.ln.HICPlocal &  & \num{-0.025} & \num{-0.348}* & \\
- &  & (\num{0.200}) & (\num{0.172}) & \\
-ln.RealCapFormHH &  &  &  & \num{-0.123}\\
- &  &  &  & (\num{0.168})\\
-ln.RealConsHH & \num{0.498}*** &  & \num{-0.088} & \\
- & (\num{0.118}) &  & (\num{0.063}) & \\
-L1.ln.RealConsHH & \num{-0.186} &  & \num{-0.046} & \\
- & (\num{0.127}) &  & (\num{0.060}) & \\
-ln.RealVAIndustry &  & \num{0.026} &  & \num{0.319}*\\
- &  & (\num{0.036}) &  & (\num{0.126})\\
-L1.ln.RealVAIndustry &  & \num{0.012} &  & \\
- &  & (\num{0.036}) &  & \\
-ln.RoadFreight &  &  & \num{0.004} & \\
- &  &  & (\num{0.034}) & \\
-L1.ln.RoadFreight &  &  & \num{-0.016} & \\
- &  &  & (\num{0.031}) & \\
+ar1 & \num{0.364}*** & \num{1.006}*** & \num{0.990}*** & \\
+ & (\num{0.076}) & (\num{0.000}) & (\num{0.003}) & \\
+mconst & \num{3.199}** &  & \num{0.029} & \num{6.783}***\\
+ & (\num{1.071}) &  & (\num{0.033}) & (\num{1.203})\\
+trend &  &  &  & \num{-0.009}***\\
+ &  &  &  & (\num{0.001})\\
+ln.HICP\_Electricity & \num{-0.228}*** &  &  & \\
+ & (\num{0.034}) &  &  & \\
+ln.PriceETS & \num{0.025}*** &  &  & \num{-0.017}**\\
+ & (\num{0.006}) &  &  & (\num{0.005})\\
+L1.ln.PriceETS & \num{-0.023}** &  &  & \\
+ & (\num{0.007}) &  &  & \\
+ln.RealConsHH & \num{0.432}*** &  &  & \\
+ & (\num{0.091}) &  &  & \\
+ln.RealVAIndustry &  &  &  & \num{0.511}***\\
+ &  &  &  & (\num{0.110})\\
 \midrule
-Num.Obs. & \num{66} & \num{111} & \num{99} & \num{64}\\
-AIC & \num{-321.2} & \num{-673.7} & \num{-645.6} & \num{-223.7}\\
-BIC & \num{-286.1} & \num{-627.7} & \num{-593.7} & \num{-189.1}\\
-Log.Lik. & \num{176.579} & \num{353.871} & \num{342.816} & \num{127.845}\\
+Num.Obs. & \num{66} & \num{215} & \num{215} & \num{76}\\
+AIC & \num{-331.0} & \num{-1171.8} & \num{-1414.6} & \num{-254.5}\\
+BIC & \num{-298.1} & \num{-1124.6} & \num{-1353.9} & \num{-210.2}\\
+Log.Lik. & \num{180.489} & \num{599.905} & \num{725.281} & \num{146.249}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -697,28 +523,28 @@ Log.Lik. & \num{176.579} & \num{353.871} & \num{342.816} & \num{127.845}\\
 \toprule
 Module & AR & ARCH & Super Exogeneity & IIS & SIS & n & Share of Indicators\\
 \midrule
-Imports & 0.658 & 0.534 & 0.000 & 2 & 4 & 121 & 0.050\\
-ConsHH & 0.675 & 0.680 & 0.000 & 2 & 5 & 101 & 0.069\\
-CapFormHH & 0.305 & 0.195 & 0.000 & 6 & 1 & 72 & 0.097\\
-Exports & 0.298 & 0.110 & 0.000 & 2 & 3 & 122 & 0.041\\
-VAService & 0.933 & 0.645 & 0.325 & 3 & 2 & 134 & 0.037\\
+Imports & 0.202 & 0.342 & 0.000 & 2 & 3 & 121 & 0.041\\
+ConsHH & 0.473 & 0.001 & 0.034 & 3 & 2 & 101 & 0.050\\
+CapFormHH & 0.377 & 0.172 & 0.000 & 5 & 0 & 76 & 0.066\\
+Exports & 0.073 & 0.146 & 0.000 & 1 & 4 & 122 & 0.041\\
+VAService & 0.822 & 0.120 & 0.131 & 4 & 1 & 134 & 0.037\\
 \addlinespace
-VAGov & 0.715 & 0.279 & 0.153 & 2 & 5 & 134 & 0.052\\
-DFGDP & 0.912 & 0.504 &  & 5 & 3 & 134 & 0.060\\
-VAIndustry & 0.153 & 0.050 & 0.000 & 3 & 1 & 78 & 0.051\\
-VARetail & 0.861 & 0.339 & 0.210 & 4 & 2 & 102 & 0.059\\
-VARealEstate & 0.754 & 0.757 & 0.000 & 1 & 5 & 79 & 0.076\\
+VAGov & 0.111 & 0.150 & 0.153 & 3 & 2 & 134 & 0.037\\
+DFGDP & 0.895 & 0.733 &  & 6 & 3 & 134 & 0.067\\
+VAIndustry & 0.674 & 0.739 & 0.003 & 3 & 2 & 134 & 0.037\\
+VARetail & 0.901 & 0.565 & 0.037 & 4 & 2 & 102 & 0.059\\
+VARealEstate & 0.258 & 0.061 & 0.009 & 4 & 6 & 135 & 0.074\\
 \addlinespace
-Flights & 0.001 & 0.900 & 0.001 & 7 & 0 & 56 & 0.125\\
-EmiCO2Residential & 0.750 & 0.596 & 0.094 & 3 & 2 & 112 & 0.045\\
-ElectrCons & 0.199 & 0.445 & 0.049 & 0 & 4 & 65 & 0.062\\
-EmiCH4EntericFerment & 0.808 & 0.160 & 0.000 & 5 & 1 & 131 & 0.046\\
-EmiCO2CivAvi & 0.359 & 0.307 & 0.001 & 2 & 0 & 111 & 0.018\\
+Flights & 0.773 & 0.314 & 0.009 & 4 & 0 & 88 & 0.045\\
+EmiCO2Residential & 0.890 & 0.654 & 0.149 & 2 & 2 & 132 & 0.030\\
+ElectrCons & 0.054 & 0.967 & 0.133 & 0 & 3 & 67 & 0.045\\
+EmiCH4EntericFerment & 0.971 & 0.051 &  & 10 & 0 & 215 & 0.047\\
+EmiCO2CivAvi & 0.859 & 0.620 &  & 1 & 0 & 215 & 0.005\\
 \addlinespace
-RoadFreight & 0.292 & 0.727 & 0.001 & 2 & 5 & 102 & 0.069\\
-EmiCO2ManInd & 0.864 & 0.234 & 0.225 & 3 & 1 & 111 & 0.036\\
-EmiCO2RoaTra & 0.501 & 0.319 & 0.000 & 4 & 0 & 99 & 0.040\\
-EmiCO2ElecHeat & 0.301 & 0.966 & 0.007 & 1 & 1 & 63 & 0.032\\
+RoadFreight & 0.286 & 0.980 &  & 0 & 5 & 102 & 0.049\\
+EmiCO2ManInd & 0.898 & 0.201 & 0.008 & 4 & 0 & 112 & 0.036\\
+EmiCO2RoaTra & 0.989 & 0.132 &  & 7 & 0 & 215 & 0.033\\
+EmiCO2ElecHeat & 0.015 & 0.347 & 0.003 & 2 & 4 & 64 & 0.094\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -735,73 +561,41 @@ EmiCO2ElecHeat & 0.301 & 0.966 & 0.007 & 1 & 1 & 63 & 0.032\\
 \toprule
   & Imports & ConsHH & CapFormHH & Exports & VAService\\
 \midrule
-ar1 & \num{0.798}*** & \num{0.422}*** & \num{0.240}** & \num{0.865}*** & \num{0.262}***\\
- & (\num{0.077}) & (\num{0.073}) & (\num{0.085}) & (\num{0.034}) & (\num{0.077})\\
-ar2 & \num{0.055} & \num{-0.015} & \num{0.669}*** &  & \\
- & (\num{0.076}) & (\num{0.071}) & (\num{0.093}) &  & \\
-ar3 &  &  & \num{-0.176}* &  & \\
- &  &  & (\num{0.084}) &  & \\
-mconst & \num{1.857}** & \num{5.814}*** & \num{-5.066}* & \num{0.940}+ & \num{-1.577}\\
- & (\num{0.686}) & (\num{0.728}) & (\num{2.387}) & (\num{0.555}) & (\num{1.042})\\
-trend & \num{0.002}*** & \num{0.005}*** & \num{-0.006}* & \num{0.002}*** & \num{0.004}**\\
- & (\num{0.001}) & (\num{0.001}) & (\num{0.002}) & (\num{0.001}) & (\num{0.001})\\
-ln.BuildingPermits &  &  & \num{-0.062}+ &  & \\
- &  &  & (\num{0.032}) &  & \\
-L3.ln.BuildingPermits &  &  & \num{0.016} &  & \\
- &  &  & (\num{0.029}) &  & \\
-L2.ln.BuildingPermits &  &  & \num{-0.027} &  & \\
- &  &  & (\num{0.034}) &  & \\
-L1.ln.BuildingPermits &  &  & \num{0.068}* &  & \\
- &  &  & (\num{0.033}) &  & \\
-ln.ConsGov &  &  &  &  & \num{0.211}\\
- &  &  &  &  & (\num{0.151})\\
-L1.ln.ConsGov &  &  &  &  & \num{0.167}\\
- &  &  &  &  & (\num{0.152})\\
-ln.ConsHH &  &  &  &  & \num{0.167}\\
- &  &  &  &  & (\num{0.190})\\
-L1.ln.ConsHH &  &  &  &  & \num{0.167}\\
- &  &  &  &  & (\num{0.191})\\
-ln.FinWealthHH &  & \num{0.065}* &  &  & \\
- &  & (\num{0.028}) &  &  & \\
-L2.ln.FinWealthHH &  & \num{0.050} &  &  & \\
- &  & (\num{0.030}) &  &  & \\
-L1.ln.FinWealthHH &  & \num{-0.124}** &  &  & \\
- &  & (\num{0.042}) &  &  & \\
-ln.HICPlocal &  & \num{0.282} & \num{5.164}*** &  & \\
- &  & (\num{0.228}) & (\num{1.213}) &  & \\
-L3.ln.HICPlocal &  &  & \num{1.958}+ &  & \\
- &  &  & (\num{1.046}) &  & \\
-L2.ln.HICPlocal &  & \num{-0.035} & \num{-4.089}* &  & \\
- &  & (\num{0.197}) & (\num{1.689}) &  & \\
-L1.ln.HICPlocal &  & \num{-0.297} & \num{-2.175} &  & \\
- &  & (\num{0.325}) & (\num{1.583}) &  & \\
-ln.HousePriceIndex &  &  & \num{1.420}*** &  & \\
- &  &  & (\num{0.315}) &  & \\
-L3.ln.HousePriceIndex &  &  & \num{-0.871}* &  & \\
- &  &  & (\num{0.342}) &  & \\
-L2.ln.HousePriceIndex &  &  & \num{0.829} &  & \\
- &  &  & (\num{0.578}) &  & \\
-L1.ln.HousePriceIndex &  &  & \num{-0.667} &  & \\
- &  &  & (\num{0.572}) &  & \\
-ln.IncomeHH &  & \num{0.067}+ & \num{0.228} &  & \\
- &  & (\num{0.035}) & (\num{0.146}) &  & \\
-L3.ln.IncomeHH &  &  & \num{0.174} &  & \\
- &  &  & (\num{0.158}) &  & \\
-L2.ln.IncomeHH &  & \num{-0.107}** & \num{-0.117} &  & \\
- &  & (\num{0.036}) & (\num{0.128}) &  & \\
-L1.ln.IncomeHH &  & \num{0.012} & \num{-0.199} &  & \\
- &  & (\num{0.032}) & (\num{0.163}) &  & \\
-ln.REER & \num{-0.663}** &  &  & \num{-0.752}** & \\
- & (\num{0.246}) &  &  & (\num{0.257}) & \\
-L2.ln.REER & \num{0.472}+ &  &  &  & \\
- & (\num{0.251}) &  &  &  & \\
-L1.ln.REER & \num{0.074} &  &  & \num{0.770}** & \\
- & (\num{0.356}) &  &  & (\num{0.251}) & \\
+ar1 & \num{0.921}*** & \num{0.779}*** & \num{0.357}*** & \num{0.947}*** & \num{0.391}***\\
+ & (\num{0.033}) & (\num{0.043}) & (\num{0.084}) & (\num{0.031}) & (\num{0.071})\\
+ar2 &  &  & \num{0.559}*** &  & \\
+ &  &  & (\num{0.091}) &  & \\
+ar3 &  &  & \num{-0.247}** &  & \\
+ &  &  & (\num{0.079}) &  & \\
+mconst & \num{0.436} & \num{1.961}*** & \num{-3.186}** &  & \\
+ & (\num{0.544}) & (\num{0.481}) & (\num{1.007}) &  & \\
+trend & \num{0.001}** & \num{0.001}*** & \num{-0.006}*** & \num{0.001} & \num{0.005}***\\
+ & (\num{0.001}) & (\num{0.000}) & (\num{0.002}) & (\num{0.001}) & (\num{0.001})\\
+L1.ln.ConsGov &  &  &  &  & \num{0.090}\\
+ &  &  &  &  & (\num{0.064})\\
+ln.ConsHH &  &  &  &  & \num{0.323}***\\
+ &  &  &  &  & (\num{0.065})\\
+ln.HICPlocal &  &  & \num{1.273}+ &  & \\
+ &  &  & (\num{0.722}) &  & \\
+L1.ln.HICPlocal &  &  & \num{-0.632} &  & \\
+ &  &  & (\num{0.772}) &  & \\
+ln.HousePriceIndex &  &  & \num{1.096}*** &  & \\
+ &  &  & (\num{0.142}) &  & \\
+L3.ln.HousePriceIndex &  &  & \num{-0.270}* &  & \\
+ &  &  & (\num{0.117}) &  & \\
+L2.ln.IncomeHH &  & \num{0.004} &  &  & \\
+ &  & (\num{0.035}) &  &  & \\
+ln.REER & \num{-0.558}*** &  &  & \num{-0.827}** & \\
+ & (\num{0.164}) &  &  & (\num{0.253}) & \\
+L2.ln.REER & \num{0.613}*** &  &  &  & \\
+ & (\num{0.164}) &  &  &  & \\
+L1.ln.REER &  &  &  & \num{0.910}*** & \\
+ &  &  &  & (\num{0.250}) & \\
 \midrule
-Num.Obs. & \num{121} & \num{101} & \num{72} & \num{122} & \num{134}\\
-AIC & \num{-504.7} & \num{-625.3} & \num{-283.0} & \num{-493.9} & \num{-509.4}\\
-BIC & \num{-457.1} & \num{-562.5} & \num{-210.1} & \num{-454.6} & \num{-463.0}\\
-Log.Lik. & \num{269.335} & \num{336.647} & \num{173.500} & \num{260.945} & \num{270.683}\\
+Num.Obs. & \num{121} & \num{101} & \num{76} & \num{122} & \num{134}\\
+AIC & \num{-497.8} & \num{-558.2} & \num{-283.7} & \num{-489.0} & \num{-507.9}\\
+BIC & \num{-458.7} & \num{-526.8} & \num{-241.8} & \num{-452.5} & \num{-470.2}\\
+Log.Lik. & \num{262.902} & \num{291.114} & \num{159.855} & \num{257.488} & \num{266.956}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -820,39 +614,27 @@ Log.Lik. & \num{269.335} & \num{336.647} & \num{173.500} & \num{260.945} & \num{
 \toprule
   & VAGov & DFGDP & VAIndustry & VARetail & VARealEstate\\
 \midrule
-ar1 & \num{0.199}** & \num{0.878}*** & \num{0.211}* & \num{0.605}*** & \\
- & (\num{0.062}) & (\num{0.034}) & (\num{0.082}) & (\num{0.059}) & \\
-mconst & \num{0.679}** & \num{0.450}*** & \num{-5.146}* & \num{-0.784} & \num{8.890}***\\
- & (\num{0.231}) & (\num{0.124}) & (\num{2.189}) & (\num{1.011}) & (\num{0.641})\\
-trend & \num{0.000} & \num{0.001}*** & \num{-0.004}** & \num{0.000} & \num{0.010}***\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.001}) & (\num{0.001}) & (\num{0.001})\\
-ln.CapForm &  &  & \num{-0.001} & \num{0.072} & \num{-0.042}\\
- &  &  & (\num{0.077}) & (\num{0.077}) & (\num{0.044})\\
-L1.ln.CapForm &  &  & \num{-0.101} & \num{-0.165}* & \\
- &  &  & (\num{0.079}) & (\num{0.068}) & \\
-ln.ConsGov & \num{0.381}*** &  & \num{-0.318}+ & \num{-0.072} & \num{-0.125}*\\
- & (\num{0.032}) &  & (\num{0.183}) & (\num{0.187}) & (\num{0.061})\\
-L1.ln.ConsGov & \num{0.219}*** &  & \num{-0.506}* & \num{-0.186} & \\
- & (\num{0.046}) &  & (\num{0.211}) & (\num{0.194}) & \\
-ln.ConsHH & \num{0.224}*** &  & \num{1.335}*** & \num{0.753}*** & \num{-0.033}\\
- & (\num{0.038}) &  & (\num{0.267}) & (\num{0.211}) & (\num{0.081})\\
-L1.ln.ConsHH & \num{-0.128}*** &  & \num{0.812}** & \num{0.002} & \\
- & (\num{0.036}) &  & (\num{0.256}) & (\num{0.241}) & \\
-ln.HousePriceIndex &  &  &  &  & \num{0.011}\\
- &  &  &  &  & (\num{0.041})\\
-ln.PriceETS &  &  & \num{0.006} &  & \\
- &  &  & (\num{0.005}) &  \vphantom{1} & \\
-L1.ln.PriceETS &  &  & \num{-0.006} &  & \\
- &  &  & (\num{0.005}) &  & \\
-ln.PriceOil &  &  & \num{-0.070}* &  & \\
- &  &  & (\num{0.029}) &  & \\
-L1.ln.PriceOil &  &  & \num{0.055}* &  & \\
- &  &  & (\num{0.025}) &  & \\
+ar1 & \num{0.242}*** & \num{0.867}*** & \num{0.478}*** & \num{0.608}*** & \\
+ & (\num{0.058}) & (\num{0.036}) & (\num{0.062}) & (\num{0.055}) & \\
+mconst & \num{0.305}*** & \num{0.491}*** &  &  & \num{4.930}***\\
+ & (\num{0.052}) & (\num{0.132}) &  &  & (\num{0.489})\\
+trend &  & \num{0.001}*** & \num{0.000}* & \num{0.001}*** & \num{0.008}***\\
+ &  & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) & (\num{0.000})\\
+L1.ln.CapForm &  &  &  & \num{-0.115}** & \\
+ &  &  &  & (\num{0.042}) & \\
+ln.ConsGov & \num{0.406}*** &  &  &  & \num{0.243}***\\
+ & (\num{0.036}) &  &  &  & (\num{0.058})\\
+L1.ln.ConsGov & \num{0.203}*** &  & \num{-0.569}*** & \num{-0.301}*** & \\
+ & (\num{0.041}) &  & (\num{0.107}) & (\num{0.084}) & \\
+ln.ConsHH & \num{0.214}*** &  & \num{0.503}*** & \num{0.725}*** & \\
+ & (\num{0.027}) &  & (\num{0.102}) & (\num{0.104}) & \\
+L1.ln.ConsHH & \num{-0.123}*** &  & \num{0.495}** &  & \\
+ & (\num{0.027}) &  & (\num{0.150}) &  & \\
 \midrule
-Num.Obs. & \num{134} & \num{134} & \num{78} & \num{102} & \num{79}\\
-AIC & \num{-944.7} & \num{-942.4} & \num{-329.7} & \num{-408.0} & \num{-462.3}\\
-BIC & \num{-892.5} & \num{-898.9} & \num{-280.2} & \num{-358.1} & \num{-424.4}\\
-Log.Lik. & \num{490.332} & \num{486.202} & \num{185.849} & \num{222.998} & \num{247.169}\\
+Num.Obs. & \num{134} & \num{134} & \num{134} & \num{102} & \num{135}\\
+AIC & \num{-926.9} & \num{-953.1} & \num{-485.2} & \num{-413.9} & \num{-645.0}\\
+BIC & \num{-889.2} & \num{-912.6} & \num{-450.4} & \num{-374.5} & \num{-601.4}\\
+Log.Lik. & \num{476.445} & \num{490.564} & \num{254.587} & \num{221.943} & \num{337.510}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -871,51 +653,25 @@ Log.Lik. & \num{490.332} & \num{486.202} & \num{185.849} & \num{222.998} & \num{
 \toprule
   & Flights & EmiCO2Residential & ElectrCons & EmiCH4EntericFerment\\
 \midrule
-ar1 & \num{0.734}*** &  & \num{-0.009} & \num{0.913}***\\
- & (\num{0.090}) &  & (\num{0.083}) & (\num{0.034})\\
-ar2 & \num{-0.205}* &  & \num{-0.293}*** & \\
- & (\num{0.086}) &  & (\num{0.076}) & \\
-mconst & \num{-19.229}** & \num{2.040} & \num{6.579}*** & \num{0.978}**\\
- & (\num{5.807}) & (\num{3.541}) & (\num{1.252}) & (\num{0.331})\\
-trend & \num{-0.025}*** & \num{-0.010}*** & \num{-0.003}*** & \num{0.000}*\\
- & (\num{0.005}) & (\num{0.002}) & (\num{0.000}) & (\num{0.000})\\
-ln.FinWealthHH & \num{0.671}* &  &  & \\
- & (\num{0.266}) &  &  & \\
-L2.ln.FinWealthHH & \num{0.207} &  &  & \\
- & (\num{0.248}) &  &  & \\
-L1.ln.FinWealthHH & \num{-0.365} &  &  & \\
- & (\num{0.331}) &  &  & \\
-ln.HICP\_AviaInt & \num{-0.136} &  &  & \\
- & (\num{0.166}) &  &  & \\
-L2.ln.HICP\_AviaInt & \num{-0.106} &  &  & \\
- & (\num{0.146}) &  &  & \\
-L1.ln.HICP\_AviaInt & \num{0.157} &  &  & \\
- & (\num{0.199}) &  &  & \\
-ln.HICP\_Electricity &  & \num{-0.033} & \num{-0.079}* & \\
- &  & (\num{0.097}) & (\num{0.034}) & \\
-L2.ln.HICP\_Electricity &  &  & \num{-0.136}*** & \\
- &  &  & (\num{0.037}) & \\
-L1.ln.HICP\_Electricity &  &  & \num{0.106}* & \\
- &  &  & (\num{0.043}) & \\
-ln.RealConsHH & \num{-0.090} & \num{0.726}* & \num{0.080} & \num{-0.011}\\
- & (\num{0.674}) & (\num{0.359}) & (\num{0.114}) & (\num{0.035})\\
-L2.ln.RealConsHH & \num{0.331} &  & \num{0.200}+ & \\
- & (\num{0.535}) &  & (\num{0.103}) & \\
-L1.ln.RealConsHH & \num{1.838}* &  & \num{0.341}** & \num{-0.057}\\
- & (\num{0.793}) &  & (\num{0.112}) & (\num{0.035})\\
-ln.RealVAAgriculture &  &  &  & \num{-0.003}\\
- &  &  &  & \vphantom{1} (\num{0.005})\\
-L1.ln.RealVAAgriculture &  &  &  & \num{0.002}\\
- &  &  &  & (\num{0.005})\\
-ln.Slaughter &  &  &  & \num{-0.008}\\
- &  &  &  & (\num{0.013})\\
-L1.ln.Slaughter &  &  &  & \num{0.009}\\
- &  &  &  & (\num{0.012})\\
+ar1 & \num{0.626}*** &  &  & \num{0.998}***\\
+ & (\num{0.076}) &  &  & (\num{0.000})\\
+ar2 & \num{0.169}** &  &  & \\
+ & (\num{0.062}) &  &  & \\
+mconst & \num{-0.805} &  & \num{10.279}*** & \\
+ & (\num{2.348}) &  & (\num{0.115}) & \\
+trend & \num{-0.003}+ & \num{-0.011}*** & \num{-0.001}*** & \\
+ & (\num{0.002}) & (\num{0.001}) & (\num{0.000}) & \\
+ln.FinWealthHH & \num{0.028} &  &  & \\
+ & (\num{0.103}) &  &  & \\
+ln.HICP\_Electricity &  &  & \num{-0.155}*** & \\
+ &  &  & (\num{0.021}) & \\
+ln.RealConsHH & \num{0.268} & \num{0.915}*** &  & \\
+ & (\num{0.262}) & (\num{0.007}) &  & \\
 \midrule
-Num.Obs. & \num{56} & \num{112} & \num{65} & \num{131}\\
-AIC & \num{-168.2} & \num{-173.0} & \num{-359.9} & \num{-946.4}\\
-BIC & \num{-119.6} & \num{-137.6} & \num{-320.8} & \num{-891.8}\\
-Log.Lik. & \num{108.092} & \num{99.475} & \num{197.954} & \num{492.190}\\
+Num.Obs. & \num{88} & \num{132} & \num{67} & \num{215}\\
+AIC & \num{-189.6} & \num{-200.7} & \num{-339.0} & \num{-1547.5}\\
+BIC & \num{-157.4} & \num{-171.9} & \num{-317.0} & \num{-1496.9}\\
+Log.Lik. & \num{107.797} & \num{110.348} & \num{179.505} & \num{788.726}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -934,45 +690,23 @@ Log.Lik. & \num{108.092} & \num{99.475} & \num{197.954} & \num{492.190}\\
 \toprule
   & EmiCO2CivAvi & RoadFreight & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
 \midrule
-ar1 & \num{0.962}*** &  & \num{0.848}*** & \num{0.983}*** & \num{0.396}***\\
- & (\num{0.024}) &  & (\num{0.053}) & (\num{0.026}) & (\num{0.098})\\
-mconst & \num{-4.107}* & \num{7.176}* & \num{1.989}*** & \num{0.241} & \num{-6.229}\\
- & (\num{1.786}) & (\num{2.731}) & (\num{0.531}) & (\num{0.474}) & (\num{6.146})\\
-trend & \num{-0.002}* & \num{-0.004}* & \num{0.001}** & \num{0.000} & \num{-0.019}***\\
- & (\num{0.001}) & (\num{0.002}) & (\num{0.000}) & (\num{0.000}) & (\num{0.004})\\
-ln.ElectrCons &  &  &  &  & \num{0.498}\\
- &  &  &  &  & (\num{0.590})\\
-L1.ln.ElectrCons &  &  &  &  & \num{0.990}\\
- &  &  &  &  & (\num{0.658})\\
-ln.HICPlocal & \num{-1.064} & \num{0.260} & \num{-0.237} & \num{-0.228} & \\
- & (\num{0.779}) & (\num{0.260}) & (\num{0.340}) & (\num{0.182}) & \\
-L1.ln.HICPlocal & \num{1.270} &  & \num{-0.044} & \num{0.222} & \\
- & (\num{0.799}) &  & (\num{0.356}) & (\num{0.188}) & \\
-ln.RealCapFormHH &  &  &  &  & \num{-0.091}\\
- &  &  &  &  & (\num{0.247})\\
-L1.ln.RealCapFormHH &  &  &  &  & \num{0.107}\\
- &  &  &  &  & (\num{0.230})\\
-ln.RealConsHH & \num{0.068} & \num{0.025} &  & \num{-0.015} & \\
- & (\num{0.253}) & (\num{0.263}) &  & (\num{0.061}) & \\
-L1.ln.RealConsHH & \num{0.291} &  &  & \num{-0.021} & \\
- & (\num{0.264}) &  &  & (\num{0.061}) & \\
-ln.RealVAIndustry &  &  & \num{0.128}** &  & \num{1.277}**\\
- &  &  & (\num{0.047}) &  & (\num{0.433})\\
-L1.ln.RealVAIndustry &  &  & \num{-0.108}* &  & \num{-1.163}**\\
- &  &  & (\num{0.049}) &  & (\num{0.406})\\
-ln.RealVAService & \num{0.056} & \num{0.068} &  &  & \\
- & (\num{0.116}) & (\num{0.126}) &  &  & \\
-L1.ln.RealVAService & \num{-0.062} &  &  &  & \\
- & (\num{0.113}) &  &  &  & \\
-ln.RoadFreight &  &  &  & \num{0.002} & \\
- &  &  &  & (\num{0.014}) & \\
-L1.ln.RoadFreight &  &  &  & \num{0.024} & \\
- &  &  &  & (\num{0.015}) & \\
+ar1 & \num{0.998}*** &  & \num{0.961}*** & \num{0.996}*** & \\
+ & (\num{0.001}) &  & (\num{0.020}) & (\num{0.000}) & \\
+mconst &  & \num{8.887}*** & \num{0.714}* &  & \\
+ &  & (\num{0.062}) & (\num{0.358}) &  & \\
+trend &  & \num{-0.002}*** & \num{0.000} &  & \num{-0.019}***\\
+ &  & (\num{0.000}) & (\num{0.000}) &  & (\num{0.002})\\
+ln.ElectrCons &  &  &  &  & \num{1.294}***\\
+ &  &  &  &  & (\num{0.038})\\
+ln.HICPlocal &  &  & \num{-0.117} &  & \\
+ &  &  & (\num{0.071}) &  & \\
+ln.PriceETS &  &  &  &  & \num{0.054}+\\
+ &  &  &  &  & (\num{0.027})\\
 \midrule
-Num.Obs. & \num{111} & \num{102} & \num{111} & \num{99} & \num{63}\\
-AIC & \num{-371.2} & \num{-305.3} & \num{-556.3} & \num{-625.2} & \num{-98.9}\\
-BIC & \num{-330.6} & \num{-263.3} & \num{-515.7} & \num{-581.1} & \num{-66.7}\\
-Log.Lik. & \num{200.616} & \num{168.663} & \num{293.169} & \num{329.609} & \num{64.442}\\
+Num.Obs. & \num{215} & \num{102} & \num{112} & \num{215} & \num{64}\\
+AIC & \num{-411.1} & \num{-296.5} & \num{-581.9} & \num{-1331.3} & \num{-92.9}\\
+BIC & \num{-401.0} & \num{-272.9} & \num{-552.0} & \num{-1294.2} & \num{-64.8}\\
+Log.Lik. & \num{208.550} & \num{157.272} & \num{301.972} & \num{676.644} & \num{59.448}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -984,58 +718,32 @@ Log.Lik. & \num{200.616} & \num{168.663} & \num{293.169} & \num{329.609} & \num{
 \begin{table}
 \label{tab:regression_summaryDK_4}
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark. Part 4.}
+\caption{Final OSEM Model result for selected modules for Denmark.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
   & ElectrCons & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
 \midrule
-ar1 & \num{-0.009} & \num{0.848}*** & \num{0.983}*** & \num{0.396}***\\
- & (\num{0.083}) & (\num{0.053}) & (\num{0.026}) & (\num{0.098})\\
-ar2 & \num{-0.293}*** &  &  & \\
- & (\num{0.076}) &  &  & \\
-mconst & \num{6.579}*** & \num{1.989}*** & \num{0.241} & \num{-6.229}\\
- & (\num{1.252}) & (\num{0.531}) & (\num{0.474}) & (\num{6.146})\\
-trend & \num{-0.003}*** & \num{0.001}** & \num{0.000} & \num{-0.019}***\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) & (\num{0.004})\\
-ln.ElectrCons &  &  &  & \num{0.498}\\
- &  &  &  & (\num{0.590})\\
-L1.ln.ElectrCons &  &  &  & \num{0.990}\\
- &  &  &  & (\num{0.658})\\
-ln.HICP\_Electricity & \num{-0.079}* &  &  & \\
- & (\num{0.034}) &  &  & \\
-L2.ln.HICP\_Electricity & \num{-0.136}*** &  &  & \\
- & (\num{0.037}) &  &  & \\
-L1.ln.HICP\_Electricity & \num{0.106}* &  &  & \\
- & (\num{0.043}) &  &  & \\
-ln.HICPlocal &  & \num{-0.237} & \num{-0.228} & \\
- &  & (\num{0.340}) & (\num{0.182}) & \\
-L1.ln.HICPlocal &  & \num{-0.044} & \num{0.222} & \\
- &  & (\num{0.356}) & (\num{0.188}) & \\
-ln.RealCapFormHH &  &  &  & \num{-0.091}\\
- &  &  &  & (\num{0.247})\\
-L1.ln.RealCapFormHH &  &  &  & \num{0.107}\\
- &  &  &  & (\num{0.230})\\
-ln.RealConsHH & \num{0.080} &  & \num{-0.015} & \\
- & (\num{0.114}) &  & (\num{0.061}) & \\
-L2.ln.RealConsHH & \num{0.200}+ &  &  & \\
- & (\num{0.103}) &  &  & \\
-L1.ln.RealConsHH & \num{0.341}** &  & \num{-0.021} & \\
- & (\num{0.112}) &  & (\num{0.061}) & \\
-ln.RealVAIndustry &  & \num{0.128}** &  & \num{1.277}**\\
- &  & (\num{0.047}) &  & (\num{0.433})\\
-L1.ln.RealVAIndustry &  & \num{-0.108}* &  & \num{-1.163}**\\
- &  & (\num{0.049}) &  & (\num{0.406})\\
-ln.RoadFreight &  &  & \num{0.002} & \\
- &  &  & (\num{0.014}) & \\
-L1.ln.RoadFreight &  &  & \num{0.024} & \\
- &  &  & (\num{0.015}) & \\
+ar1 &  & \num{0.961}*** & \num{0.996}*** & \\
+ &  & (\num{0.020}) & (\num{0.000}) & \\
+mconst & \num{10.279}*** & \num{0.714}* &  & \\
+ & (\num{0.115}) & (\num{0.358}) &  & \\
+trend & \num{-0.001}*** & \num{0.000} &  & \num{-0.019}***\\
+ & (\num{0.000}) & (\num{0.000}) &  & (\num{0.002})\\
+ln.ElectrCons &  &  &  & \num{1.294}***\\
+ &  &  &  & (\num{0.038})\\
+ln.HICP\_Electricity & \num{-0.155}*** &  &  & \\
+ & (\num{0.021}) &  &  & \\
+ln.HICPlocal &  & \num{-0.117} &  & \\
+ &  & (\num{0.071}) &  & \\
+ln.PriceETS &  &  &  & \num{0.054}+\\
+ &  &  &  & (\num{0.027})\\
 \midrule
-Num.Obs. & \num{65} & \num{111} & \num{99} & \num{63}\\
-AIC & \num{-359.9} & \num{-556.3} & \num{-625.2} & \num{-98.9}\\
-BIC & \num{-320.8} & \num{-515.7} & \num{-581.1} & \num{-66.7}\\
-Log.Lik. & \num{197.954} & \num{293.169} & \num{329.609} & \num{64.442}\\
+Num.Obs. & \num{67} & \num{112} & \num{215} & \num{64}\\
+AIC & \num{-339.0} & \num{-581.9} & \num{-1331.3} & \num{-92.9}\\
+BIC & \num{-317.0} & \num{-552.0} & \num{-1294.2} & \num{-64.8}\\
+Log.Lik. & \num{179.505} & \num{301.972} & \num{676.644} & \num{59.448}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -1115,28 +823,28 @@ Log.Lik. & \num{197.954} & \num{293.169} & \num{329.609} & \num{64.442}\\
 \toprule
 Module & AR & ARCH & Super Exogeneity & IIS & SIS & n & Share of Indicators\\
 \midrule
-Imports & 0.920 & 0.431 & 0.000 & 3 & 4 & 122 & 0.057\\
-ConsHH & 0.989 & 0.526 & 0.000 & 9 & 1 & 100 & 0.100\\
-CapFormHH & 0.109 & 0.082 & 0.000 & 2 & 1 & 75 & 0.040\\
-Exports & 0.366 & 0.246 & 0.000 & 2 & 1 & 122 & 0.025\\
-VAService & 0.520 & 0.159 & 0.000 & 0 & 7 & 175 & 0.040\\
+Imports & 0.673 & 0.198 & 0.000 & 4 & 3 & 122 & 0.057\\
+ConsHH & 0.708 & 0.227 & 0.001 & 9 & 1 & 103 & 0.097\\
+CapFormHH & 0.013 & 0.489 & 0.020 & 5 & 2 & 78 & 0.090\\
+Exports & 0.228 & 0.321 & 0.004 & 3 & 0 & 123 & 0.024\\
+VAService & 0.094 & 0.085 & 0.000 & 1 & 8 & 175 & 0.051\\
 \addlinespace
-VAGov & 0.088 & 0.144 & 0.000 & 1 & 12 & 175 & 0.074\\
-DFGDP & 0.000 & 0.318 &  & 7 & 3 & 175 & 0.057\\
-VAIndustry & 0.079 & 0.845 &  & 12 & 1 & 75 & 0.173\\
-VARetail & 0.077 & 0.225 &  & 1 & 3 & 175 & 0.023\\
-VARealEstate & 0.644 & 0.555 & 0.000 & 7 & 1 & 78 & 0.103\\
+VAGov & 0.137 & 0.403 & 0.000 & 1 & 7 & 175 & 0.046\\
+DFGDP & 0.009 & 0.536 &  & 9 & 5 & 175 & 0.080\\
+VAIndustry & 0.453 & 0.906 &  & 14 & 0 & 76 & 0.184\\
+VARetail & 0.092 & 0.480 & 0.001 & 9 & 3 & 175 & 0.069\\
+VARealEstate & 0.943 & 0.450 & 0.000 & 7 & 1 & 79 & 0.101\\
 \addlinespace
-Flights & 0.094 & 0.000 & 0.000 & 18 & 0 & 39 & 0.462\\
-EmiCO2Residential & 0.633 & 0.658 & 0.010 & 2 & 2 & 112 & 0.036\\
-ElectrCons & 0.235 & 0.519 & 0.105 & 0 & 2 & 67 & 0.030\\
-EmiCH4EntericFerment & 0.087 & 0.079 & 0.000 & 4 & 0 & 175 & 0.023\\
-EmiCO2CivAvi & 0.000 & 0.000 &  & 8 & 5 & 112 & 0.116\\
+Flights & 0.000 & 0.003 & 0.003 & 5 & 2 & 91 & 0.077\\
+EmiCO2Residential & 0.769 & 0.827 & 0.093 & 2 & 2 & 112 & 0.036\\
+ElectrCons & 0.134 & 0.707 & 0.053 & 0 & 2 & 67 & 0.030\\
+EmiCH4EntericFerment & 0.076 & 0.136 & 0.030 & 7 & 1 & 215 & 0.037\\
+EmiCO2CivAvi & 0.000 & 0.000 & 0.012 & 0 & 8 & 176 & 0.045\\
 \addlinespace
-RoadFreight & 0.538 & 0.336 & 0.002 & 1 & 6 & 102 & 0.069\\
-EmiCO2ManInd & 0.737 & 0.506 & 0.002 & 4 & 0 & 111 & 0.036\\
-EmiCO2RoaTra & 0.350 & 0.956 & 0.000 & 3 & 3 & 99 & 0.061\\
-EmiCO2ElecHeat & 0.076 & 0.381 &  & 0 & 3 & 64 & 0.047\\
+RoadFreight & 0.092 & 0.712 & 0.007 & 0 & 6 & 102 & 0.059\\
+EmiCO2ManInd & 0.766 & 0.480 & 0.085 & 4 & 0 & 111 & 0.036\\
+EmiCO2RoaTra & 0.890 & 0.686 & 0.138 & 4 & 0 & 99 & 0.040\\
+EmiCO2ElecHeat & 0.789 & 0.803 &  & 0 & 1 & 64 & 0.016\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1153,79 +861,51 @@ EmiCO2ElecHeat & 0.076 & 0.381 &  & 0 & 3 & 64 & 0.047\\
 \toprule
   & Imports & ConsHH & CapFormHH & Exports & VAService\\
 \midrule
-ar1 & \num{0.931}*** & \num{0.431}*** & \num{0.300}*** & \num{0.681}*** & \num{0.528}***\\
- & (\num{0.030}) & (\num{0.064}) & (\num{0.071}) & (\num{0.035}) & (\num{0.066})\\
-ar2 &  & \num{0.377}*** &  &  & \num{-0.289}***\\
- &  & (\num{0.048}) &  &  & (\num{0.074})\\
-ar3 &  & \num{-0.170}* &  &  & \num{0.113}\\
- &  & (\num{0.071}) &  &  & (\num{0.074})\\
-ar4 &  &  &  &  & \num{0.351}***\\
+ar1 & \num{0.994}*** & \num{0.506}*** & \num{0.627}*** & \num{0.805}*** & \num{0.498}***\\
+ & (\num{0.005}) & (\num{0.049}) & (\num{0.080}) & (\num{0.037}) & (\num{0.042})\\
+ar2 &  & \num{0.388}*** &  &  & \num{-0.145}***\\
+ &  & (\num{0.042}) &  &  & (\num{0.034})\\
+ar3 &  & \num{-0.204}*** &  &  & \\
+ &  & (\num{0.059}) &  &  & \\
+ar4 &  &  &  &  & \num{0.373}***\\
+ &  &  &  &  & (\num{0.039})\\
+mconst &  &  & \num{2.920}** & \num{3.215}*** & \\
+ &  &  & (\num{0.953}) & (\num{0.679}) & \\
+trend &  &  & \num{0.002}** & \num{0.002}*** & \num{0.001}***\\
+ &  &  & (\num{0.001}) & (\num{0.000}) & (\num{0.000})\\
+ln.ConsGov &  &  &  &  & \num{0.190}**\\
+ &  &  &  &  & (\num{0.071})\\
+L4.ln.ConsGov &  &  &  &  & \num{0.270}***\\
+ &  &  &  &  & (\num{0.057})\\
+L1.ln.ConsGov &  &  &  &  & \num{-0.634}***\\
  &  &  &  &  & (\num{0.061})\\
-mconst & \num{0.699} & \num{-0.022} & \num{3.873}* & \num{4.770}*** & \num{0.579}*\\
- & (\num{0.549}) & (\num{0.310}) & (\num{1.496}) & (\num{0.654}) & (\num{0.234})\\
-trend & \num{0.001}* & \num{0.000} & \num{0.004}*** & \num{0.003}*** & \num{0.002}***\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.001}) & (\num{0.000}) & (\num{0.000})\\
-ln.BuildingPermits &  &  & \num{-0.013} &  & \\
- &  &  & (\num{0.032}) &  & \\
-L1.ln.BuildingPermits &  &  & \num{0.015} &  & \\
- &  &  & (\num{0.029}) &  & \\
-ln.ConsGov &  &  &  &  & \num{0.220}*\\
- &  &  &  &  & (\num{0.086})\\
-L4.ln.ConsGov &  &  &  &  & \num{0.308}***\\
- &  &  &  &  & (\num{0.083})\\
-L3.ln.ConsGov &  &  &  &  & \num{-0.070}\\
- &  &  &  &  & \vphantom{1} (\num{0.107})\\
-L2.ln.ConsGov &  &  &  &  & \num{0.167}\\
- &  &  &  &  & (\num{0.107})\\
-L1.ln.ConsGov &  &  &  &  & \num{-0.674}***\\
- &  &  &  &  & (\num{0.095})\\
-ln.ConsHH &  &  &  &  & \num{0.922}***\\
- &  &  &  &  & (\num{0.055})\\
-L4.ln.ConsHH &  &  &  &  & \num{-0.585}***\\
- &  &  &  &  & (\num{0.073})\\
-L3.ln.ConsHH &  &  &  &  & \num{-0.042}\\
- &  &  &  &  & (\num{0.074})\\
-L2.ln.ConsHH &  &  &  &  & \num{0.070}\\
- &  &  &  &  & \vphantom{1} (\num{0.077})\\
-L1.ln.ConsHH &  &  &  &  & \num{-0.136}+\\
- &  &  &  &  & (\num{0.077})\\
-ln.FinWealthHH &  & \num{0.095}*** &  &  & \\
- &  & (\num{0.025}) &  &  \vphantom{1} & \\
-L3.ln.FinWealthHH &  & \num{-0.035} &  &  & \\
- &  & (\num{0.025}) &  &  & \\
-L2.ln.FinWealthHH &  & \num{0.057}+ &  &  & \\
- &  & (\num{0.033}) &  &  \vphantom{1} & \\
-L1.ln.FinWealthHH &  & \num{-0.054} &  &  & \\
- &  & (\num{0.033}) &  &  & \\
-ln.HICPlocal &  & \num{0.910}*** & \num{-0.499} &  & \\
- &  & (\num{0.183}) & (\num{0.714}) &  & \\
-L3.ln.HICPlocal &  & \num{0.064} &  &  & \\
- &  & (\num{0.200}) &  &  & \\
-L2.ln.HICPlocal &  & \num{-0.297} &  &  & \\
- &  & (\num{0.308}) &  &  & \\
-L1.ln.HICPlocal &  & \num{-0.647}* & \num{-0.242} &  & \\
- &  & (\num{0.304}) & (\num{0.766}) &  & \\
-ln.HousePriceIndex &  &  & \num{1.463}*** &  & \\
- &  &  & (\num{0.311}) &  & \\
-L1.ln.HousePriceIndex &  &  & \num{-0.823}** &  & \\
- &  &  & (\num{0.287}) &  & \\
-ln.IncomeHH &  & \num{0.082}+ & \num{0.143} &  & \\
- &  & (\num{0.042}) & (\num{0.165}) &  & \\
-L3.ln.IncomeHH &  & \num{0.047} &  &  & \\
- &  & (\num{0.045}) &  &  \vphantom{1} & \\
-L2.ln.IncomeHH &  & \num{0.048} &  &  & \\
- &  & (\num{0.045}) &  &  & \\
-L1.ln.IncomeHH &  & \num{0.101}+ & \num{0.102} &  & \\
- &  & (\num{0.054}) & (\num{0.164}) &  & \\
-ln.REER & \num{-0.533}** &  &  & \num{-0.753}*** & \\
- & (\num{0.184}) &  &  & (\num{0.203}) & \\
-L1.ln.REER & \num{0.537}** &  &  & \num{0.406}+ & \\
- & (\num{0.184}) &  &  & (\num{0.205}) & \\
+ln.ConsHH &  &  &  &  & \num{0.925}***\\
+ &  &  &  &  & (\num{0.048})\\
+L4.ln.ConsHH &  &  &  &  & \num{-0.544}***\\
+ &  &  &  &  & (\num{0.058})\\
+ln.FinWealthHH &  & \num{0.052}*** &  &  & \\
+ &  & (\num{0.007}) &  &  & \\
+ln.HICPlocal &  & \num{0.784}*** & \num{-0.317}+ &  & \\
+ &  & (\num{0.178}) & (\num{0.160}) &  & \\
+L1.ln.HICPlocal &  & \num{-0.860}*** &  &  & \\
+ &  & (\num{0.178}) &  &  & \\
+ln.HousePriceIndex &  &  & \num{0.972}*** &  & \\
+ &  &  & (\num{0.219}) &  & \\
+L1.ln.HousePriceIndex &  &  & \num{-0.554}* &  & \\
+ &  &  & (\num{0.241}) &  & \\
+ln.IncomeHH &  & \num{0.112}** &  &  & \\
+ &  & (\num{0.041}) &  &  & \\
+L1.ln.IncomeHH &  & \num{0.160}** &  &  & \\
+ &  & (\num{0.050}) &  &  & \\
+ln.REER & \num{-0.598}** &  &  & \num{-0.264}** & \\
+ & (\num{0.184}) &  &  & (\num{0.090}) & \\
+L1.ln.REER & \num{0.615}** &  &  &  & \\
+ & (\num{0.184}) &  &  &  & \\
 \midrule
-Num.Obs. & \num{122} & \num{100} & \num{75} & \num{122} & \num{175}\\
-AIC & \num{-565.4} & \num{-737.9} & \num{-372.0} & \num{-529.6} & \num{-1048.9}\\
-BIC & \num{-520.5} & \num{-657.2} & \num{-330.3} & \num{-495.9} & \num{-963.4}\\
-Log.Lik. & \num{298.688} & \num{399.961} & \num{203.998} & \num{276.783} & \num{551.432}\\
+Num.Obs. & \num{122} & \num{103} & \num{78} & \num{123} & \num{175}\\
+AIC & \num{-562.3} & \num{-754.7} & \num{-407.3} & \num{-516.7} & \num{-1071.0}\\
+BIC & \num{-523.0} & \num{-696.7} & \num{-367.3} & \num{-488.6} & \num{-1001.4}\\
+Log.Lik. & \num{295.133} & \num{399.356} & \num{220.669} & \num{268.349} & \num{557.494}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -1244,77 +924,59 @@ Log.Lik. & \num{298.688} & \num{399.961} & \num{203.998} & \num{276.783} & \num{
 \toprule
   & VAGov & DFGDP & VAIndustry & VARetail & VARealEstate\\
 \midrule
-ar1 & \num{0.351}*** & \num{0.680}*** & \num{0.226}* & \num{0.627}*** & \num{0.870}***\\
- & (\num{0.063}) & (\num{0.068}) & (\num{0.087}) & (\num{0.071}) & (\num{0.025})\\
-ar2 & \num{-0.122}+ & \num{0.343}*** & \num{-0.056} & \num{0.128} & \\
- & (\num{0.066}) & (\num{0.068}) & (\num{0.104}) & (\num{0.091}) & \\
-ar3 & \num{0.078} & \num{-0.341}*** & \num{-0.328}** & \num{-0.232}** & \\
- & (\num{0.065}) & (\num{0.068}) & (\num{0.099}) & (\num{0.089}) & \\
-ar4 & \num{0.534}*** & \num{0.221}*** & \num{-0.094} & \num{0.312}*** & \\
- & (\num{0.061}) & (\num{0.058}) & (\num{0.077}) & (\num{0.071}) & \\
-mconst & \num{-0.554}*** & \num{0.385}*** & \num{34.883}*** & \num{-0.548}* & \num{1.293}***\\
- & (\num{0.120}) & (\num{0.051}) & (\num{4.827}) & (\num{0.221}) & (\num{0.243})\\
-trend & \num{0.000}*** & \num{0.000}*** & \num{0.015}*** & \num{0.000} & \num{0.001}***\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.002}) & (\num{0.000}) & (\num{0.000})\\
-ln.CapForm &  &  & \num{0.640}*** & \num{0.078} & \num{0.064}**\\
- &  &  & (\num{0.087}) & (\num{0.050}) & (\num{0.022})\\
-L4.ln.CapForm &  &  & \num{-0.175}+ & \num{-0.202}*** & \\
- &  &  & (\num{0.093}) & (\num{0.045}) & \\
-L3.ln.CapForm &  &  & \num{0.244}+ & \num{0.174}** & \\
- &  &  & (\num{0.133}) & (\num{0.057}) & \\
-L2.ln.CapForm &  &  & \num{-0.316}* & \num{0.055} & \\
- &  &  & (\num{0.124}) & (\num{0.061}) & \\
-L1.ln.CapForm &  &  & \num{-0.518}*** & \num{-0.172}** & \num{-0.146}***\\
- &  &  & (\num{0.112}) & (\num{0.063}) & (\num{0.021})\\
-ln.ConsGov & \num{0.819}*** &  & \num{-0.248} & \num{0.121} & \num{-0.064}\\
- & (\num{0.031}) &  & (\num{0.260}) & (\num{0.093}) & (\num{0.048})\\
-L4.ln.ConsGov & \num{-0.471}*** &  & \num{-0.576}** & \num{-0.217}* & \\
- & (\num{0.061}) &  & (\num{0.173}) & (\num{0.090}) & \\
-L3.ln.ConsGov & \num{-0.074} &  & \num{-0.714}** & \num{0.216}* & \\
- & (\num{0.058}) &  & (\num{0.222}) & (\num{0.100}) & \\
-L2.ln.ConsGov & \num{0.134}* &  & \num{-0.119} & \num{-0.028} & \\
- & (\num{0.058}) &  & (\num{0.258}) & (\num{0.103}) & \\
-L1.ln.ConsGov & \num{-0.251}*** &  & \num{-0.849}** & \num{-0.287}** & \num{-0.064}\\
- & (\num{0.057}) &  & (\num{0.266}) & (\num{0.100}) & (\num{0.048})\\
-ln.ConsHH & \num{0.073}*** &  & \num{0.066} & \num{0.893}*** & \num{0.177}***\\
- & (\num{0.021}) &  & (\num{0.152}) & (\num{0.098}) & (\num{0.026})\\
-L4.ln.ConsHH & \num{-0.050}* &  & \num{0.285}+ & \num{0.101} & \\
- & (\num{0.022}) &  & (\num{0.139}) & (\num{0.105}) & \\
-L3.ln.ConsHH & \num{-0.051}* &  & \num{-0.920}*** & \num{0.060} & \\
- & (\num{0.023}) &  & (\num{0.175}) & (\num{0.129}) & \\
-L2.ln.ConsHH & \num{0.042}+ &  & \num{0.888}*** & \num{-0.179} & \\
- & (\num{0.023}) &  & (\num{0.178}) & (\num{0.137}) & \\
-L1.ln.ConsHH & \num{0.035} &  & \num{0.213} & \num{-0.438}** & \num{-0.011}\\
- & (\num{0.023}) &  & (\num{0.159}) & (\num{0.132}) & (\num{0.025})\\
-ln.HousePriceIndex &  &  &  &  & \num{0.112}*\\
- &  &  &  &  & \vphantom{1} (\num{0.055})\\
-L1.ln.HousePriceIndex &  &  &  &  & \num{-0.034}\\
- &  &  &  &  & (\num{0.055})\\
-ln.PriceETS &  &  & \num{-0.006}** &  & \\
+ar1 & \num{0.307}*** & \num{0.685}*** & \num{0.112}* & \num{0.597}*** & \num{0.857}***\\
+ & (\num{0.048}) & (\num{0.056}) & (\num{0.053}) & (\num{0.038}) & (\num{0.015})\\
+ar2 &  & \num{0.307}*** &  &  & \\
+ &  & (\num{0.057}) &  &  & \\
+ar3 &  & \num{-0.288}*** & \num{-0.199}* & \num{-0.167}*** & \\
+ &  & (\num{0.058}) & (\num{0.074}) & (\num{0.032}) & \\
+ar4 & \num{0.595}*** & \num{0.299}*** &  & \num{0.373}*** & \\
+ & (\num{0.049}) & (\num{0.054}) &  & (\num{0.043}) & \\
+mconst & \num{-0.297}*** & \num{0.034} & \num{30.597}*** & \num{-0.541}*** & \num{1.274}***\\
+ & (\num{0.083}) & (\num{0.092}) & (\num{2.783}) & (\num{0.111}) & (\num{0.192})\\
+trend & \num{0.000}** & \num{0.000} & \num{0.013}*** &  & \num{0.001}***\\
+ & (\num{0.000}) & (\num{0.000}) & (\num{0.001}) &  & (\num{0.000})\\
+ln.CapForm &  &  & \num{0.676}*** &  & \num{0.054}***\\
+ &  &  & (\num{0.061}) &  & (\num{0.011})\\
+L4.ln.CapForm &  &  &  & \num{-0.224}*** & \\
+ &  &  &  & (\num{0.026}) & \\
+L3.ln.CapForm &  &  &  & \num{0.228}*** & \\
+ &  &  &  & (\num{0.024}) & \\
+L2.ln.CapForm &  &  & \num{-0.440}*** &  & \\
+ &  &  & (\num{0.066}) &  & \\
+L1.ln.CapForm &  &  & \num{-0.194}* &  & \num{-0.138}***\\
+ &  &  & (\num{0.084}) &  & (\num{0.008})\\
+ln.ConsGov & \num{0.811}*** &  &  &  & \num{-0.127}***\\
+ & (\num{0.026}) &  &  &  & (\num{0.021})\\
+L4.ln.ConsGov & \num{-0.538}*** &  & \num{-0.652}*** &  & \\
+ & (\num{0.053}) &  & (\num{0.119}) &  & \\
+L1.ln.ConsGov & \num{-0.180}*** &  & \num{-1.129}*** & \num{-0.161}*** & \\
+ & (\num{0.042}) &  & (\num{0.158}) & (\num{0.029}) & \\
+ln.ConsHH & \num{0.062}** &  &  & \num{0.935}*** & \num{0.177}***\\
+ & (\num{0.021}) &  &  & (\num{0.046}) & (\num{0.018})\\
+L4.ln.ConsHH & \num{-0.069}*** &  &  &  & \\
+ & (\num{0.020}) &  &  &  & \\
+L3.ln.ConsHH & \num{-0.034}** &  & \num{-1.201}*** &  & \\
+ & (\num{0.011}) &  & (\num{0.103}) &  & \\
+L2.ln.ConsHH &  &  & \num{1.133}*** &  & \\
+ &  &  & (\num{0.096}) &  & \\
+L1.ln.ConsHH & \num{0.070}*** &  &  & \num{-0.567}*** & \\
+ & (\num{0.017}) &  &  & (\num{0.052}) & \\
+ln.HousePriceIndex &  &  &  &  & \num{0.085}***\\
+ &  &  &  &  & (\num{0.012})\\
+ln.PriceETS &  &  & \num{-0.004}** &  & \\
+ &  &  & (\num{0.001}) &  & \\
+L3.ln.PriceETS &  &  & \num{-0.011}*** &  & \\
+ &  &  & (\num{0.002}) &  \vphantom{1} & \\
+L2.ln.PriceETS &  &  & \num{0.007}** &  & \\
  &  &  & (\num{0.002}) &  & \\
-L4.ln.PriceETS &  &  & \num{0.006}* &  & \\
- &  &  & (\num{0.003}) &  & \\
-L3.ln.PriceETS &  &  & \num{-0.016}*** &  & \\
- &  &  & (\num{0.004}) &  \vphantom{2} & \\
-L2.ln.PriceETS &  &  & \num{0.005} &  & \\
- &  &  & (\num{0.004}) &  \vphantom{1} & \\
-L1.ln.PriceETS &  &  & \num{0.003} &  & \\
- &  &  & (\num{0.004}) &  & \\
-ln.PriceOil &  &  & \num{-0.018} &  & \\
- &  &  & (\num{0.013}) &  & \\
-L4.ln.PriceOil &  &  & \num{0.069}*** &  & \\
- &  &  & (\num{0.011}) &  & \\
-L3.ln.PriceOil &  &  & \num{0.005} &  & \\
- &  &  & (\num{0.015}) &  \vphantom{2} & \\
-L2.ln.PriceOil &  &  & \num{-0.005} &  & \\
- &  &  & (\num{0.015}) &  \vphantom{1} & \\
-L1.ln.PriceOil &  &  & \num{0.025} &  & \\
- &  &  & (\num{0.015}) &  & \\
+L4.ln.PriceOil &  &  & \num{0.074}*** &  & \\
+ &  &  & (\num{0.006}) &  & \\
 \midrule
-Num.Obs. & \num{175} & \num{175} & \num{75} & \num{175} & \num{78}\\
-AIC & \num{-1381.5} & \num{-1216.6} & \num{-510.5} & \num{-1026.4} & \num{-656.0}\\
-BIC & \num{-1277.0} & \num{-1153.3} & \num{-399.2} & \num{-934.6} & \num{-601.8}\\
-Log.Lik. & \num{723.731} & \num{628.311} & \num{303.241} & \num{542.214} & \num{350.978}\\
+Num.Obs. & \num{175} & \num{175} & \num{76} & \num{175} & \num{79}\\
+AIC & \num{-1359.0} & \num{-1250.4} & \num{-498.3} & \num{-1065.2} & \num{-670.2}\\
+BIC & \num{-1292.5} & \num{-1180.7} & \num{-421.3} & \num{-992.4} & \num{-629.9}\\
+Log.Lik. & \num{700.481} & \num{647.187} & \num{282.127} & \num{555.620} & \num{352.107}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -1333,35 +995,23 @@ Log.Lik. & \num{723.731} & \num{628.311} & \num{303.241} & \num{542.214} & \num{
 \toprule
   & Flights & EmiCO2Residential & ElectrCons & EmiCH4EntericFerment\\
 \midrule
-ar1 &  &  &  & \num{0.988}***\\
- &  &  &  & \vphantom{1} (\num{0.017})\\
-mconst & \num{-15.669}*** & \num{16.644}** & \num{4.050}* & \num{0.297}+\\
- & (\num{3.526}) & (\num{5.998}) & (\num{1.799}) & (\num{0.162})\\
-trend & \num{-0.006}** & \num{-0.001} & \num{-0.002}+ & \num{0.000}*\\
- & (\num{0.001}) & (\num{0.003}) & (\num{0.001}) & (\num{0.000})\\
-ln.FinWealthHH & \num{-0.198} &  &  & \\
- & (\num{0.172}) &  &  & \\
-ln.HICP\_AviaInt & \num{0.207} &  &  & \\
- & (\num{0.176}) &  &  & \\
-ln.HICP\_Electricity &  & \num{-0.718}*** & \num{-0.031} & \\
- &  & (\num{0.188}) & (\num{0.118}) & \\
-ln.RealConsHH & \num{2.373}*** & \num{-0.161} & \num{0.673}*** & \num{-0.009}\\
- & (\num{0.363}) & (\num{0.449}) & (\num{0.144}) & (\num{0.017})\\
-L1.ln.RealConsHH &  &  &  & \num{0.010}\\
- &  &  &  & (\num{0.017})\\
-ln.RealVAAgriculture &  &  &  & \num{-0.003}\\
- &  &  &  & (\num{0.016})\\
-L1.ln.RealVAAgriculture &  &  &  & \num{0.006}\\
- &  &  &  & (\num{0.015})\\
-ln.Slaughter &  &  &  & \num{-0.009}\\
- &  &  &  & (\num{0.012})\\
-L1.ln.Slaughter &  &  &  & \num{-0.032}**\\
- &  &  &  & (\num{0.011})\\
+ar1 &  &  &  & \num{0.992}***\\
+ &  &  &  & (\num{0.014})\\
+mconst & \num{-14.314}*** & \num{15.040}*** &  & \num{0.201}*\\
+ & (\num{3.208}) & (\num{0.346}) &  & (\num{0.080})\\
+trend & \num{-0.018}*** &  & \num{-0.003}*** & \num{0.000}***\\
+ & (\num{0.001}) &  & (\num{0.000}) & (\num{0.000})\\
+ln.HICP\_Electricity &  & \num{-0.811}*** &  & \\
+ &  & (\num{0.064}) &  & \\
+ln.RealConsHH & \num{2.297}*** &  & \num{0.995}*** & \\
+ & (\num{0.270}) &  & (\num{0.006}) & \\
+L1.ln.Slaughter &  &  &  & \num{-0.026}***\\
+ &  &  &  & (\num{0.007})\\
 \midrule
-Num.Obs. & \num{39} & \num{112} & \num{67} & \num{175}\\
-AIC & \num{-199.1} & \num{-181.8} & \num{-284.6} & \num{-1334.4}\\
-BIC & \num{-154.1} & \num{-149.1} & \num{-262.5} & \num{-1280.6}\\
-Log.Lik. & \num{126.532} & \num{102.878} & \num{152.286} & \num{684.197}\\
+Num.Obs. & \num{91} & \num{112} & \num{67} & \num{215}\\
+AIC & \num{-293.8} & \num{-183.2} & \num{-282.9} & \num{-1625.5}\\
+BIC & \num{-261.2} & \num{-156.0} & \num{-265.3} & \num{-1571.5}\\
+Log.Lik. & \num{159.909} & \num{101.580} & \num{149.462} & \num{828.731}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -1380,39 +1030,33 @@ Log.Lik. & \num{126.532} & \num{102.878} & \num{152.286} & \num{684.197}\\
 \toprule
   & EmiCO2CivAvi & RoadFreight & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
 \midrule
-ar1 &  &  & \num{0.902}*** & \num{0.708}*** & \\
- &  &  & (\num{0.036}) & (\num{0.060}) & \\
-mconst & \num{-7.054}*** & \num{4.259}** & \num{0.067} & \num{3.047}*** & \num{9.028}+\\
- & (\num{1.942}) & (\num{1.410}) & (\num{0.634}) & (\num{0.776}) & (\num{5.383})\\
-trend & \num{-0.004}*** & \num{0.000} & \num{-0.001}* & \num{0.000} & \num{-0.021}***\\
- & (\num{0.001}) & (\num{0.001}) & (\num{0.001}) & (\num{0.000}) & (\num{0.003})\\
-ln.ElectrCons &  &  &  &  & \num{1.290}**\\
- &  &  &  &  & (\num{0.389})\\
-ln.HICPlocal & \num{0.449}** & \num{-0.559}** & \num{0.151} & \num{0.076} & \\
- & (\num{0.164}) & (\num{0.192}) & (\num{0.540}) & (\num{0.231}) & \\
-L1.ln.HICPlocal &  &  & \num{-0.003} & \num{-0.091} & \\
- &  &  & (\num{0.554}) & (\num{0.227}) & \\
-ln.RealCapFormHH &  &  &  &  & \num{1.629}***\\
- &  &  &  &  & (\num{0.319})\\
-ln.RealConsHH & \num{0.364}* & \num{0.195} &  & \num{-0.004} & \\
- & (\num{0.166}) & (\num{0.141}) &  & (\num{0.046}) & \\
-L1.ln.RealConsHH &  &  &  & \num{0.050} & \\
- &  &  &  & (\num{0.045}) & \\
-ln.RealVAIndustry &  &  & \num{0.001} &  & \num{-2.495}***\\
- &  &  & (\num{0.067}) &  & (\num{0.431})\\
-L1.ln.RealVAIndustry &  &  & \num{0.039} &  & \\
- &  &  & (\num{0.067}) &  & \\
-ln.RealVAService & \num{0.725}*** & \num{0.614}*** &  &  & \\
- & (\num{0.103}) & (\num{0.135}) &  &  & \\
-ln.RoadFreight &  &  &  & \num{-0.016} & \\
- &  &  &  & (\num{0.021}) & \\
-L1.ln.RoadFreight &  &  &  & \num{-0.037}+ & \\
- &  &  &  & (\num{0.020}) & \\
+ar1 &  &  & \num{0.925}*** & \num{1.003}*** & \\
+ &  &  & (\num{0.027}) & (\num{0.019}) & \\
+mconst & \num{-1.959}* & \num{5.508}*** &  & \num{-0.032} & \\
+ & (\num{0.986}) & (\num{0.720}) &  & (\num{0.165}) & \\
+trend & \num{-0.002}* &  & \num{-0.001}** &  & \num{-0.007}***\\
+ & (\num{0.001}) &  & (\num{0.000}) &  & (\num{0.002})\\
+ln.ElectrCons &  &  &  &  & \num{1.760}***\\
+ &  &  &  &  & (\num{0.256})\\
+ln.HICPlocal &  & \num{-0.628}*** &  &  & \\
+ &  & (\num{0.129}) &  &  & \\
+L1.ln.HICPlocal &  &  & \num{0.218}** &  & \\
+ &  &  & (\num{0.074}) &  & \\
+ln.PriceETS &  &  &  &  & \num{-0.084}**\\
+ &  &  &  &  & (\num{0.025})\\
+ln.RealCapFormHH &  &  &  &  & \num{1.283}***\\
+ &  &  &  &  & (\num{0.313})\\
+ln.RealVAIndustry &  &  &  &  & \num{-2.058}***\\
+ &  &  &  &  & (\num{0.484})\\
+ln.RealVAService & \num{0.788}*** & \num{0.746}*** &  &  & \\
+ & (\num{0.099}) & (\num{0.108}) &  &  & \\
+L1.ln.RoadFreight &  &  &  & \num{-0.007} & \\
+ &  &  &  & (\num{0.008}) & \\
 \midrule
-Num.Obs. & \num{112} & \num{102} & \num{111} & \num{99} & \num{64}\\
-AIC & \num{-485.9} & \num{-441.4} & \num{-521.4} & \num{-692.2} & \num{-106.6}\\
-BIC & \num{-426.1} & \num{-399.4} & \num{-480.7} & \num{-642.9} & \num{-80.7}\\
-Log.Lik. & \num{264.929} & \num{236.718} & \num{275.682} & \num{365.115} & \num{65.307}\\
+Num.Obs. & \num{176} & \num{102} & \num{111} & \num{99} & \num{64}\\
+AIC & \num{-609.3} & \num{-423.3} & \num{-527.5} & \num{-684.6} & \num{-88.3}\\
+BIC & \num{-564.9} & \num{-391.8} & \num{-497.7} & \num{-656.0} & \num{-68.8}\\
+Log.Lik. & \num{318.649} & \num{223.656} & \num{274.755} & \num{353.283} & \num{53.135}\\
 \bottomrule
 \multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
@@ -1424,144 +1068,42 @@ Log.Lik. & \num{264.929} & \num{236.718} & \num{275.682} & \num{365.115} & \num{
 \begin{table}
 \label{tab:regression_summaryFR_4}
 \centering\centering
-\caption{Final OSEM Model result for each module for France. Part 4.}
+\caption{Final OSEM Model result for selected modules for France.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
   & ElectrCons & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
 \midrule
-ar1 &  & \num{0.902}*** & \num{0.708}*** & \\
- &  & (\num{0.036}) & (\num{0.060}) & \\
-mconst & \num{4.050}* & \num{0.067} & \num{3.047}*** & \num{9.028}+\\
- & (\num{1.799}) & (\num{0.634}) & (\num{0.776}) & (\num{5.383})\\
-trend & \num{-0.002}+ & \num{-0.001}* & \num{0.000} & \num{-0.021}***\\
- & (\num{0.001}) & (\num{0.001}) & (\num{0.000}) & (\num{0.003})\\
-ln.ElectrCons &  &  &  & \num{1.290}**\\
- &  &  &  & (\num{0.389})\\
-ln.HICP\_Electricity & \num{-0.031} &  &  & \\
- & (\num{0.118}) &  &  & \\
-ln.HICPlocal &  & \num{0.151} & \num{0.076} & \\
- &  & (\num{0.540}) & (\num{0.231}) & \\
-L1.ln.HICPlocal &  & \num{-0.003} & \num{-0.091} & \\
- &  & (\num{0.554}) & (\num{0.227}) & \\
-ln.RealCapFormHH &  &  &  & \num{1.629}***\\
- &  &  &  & (\num{0.319})\\
-ln.RealConsHH & \num{0.673}*** &  & \num{-0.004} & \\
- & (\num{0.144}) &  & (\num{0.046}) & \\
-L1.ln.RealConsHH &  &  & \num{0.050} & \\
- &  &  & (\num{0.045}) & \\
-ln.RealVAIndustry &  & \num{0.001} &  & \num{-2.495}***\\
- &  & (\num{0.067}) &  & (\num{0.431})\\
-L1.ln.RealVAIndustry &  & \num{0.039} &  & \\
- &  & (\num{0.067}) &  & \\
-ln.RoadFreight &  &  & \num{-0.016} & \\
- &  &  & (\num{0.021}) & \\
-L1.ln.RoadFreight &  &  & \num{-0.037}+ & \\
- &  &  & (\num{0.020}) & \\
+ar1 &  & \num{0.925}*** & \num{1.003}*** & \\
+ &  & (\num{0.027}) & (\num{0.019}) & \\
+mconst &  &  & \num{-0.032} & \\
+ &  &  & (\num{0.165}) & \\
+trend & \num{-0.003}*** & \num{-0.001}** &  & \num{-0.007}***\\
+ & (\num{0.000}) & (\num{0.000}) &  & (\num{0.002})\\
+ln.ElectrCons &  &  &  & \num{1.760}***\\
+ &  &  &  & (\num{0.256})\\
+L1.ln.HICPlocal &  & \num{0.218}** &  & \\
+ &  & (\num{0.074}) &  & \\
+ln.PriceETS &  &  &  & \num{-0.084}**\\
+ &  &  &  & (\num{0.025})\\
+ln.RealCapFormHH &  &  &  & \num{1.283}***\\
+ &  &  &  & (\num{0.313})\\
+ln.RealConsHH & \num{0.995}*** &  &  & \\
+ & (\num{0.006}) &  &  & \\
+ln.RealVAIndustry &  &  &  & \num{-2.058}***\\
+ &  &  &  & (\num{0.484})\\
+L1.ln.RoadFreight &  &  & \num{-0.007} & \\
+ &  &  & (\num{0.008}) & \\
 \midrule
 Num.Obs. & \num{67} & \num{111} & \num{99} & \num{64}\\
-AIC & \num{-284.6} & \num{-521.4} & \num{-692.2} & \num{-106.6}\\
-BIC & \num{-262.5} & \num{-480.7} & \num{-642.9} & \num{-80.7}\\
-Log.Lik. & \num{152.286} & \num{275.682} & \num{365.115} & \num{65.307}\\
+AIC & \num{-282.9} & \num{-527.5} & \num{-684.6} & \num{-88.3}\\
+BIC & \num{-265.3} & \num{-497.7} & \num{-656.0} & \num{-68.8}\\
+Log.Lik. & \num{149.462} & \num{274.755} & \num{353.283} & \num{53.135}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}
 % ---- End of FR_Regression_Summary_selected.tex ----
-
-% ---- Start of Specification for all countries.tex ----
-\begin{table}
-\centering\centering
-\caption{Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models.}
-\centering
-\fontsize{7}{9}\selectfont
-\begin{tabular}[t]{rll>{\raggedright\arraybackslash}p{7cm}}
-\toprule
-Model & Type & Dependent & Independent\\
-\midrule
-1 & Identity & Supply & GDPOutput + Imports\\
-2 & Identity & Demand & GDPExpenditure + Imports\\
-3 & Identity & GDPOutput & VA + TaxesLessSubsidies\\
-4 & Identity & VA & VAAgriculture + VAIndustry + VAConstruction + VARetail + VAInformation + VAFinance + VARealEstate + VAService + VAGov + VAOther\\
-5 & Estimated & VAIndustry & f(ConsHH, ConsGov, CapForm, PriceOil, PriceETS)\\
-\addlinespace
-6 & Estimated & VARetail & f(ConsHH, ConsGov, CapForm)\\
-7 & Estimated & VARealEstate & f(ConsHH, ConsGov, CapForm, HousePriceIndex)\\
-8 & Estimated & VAService & f(ConsHH, ConsGov)\\
-9 & Estimated & VAGov & f(ConsHH, ConsGov)\\
-10 & Estimated & Imports & f(REER)\\
-\addlinespace
-11 & Identity & GDPExpenditure & ConsHH + ConsGov + CapForm + DInventories + Exports - Imports\\
-12 & Identity & DInventories & Supply - ConsHH - ConsGov - CapForm - Exports\\
-13 & Estimated & ConsHH & f(IncomeHH, HICPlocal, FinWealthHH)\\
-14 & Identity & CapForm & CapFormHH + CapFormFirm + CapFormFinFirm + CapFormGov\\
-15 & Estimated & CapFormHH & f(IncomeHH, HICPlocal, HousePriceIndex, BuildingPermits)\\
-\addlinespace
-16 & Estimated & Exports & f(REER)\\
-17 & Identity & RealVAAgriculture & VAAgriculture / DFVAAgriculture * 100\\
-18 & Identity & RealVAIndustry & VAIndustry / DFVAIndustry * 100\\
-19 & Identity & RealVAConstruction & VAConstruction / DFVAConstruction * 100\\
-20 & Identity & RealVARetail & VARetail / DFVARetail * 100\\
-\addlinespace
-21 & Identity & RealVAInformation & VAInformation / DFVAInformation * 100\\
-22 & Identity & RealVAFinance & VAFinance / DFVAFinance * 100\\
-23 & Identity & RealVARealEstate & VARealEstate / DFVARealEstate * 100\\
-24 & Identity & RealVAService & VAService / DFVAService * 100\\
-25 & Identity & RealVAGov & VAGov / DFVAGov * 100\\
-\addlinespace
-26 & Identity & RealVAOther & VAOther / DFVAOther * 100\\
-27 & Identity & RealCapForm & CapForm / DFCapForm * 100\\
-28 & Identity & RealCapFormHH & CapFormHH / DFCapForm * 100\\
-29 & Identity & RealConsHH & ConsHH / DFConsHH * 100\\
-30 & Estimated & DFGDP & f()\\
-\addlinespace
-31 & Estimated & EmiCO2ManInd & f(RealVAIndustry, HICPlocal)\\
-32 & Estimated & Flights & f(RealConsHH, FinWealthHH,  HICP\_AviaInt)\\
-33 & Estimated & EmiCO2CivAvi & f(HICPlocal, RealConsHH, RealVAService)\\
-34 & Estimated & RoadFreight & f(RealConsHH, HICPlocal, RealVAService)\\
-35 & Estimated & EmiCO2RoaTra & f(RoadFreight, RealConsHH, HICPlocal)\\
-\addlinespace
-36 & Estimated & EmiCO2Residential & f(RealConsHH, HICP\_Electricity)\\
-37 & Estimated & ElectrCons & f(RealConsHH, HICP\_Electricity)\\
-38 & Estimated & EmiCO2ElecHeat & f(ElectrCons, RealVAIndustry, RealCapFormHH)\\
-39 & Identity & EmiCO2Total & EmiCO2ElecHeat + EmiCO2RoaTra + EmiCO2ManInd + EmiCO2OilandGas + EmiCO2PetrRef + EmiCO2WatNav + EmiCO2CivAvi + EmiCO2GlassProd + EmiCO2LimeProd + EmiCO2OthTransp + EmiCO2Rail + EmiCO2Residential + EmiCO2SolidFuel + EmiCO2OthCarb + EmiCO2CemPro + EmiCO2ChemInd + EmiCO2Liming + EmiCO2MetalInd + EmiCO2NonEnergProd + EmiCO2UreaApp + EmiCO2Waste\\
-40 & Identity & EmiCH4Total & EmiCH4ElecHeat + EmiCH4PetrRef + EmiCH4ManInd + EmiCH4CivAvi + EmiCH4RoaTra + EmiCH4Rail + EmiCH4WatNav + EmiCH4OthTransp + EmiCH4Residential + EmiCH4SolidFuel + EmiCH4OilandGas + EmiCH4ChemInd + EmiCH4MetalInd + EmiCH4EntericFerment + EmiCH4ManureMgmt + EmiCH4BiomassBurn + EmiCH4SolidWaste + EmiCH4BioWasteTreat + EmiCH4Waste + EmiCH4Wastewater\\
-\addlinespace
-41 & Identity & EmiCH4Livestock & EmiCH4EntericFerment + EmiCH4ManureMgmt\\
-42 & Estimated & EmiCH4EntericFerment & f(Slaughter, RealConsHH, RealVAAgriculture)\\
-\bottomrule
-\end{tabular}
-\end{table}
-% ---- End of Specification for all countries.tex ----
-
-% ---- Start of Specification selected for all countries.tex ----
-\begin{table}
-\centering\centering
-\caption{Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models. The full model specification table is available in the Appendix.}
-\centering
-\fontsize{7}{9}\selectfont
-\begin{tabular}[t]{rll>{\raggedright\arraybackslash}p{7cm}}
-\toprule
-Model & Type & Dependent & Independent\\
-\midrule
-5 & Estimated & VAIndustry & f(ConsHH, ConsGov, CapForm, PriceOil, PriceETS)\\
-13 & Estimated & ConsHH & f(IncomeHH, HICPlocal, FinWealthHH)\\
-14 & Identity & CapForm & CapFormHH + CapFormFirm + CapFormFinFirm + CapFormGov\\
-15 & Estimated & CapFormHH & f(IncomeHH, HICPlocal, HousePriceIndex, BuildingPermits)\\
-18 & Identity & RealVAIndustry & VAIndustry / DFVAIndustry * 100\\
-\addlinespace
-27 & Identity & RealCapForm & CapForm / DFCapForm * 100\\
-28 & Identity & RealCapFormHH & CapFormHH / DFCapForm * 100\\
-29 & Identity & RealConsHH & ConsHH / DFConsHH * 100\\
-31 & Estimated & EmiCO2ManInd & f(RealVAIndustry, HICPlocal)\\
-35 & Estimated & EmiCO2RoaTra & f(RoadFreight, RealConsHH, HICPlocal)\\
-\addlinespace
-37 & Estimated & ElectrCons & f(RealConsHH, HICP\_Electricity)\\
-38 & Estimated & EmiCO2ElecHeat & f(ElectrCons, RealVAIndustry, RealCapFormHH)\\
-\bottomrule
-\end{tabular}
-\end{table}
-% ---- End of Specification selected for all countries.tex ----
 

@@ -8,37 +8,27 @@
 \toprule
   & Flights & EmiCO2Residential & ElectrCons & EmiCH4EntericFerment\\
 \midrule
-ar1 &  &  & \num{0.397}*** & \num{1.013}***\\
- &  &  & (\num{0.090}) & (\num{0.019})\\
-mconst & \num{18.252} & \num{20.105}*** & \num{4.266}** & \num{0.581}+\\
- & (\num{10.825}) & (\num{5.753}) & (\num{1.437}) & (\num{0.335})\\
-trend & \num{0.020}** & \num{-0.005}* & \num{0.000} & \num{0.000}\\
- & (\num{0.006}) & (\num{0.002}) & (\num{0.000}) & (\num{0.000})\\
-ln.FinWealthHH & \num{-1.011}** &  &  & \\
- & (\num{0.289}) &  &  & \\
-ln.HICP\_AviaInt & \num{-0.144} &  &  & \\
- & (\num{0.283}) &  &  & \\
-ln.HICP\_Electricity &  & \num{0.196} & \num{-0.108} & \\
- &  & (\num{0.177}) & (\num{0.108}) & \\
-L1.ln.HICP\_Electricity &  &  & \num{-0.112} & \\
- &  &  & (\num{0.112}) & \\
-ln.RealConsHH & \num{0.467} & \num{-0.726} & \num{0.498}*** & \num{-0.005}\\
- & (\num{0.842}) & (\num{0.449}) & (\num{0.118}) & (\num{0.029})\\
-L1.ln.RealConsHH &  &  & \num{-0.186} & \num{-0.042}\\
- &  &  & (\num{0.127}) & (\num{0.029})\\
-ln.RealVAAgriculture &  &  &  & \num{0.019}+\\
- &  &  &  & \vphantom{1} (\num{0.010})\\
-L1.ln.RealVAAgriculture &  &  &  & \num{-0.017}+\\
- &  &  &  & (\num{0.010})\\
-ln.Slaughter &  &  &  & \num{-0.006}\\
- &  &  &  & \vphantom{1} (\num{0.012})\\
-L1.ln.Slaughter &  &  &  & \num{-0.010}\\
- &  &  &  & (\num{0.012})\\
+ar1 &  &  & \num{0.364}*** & \num{0.999}***\\
+ &  &  & (\num{0.076}) & (\num{0.000})\\
+mconst & \num{53.791}*** & \num{11.569}*** & \num{3.199}** & \\
+ & (\num{7.692}) & (\num{0.023}) & (\num{1.071}) & \\
+trend & \num{0.029}** & \num{-0.003}*** &  & \\
+ & (\num{0.009}) & (\num{0.000}) &  & \\
+ln.FinWealthHH & \num{-3.117}*** &  &  & \\
+ & (\num{0.609}) &  &  & \\
+ln.HICP\_Electricity &  &  & \num{-0.228}*** & \\
+ &  &  & (\num{0.034}) & \\
+ln.PriceETS &  &  & \num{0.025}*** & \\
+ &  &  & (\num{0.006}) & \\
+L1.ln.PriceETS &  &  & \num{-0.023}** & \\
+ &  &  & (\num{0.007}) & \\
+ln.RealConsHH &  &  & \num{0.432}*** & \\
+ &  &  & (\num{0.091}) & \\
 \midrule
-Num.Obs. & \num{38} & \num{112} & \num{66} & \num{131}\\
-AIC & \num{-144.6} & \num{-189.6} & \num{-321.2} & \num{-976.3}\\
-BIC & \num{-110.2} & \num{-154.3} & \num{-286.1} & \num{-927.5}\\
-Log.Lik. & \num{93.281} & \num{107.805} & \num{176.579} & \num{505.174}\\
+Num.Obs. & \num{90} & \num{216} & \num{66} & \num{215}\\
+AIC & \num{63.4} & \num{-328.8} & \num{-331.0} & \num{-1571.2}\\
+BIC & \num{85.9} & \num{-274.8} & \num{-298.1} & \num{-1530.8}\\
+Log.Lik. & \num{-22.697} & \num{180.415} & \num{180.489} & \num{797.621}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
