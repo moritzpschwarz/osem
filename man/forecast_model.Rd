@@ -13,7 +13,10 @@ forecast_model(
   ar.fill.max = 4,
   plot = TRUE,
   uncertainty_sample = 100,
-  quiet = FALSE
+  quiet = FALSE,
+  window = NA,
+  lag = NA,
+  trend = NA
 )
 }
 \arguments{

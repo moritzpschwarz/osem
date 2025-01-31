@@ -52,10 +52,13 @@ forecast_model <- function(model,
                            ar.fill.max = 4,
                            plot = TRUE,
                            uncertainty_sample = 100,
-                           quiet = FALSE){
+                           quiet = FALSE,
+                           window = NA,
+                           lag = NA,
+                           trend = NA){
 
   if(!isa(model, "osem")){stop("Forecasting only possible with an osem object. Execute 'run_model' to get such an object.")}
-  if(!is.null(exog_fill_method) & !exog_fill_method %in% c("AR","last","auto")){stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR', 'auto', or 'last'.")}
+  if(!is.null(exog_fill_method) & !exog_fill_method %in% c("AR","last","auto","clements_hendry","martinez_castle_hendry","martinez_castle_hendry_rw")){stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR', 'auto', or 'last' or one of the other specified method.")}
   if(!is.null(ar.fill.max) & (!is.integer(as.integer(ar.fill.max)) | ar.fill.max < 1)){stop("The option 'ar.fill.max' can either be NULL or must be an integer that is larger than 0.")}
 
   # 1. Determine Exogenous Variables and wrangle future values ---------------
@@ -72,7 +75,10 @@ forecast_model <- function(model,
                                                   exog_fill_method = exog_fill_method,
                                                   ar.fill.max = ar.fill.max,
                                                   n.ahead = n.ahead,
-                                                  quiet = quiet)
+                                                  quiet = quiet,
+                                                  window = window,
+                                                  lag = lag,
+                                                  trend = trend)
 
   # extract the exogenous data that is ready for forecasting
   exog_df_ready_full <- exog_forecast_list$exog_df_ready
