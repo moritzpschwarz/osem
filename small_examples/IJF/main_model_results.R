@@ -41,7 +41,6 @@ spec_econ <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), indep
 
 spec_envi <- tibble(
   type = "n", dependent = "EmiCO2ManInd", independent = "RealVAIndustry + HICPlocal") %>%
-
   add_row(type = "n", dependent = "Flights", independent = "RealConsHH + FinWealthHH +  HICP_AviaInt") %>%
   add_row(type = "n", dependent = "EmiCO2CivAvi", independent = "HICPlocal + RealConsHH + RealVAService") %>%
   add_row(type = "n", dependent = "RoadFreight", independent = "RealConsHH + HICPlocal + RealVAService") %>%
@@ -173,6 +172,42 @@ for(country in c("DE","AT","FR", "DK")){
            na_item = "HICPlocal") %>%
     arrange(time)
   write_csv(hicp, file = paste0("./small_examples/IJF/",country,"/hicp.csv"))
+
+  # import price index
+  data <- imf.data::load_datasets("PCTOT")
+  imports <- data$get_series(freq="M",ref_area = country,indicator = "m",type="R_RW_IX")
+  columns <- colnames(imports) # columns[1] = TIME_PERIOD, columns[2] = 'the unique identifier that represents the values of the data row'
+  value_colname <- columns[2]
+  #add na_item (model_varname)
+  imports <- imports %>% dplyr::mutate(na_item = "import_price_index")
+  #convert the value column into numeric
+  imports <- imports %>%
+    dplyr::mutate(VALUE = as.numeric(.data[[value_colname]]))
+  #drop old uniquely identified value column
+  imports <- imports %>%
+    dplyr::select(.,-dplyr::all_of(value_colname))
+  #rename REF_DATE to time
+  imports <- imports %>% dplyr::rename("time" = "TIME_PERIOD")
+  # rename VALUE to values
+  imports <- imports %>% dplyr::rename("values" = "VALUE") %>%
+    mutate(time = as.Date(paste0(time, "-01"))) %>%
+    mutate(quarter = quarter(time),
+           year = year(time)) %>%
+      group_by(year, quarter) %>%
+      summarise(values = mean(values)) %>%
+      ungroup() %>%
+      mutate(month = case_when(quarter == 1L ~ "01",
+                               quarter == 2L ~ "04",
+                               quarter == 3L ~ "07",
+                               quarter == 4L ~ "10"),
+             time = as.Date(paste0(year, "-", month, "-01"))) %>%
+      select(time, values) %>%
+      mutate(geo = country,
+             na_item = "PriceImports") %>%
+      arrange(time)
+  write_csv(imports, file = paste0("./small_examples/IJF/",country,"/import_price_index.csv"))
+
+  #end of adding imports price index
 
   # inflation, ideally we calculate this inside the model from HICP level data: (HICP - L1.HICP) / L1.HICP
   # but I think we have not implemented more general algebra at the moment
