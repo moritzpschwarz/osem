@@ -308,7 +308,61 @@ for(country in c("DE","AT","FR","DK")){
     summarise(sum(base, na.rm = TRUE),
               sum(diff, na.rm = TRUE))
 
-
+  # Diagnostic change in inventories ----------------------------------------
+  # variables of interest (not modelled, summarised as DInventories in our model):
+  # Eurostat: P52 = changes in inventories, P53 = acquisition less disposal of valuables, YA0 = stat discrepancy expenditure approach
+  # not all series are available for all countries and years; add them up, remove NAs
+  # measured either in current prices (million euros) or as percentage of GDP, we focus on the former; can rescale later
+  p52_p53 <- eurostat::get_eurostat("namq_10_gdp", filters = list(geo = country, na_item = "P52_P53", unit = "CP_MEUR", s_adj = "NSA")) %>%
+    select(time, values) %>%
+    rename(p52_p53 = values)
+  stopifnot(sum(duplicated(p52_p53$time)) == 0)
+  tryCatch(
+    {
+      ya0 <- eurostat::get_eurostat("namq_10_gdp", filters = list(geo = country, na_item = "YA0", unit = "CP_MEUR", s_adj = "NSA"), cache = FALSE) %>%
+        select(time, values) %>%
+        rename(ya0 = values)
+    },
+    error = function(e) {
+      ya0 <- data.frame(time = as.Date("1900-01-01"), ya0 = NA)
+    }
+  )
+  stopifnot(sum(duplicated(ya0$time)) == 0)
+  DInventories_data <- full_join(x = p52_p53, y = ya0, by = "time") %>%
+    mutate(DInventories = rowSums(across(c(p52_p53, ya0)), na.rm = TRUE)) %>%
+    # replace with NA if both missing (if don't do this step, get 0 -> misleading)
+    mutate(DInventories = if_else(is.na(p52_p53) & is.na(ya0), NA, DInventories)) %>%
+    mutate(type = "Data")
+  # obtain actual GDP
+  gdp <- eurostat::get_eurostat("namq_10_gdp", filters = list(geo = country, na_item = "B1GQ", unit = "CP_MEUR", s_adj = "NSA")) %>%
+    select(time, values) %>%
+    rename(GDP = values)
+  DInventories_data <- left_join(DInventories_data, gdp, by = "time") %>%
+    mutate(DInventories_pct = DInventories / GDP * 100) %>%
+    select(time, type, DInventories, DInventories_pct) %>%
+    pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
+    mutate(unit = case_when(unit == "DInventories" ~ "CP_MEUR", unit == "DInventories_pct" ~ "% of GDP"))
+  # obtain DInventories and GDP model values and forecasts (fc_ext should be created above)
+  fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
+  DInventories_model <- fc_ext$full_forecast_data %>%
+    filter(na_item %in% c("DInventories", "GDPExpenditure")) %>%
+    filter(type %in% c("Forecast", "Insample Fit")) %>%
+    select(time, na_item, values, type) %>%
+    pivot_wider(id_cols = c(time, type), names_from = na_item, values_from = values) %>%
+    mutate(DInventories_pct = DInventories / GDPExpenditure * 100) %>%
+    select(time, type, DInventories, DInventories_pct) %>%
+    drop_na()
+    stopifnot(sum(duplicated(DInventories_model$time)) == 0)
+  DInventories_model <- DInventories_model %>%
+    pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
+    mutate(unit = case_when(unit == "DInventories" ~ "CP_MEUR", unit == "DInventories_pct" ~ "% of GDP"))
+  # combine data and model values for comparison
+  DInventories_comp <- bind_rows(DInventories_model, DInventories_data) %>%
+    arrange(time) %>%
+    filter(cumsum(!is.na(DInventories)) > 0)
+  ggplot(DInventories_comp) +
+    geom_line(aes(x = time, y = DInventories, color = type)) +
+    facet_grid(rows = vars(unit), cols = NULL, scales = "free") -> DInventories_plot
 
 }
 
