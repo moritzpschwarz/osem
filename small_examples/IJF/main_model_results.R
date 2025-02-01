@@ -34,9 +34,12 @@ spec_econ <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), indep
   add_row(type = "d", dependent = "RealCapFormHH", independent = "CapFormHH / DFCapForm * Factor") %>% # cannot find deflator specific for households, use general deflator for  Gross Fixed Capital Formation (better to use house prices?)
   add_row(type = "d", dependent = "RealConsHH", independent = "ConsHH / DFConsHH * Factor") %>%
   # can explicitly model deflators if want to (example GDP deflator)
-  add_row(type = "n", dependent = "DFGDP", independent = "") #%>%
+  add_row(type = "n", dependent = "DFGDP", independent = "") %>%
+  # level model of price level
+  # could add URate but only available from 2009 and LabourCI only available from 2021Q4
+  add_row(type = "n", dependent = "HICPlocal", independent = "PriceOil + PriceImports + LabourProd + EfExchange") %>%
   # add simple Phillips curve
-  #add_row(type = "n", dependent = "Inflation", independent = "URate + PriceOil")
+  add_row(type = "n", dependent = "Inflation", independent = "URate + PriceOil")
 
 
 spec_envi <- tibble(
@@ -55,26 +58,26 @@ spec_envi <- tibble(
 
 spec_extended <- spec_econ %>% bind_rows(spec_envi)
 
-
 # dictionary
 dict_local <- structure(
   list(
-    model_varname = c("PriceETS", "PriceOil", "HICPlocal", "Factor", "Inflation"),
+    model_varname = c("PriceETS", "PriceOil", "HICPlocal", "Factor", "Inflation", "PriceImports"),
     full_name = c(
       "Average EU ETS Price, Nominal",
       "Average Crude Brent Oil Price in EUR, Nominal",
       "Harmonised Index of Consumer Prices, All Goods",
       "100",
-      "Quarter-on-Quarter HICP Inflation"
+      "Quarter-on-Quarter HICP Inflation",
+      "Import Price Index"
     ),
-    database = c("local", "local", "local", "local", "local"),
-    variable_code = c("PriceETS", "PriceOil", "HICPlocal", "Factor", "Inflation"),
-    var_col = c("na_item", "na_item", "na_item", "na_item", "na_item"),
-    freq = c(NA, NA, NA, NA, NA),
-    geo = c("DE", "DE", "DE", "DE", "DE"),
-    n = c(1L, 1L, 1L, 1L, 1L)
+    database = c("local", "local", "local", "local", "local", "local"),
+    variable_code = c("PriceETS", "PriceOil", "HICPlocal", "Factor", "Inflation", "PriceImports"),
+    var_col = c("na_item", "na_item", "na_item", "na_item", "na_item", "na_item"),
+    freq = c(NA, NA, NA, NA, NA, NA),
+    geo = c("DE", "DE", "DE", "DE", "DE", "DE"),
+    n = c(1L, 1L, 1L, 1L, 1L, 1L)
   ),
-  row.names = c(NA, -5L),
+  row.names = c(NA, -6L),
   class = c("tbl_df", "tbl", "data.frame")
 )
 
@@ -91,7 +94,7 @@ dictionary <- dplyr::bind_rows(dict_identities, dict_eurostat, dict_edgar, dict_
 
 for(country in c("DE","AT","FR", "DK")){
 
-  if(file.exists(paste0("./small_examples/IJF/", country, "/model.RData"))){next}
+  #if(file.exists(paste0("./small_examples/IJF/", country, "/model.RData"))){next}
 
   # country = "DE"
 
