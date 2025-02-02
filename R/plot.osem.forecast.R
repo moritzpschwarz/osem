@@ -6,8 +6,9 @@
 #' @param interactive Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).
 #' @param first_date Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
 #' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.
-#' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
 #' @param title Character. Title of the plot. Default is "OSEM Model Forecast".
+#' @param linewidth Numeric. Linewidth argument for the plot. Default is 1.
+#' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
 #' @param ... Additional arguments passed to the plotting function.
 #'
 #' @export
@@ -38,7 +39,7 @@
 #'}
 #'
 
-plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, ...){
+plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE, linewidth = 1, ...){
 
   if(!isa(x, "osem.forecast")){
     stop("Input object not of type 'osem.forecast'. Run 'forecast_model' again and use the output of that function.")
@@ -197,13 +198,13 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   ## Central Forecasts ----
 
   forecasts_processed <- forecasts_processed %>%
-    dplyr::bind_rows(last_fitted_value %>% dplyr::filter(!.data$na_item %in% nowcast_present)) %>%
+    dplyr::bind_rows(last_hist_value %>% dplyr::filter(!.data$na_item %in% nowcast_present)) %>%
     {if(!is.null(nowcast_processed)){dplyr::bind_rows(.,last_nowcast_value %>% dplyr::filter(.data$na_item %in% nowcast_present))}else{.}}
 
   ## All Forecasts ---
   if(nrow(all_forecasts_unnested) > 0){
     all_forecasts_processed_q %>%
-      dplyr::bind_rows(last_fitted_value %>%
+      dplyr::bind_rows(last_hist_value %>%
                          dplyr::filter(!.data$na_item %in% nowcast_present) %>%
                          dplyr::reframe(p95 = .data$values,
                                         p05 = .data$values,
@@ -228,7 +229,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
 
   ## Nowcasts ----
   nowcast_processed %>%
-    dplyr::bind_rows(last_fitted_value %>%
+    dplyr::bind_rows(last_hist_value %>%
                        dplyr::filter(.data$na_item %in% nowcast_present)) %>%
     dplyr::mutate(fit = "nowcast") -> nowcast_processed
 
@@ -281,7 +282,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
 
     uncertainty_layers +
 
-    ggplot2::geom_line(linewidth = 1, na.rm = TRUE) +
+    ggplot2::geom_line(linewidth = linewidth, na.rm = TRUE) +
 
     ggplot_options +
 
