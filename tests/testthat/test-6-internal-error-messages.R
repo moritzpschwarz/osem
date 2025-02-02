@@ -224,24 +224,24 @@ test_that("Check that all variables are in the dictionary",{
 
   set.seed(123)
   dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
-                            FinConsExpGov = rnorm(mean = 100, n = length(time)),
-                            HICP_Gas = rnorm(mean = 200, n = length(time)),
-                            FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.2),
-                            x1 = rnorm(mean = 10, n = length(time)),
-                            x2 = rnorm(mean = 20, n = length(time)),
-                            y = 0.5 - 0.2*x1 + 0.6 * x2 + rnorm(length(time),mean = 0, sd = 0.3)) %>%
+                FinConsExpGov = rnorm(mean = 100, n = length(time)),
+                HICP_Gas = rnorm(mean = 200, n = length(time)),
+                FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.2),
+                x1 = rnorm(mean = 10, n = length(time)),
+                x2 = rnorm(mean = 20, n = length(time)),
+                y = 0.5 - 0.2*x1 + 0.6 * x2 + rnorm(length(time),mean = 0, sd = 0.3)) %>%
     tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") -> testdata_modified_long
 
 
 
   expect_error(model <- run_model(specification = specification,
-                                   dictionary = dict,
-                                   inputdata_directory = testdata_modified_long,
-                                   primary_source = "local",
-                                   present = FALSE,
-                                   quiet = TRUE,
-                                   selection.tpval = 0.001,
-                                   constrain.to.minimum.sample = FALSE), regexp = "Not all model variables found in the dictionary")
+                                  dictionary = dict,
+                                  inputdata_directory = testdata_modified_long,
+                                  primary_source = "local",
+                                  present = FALSE,
+                                  quiet = TRUE,
+                                  selection.tpval = 0.001,
+                                  constrain.to.minimum.sample = FALSE), regexp = "Not all model variables found in the dictionary")
 
 })
 
@@ -297,6 +297,81 @@ test_that("Check that a missing dictionary entry is not triggering an error for 
                regexp = "Currently, only allow data bases 'eurostat', 'edgar', 'statcan', 'imf', or 'local' files")
 
 
+
+})
+
+
+test_that("Check the keep argument",{
+
+
+  specification <- dplyr::tibble(
+    type = c(
+      "n",
+      "d"
+    ),
+    dependent = c(
+      "FinConsExpHH",
+      "NewIdent" # this identity is not defined in the dictionary
+    ),
+    independent = c(
+      "FinConsExpGov + HICP_Gas + test",
+      "FinConsExpHH + HICP_Gas"
+    )
+  )
+
+  set.seed(123)
+  testdata <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
+                            FinConsExpGov = rnorm(mean = 100, n = length(time)),
+                            #HICP_Gas = rnorm(mean = 200, n = length(time)),
+                            # simulate an AR1 process with rho = 0.3 and call it HICP_Gas
+                            HICP_Gas = as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 30, mean = 200)),
+                            L1.HICP_Gas = lag(HICP_Gas),
+                            test = rnorm(length(time)),
+                            FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas -0.2 * L1.HICP_Gas +
+                              as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 0.2, mean = 0)))
+
+  testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
+
+  expect_error(mod <- run_model(specification = specification,
+                                dictionary = dict,
+                                inputdata_directory = testdata,
+                                primary_source = "local",
+                                present = FALSE,
+                                keep = 2,
+                                quiet = TRUE, saturation = "IIS"), regexp = "must be a character vector")
+
+  expect_error(mod <- run_model(specification = specification,
+                                dictionary = dict,
+                                inputdata_directory = testdata,
+                                primary_source = "local",
+                                present = FALSE,
+                                keep = c("sdklf0", "asdfkj"),
+                                quiet = TRUE, saturation = "IIS"), regexp = "not a vector")
+
+
+  # check that test is not in the final model
+  nokeep <- run_model(specification = specification,
+                      dictionary = dict %>% dplyr::add_row(model_varname = "test", database = "local"),
+                      inputdata_directory = testdata,
+                      primary_source = "local",
+                      present = FALSE,
+                      plot = FALSE,
+                      gets_selection = TRUE,
+                      quiet = TRUE, saturation = "IIS")
+
+  wkeep <- run_model(specification = specification,
+                     dictionary = dict %>% dplyr::add_row(model_varname = "test", database = "local"),
+                     inputdata_directory = testdata,
+                     primary_source = "local",
+                     present = FALSE,
+                     plot = FALSE,
+                     gets_selection = TRUE,
+                     keep = "test",
+                     quiet = TRUE, saturation = "IIS")
+
+
+  expect_true(!any(grepl("test",row.names(nokeep$module_collection$model[[1]]$mean.results))))
+  expect_true(any(grepl("test",row.names(wkeep$module_collection$model[[1]]$mean.results))))
 
 })
 

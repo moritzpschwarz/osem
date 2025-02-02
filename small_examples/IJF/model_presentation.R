@@ -289,6 +289,7 @@ for(country in c("DE","AT","FR","DK")){
   # Scenario ----------------------------------------------------------------
 
   base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "auto")
+  #base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "AR")
 
   base_fc$exog_data_nowcast %>%
     mutate(PriceETS = PriceETS + 100) -> exog_data_new
@@ -352,7 +353,7 @@ for(country in c("DE","AT","FR","DK")){
     mutate(DInventories_pct = DInventories / GDPExpenditure * 100) %>%
     select(time, type, DInventories, DInventories_pct) %>%
     drop_na()
-    stopifnot(sum(duplicated(DInventories_model$time)) == 0)
+  stopifnot(sum(duplicated(DInventories_model$time)) == 0)
   DInventories_model <- DInventories_model %>%
     pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
     mutate(unit = case_when(unit == "DInventories" ~ "CP_MEUR", unit == "DInventories_pct" ~ "% of GDP"))
@@ -490,4 +491,10 @@ cat("Figures LaTeX file generated:", output_file, "\n")
 # check network graph - real VA and selected --> DONE
 # fix insample forecasting --> DONE
 # legend --> DONE
-# take away the trend
+# take away the trend --> DONE
+
+# AR Forecasts
+# Summary stats tables
+# Policy Example
+# IndProd
+# keep argument for ETS
