@@ -158,7 +158,13 @@ forecast_model <- function(model,
 
       # make samples from the model residuals and add them to the mean prediction
       res_draws <- sample(as.numeric(isat_obj$residuals), size = uncertainty_sample * n.ahead, replace = TRUE)
-      pred_draw_matrix <- as.vector(pred_obj$yhat) + matrix(res_draws, nrow = n.ahead)
+      # create a tibble with all res_draws with the same number of rows as n.ahead
+      res_names <- paste0("run_",1:(length(res_draws)/n.ahead))
+      dplyr::as_tibble(matrix(res_draws, nrow = n.ahead, dimnames = list(NULL, res_names))) %>%
+        dplyr::mutate(dplyr::across(dplyr::everything(), cumsum)) %>%
+        as.matrix() -> res_draws_matrix
+
+      pred_draw_matrix <- as.vector(pred_obj$yhat) + res_draws_matrix
 
       ## 2b.ii. Predict uncertainty plume for estimated relationships  ------------------------------------------------
 
@@ -269,10 +275,6 @@ forecast_model <- function(model,
       dplyr::tibble(time = current_pred_raw %>% dplyr::pull(.data$time),
                     value = as.numeric(pred_obj[,1])) %>%
         setNames(c("time",outvarname)) -> central_estimate
-
-      # dplyr::tibble(time = current_pred_raw %>% dplyr::pull(time)) %>%
-      #   dplyr::bind_cols(pred_obj[,-1]) %>%
-      #   setNames(c("time",paste0(outvarname,".", gsub("^y","",names(pred_obj[,-1]))))) -> all_estimates
 
       colnames(pred_draw_matrix) <- paste0("run_",1:uncertainty_sample)
       pred_draw_matrix <- dplyr::as_tibble(pred_draw_matrix) %>%
