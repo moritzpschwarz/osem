@@ -7,6 +7,7 @@
 #' @param interactive Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).
 #' @param first_date Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
 #' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.
+#' @param linewidth Numeric. Linewidth argument for the plot. Default is 1.
 #' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
 #' @param ... Additional arguments passed to the plotting function.
 #'
@@ -42,6 +43,7 @@ plot.osem <- function(x,
                       interactive = FALSE,
                       first_date = NULL,
                       grepl_variables = NULL,
+                      linewidth = 1,
                       return.data = FALSE,
                       ...){
 
@@ -97,7 +99,7 @@ plot.osem <- function(x,
 
     ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
 
-    ggplot2::geom_line(linewidth = 1, na.rm = TRUE) +
+    ggplot2::geom_line(linewidth = linewidth, na.rm = TRUE) +
 
     # ggplot_options +
 
