@@ -19,6 +19,7 @@ run_module(
   gets_selection = TRUE,
   selection.tpval = 0.01,
   opts_df,
+  keep,
   quiet
 )
 }
@@ -55,6 +56,10 @@ As returned by \link{classify_variables}.}
 \item{selection.tpval}{Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.}
 
 \item{opts_df}{Internal object containing detailed options and information on individual modules.}
+
+\item{keep}{Character. A string that will be used as regex (in \code{grepl()})
+when selection is carried out. This argument therefore requires \code{gets_selection = TRUE}.
+Variables that match this character will not be selected over (see \link{gets::getsm} for details).}
 
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }

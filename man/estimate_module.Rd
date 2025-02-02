@@ -18,6 +18,7 @@ estimate_module(
   max.block.size = 20,
   gets_selection = TRUE,
   selection.tpval = 0.01,
+  keep,
   quiet = FALSE
 )
 }
@@ -47,6 +48,10 @@ estimate_module(
 \item{gets_selection}{Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.}
 
 \item{selection.tpval}{Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.}
+
+\item{keep}{Character. A string that will be used as regex (in \code{grepl()})
+when selection is carried out. This argument therefore requires \code{gets_selection = TRUE}.
+Variables that match this character will not be selected over (see \link{gets::getsm} for details).}
 
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }

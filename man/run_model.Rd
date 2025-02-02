@@ -21,6 +21,7 @@ run_model(
   gets_selection = TRUE,
   selection.tpval = 0.01,
   constrain.to.minimum.sample = TRUE,
+  keep = NULL,
   present = FALSE,
   quiet = FALSE,
   plot = TRUE
@@ -70,6 +71,10 @@ saved, including the file name and ending. Not saved when \code{NULL}.}
 
 \item{constrain.to.minimum.sample}{Logical. Should all data series be
 constrained to the minimum data series? Default is \code{TRUE}.}
+
+\item{keep}{Character. A string that will be used as regex (in \code{grepl()})
+when selection is carried out. This argument therefore requires \code{gets_selection = TRUE}.
+Variables that match this character will not be selected over (see \link{gets::getsm} for details).}
 
 \item{present}{A logical value whether the final OSEM model output
 should be presented or not.}

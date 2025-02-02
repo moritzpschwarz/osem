@@ -38,6 +38,7 @@ run_module <- function(
     gets_selection = TRUE,
     selection.tpval = 0.01,
     opts_df,
+    keep,
     quiet) {
 
   raw_data <- identify_module_data(module, classification, data)
@@ -85,6 +86,7 @@ run_module <- function(
                                         max.block.size = max.block.size,
                                         gets_selection = gets_selection,
                                         selection.tpval = selection.tpval,
+                                        keep = keep,
                                         quiet = quiet)
 
     moduledata <- add_to_original_data(clean_data = clean_df,
