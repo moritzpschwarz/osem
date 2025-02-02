@@ -14,6 +14,8 @@
 #' @param gets_selection Logical. Whether general-to-specific selection using the 'getsm' function from the 'gets' package should be done on the final saturation model. Default is TRUE.
 #' @param selection.tpval Numeric. The target p-value of the model selection methods (i.e. general-to-specific modelling, see the 'getsm' function in the 'gets' package). Default is 0.01.
 #' @inheritParams forecast_model
+#' @inheritParams run_module
+#' @inheritParams run_model
 #'
 #' @return A list containing all estimated models, with the model with the smallest BIC under 'best_model'.
 #'
@@ -31,6 +33,7 @@ estimate_module <- function(clean_data,
                             max.block.size = 20,
                             gets_selection = TRUE,
                             selection.tpval = 0.01,
+                            keep,
                             quiet = FALSE) {
   # Set-up ------------------------------------------------------------------
   log_opts <- use_logs
@@ -229,11 +232,14 @@ estimate_module <- function(clean_data,
 
   # gets selection on the best model ----------------------------------------
   if(gets_selection){
+    if(!is.null(keep)){keep_num <- which(grepl(keep, row.names(best_isat_model$mean.results)))} else {keep_num <- NULL}
+
     try(best_isat_model.selected <- gets::gets(best_isat_model,
                                                print.searchinfo = FALSE,
                                                t.pval = selection.tpval,
                                                ar.LjungB = NULL,
-                                               arch.LjungB = NULL), silent = TRUE)
+                                               arch.LjungB = NULL,
+                                               keep = keep_num), silent = TRUE)
 
     if(!exists("best_isat_model.selected")){
       if(!quiet){warning("Model selection with 'gets' failed. The best model is the one with the lowest BIC. Disable warning with 'quiet = TRUE'.")}
