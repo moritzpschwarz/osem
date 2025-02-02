@@ -8,20 +8,22 @@ vars_to_grab <- "ElectrCons|EmiCO2RoaTra|EmiCO2ManInd|EmiCO2ElecHeat|RealVAIndus
 vars_for_spec_table <- paste0(vars_to_grab, "|VAIndustry|HICP|CapForm|CapFormHH")
 no_modles_in_one_table <- 5
 
+# define the main country to leave out of the appendix
+main_country <- "DE"
+
+# control what to run right now
+run_modelplots <- FALSE
+run_forecasts <- FALSE
+run_insample <- FALSE
+run_inventory_diagnostics <- FALSE
+
+
+
 
 for(country in c("DE","AT","FR","DK")){
 
   print(country)
   # country = "DE"
-
-  # to do:
-  # add equation from Felix --> DONE
-  # add environmental equations --> DONE
-  # transfer to other countries --> DONE
-  # change to EDGAR v9 --> DONE
-  # change environmental variables to real values --> DONE
-  # fix Flights and Inflation
-
 
   # Loading the model -------------------------------------------------------
 
@@ -66,7 +68,7 @@ for(country in c("DE","AT","FR","DK")){
 
 
       kable(format = "latex", booktabs = TRUE, label = "spec_subset",
-            caption = "Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models. The full model specification table is available in the Appendix.") %>%
+            caption = "Selected specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models. The full model specification table is available in the Appendix.") %>%
       kable_styling() %>%
       kable_styling(font_size = 8) %>%
       column_spec(4, width = "7cm") %>%
@@ -91,69 +93,107 @@ for(country in c("DE","AT","FR","DK")){
   mod_subtitle <- "Showing the <span style = color:#440154FF>Observed</span> and <span style = color:#FDE725FF>Fitted</span> values."
   fc_subtitle <- "Showing the <span style = color:#440154FF>Observed</span>, <span style = color:#FDE725FF>Fitted</span>, <span style = color:#35B779FF>Nowcasted</span>, and <span style = color:#3B528BFF>Forecasted</span> values."
 
-  # ## Huge Model plot ---------------------------------------------------------
-  #
-  # plot(model_result_ext, title = paste0("OSEM Model Output for ",country_long)) +
-  #   labs(subtitle = mod_subtitle) +
-  #   theme(plot.subtitle = element_markdown()) -> p
-  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model",".pdf"), width = 12, height = 10)
-  #
-  # ## Model plot with selected variables ---------------------------------------------------------
-  # plot(model_result_ext, grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) +
-  #   labs(subtitle = mod_subtitle) +
-  #   theme(plot.subtitle = element_markdown()) -> p
-  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected",".pdf"), width = 7, height = 5)
-  #
-  #
-  # # Same Model Plot from 2015 -----------------------------------------------
-  # plot(model_result_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) +
-  #   labs(subtitle = mod_subtitle) +
-  #   theme(plot.subtitle = element_markdown()) -> p
-  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected_2015",".pdf"), width = 7, height = 5)
-  #
-  #
-  # # Forecast ----------------------------------------------------------------
-  # set.seed(8899)
-  # fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
-  #
-  # # Forecast Plot -----------------------------------------------------------
-  #
-  # plot(fc_ext, title = paste0("Forecast for ",country_long)) +
-  #   labs(subtitle = fc_subtitle) +
-  #   theme(plot.subtitle = element_markdown()) -> p
-  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast",".pdf"), width = 12, height = 10)
-  #
-  # # Forecast Plot with selected variables -----------------------------------------------------------
-  # plot(fc_ext, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) +
-  #   labs(subtitle = fc_subtitle) +
-  #   theme(plot.subtitle = element_markdown()) -> p
-  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected",".pdf"), width = 7, height = 5)
-  #
-  # # Forecast Plot with selected variables -----------------------------------------------------------
-  # plot(fc_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) +
-  #   labs(subtitle = fc_subtitle) +
-  #   theme(plot.subtitle = element_markdown()) -> p
-  # ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015",".pdf"), width = 7, height = 5)
-  #
-  # # Insample Forecasting ----------------------------------------------------
-  # set.seed(8899)
-  # insample <- forecast_insample(model_result_ext, sample_share = .96, exog_fill_method = c("auto"))
-  #
-  # # Insample Forecasting Plots ----------------------------------------------------
-  #
-  # plot(insample, title = paste0("Insample Forecasting for ",country_long)) %>%
-  #   ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample",".pdf"), width = 7, height = 5)
-  #
-  # # Insample Forecasting Plots with selected variables ----------------------------------------------------
-  #
-  # plot(insample, grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long)) %>%
-  #   ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected",".pdf"), width = 7, height = 5)
-  #
-  # # Insample Forecasting Plots with selected variables ----------------------------------------------------
-  #
-  # plot(insample, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long)) %>%
-  #   ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected_2015",".pdf"), width = 7, height = 5)
+  ## Huge Model plot ---------------------------------------------------------
+  if(run_modelplots){
 
+    plot(model_result_ext, title = paste0("OSEM Model Output for ",country_long)) +
+      labs(subtitle = mod_subtitle) +
+      theme(plot.subtitle = element_markdown()) -> p
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model",".pdf"), width = 12, height = 10)
+
+    ## Model plot with selected variables ---------------------------------------------------------
+    plot(model_result_ext, grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) +
+      labs(subtitle = mod_subtitle) +
+      theme(plot.subtitle = element_markdown()) -> p
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected",".pdf"), width = 7, height = 5)
+
+
+    # Same Model Plot from 2015 -----------------------------------------------
+    plot(model_result_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) +
+      labs(subtitle = mod_subtitle) +
+      theme(plot.subtitle = element_markdown()) -> p
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected_2015",".pdf"), width = 7, height = 5)
+  }
+  # Forecast ----------------------------------------------------------------
+  if(run_forecasts){
+
+    set.seed(8899)
+    fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
+
+    # Forecast Plot -----------------------------------------------------------
+
+    plot(fc_ext, title = paste0("Forecast for ",country_long)) +
+      labs(subtitle = fc_subtitle) +
+      theme(plot.subtitle = element_markdown()) -> p
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast",".pdf"), width = 12, height = 10)
+
+    # Forecast Plot with selected variables -----------------------------------------------------------
+    plot(fc_ext, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) +
+      labs(subtitle = fc_subtitle) +
+      theme(plot.subtitle = element_markdown()) -> p
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected",".pdf"), width = 7, height = 5)
+
+    # Forecast Plot with selected variables -----------------------------------------------------------
+    plot(fc_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) +
+      labs(subtitle = fc_subtitle) +
+      theme(plot.subtitle = element_markdown()) -> p
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015",".pdf"), width = 7, height = 5)
+
+    # table for forecasts
+    fc_ext$forecast %>%
+      filter(grepl(vars_to_grab, dep_var)) %>%
+      select(dep_var, central.estimate) %>%
+      unnest(central.estimate) %>%
+      select(-dep_var) %>%
+      pivot_longer(-c(time)) %>%
+      drop_na %>%
+      pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
+      rename(Forecast = time) %>%
+
+      kable(format = "latex",
+            booktabs = TRUE, label = paste0("tab:forecast_",country),
+            caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
+      kable_styling() %>%
+      writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast.tex"))
+  }
+
+
+  # Insample Forecasting ----------------------------------------------------
+  if(run_insample){
+    set.seed(8899)
+    insample <- forecast_insample(model_result_ext, sample_share = .96, exog_fill_method = c("auto"))
+
+    # Insample Forecasting Plots ----------------------------------------------------
+
+    plot(insample, title = paste0("Insample Forecasting for ",country_long)) %>%
+      ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample",".pdf"), width = 7, height = 5)
+
+    # Insample Forecasting Plots with selected variables ----------------------------------------------------
+
+    plot(insample, grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long)) %>%
+      ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected",".pdf"), width = 7, height = 5)
+
+    # Insample Forecasting Plots with selected variables ----------------------------------------------------
+
+    plot(insample, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long)) %>%
+      ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected_2015",".pdf"), width = 7, height = 5)
+
+
+    # table for RMSFE
+    insample$rmsfe %>%
+      filter(grepl(vars_to_grab, na_item)) %>%
+      pivot_wider(id_cols = start, names_from = na_item, values_from = rmsfe) %>%
+
+      kable(format = "latex",
+            booktabs = TRUE, label = paste0("tab:RMSFE_",country),
+            caption = paste0("Root Mean Squared Forecast Error for each module for ", country_long, ".")) %>%
+      kable_styling() %>%
+      writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_RMSFE.tex"))
+
+
+
+
+  }
   # Regression Summary ------------------------------------------------------
 
   # remove NULL results
@@ -263,15 +303,13 @@ for(country in c("DE","AT","FR","DK")){
   #   DT::formatRound(columns = c("AR", "ARCH", "Share of Indicators"),
   #                   digits = 4)
 
-  # set.seed(1234)
-  # model_result_ext %>%
-  #   network(layout = "fr") -> p
-  #
-  # ggsave(p, width = 8, height = 10, file = paste0("small_examples/IJF/figures_overleaf/", country, "_Network",".pdf"), bg = "white")
+  if(run_network){
+    set.seed(1234)
+    model_result_ext %>%
+      network(layout = "fr") -> p
 
-
-
-  #insample <- forecast_insample(model_result_ext, sample_share = .99, exog_fill_method = c("AR","auto"))
+    ggsave(p, width = 8, height = 10, file = paste0("small_examples/IJF/figures_overleaf/", country, "_Network",".pdf"), bg = "white")
+  }
 
 
   # Summary Statistics ------------------------------------------------------
@@ -287,83 +325,90 @@ for(country in c("DE","AT","FR","DK")){
 
 
   # Scenario ----------------------------------------------------------------
+  if(run_scenario){
+    base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "auto")
+    #base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "AR")
 
-  base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "auto")
-  #base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "AR")
-
-  base_fc$exog_data_nowcast %>%
-    mutate(PriceETS = PriceETS + 100) -> exog_data_new
-
-
-  scen_fc <- forecast_model(model_result_ext_sel, exog_predictions = exog_data_new)
-
-  base_df <- plot(base_fc, grepl_variables = "EmiCO2Total", return.data = TRUE)
-  scen_df <- plot(scen_fc, grepl_variables = "EmiCO2Total", return.data = TRUE)
+    base_fc$exog_data_nowcast %>%
+      mutate(PriceETS = PriceETS + 100) -> exog_data_new
 
 
-  base_df %>%
-    select(time, base = values) %>%
-    bind_cols(scen_df %>%
-                select(scen = values)) %>%
-    mutate(diff = base - scen) %>%
-    summarise(sum(base, na.rm = TRUE),
-              sum(diff, na.rm = TRUE))
+    scen_fc <- forecast_model(model_result_ext_sel, exog_predictions = exog_data_new)
 
+    base_df <- plot(base_fc, grepl_variables = "EmiCO2Total", return.data = TRUE)
+    scen_df <- plot(scen_fc, grepl_variables = "EmiCO2Total", return.data = TRUE)
+
+    plot(base_fc, grepl_variables = "EmiCO2Total")
+    plot(scen_fc, grepl_variables = "EmiCO2Total")
+
+
+    base_df %>%
+      select(time, base = values) %>%
+      bind_cols(scen_df %>%
+                  select(scen = values)) %>%
+      mutate(diff = base - scen) %>%
+      summarise(sum(base, na.rm = TRUE),
+                sum(diff, na.rm = TRUE))
+  }
   # Diagnostic change in inventories ----------------------------------------
   # variables of interest (not modelled, summarised as DInventories in our model):
   # Eurostat: P52 = changes in inventories, P53 = acquisition less disposal of valuables, YA0 = stat discrepancy expenditure approach
   # not all series are available for all countries and years; add them up, remove NAs
   # measured either in current prices (million euros) or as percentage of GDP, we focus on the former; can rescale later
-  p52_p53 <- eurostat::get_eurostat("namq_10_gdp", filters = list(geo = country, na_item = "P52_P53", unit = "CP_MEUR", s_adj = "NSA")) %>%
-    select(time, values) %>%
-    rename(p52_p53 = values)
-  stopifnot(sum(duplicated(p52_p53$time)) == 0)
-  tryCatch(
-    {
-      ya0 <- eurostat::get_eurostat("namq_10_gdp", filters = list(geo = country, na_item = "YA0", unit = "CP_MEUR", s_adj = "NSA"), cache = FALSE) %>%
-        select(time, values) %>%
-        rename(ya0 = values)
-    },
-    error = function(e) {
-      ya0 <- data.frame(time = as.Date("1900-01-01"), ya0 = NA)
-    }
-  )
-  stopifnot(sum(duplicated(ya0$time)) == 0)
-  DInventories_data <- full_join(x = p52_p53, y = ya0, by = "time") %>%
-    mutate(DInventories = rowSums(across(c(p52_p53, ya0)), na.rm = TRUE)) %>%
-    # replace with NA if both missing (if don't do this step, get 0 -> misleading)
-    mutate(DInventories = if_else(is.na(p52_p53) & is.na(ya0), NA, DInventories)) %>%
-    mutate(type = "Data")
-  # obtain actual GDP
-  gdp <- eurostat::get_eurostat("namq_10_gdp", filters = list(geo = country, na_item = "B1GQ", unit = "CP_MEUR", s_adj = "NSA")) %>%
-    select(time, values) %>%
-    rename(GDP = values)
-  DInventories_data <- left_join(DInventories_data, gdp, by = "time") %>%
-    mutate(DInventories_pct = DInventories / GDP * 100) %>%
-    select(time, type, DInventories, DInventories_pct) %>%
-    pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
-    mutate(unit = case_when(unit == "DInventories" ~ "CP_MEUR", unit == "DInventories_pct" ~ "% of GDP"))
-  # obtain DInventories and GDP model values and forecasts (fc_ext should be created above)
-  fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
-  DInventories_model <- fc_ext$full_forecast_data %>%
-    filter(na_item %in% c("DInventories", "GDPExpenditure")) %>%
-    filter(type %in% c("Forecast", "Insample Fit")) %>%
-    select(time, na_item, values, type) %>%
-    pivot_wider(id_cols = c(time, type), names_from = na_item, values_from = values) %>%
-    mutate(DInventories_pct = DInventories / GDPExpenditure * 100) %>%
-    select(time, type, DInventories, DInventories_pct) %>%
-    drop_na()
-  stopifnot(sum(duplicated(DInventories_model$time)) == 0)
-  DInventories_model <- DInventories_model %>%
-    pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
-    mutate(unit = case_when(unit == "DInventories" ~ "CP_MEUR", unit == "DInventories_pct" ~ "% of GDP"))
-  # combine data and model values for comparison
-  DInventories_comp <- bind_rows(DInventories_model, DInventories_data) %>%
-    arrange(time) %>%
-    filter(cumsum(!is.na(DInventories)) > 0)
-  ggplot(DInventories_comp) +
-    geom_line(aes(x = time, y = DInventories, color = type)) +
-    facet_grid(rows = vars(unit), cols = NULL, scales = "free") -> DInventories_plot
+  if(run_inventory_diagnostics){
+    p52_p53 <- eurostat::get_eurostat("namq_10_gdp", filters = list(geo = country, na_item = "P52_P53", unit = "CP_MEUR", s_adj = "NSA")) %>%
+      select(time, values) %>%
+      rename(p52_p53 = values)
+    stopifnot(sum(duplicated(p52_p53$time)) == 0)
+    tryCatch(
+      {
+        ya0 <- eurostat::get_eurostat("namq_10_gdp", filters = list(geo = country, na_item = "YA0", unit = "CP_MEUR", s_adj = "NSA"), cache = FALSE) %>%
+          select(time, values) %>%
+          rename(ya0 = values)
+      },
+      error = function(e) {
+        ya0 <- data.frame(time = as.Date("1900-01-01"), ya0 = NA)
+      }
+    )
+    stopifnot(sum(duplicated(ya0$time)) == 0)
+    DInventories_data <- full_join(x = p52_p53, y = ya0, by = "time") %>%
+      mutate(DInventories = rowSums(across(c(p52_p53, ya0)), na.rm = TRUE)) %>%
+      # replace with NA if both missing (if don't do this step, get 0 -> misleading)
+      mutate(DInventories = if_else(is.na(p52_p53) & is.na(ya0), NA, DInventories)) %>%
+      mutate(type = "Data")
+    # obtain actual GDP
+    gdp <- eurostat::get_eurostat("namq_10_gdp", filters = list(geo = country, na_item = "B1GQ", unit = "CP_MEUR", s_adj = "NSA")) %>%
+      select(time, values) %>%
+      rename(GDP = values)
+    DInventories_data <- left_join(DInventories_data, gdp, by = "time") %>%
+      mutate(DInventories_pct = DInventories / GDP * 100) %>%
+      select(time, type, DInventories, DInventories_pct) %>%
+      pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
+      mutate(unit = case_when(unit == "DInventories" ~ "CP_MEUR", unit == "DInventories_pct" ~ "% of GDP"))
+    # obtain DInventories and GDP model values and forecasts (fc_ext should be created above)
+    fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
+    DInventories_model <- fc_ext$full_forecast_data %>%
+      filter(na_item %in% c("DInventories", "GDPExpenditure")) %>%
+      filter(type %in% c("Forecast", "Insample Fit")) %>%
+      select(time, na_item, values, type) %>%
+      pivot_wider(id_cols = c(time, type), names_from = na_item, values_from = values) %>%
+      mutate(DInventories_pct = DInventories / GDPExpenditure * 100) %>%
+      select(time, type, DInventories, DInventories_pct) %>%
+      drop_na()
+    stopifnot(sum(duplicated(DInventories_model$time)) == 0)
+    DInventories_model <- DInventories_model %>%
+      pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
+      mutate(unit = case_when(unit == "DInventories" ~ "CP_MEUR", unit == "DInventories_pct" ~ "% of GDP"))
+    # combine data and model values for comparison
+    DInventories_comp <- bind_rows(DInventories_model, DInventories_data) %>%
+      arrange(time) %>%
+      filter(cumsum(!is.na(DInventories)) > 0)
+    ggplot(DInventories_comp) +
+      geom_line(aes(x = time, y = DInventories, color = type)) +
+      facet_grid(rows = vars(unit), cols = NULL, scales = "free") -> DInventories_plot
+  }
+
+
 
 }
 
@@ -497,4 +542,7 @@ cat("Figures LaTeX file generated:", output_file, "\n")
 # Summary stats tables
 # Policy Example
 # IndProd
-# keep argument for ETS
+# keep argument for ETS --> DONE
+# change the central.estimate from forecast_model
+# check the insample results
+# bring back documentation of use_logs

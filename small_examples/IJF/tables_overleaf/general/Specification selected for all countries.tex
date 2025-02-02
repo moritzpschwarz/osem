@@ -15,11 +15,12 @@ Model & Type & Dependent & Independent\\
 \addlinespace
 28 & Identity & RealCapFormHH & CapFormHH / DFCapForm * 100\\
 29 & Identity & RealConsHH & ConsHH / DFConsHH * 100\\
-31 & Estimated & EmiCO2ManInd & f(RealVAIndustry, HICPlocal)\\
-35 & Estimated & EmiCO2RoaTra & f(RoadFreight, RealConsHH, HICPlocal)\\
-37 & Estimated & ElectrCons & f(RealConsHH, HICP\_Electricity, PriceETS)\\
+31 & Estimated & HICPlocal & f(PriceOil, PriceImports, LabourProd, EfExchange)\\
+33 & Estimated & EmiCO2ManInd & f(RealVAIndustry, HICPlocal)\\
+37 & Estimated & EmiCO2RoaTra & f(RoadFreight, RealConsHH, HICPlocal)\\
 \addlinespace
-38 & Estimated & EmiCO2ElecHeat & f(ElectrCons, RealVAIndustry, RealCapFormHH, PriceETS)\\
+39 & Estimated & ElectrCons & f(RealConsHH, HICP\_Electricity, PriceETS)\\
+40 & Estimated & EmiCO2ElecHeat & f(ElectrCons, RealVAIndustry, RealCapFormHH, PriceETS, CDD, HDD)\\
 \bottomrule
 \end{tabular}
 \end{table}

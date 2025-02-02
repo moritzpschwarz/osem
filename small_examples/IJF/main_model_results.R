@@ -48,9 +48,9 @@ spec_envi <- tibble(
   add_row(type = "n", dependent = "EmiCO2CivAvi", independent = "HICPlocal + RealConsHH + RealVAService") %>%
   add_row(type = "n", dependent = "RoadFreight", independent = "RealConsHH + HICPlocal + RealVAService") %>%
   add_row(type = "n", dependent = "EmiCO2RoaTra", independent = "RoadFreight + RealConsHH + HICPlocal") %>%
-  add_row(type = "n", dependent = "EmiCO2Residential", independent = "RealConsHH + HICP_Electricity") %>%
+  add_row(type = "n", dependent = "EmiCO2Residential", independent = "RealConsHH + HICP_Electricity + CDD + HDD") %>%
   add_row(type = "n", dependent = "ElectrCons", independent = "RealConsHH + HICP_Electricity + PriceETS") %>%
-  add_row(type = "n", dependent = "EmiCO2ElecHeat", independent = "ElectrCons + RealVAIndustry + RealCapFormHH + PriceETS") %>%
+  add_row(type = "n", dependent = "EmiCO2ElecHeat", independent = "ElectrCons + RealVAIndustry + RealCapFormHH + PriceETS + CDD + HDD") %>%
   add_row(type = "d", dependent = "EmiCO2Total", independent = "EmiCO2ElecHeat + EmiCO2RoaTra + EmiCO2ManInd + EmiCO2OilandGas + EmiCO2PetrRef + EmiCO2WatNav + EmiCO2CivAvi + EmiCO2GlassProd + EmiCO2LimeProd + EmiCO2OthTransp + EmiCO2Rail + EmiCO2Residential + EmiCO2SolidFuel + EmiCO2OthCarb + EmiCO2CemPro + EmiCO2ChemInd + EmiCO2Liming + EmiCO2MetalInd + EmiCO2NonEnergProd + EmiCO2UreaApp + EmiCO2Waste") %>%
   add_row(type = "d", dependent = "EmiCH4Total", independent = "EmiCH4ElecHeat + EmiCH4PetrRef + EmiCH4ManInd + EmiCH4CivAvi + EmiCH4RoaTra + EmiCH4Rail + EmiCH4WatNav + EmiCH4OthTransp + EmiCH4Residential + EmiCH4SolidFuel + EmiCH4OilandGas + EmiCH4ChemInd + EmiCH4MetalInd + EmiCH4EntericFerment + EmiCH4ManureMgmt + EmiCH4BiomassBurn + EmiCH4SolidWaste + EmiCH4BioWasteTreat + EmiCH4Waste + EmiCH4Wastewater") %>%
   add_row(type = "d", dependent = "EmiCH4Livestock", independent = "EmiCH4EntericFerment + EmiCH4ManureMgmt") %>%
@@ -74,8 +74,7 @@ dict_local <- structure(
     variable_code = c("PriceETS", "PriceOil", "HICPlocal", "Factor", "Inflation", "PriceImports"),
     var_col = c("na_item", "na_item", "na_item", "na_item", "na_item", "na_item"),
     freq = c(NA, NA, NA, NA, NA, NA),
-    geo = c("DE", "DE", "DE", "DE", "DE", "DE"),
-    n = c(1L, 1L, 1L, 1L, 1L, 1L)
+    geo = c("DE", "DE", "DE", "DE", "DE", "DE")
   ),
   row.names = c(NA, -6L),
   class = c("tbl_df", "tbl", "data.frame")
@@ -196,18 +195,18 @@ for(country in c("DE","AT","FR", "DK")){
     mutate(time = as.Date(paste0(time, "-01"))) %>%
     mutate(quarter = quarter(time),
            year = year(time)) %>%
-      group_by(year, quarter) %>%
-      summarise(values = mean(values)) %>%
-      ungroup() %>%
-      mutate(month = case_when(quarter == 1L ~ "01",
-                               quarter == 2L ~ "04",
-                               quarter == 3L ~ "07",
-                               quarter == 4L ~ "10"),
-             time = as.Date(paste0(year, "-", month, "-01"))) %>%
-      select(time, values) %>%
-      mutate(geo = country,
-             na_item = "PriceImports") %>%
-      arrange(time)
+    group_by(year, quarter) %>%
+    summarise(values = mean(values)) %>%
+    ungroup() %>%
+    mutate(month = case_when(quarter == 1L ~ "01",
+                             quarter == 2L ~ "04",
+                             quarter == 3L ~ "07",
+                             quarter == 4L ~ "10"),
+           time = as.Date(paste0(year, "-", month, "-01"))) %>%
+    select(time, values) %>%
+    mutate(geo = country,
+           na_item = "PriceImports") %>%
+    arrange(time)
   write_csv(imports, file = paste0("./small_examples/IJF/",country,"/import_price_index.csv"))
 
   #end of adding imports price index
@@ -226,25 +225,6 @@ for(country in c("DE","AT","FR", "DK")){
     arrange(time)
   write_csv(inf, file = paste0("./small_examples/IJF/",country,"/inflation.csv"))
 
-  # cap_form_manual <- eurostat::get_eurostat("nasq_10_nf_tr") %>%
-  #   filter(geo == country) %>%
-  #   filter(unit == "CP_MEUR", na_item == "P51G", s_adj == "NSA")
-  #
-  # capform_total <- cap_form_manual %>%
-  #   filter(sector == "S1")
-  #
-  # capform_remainder <- cap_form_manual %>%
-  #   filter(sector != "S1") %>%
-  #   summarise(remainder = sum(values), .by = "TIME_PERIOD")
-  #
-  # capform_total %>%
-  #   full_join(capform_remainder,by = "TIME_PERIOD") %>%
-  #   mutate(CapFormGov = values - remainder) %>%
-  #   select(time = TIME_PERIOD, CapFormGov) %>%
-  #   pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
-  #
-  #   write_csv(file = paste0("./small_examples/IJF/", country, "/capformgov.csv"))
-
   # Run the model -----------------------------------------------------------
 
   model_result_ext <- run_model(
@@ -258,7 +238,7 @@ for(country in c("DE","AT","FR", "DK")){
     saturation.tpval = 0.01,
     gets_selection = FALSE,
     constrain.to.minimum.sample = FALSE,
-    plot = FALSE
+    plot = FALSE,
   )
 
   save(model_result_ext, file = paste0("./small_examples/IJF/", country, "/model.RData"))
@@ -274,7 +254,8 @@ for(country in c("DE","AT","FR", "DK")){
     saturation.tpval = 0.01,
     gets_selection = TRUE,
     constrain.to.minimum.sample = FALSE,
-    plot = FALSE
+    plot = FALSE,
+    keep = "PriceETS|RealVAIndustry"
   )
 
   save(model_result_ext_sel, file = paste0("./small_examples/IJF/", country, "/model_sel.RData"))
@@ -291,7 +272,8 @@ for(country in c("DE","AT","FR", "DK")){
     saturation.tpval = 0.01,
     gets_selection = TRUE,
     constrain.to.minimum.sample = FALSE,
-    plot = FALSE
+    plot = FALSE,
+    keep = "PriceETS|RealVAIndustry"
   )
 
   save(model_result_ext_sel_notrend, file = paste0("./small_examples/IJF/", country, "/model_sel_notrend.RData"))
@@ -306,8 +288,7 @@ for(country in c("DE","AT","FR", "DK")){
 # to do after call
 # EU ETS to ElectrCons
 # Policy variable for EU ETS
-# EmiCO2Road ManuInd ElecHeat
-# ElectrCons
+# EmiCO2Road ManuInd ElecHeat ElectrCons
 # Email to all: enviro equations and ask to look at different combinations --> Moritz --> DONE
 # add methane --> Moritz --> DONE
 # solve asinh --> Moritz --> DONE
