@@ -33,6 +33,7 @@
 
 plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
                                         first_date = NULL,
+                                        first_date_insample_model = NULL,
                                         grepl_variables = NULL,
                                         #exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE,
                                         ...){
@@ -52,7 +53,6 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
     time_to_show_hist <- x$args$all_times[ceiling(length(x$args$all_times) * share_to_show_hist):length(x$args$all_times)]
   }
 
-
   extract_dep_vars <- unique(x$args$dep_vars)
 
   historical_data <- x$args$model$processed_input_data %>%
@@ -60,8 +60,16 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
                   .data$time %in% time_to_show_hist) %>%
     dplyr::rename(dep_var = "na_item")
 
-  centrals <- x$central
-  if(!is.null(x$uncertainty)){uncertainties <- x$uncertainty}
+  centrals <- x$central %>%
+    {if(!is.null(first_date_insample_model)){
+      dplyr::filter(.,.data$start >= as.Date(first_date_insample_model))
+    } else {.}}
+
+  if(!is.null(x$uncertainty)){uncertainties <- x$uncertainty %>%
+    {if(!is.null(first_date_insample_model)){
+      dplyr::filter(.,.data$start >= as.Date(first_date_insample_model))
+    } else {.}}
+  }
 
   for(i in unique(x$central$start)){
     # i = unique(x$central$start)[1]
