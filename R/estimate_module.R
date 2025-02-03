@@ -278,7 +278,8 @@ estimate_module <- function(clean_data,
                                                   iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
                                                   sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
                                                   tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
-                                                  t.pval = saturation.tpval)
+                                                  t.pval = saturation.tpval,
+                                                  max.block.size = best_isat_model$aux$args$max.block.size)
 
       if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$call$tis <- best_isat_model.selected.isat$aux$args$tis}
       if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$aux$y.name <- y.name}
