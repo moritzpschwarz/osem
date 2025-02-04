@@ -1,7 +1,7 @@
 devtools::load_all()
 
 #devtools::install_github("moritzpschwarz/osem", ref = "mixed_freq_bug")
-library(osem)
+#library(osem)
 library(tidyverse)
 
 # economic specification
@@ -45,7 +45,7 @@ spec_econ <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), indep
 spec_envi <- tibble(
   type = "n", dependent = "EmiCO2ManInd", independent = "RealVAIndustry + HICPlocal") %>%
   add_row(type = "n", dependent = "Flights", independent = "RealConsHH + FinWealthHH +  HICP_AviaInt") %>%
-  add_row(type = "n", dependent = "EmiCO2CivAvi", independent = "HICPlocal + RealConsHH + RealVAService") %>%
+  add_row(type = "n", dependent = "EmiCO2CivAvi", independent = "HICPlocal + RealConsHH + RealVAService + Flights") %>%
   add_row(type = "n", dependent = "RoadFreight", independent = "RealConsHH + HICPlocal + RealVAService") %>%
   add_row(type = "n", dependent = "EmiCO2RoaTra", independent = "RoadFreight + RealConsHH + HICPlocal") %>%
   add_row(type = "n", dependent = "EmiCO2Residential", independent = "RealConsHH + HICP_Electricity + CDD + HDD") %>%
@@ -93,7 +93,7 @@ dictionary <- dplyr::bind_rows(dict_identities, dict_eurostat, dict_edgar, dict_
 
 for(country in c("DE","AT","FR", "DK")){
 
-  #if(file.exists(paste0("./small_examples/IJF/", country, "/model.RData"))){next}
+  if(file.exists(paste0("./small_examples/IJF/", country, "/model_sel_v2.RData"))){next}
 
   # country = "DE"
 
@@ -227,21 +227,21 @@ for(country in c("DE","AT","FR", "DK")){
 
   # Run the model -----------------------------------------------------------
 
-  model_result_ext <- run_model(
-    specification = spec_extended,
-    dictionary = dictionary %>%
-      mutate(geo = country),
-    inputdata_directory = paste0("./small_examples/IJF/", country),
-    save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
-    primary_source = "local",
-    trend = TRUE,
-    saturation.tpval = 0.01,
-    gets_selection = FALSE,
-    constrain.to.minimum.sample = FALSE,
-    plot = FALSE,
-  )
-
-  save(model_result_ext, file = paste0("./small_examples/IJF/", country, "/model.RData"))
+  # model_result_ext <- run_model(
+  #   specification = spec_extended,
+  #   dictionary = dictionary %>%
+  #     mutate(geo = country),
+  #   inputdata_directory = paste0("./small_examples/IJF/", country),
+  #   save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
+  #   primary_source = "local",
+  #   trend = TRUE,
+  #   saturation.tpval = 0.01,
+  #   gets_selection = FALSE,
+  #   constrain.to.minimum.sample = FALSE,
+  #   plot = FALSE,
+  # )
+  #
+  # save(model_result_ext, file = paste0("./small_examples/IJF/", country, "/model.RData"))
 
   model_result_ext_sel <- run_model(
     specification = spec_extended,
@@ -251,32 +251,32 @@ for(country in c("DE","AT","FR", "DK")){
     save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
     primary_source = "local",
     trend = TRUE,
-    saturation.tpval = 0.01,
+    saturation.tpval = 0.001,
     gets_selection = TRUE,
     constrain.to.minimum.sample = FALSE,
     plot = FALSE,
     keep = "PriceETS|RealVAIndustry"
   )
 
-  save(model_result_ext_sel, file = paste0("./small_examples/IJF/", country, "/model_sel.RData"))
+  save(model_result_ext_sel, file = paste0("./small_examples/IJF/", country, "/model_sel_v2.RData"))
 
 
-  model_result_ext_sel_notrend <- run_model(
-    specification = spec_extended,
-    dictionary = dictionary %>%
-      mutate(geo = country),
-    inputdata_directory = paste0("./small_examples/IJF/", country),
-    save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
-    primary_source = "local",
-    trend = FALSE,
-    saturation.tpval = 0.01,
-    gets_selection = TRUE,
-    constrain.to.minimum.sample = FALSE,
-    plot = FALSE,
-    keep = "PriceETS|RealVAIndustry"
-  )
-
-  save(model_result_ext_sel_notrend, file = paste0("./small_examples/IJF/", country, "/model_sel_notrend.RData"))
+  # model_result_ext_sel_notrend <- run_model(
+  #   specification = spec_extended,
+  #   dictionary = dictionary %>%
+  #     mutate(geo = country),
+  #   inputdata_directory = paste0("./small_examples/IJF/", country),
+  #   save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
+  #   primary_source = "local",
+  #   trend = FALSE,
+  #   saturation.tpval = 0.01,
+  #   gets_selection = TRUE,
+  #   constrain.to.minimum.sample = FALSE,
+  #   plot = FALSE,
+  #   keep = "PriceETS|RealVAIndustry"
+  # )
+  #
+  # save(model_result_ext_sel_notrend, file = paste0("./small_examples/IJF/", country, "/model_sel_notrend.RData"))
 
   #fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
 }

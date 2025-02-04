@@ -50,7 +50,7 @@ for(country in all_countries){
   # Loading the model -------------------------------------------------------
 
 
-  load(paste0("./small_examples/IJF/", country, "/model_sel.RData"))
+  load(paste0("./small_examples/IJF/", country, "/model_sel_v2.RData"))
 
   model_result_ext <- model_result_ext_sel
 
@@ -592,3 +592,5 @@ cat("Figures LaTeX file generated:", output_file, "\n")
 # bring back documentation of use_logs
 # step-wise indicator selection - first STEPS then INDICATORS
 # make linewidth smaller
+# Mean Absolute Percentage Error MAPE
+# log transformation in Regression Summaries
