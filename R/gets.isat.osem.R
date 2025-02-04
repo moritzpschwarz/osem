@@ -1,3 +1,9 @@
+#' A modified version of gets.isat
+#'
+#' @inheritParams gets::gets.isat
+#' @returns An gets object.
+#'
+#'
 gets.isat.osem <- function (x, t.pval = 0.05, wald.pval = t.pval, vcov.type = NULL,
                             do.pet = TRUE, ar.LjungB = list(lag = NULL, pval = 0.025),
                             arch.LjungB = list(lag = NULL, pval = 0.025), normality.JarqueB = NULL,

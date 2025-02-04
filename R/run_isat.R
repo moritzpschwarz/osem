@@ -1,8 +1,18 @@
+#' Internal function to run and prepare isat estimation
+#' @param yvar The y variable
+#' @param y.name The name of the y variable.
+#' @param xvars All x variables.
+#' @param ar numeric vector or \code{NULL}. The AR order to be used.
+#' @inheritParams estimate_module
+#' @inheritParams run_module
+#' @param determine.blocksize Logical. Whether max.block.size or needs to be determined.
+#'
+#' @returns An isat object.
+#'
 run_isat <- function(yvar,
                      y.name,
                      xvars,
                      clean_data,
-                     xvar_opts,
                      ar = NULL,
                      saturation,
                      saturation.tpval,
