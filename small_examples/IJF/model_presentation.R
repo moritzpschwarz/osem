@@ -14,8 +14,8 @@ all_countries <- c("DE","AT","FR","DK")
 
 # control what to run right now
 run_modelplots <- FALSE
-run_forecasts <- FALSE
-run_insample <- TRUE
+run_forecasts <- TRUE
+run_insample <- FALSE
 run_inventory_diagnostics <- FALSE
 run_network <- FALSE
 run_scenario <- FALSE
@@ -50,7 +50,7 @@ for(country in all_countries){
   # Loading the model -------------------------------------------------------
 
 
-  load(paste0("./small_examples/IJF/", country, "/model_sel_v2.RData"))
+  load(paste0("./small_examples/IJF/", country, "/model_sel.RData"))
 
   model_result_ext <- model_result_ext_sel
 
@@ -142,6 +142,7 @@ for(country in all_countries){
     set.seed(8899)
     fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
 
+
     # Forecast Plot -----------------------------------------------------------
 
     plot(fc_ext, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
@@ -178,6 +179,47 @@ for(country in all_countries){
       kable_styling() %>%
       table_change(label = paste0("tab:forecast_",country)) %>%
       writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast.tex"))
+
+
+    # AR ----------------------------------------------------------------------
+    set.seed(8899)
+    fc_ext_ar <- forecast_model(model_result_ext, exog_fill_method = "AR")
+
+    plot(fc_ext_ar, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+      labs(subtitle = fc_subtitle) +
+      theme(plot.subtitle = element_markdown()) -> p
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_AR",".pdf"), width = 12, height = 10)
+
+    # Forecast Plot with selected variables -----------------------------------------------------------
+    plot(fc_ext_ar, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+      labs(subtitle = fc_subtitle) +
+      theme(plot.subtitle = element_markdown()) -> p
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_AR",".pdf"), width = 7, height = 5)
+
+    # Forecast Plot with selected variables -----------------------------------------------------------
+    plot(fc_ext_ar, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+      labs(subtitle = fc_subtitle) +
+      theme(plot.subtitle = element_markdown()) -> p
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015_AR",".pdf"), width = 7, height = 5)
+
+    # table for forecasts
+    fc_ext_ar$forecast %>%
+      filter(grepl(vars_to_grab, dep_var)) %>%
+      select(dep_var, central.estimate) %>%
+      unnest(central.estimate) %>%
+      select(-dep_var) %>%
+      pivot_longer(-c(time)) %>%
+      drop_na %>%
+      pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
+      rename(Forecast = time) %>%
+
+      kable(format = "latex",
+            booktabs = TRUE, label = paste0("tab:forecast_",country),
+            caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
+      kable_styling() %>%
+      table_change(label = paste0("tab:forecast_",country)) %>%
+      writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_AR.tex"))
+
   }
 
 

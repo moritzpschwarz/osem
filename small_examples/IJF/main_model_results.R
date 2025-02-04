@@ -93,7 +93,7 @@ dictionary <- dplyr::bind_rows(dict_identities, dict_eurostat, dict_edgar, dict_
 
 for(country in c("DE","AT","FR", "DK")){
 
-  if(file.exists(paste0("./small_examples/IJF/", country, "/model_sel_v2.RData"))){next}
+  if(file.exists(paste0("./small_examples/IJF/", country, "/model_sel.RData"))){next}
 
   # country = "DE"
 
@@ -258,7 +258,7 @@ for(country in c("DE","AT","FR", "DK")){
     keep = "PriceETS|RealVAIndustry"
   )
 
-  save(model_result_ext_sel, file = paste0("./small_examples/IJF/", country, "/model_sel_v2.RData"))
+  save(model_result_ext_sel, file = paste0("./small_examples/IJF/", country, "/model_sel.RData"))
 
 
   # model_result_ext_sel_notrend <- run_model(
