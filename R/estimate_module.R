@@ -132,44 +132,18 @@ estimate_module <- function(clean_data,
 
     # ISAT modelling ----------------------------------------------------------
     if (!is.null(saturation)) {
-      # debug_list <- list(yvar = yvar, xvars = xvars,i = i,saturation.tpval = saturation.tpval)
-      # save(debug_list, file = "debug_list.RData")
-
-      # try to prevent that isat does not run out of degrees of freedom
-      if((ncol(xvars) + ((max.block.size*2)+1)) > nrow(xvars)){
-        maxblocksize <- round((nrow(xvars) - ncol(xvars))/3)
-      } else {maxblocksize <- max.block.size}
-
-      if(maxblocksize < 1){
-        warning(paste0("Specification not valid - the sample for estimating the module with the dependent variable ",dep_var_basename," is not extensive enough to be estimated with lag ",i,".\n Specification skipped."))
-        next
-      }
-
-      if(tidyr::drop_na(cbind(yvar,xvars)) %>% nrow == 0){
-        next
-      }
-
-      ar_opts_isat <- if(i != 0){1:i} else {NULL}
-      xvar_opts <- if(nrow(zoo::zoo(xvars, order.by = clean_data$time))>0){
-        zoo::zoo(xvars, order.by = clean_data$time)
-      } else {NULL}
-
-      try(intermed.model <- gets::isat(
-        y = zoo::zoo(yvar, order.by = clean_data$time),
-        mxreg = xvar_opts,
-        ar = ar_opts_isat,
-        plot = FALSE,
-        print.searchinfo = FALSE,
-        iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
-        sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
-        tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
-        t.pval = saturation.tpval,
-        max.block.size = maxblocksize
-      ), silent = TRUE)
-
-      # TODO necessary to add the tis argument to the call due to error in gets package
-      if(exists("intermed.model")){intermed.model$call$tis <- intermed.model$aux$args$tis}
-      if(exists("intermed.model")){intermed.model$aux$y.name <- y.name}
+      try(
+        intermed.model <- run_isat(ar = if(i != 0){1:i} else {NULL},
+                                   yvar = yvar,
+                                   y.name = y.name,
+                                   xvars  = xvars,
+                                   clean_data = clean_data,
+                                   xvar_opts = xvar_opts,
+                                   saturation = saturation,
+                                   saturation.tpval = saturation.tpval,
+                                   max.block.size = max.block.size,
+                                   determine.blocksize = TRUE)
+        , silent = TRUE)
     } else {
 
       # ARX Modelling -----------------------------------------------------------
@@ -242,7 +216,7 @@ estimate_module <- function(clean_data,
                                                keep = keep_num), silent = TRUE)
 
     if(!exists("best_isat_model.selected")){
-      if(!quiet){warning("Model selection with 'gets' failed. The best model is the one with the lowest BIC. Disable warning with 'quiet = TRUE'.")}
+      #if(!quiet){warning("Model selection with 'gets' failed. The best model is the one with the lowest BIC. Disable warning with 'quiet = TRUE'.")}
       best_isat_model.selected <- best_isat_model
     }
 
@@ -267,19 +241,31 @@ estimate_module <- function(clean_data,
       }} else {NULL}
 
     if (!is.null(saturation)) {
-      best_isat_model.selected.isat <- gets::isat(y = zoo::zoo(yvar, order.by = clean_data$time),
-                                                  # ar = best_isat_model$aux$args$ar,
-                                                  # mc = best_isat_model$aux$args$mc,
-                                                  ar = ar_retained_num,
-                                                  mc = any(grepl("mconst",best_isat_model.selected$aux$mXnames)),
-                                                  mxreg = retained.xvars,
-                                                  plot = FALSE,
-                                                  print.searchinfo = FALSE,
-                                                  iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
-                                                  sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
-                                                  tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
-                                                  t.pval = saturation.tpval,
-                                                  max.block.size = best_isat_model$aux$args$max.block.size)
+      best_isat_model.selected.isat <- run_isat(yvar = yvar,
+                                                y.name = y.name,
+                                                xvars  = retained.xvars,
+                                                clean_data = clean_data,
+                                                xvar_opts = xvar_opts,
+                                                ar = ar_retained_num,
+                                                saturation = saturation,
+                                                saturation.tpval = saturation.tpval,
+                                                determine.blocksize = FALSE,
+                                                max.block.size = best_isat_model$aux$args$max.block.size)
+
+      # best_isat_model.selected.isat <- gets::isat(y = zoo::zoo(yvar, order.by = clean_data$time),
+      #                                             # ar = best_isat_model$aux$args$ar,
+      #                                             # mc = best_isat_model$aux$args$mc,
+      #                                             ar = ar_retained_num,
+      #                                             mc = any(grepl("mconst",best_isat_model.selected$aux$mXnames)),
+      #                                             mxreg = retained.xvars,
+      #                                             plot = FALSE,
+      #                                             print.searchinfo = FALSE,
+      #                                             iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
+      #                                             sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
+      #                                             tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
+      #                                             t.pval = saturation.tpval,
+      #                                             max.block.size = best_isat_model$aux$args$max.block.size,
+      #                                             include.gum = FALSE)
 
       if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$call$tis <- best_isat_model.selected.isat$aux$args$tis}
       if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$aux$y.name <- y.name}
@@ -297,9 +283,9 @@ estimate_module <- function(clean_data,
     best_isat_model
   }
 
-
   # Super Exogeneity Testing ------------------------------------------------
-  superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet)
+  try(superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet))
+  if(!exists("superex_test")){superex_test <- NA}
 
   # Output ------------------------------------------------------------------
   out <- list()

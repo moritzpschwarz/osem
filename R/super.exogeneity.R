@@ -71,13 +71,14 @@ super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FAL
     xvars_ready <- setdiff(xvars_cur,dep_var_exog_test)
     xvars_ready_df <- if(!identical(xvars_ready, character(0))) {initial.model$aux$mX[,xvars_ready, drop = FALSE]} else {NULL}
 
-    gets::isat(y = initial.model$aux$mX[,dep_var_exog_test],
-               mxreg = xvars_ready_df,
-               iis = TRUE,
-               sis = TRUE,
-               plot = FALSE,
-               print.searchinfo = FALSE,
-               t.pval = saturation.tpval) -> isat_test
+    isat.osem.modified(y = initial.model$aux$mX[,dep_var_exog_test],
+                       mxreg = xvars_ready_df,
+                       iis = TRUE,
+                       sis = TRUE,
+                       plot = FALSE,
+                       print.searchinfo = FALSE,
+                       include.gum = FALSE,
+                       t.pval = saturation.tpval) -> isat_test
 
     # add isat_test to the list that is called "marginal.models" as a new element (append it to the back)
     marginal.models <- c(marginal.models, list(isat_test))
@@ -125,9 +126,9 @@ super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FAL
     fstat <- b %*% vcov_matrix %*% t(t(b))/2
 
     fstat_pvalue <- stats::pf(fstat,
-                       df1 = nrow(as.data.frame(testmodel$coefficients[varnames_to_test])),
-                       df2 = nrow(as.data.frame(testmodel$coefficients)) - nrow(as.data.frame(testmodel$coefficients[varnames_to_test])),
-                       lower.tail = FALSE)
+                              df1 = nrow(as.data.frame(testmodel$coefficients[varnames_to_test])),
+                              df2 = nrow(as.data.frame(testmodel$coefficients)) - nrow(as.data.frame(testmodel$coefficients[varnames_to_test])),
+                              lower.tail = FALSE)
 
     chisq_pvalue <- 1 - stats::pchisq(fstat*2, nrow(as.data.frame(initial.model$coefficients[varnames_to_test])))
 
