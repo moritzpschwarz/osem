@@ -10,17 +10,39 @@ no_modles_in_one_table <- 5
 
 # define the main country to leave out of the appendix
 main_country <- "DE"
+all_countries <- c("DE","AT","FR","DK")
 
 # control what to run right now
 run_modelplots <- FALSE
 run_forecasts <- FALSE
-run_insample <- FALSE
+run_insample <- TRUE
 run_inventory_diagnostics <- FALSE
+run_network <- FALSE
+run_scenario <- FALSE
+
+lwidth <- 0.75
+
+table_change <- function(input_table, label){
+
+  lab_use <- if(!is.null(label)){paste0("\\label{",label,"}")} else {""}
+
+  # insert caption
+  tab <- gsub("\\begin{table}",
+              paste0("\\begin{table}\n",lab_use), input_table, fixed = TRUE)
+
+  # insert resizebox
+  tab <- gsub("\\begin{tabular}",
+              "\\resizebox{\\textwidth}{!}{\\begin{tabular}", tab, fixed = TRUE)
+
+  # fixing the footer
+  tab <- gsub("\\end{tabular}",
+              "\\end{tabular}}",tab, fixed = TRUE)
+
+  return(tab)
+}
 
 
-
-
-for(country in c("DE","AT","FR","DK")){
+for(country in all_countries){
 
   print(country)
   # country = "DE"
@@ -96,20 +118,20 @@ for(country in c("DE","AT","FR","DK")){
   ## Huge Model plot ---------------------------------------------------------
   if(run_modelplots){
 
-    plot(model_result_ext, title = paste0("OSEM Model Output for ",country_long)) +
+    plot(model_result_ext, title = paste0("OSEM Model Output for ",country_long), linewidth = lwidth) +
       labs(subtitle = mod_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model",".pdf"), width = 12, height = 10)
 
     ## Model plot with selected variables ---------------------------------------------------------
-    plot(model_result_ext, grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) +
+    plot(model_result_ext, grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long), linewidth = lwidth) +
       labs(subtitle = mod_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected",".pdf"), width = 7, height = 5)
 
 
     # Same Model Plot from 2015 -----------------------------------------------
-    plot(model_result_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long)) +
+    plot(model_result_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("OSEM Model Output for ",country_long), linewidth = lwidth) +
       labs(subtitle = mod_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected_2015",".pdf"), width = 7, height = 5)
@@ -122,19 +144,19 @@ for(country in c("DE","AT","FR","DK")){
 
     # Forecast Plot -----------------------------------------------------------
 
-    plot(fc_ext, title = paste0("Forecast for ",country_long)) +
+    plot(fc_ext, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast",".pdf"), width = 12, height = 10)
 
     # Forecast Plot with selected variables -----------------------------------------------------------
-    plot(fc_ext, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) +
+    plot(fc_ext, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected",".pdf"), width = 7, height = 5)
 
     # Forecast Plot with selected variables -----------------------------------------------------------
-    plot(fc_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long)) +
+    plot(fc_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015",".pdf"), width = 7, height = 5)
@@ -154,28 +176,34 @@ for(country in c("DE","AT","FR","DK")){
             booktabs = TRUE, label = paste0("tab:forecast_",country),
             caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
       kable_styling() %>%
+      table_change(label = paste0("tab:forecast_",country)) %>%
       writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast.tex"))
   }
 
 
   # Insample Forecasting ----------------------------------------------------
   if(run_insample){
-    set.seed(8899)
-    insample <- forecast_insample(model_result_ext, sample_share = .96, exog_fill_method = c("auto"))
+    if(!file.exists(paste0("small_examples/IJF/", country, "/insample.RData"))){
+      set.seed(8899)
+      insample <- forecast_insample(model_result_ext, sample_share = .96, exog_fill_method = c("auto"))
+      save(insample, file = paste0("small_examples/IJF/", country, "/insample.RData"))
+    } else {
+      load(paste0("small_examples/IJF/", country, "/insample.RData"))
+    }
 
     # Insample Forecasting Plots ----------------------------------------------------
 
-    plot(insample, title = paste0("Insample Forecasting for ",country_long)) %>%
+    plot(insample, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
       ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample",".pdf"), width = 7, height = 5)
 
     # Insample Forecasting Plots with selected variables ----------------------------------------------------
 
-    plot(insample, grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long)) %>%
+    plot(insample, grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
       ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected",".pdf"), width = 7, height = 5)
 
     # Insample Forecasting Plots with selected variables ----------------------------------------------------
 
-    plot(insample, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long)) %>%
+    plot(insample, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
       ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected_2015",".pdf"), width = 7, height = 5)
 
 
@@ -202,23 +230,6 @@ for(country in c("DE","AT","FR","DK")){
   model_list <- lapply(model_list, function(x){if(!is.null(x)){gets::as.lm(x)}})
 
   names(model_list) <- model_result_ext$module_order$dependent[!sapply(model_result_ext$module_collection$model, is.null)]
-
-  table_change <- function(input_table, label){
-
-    # insert caption
-    tab <- gsub("\\begin{table}",
-                paste0("\\begin{table}\n\\label{",label,"}"), input_table, fixed = TRUE)
-
-    # insert resizebox
-    tab <- gsub("\\begin{tabular}",
-                "\\resizebox{\\textwidth}{!}{\\begin{tabular}", tab, fixed = TRUE)
-
-    # fixing the footer
-    tab <- gsub("\\end{tabular}",
-                "\\end{tabular}}",tab, fixed = TRUE)
-
-    return(tab)
-  }
 
   # ensure the correct order of the table
   lapply(model_list, broom::tidy) %>%
@@ -406,11 +417,14 @@ for(country in c("DE","AT","FR","DK")){
     ggplot(DInventories_comp) +
       geom_line(aes(x = time, y = DInventories, color = type)) +
       facet_grid(rows = vars(unit), cols = NULL, scales = "free") -> DInventories_plot
+
+    ggsave(DInventories_plot, filename = paste0("small_examples/IJF/figures_overleaf/internal/", country, "_DInventories",".pdf"), width = 7, height = 5)
   }
 
 
 
 }
+
 
 
 
@@ -422,11 +436,14 @@ for(country in c("DE","AT","FR","DK")){
 tex_dir <- "small_examples/IJF/tables_overleaf"
 
 # Specify the output file
-output_file <- "small_examples/IJF/tables_overleaf/general/combined_inputs.tex"
+output_file <- "small_examples/IJF/tables_overleaf/appendix_tables.tex"
 
 # Get all .tex files in the directory (excluding the output file itself)
 tex_files <- list.files(tex_dir, pattern = "\\.tex$", full.names = TRUE, recursive = FALSE)
 tex_files <- tex_files[basename(tex_files) != basename(output_file)]
+tex_files_maintext <- tex_files[grepl(main_country, tex_files)]
+tex_files_maintext <- tex_files_maintext[!grepl("Summary_[0-9]+", tex_files_maintext)]
+tex_files <- setdiff(tex_files, tex_files_maintext)
 
 # Create the combined .tex file
 file_conn <- file(output_file, "w")
@@ -438,6 +455,9 @@ for (tex_file in tex_files) {
 
   # Read the content of the .tex file
   tex_content <- readLines(tex_file)
+
+  # once finished with reading the content, move the tex_file into the sub-folder "done"
+  file.rename(tex_file, paste0("small_examples/IJF/tables_overleaf/done/", basename(tex_file)))
 
   # Write the content to the combined file
   writeLines(tex_content, file_conn)
@@ -455,67 +475,83 @@ cat("Combined file created with content copied:", output_file, "\n")
 
 # Combine all figures -----------------------------------------------------
 
-# List of countries
-countries <- c("AT", "DK", "DE", "FR")
+
+
 
 # Output file
-output_file <- "small_examples/IJF/figures_overleaf/figures.tex"
+output_file <- "small_examples/IJF/figures_overleaf/figures_appendix.tex"
 
 # Open connection to the output file
 file_conn <- file(output_file, "w")
 
 # Loop through each country and write the LaTeX code
-for (country in countries) {
+for (country in all_countries[!grepl(main_country, all_countries)]) {
   # Define the LaTeX code for this country
   country_code <- paste0("
   \\begin{figure}
     \\centering
     \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Network.pdf}
-    \\caption{}
+    \\caption{Network graph for ",country,". The graph also indicates which variables were selected and which were dropped during model selection.}
     \\label{fig:", country, "_network}
 \\end{figure}
 
 \\begin{figure}
     \\centering
     \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Model.pdf}
-    \\caption{}
+    \\caption{In-sample model fit for ",country,".}
     \\label{fig:", country, "_entire_model}
 \\end{figure}
 
 \\begin{figure}
     \\centering
     \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Model_Selected.pdf}
-    \\caption{}
+    \\caption{In-sample model fit for ",country," for selected variables.}
     \\label{fig:", country, "_selected_model}
 \\end{figure}
 
-\\begin{figure}
-    \\centering
-    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Model_Selected_2015.pdf}
-    \\caption{}
-    \\label{fig:", country, "_selected_model_2015}
-\\end{figure}
+%\\begin{figure}
+%    \\centering
+%    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Model_Selected_2015.pdf}
+%    \\caption{In-sample model fit for ",country," for selected variables. Data shown from 2015 onwards.}
+%    \\label{fig:", country, "_selected_model_2015}
+%\\end{figure}
 
 \\begin{figure}
     \\centering
     \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast.pdf}
-    \\caption{}
+    \\caption{Forecast for ",country," for selected variables.}
     \\label{fig:", country, "_entire_forecast}
 \\end{figure}
 
-\\begin{figure}
-    \\centering
-    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_Selected.pdf}
-    \\caption{}
-    \\label{fig:", country, "_selected_forecast}
-\\end{figure}
+%\\begin{figure}
+%    \\centering
+%    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_Selected.pdf}
+\\caption{Insample Forecast for ",country,". Data shown from 2015 onwards.}
+%    \\label{fig:", country, "_selected_forecast}
+%\\end{figure}
 
 \\begin{figure}
     \\centering
     \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_Selected_2015.pdf}
-    \\caption{}
+    \\caption{Forecast for ",country," for selected variables. Data shown from 2015 onwards.}
     \\label{fig:", country, "_selected_forecast_2015}
-\\end{figure}")
+\\end{figure}
+
+\\begin{figure}
+    \\centering
+    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Insample.pdf}
+    \\caption{Insample Forecast for ",country,".}
+    \\label{fig:", country, "_insample_forecast}
+\\end{figure}
+
+
+\\begin{figure}
+    \\centering
+    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Insample_Selected_2015.pdf}
+    \\caption{Insample Forecast for ",country," for selected variables. Data shown from 2015 onwards.}
+    \\label{fig:", country, "_insample_selected_forecast_2015}
+\\end{figure}
+")
 
   # Write the LaTeX code to the file
   writeLines(country_code, file_conn)
@@ -529,8 +565,8 @@ cat("Figures LaTeX file generated:", output_file, "\n")
 
 
 
-# bei estimated equations machen wir f() und bei identities machen wir mit + oder den jeweiligen operatoren
-# raw data series
+# bei estimated equations machen wir f() und bei identities machen wir mit + oder den jeweiligen operatoren --> DONE
+# raw data series --> DROPPED
 # why is a lot of super.exog NA? --> DONE
 # variable table
 # check network graph - real VA and selected --> DONE
@@ -544,5 +580,7 @@ cat("Figures LaTeX file generated:", output_file, "\n")
 # IndProd
 # keep argument for ETS --> DONE
 # change the central.estimate from forecast_model
-# check the insample results
+# check the insample results --> DONE
 # bring back documentation of use_logs
+# step-wise indicator selection - first STEPS then INDICATORS
+# make linewidth smaller
