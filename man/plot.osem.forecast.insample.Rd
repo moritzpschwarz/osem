@@ -8,6 +8,7 @@
   x,
   title = "OSEM Insample Hindcasts",
   first_date = NULL,
+  first_date_insample_model = NULL,
   grepl_variables = NULL,
   ...
 )

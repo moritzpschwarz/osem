@@ -1,3 +1,9 @@
+#' A modified version of isat()
+#'
+#' @inheritParams gets::isat.default
+#'
+#' @returns An isat object.
+#'
 isat.osem.modified <- function (y, mc = TRUE, ar = NULL, ewma = NULL, mxreg = NULL,
                                 iis = FALSE, sis = TRUE, tis = FALSE, uis = FALSE, blocks = NULL,
                                 ratio.threshold = 0.8, max.block.size = 30, t.pval = 0.001,
