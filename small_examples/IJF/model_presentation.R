@@ -244,6 +244,10 @@ for(country in all_countries){
     arrange(base_num, base, desc(term)) %>%
     pull(term) -> coef_order
 
+  coef_renamed <- coef_order %>%
+    str_replace_all("ln\\.","ln(")
+  coef_renamed[grepl("ln\\(", coef_renamed)] <- paste0(coef_renamed[grepl("ln\\(", coef_renamed)], ")")
+  names(coef_renamed) <- coef_order
 
   ## Regression Tables -------------------------------------------------------
 
@@ -255,11 +259,13 @@ for(country in all_countries){
   for(i in 1:no_of_tables){
     # i = 1
     model_list[cut(1:length(model_list), breaks = no_of_tables, labels = FALSE) == i] -> model_list_temp
+    models_renamed <- paste0("ln(", names(model_list_temp), ")")
+    names(model_list_temp) <- models_renamed
 
     table_output <- modelsummary::modelsummary(
       model_list_temp,
       #coef_omit = "iis|sis|q_[0-9]+",
-      coef_map = coef_order,
+      coef_map = coef_renamed,
       gof_omit = "R",
       output = "latex",
       title = paste0("Final OSEM Model result for each module for ",country_long, ". Part ",i,"."),
@@ -277,11 +283,13 @@ for(country in all_countries){
   ## selected variables ------------------------------------------------------
 
   model_list[grepl(vars_to_grab, names(model_list))] -> model_list_temp
+  models_renamed <- paste0("ln(", names(model_list_temp), ")")
+  names(model_list_temp) <- models_renamed
 
   table_output <- modelsummary::modelsummary(
     model_list_temp,
     #coef_omit = "iis|sis|q_[0-9]+",
-    coef_map = coef_order,
+    coef_map = coef_renamed,
     gof_omit = "R",
     output = "latex",
     title = paste0("Final OSEM Model result for selected modules for ",country_long, "."),
