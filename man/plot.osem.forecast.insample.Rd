@@ -20,6 +20,10 @@
 
 \item{first_date}{Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.}
 
+\item{first_date_insample_model}{A character string that will be converted to
+a Date that indicates the first insample forecast to show in the plot. By default
+(\code{NULL}) all insample forecasts will be shown.}
+
 \item{grepl_variables}{Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.}
 
 \item{...}{Additional arguments passed to the plotting function.}
