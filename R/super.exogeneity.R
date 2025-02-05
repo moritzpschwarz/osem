@@ -71,7 +71,6 @@ super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FAL
     xvars_ready <- setdiff(xvars_cur,dep_var_exog_test)
     xvars_ready_df <- if(!identical(xvars_ready, character(0))) {initial.model$aux$mX[,xvars_ready, drop = FALSE]} else {NULL}
 
-    #isat.osem.modified(y = initial.model$aux$mX[,dep_var_exog_test],
     gets::isat(y = initial.model$aux$mX[,dep_var_exog_test],
                mxreg = xvars_ready_df,
                iis = TRUE,
