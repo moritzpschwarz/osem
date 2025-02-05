@@ -636,3 +636,10 @@ cat("Figures LaTeX file generated:", output_file, "\n")
 # make linewidth smaller
 # Mean Absolute Percentage Error MAPE
 # log transformation in Regression Summaries
+
+
+load(paste0("./small_examples/IJF/DE/model_sel.RData"))
+a <- forecast_comparison(model = model_result_ext_sel, n.ahead = 10, forecast_type = "AR")
+b <- forecast_comparison(model = model_result_ext_sel, n.ahead = 10, forecast_type = "RW")
+
+
