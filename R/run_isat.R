@@ -40,7 +40,7 @@ run_isat <- function(yvar,
   }
   if(!is.null(xvars)){
     if(tidyr::drop_na(cbind(yvar,dplyr::as_tibble(xvars))) %>% nrow == 0){
-      next
+      stop()
     }
     xvar_opts <- if(nrow(zoo::zoo(xvars, order.by = clean_data$time))>0){
       zoo::zoo(xvars, order.by = clean_data$time)
@@ -74,7 +74,8 @@ run_isat <- function(yvar,
   # assignInNamespace("isat.default", isat.default, ns = "gets")
 
   if("SIS" %in% saturation & pretest_steps){
-    init_sis_mod <- isat.osem.modified(
+    #init_sis_mod <- isat.osem.modified(
+    init_sis_mod <- gets::isat(
       y = zoo::zoo(yvar, order.by = clean_data$time),
       mxreg = xvar_opts,
       ar = ar,
@@ -107,29 +108,31 @@ run_isat <- function(yvar,
         new_data <- zoo::zoo(xvar_opts, order.by = clean_data$time)
       }
 
-      super_sat <- isat.osem.modified(y = zoo::zoo(yvar, order.by = clean_data$time),
-                                      mxreg = new_data,
-                                      ar = ar,
-                                      mc = mc,
-                                      sis = FALSE,
-                                      iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
-                                      tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
-                                      plot = FALSE,
-                                      print.searchinfo = FALSE,
-                                      t.pval = saturation.tpval,
-                                      include.gum = FALSE,
-                                      max.block.size = maxblocksize)
+      #super_sat <- isat.osem.modified(y = zoo::zoo(yvar, order.by = clean_data$time),
+      super_sat <- gets::isat(y = zoo::zoo(yvar, order.by = clean_data$time),
+                              mxreg = new_data,
+                              ar = ar,
+                              mc = mc,
+                              sis = FALSE,
+                              iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
+                              tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
+                              plot = FALSE,
+                              print.searchinfo = FALSE,
+                              t.pval = saturation.tpval,
+                              include.gum = FALSE,
+                              max.block.size = maxblocksize)
 
       # union gets
       keep_num <- which(row.names(super_sat$mean.results) %in% c("mconst",paste0("ar",ar), names(xvar_opts)))
-      super_sat_sel <- gets.isat.osem(super_sat,
-                                      t.pval = saturation.tpval, # because we are still dealing with indicators, use this t.pval not the one for selection
-                                      keep = keep_num,
-                                      print.searchinfo = FALSE,
-                                      ar.LjungB = NULL,
-                                      arch.LjungB = NULL,
-                                      normality.JarqueB = FALSE,
-                                      plot = FALSE)
+      #super_sat_sel <- gets.isat.osem(super_sat,
+      super_sat_sel <- gets::gets(super_sat,
+                                  t.pval = saturation.tpval, # because we are still dealing with indicators, use this t.pval not the one for selection
+                                  keep = keep_num,
+                                  print.searchinfo = FALSE,
+                                  ar.LjungB = NULL,
+                                  arch.LjungB = NULL,
+                                  normality.JarqueB = FALSE,
+                                  plot = FALSE)
 
       # super_sat_sel <- gets::gets(super_sat,
       #                             t.pval = saturation.tpval, # because we are still dealing with indicators, use this t.pval not the one for selection
