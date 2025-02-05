@@ -32,15 +32,14 @@ run_isat <- function(yvar,
     } else {maxblocksize <- max.block.size}
 
     if(maxblocksize < 1){
-      warning(paste0("Specification not valid - the sample for estimating the module with the dependent variable ",dep_var_basename," is not extensive enough to be estimated with lag ",i,".\n Specification skipped."))
-      next
+      stop(paste0("Specification not valid - the sample for estimating the module with the dependent variable ",dep_var_basename," is not extensive enough to be estimated with lag ",i,".\n Specification skipped."))
     }
   } else {
     maxblocksize <- max.block.size
   }
   if(!is.null(xvars)){
     if(tidyr::drop_na(cbind(yvar,dplyr::as_tibble(xvars))) %>% nrow == 0){
-      next
+      stop()
     }
     xvar_opts <- if(nrow(zoo::zoo(xvars, order.by = clean_data$time))>0){
       zoo::zoo(xvars, order.by = clean_data$time)
@@ -49,32 +48,10 @@ run_isat <- function(yvar,
     xvar_opts <- NULL
   }
 
-  # try(intermed.model <- gets::isat(
-  #   y = zoo::zoo(yvar, order.by = clean_data$time),
-  #   mxreg = xvar_opts,
-  #   ar = ar_opts_isat,
-  #   plot = FALSE,
-  #   print.searchinfo = FALSE,
-  #   iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
-  #   sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
-  #   tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
-  #   t.pval = saturation.tpval,
-  #   max.block.size = maxblocksize
-  # ), silent = TRUE)
-  #
-  # # TODO necessary to add the tis argument to the call due to error in gets package
-  # if(exists("intermed.model")){intermed.model$call$tis <- intermed.model$aux$args$tis}
-  # if(exists("intermed.model")){intermed.model$aux$y.name <- y.name}
 
-
-  # New part ----------------------------------------------------------------
-  # Change only one function in a package with your custom function
-  # source("R/isat.default.R")
-  # environment(isat.default) <- asNamespace('gets')
-  # assignInNamespace("isat.default", isat.default, ns = "gets")
-
+  # Pre-impose Steps  ----------------------------------------------------------------
   if("SIS" %in% saturation & pretest_steps){
-    init_sis_mod <- isat.osem.modified(
+    init_sis_mod <- gets::isat(
       y = zoo::zoo(yvar, order.by = clean_data$time),
       mxreg = xvar_opts,
       ar = ar,
@@ -107,38 +84,29 @@ run_isat <- function(yvar,
         new_data <- zoo::zoo(xvar_opts, order.by = clean_data$time)
       }
 
-      super_sat <- isat.osem.modified(y = zoo::zoo(yvar, order.by = clean_data$time),
-                                      mxreg = new_data,
-                                      ar = ar,
-                                      mc = mc,
-                                      sis = FALSE,
-                                      iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
-                                      tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
-                                      plot = FALSE,
-                                      print.searchinfo = FALSE,
-                                      t.pval = saturation.tpval,
-                                      include.gum = FALSE,
-                                      max.block.size = maxblocksize)
+      super_sat <- gets::isat(y = zoo::zoo(yvar, order.by = clean_data$time),
+                              mxreg = new_data,
+                              ar = ar,
+                              mc = mc,
+                              sis = FALSE,
+                              iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
+                              tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
+                              plot = FALSE,
+                              print.searchinfo = FALSE,
+                              t.pval = saturation.tpval,
+                              include.gum = FALSE,
+                              max.block.size = maxblocksize)
 
       # union gets
       keep_num <- which(row.names(super_sat$mean.results) %in% c("mconst",paste0("ar",ar), names(xvar_opts)))
-      super_sat_sel <- gets.isat.osem(super_sat,
-                                      t.pval = saturation.tpval, # because we are still dealing with indicators, use this t.pval not the one for selection
-                                      keep = keep_num,
-                                      print.searchinfo = FALSE,
-                                      ar.LjungB = NULL,
-                                      arch.LjungB = NULL,
-                                      normality.JarqueB = FALSE,
-                                      plot = FALSE)
-
-      # super_sat_sel <- gets::gets(super_sat,
-      #                             t.pval = saturation.tpval, # because we are still dealing with indicators, use this t.pval not the one for selection
-      #                             keep = keep_num,
-      #                             print.searchinfo = FALSE,
-      #                             ar.LjungB = NULL,
-      #                             arch.LjungB = NULL,
-      #                             plot = FALSE)
-
+      super_sat_sel <- gets::gets(super_sat,
+                                  t.pval = saturation.tpval, # because we are still dealing with indicators, use this t.pval not the one for selection
+                                  keep = keep_num,
+                                  print.searchinfo = FALSE,
+                                  ar.LjungB = NULL,
+                                  arch.LjungB = NULL,
+                                  normality.JarqueB = FALSE,
+                                  plot = FALSE)
 
       # modify the super_sat_sel into an isat object
       intermed.model <- super_sat_sel
@@ -164,7 +132,6 @@ run_isat <- function(yvar,
       intermed.model$aux$args$sis <- ifelse("SIS" %in% saturation, TRUE, FALSE)
       intermed.model$aux$args$tis <- ifelse("TIS" %in% saturation, TRUE, FALSE)
 
-      #gets::isat(as.arx(super_sat_sel), iis = FALSE, sis = FALSE, tis = FALSE, uis = zoo(order.by = clean_data$time, x = 1))
     } else {
       intermed.model <- init_sis_mod
     }
