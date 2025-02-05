@@ -25,17 +25,25 @@ run_isat(
 
 \item{xvars}{All x variables.}
 
-\item{clean_data}{An input data.frame or tibble. Must be the output of clean_data() to fit all requirements.}
+\item{clean_data}{An input data.frame or tibble. Must be the output of
+clean_data() to fit all requirements.}
 
 \item{ar}{numeric vector or \code{NULL}. The AR order to be used.}
 
 \item{mc}{Logical. Whether to use an intercept.}
 
-\item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needs a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
+\item{saturation}{Carry out Indicator Saturation using the 'isat' function
+in the 'gets' package. Needs a character vector or string. Default is
+'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator
+Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend
+Indicator Saturation. When disabled, estimation will be carried out using
+the 'arx' function from the 'gets' package.}
 
-\item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
+\item{saturation.tpval}{The target p-value of the saturation methods (e.g.
+SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
 
-\item{max.block.size}{Integer. Maximum size of block of variables to be selected over, default = 20.}
+\item{max.block.size}{Integer. Maximum size of block of variables to be
+selected over, default = 20.}
 
 \item{pretest_steps}{Logical. Default is \code{FALSE}. This argument controls
 whether isat should first be run for SIS in isolation before other saturation

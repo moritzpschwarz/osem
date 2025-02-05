@@ -1,6 +1,9 @@
 #' Plot an Insample-Forecast of the OSEM Model
 #'
 #' @param x An object of class osem.forecast.insample, which is the output from the \link{forecast_insample} function.
+#' @param first_date_insample_model A character string that will be converted to
+#' a Date that indicates the first insample forecast to show in the plot. By default
+#' (\code{NULL}) all insample forecasts will be shown.
 #' @inheritParams plot.osem.forecast
 #'
 #' @export
@@ -41,6 +44,26 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
   if(!isa(x, "osem.forecast.insample")){
     stop("Input object not of type 'osem.forecast.insample'. Run 'forecast_insample' again and use the output of that function.")
   }
+
+  # check if first_date and first_date_insample_model are character strings and can be converted to dates
+  if(!is.null(first_date)){
+    if(!is.character(first_date)){
+      stop("first_date must be a character string.")
+    }
+    if(!is.Date(as.Date(first_date))){
+      stop("first_date must be a valid date.")
+    }
+  }
+  # do the same with first_date_insample_model
+  if(!is.null(first_date_insample_model)){
+    if(!is.character(first_date_insample_model)){
+      stop("first_date_insample_model must be a character string.")
+    }
+    if(!is.Date(as.Date(first_date_insample_model))){
+      stop("first_date_insample_model must be a valid date.")
+    }
+  }
+
 
   # With those times, we can now find the share to forecast
   share_to_show <- 1 - (ifelse((1 - x$args$sample_share) * 2 <= 1, (1 - x$args$sample_share) * 2, 1))

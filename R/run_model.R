@@ -27,7 +27,7 @@
 #' constrained to the minimum data series? Default is \code{TRUE}.
 #' @param keep Character. A string that will be used as regex (in \code{grepl()})
 #' when selection is carried out. This argument therefore requires \code{gets_selection = TRUE}.
-#' Variables that match this character will not be selected over (see \link{gets::getsm} for details).
+#' Variables that match this character will not be selected over (see \code{\link[gets]{getsm}} for details).
 #' @param pretest_steps Logical. Default is \code{FALSE}. This argument controls
 #' whether isat should first be run for SIS in isolation before other saturation
 #' methods are added (IIS, TIS). This can lead to better results if there are many
