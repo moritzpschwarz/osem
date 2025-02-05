@@ -19,6 +19,7 @@ estimate_module(
   gets_selection = TRUE,
   selection.tpval = 0.01,
   keep,
+  pretest_steps,
   quiet = FALSE
 )
 }
@@ -52,6 +53,14 @@ estimate_module(
 \item{keep}{Character. A string that will be used as regex (in \code{grepl()})
 when selection is carried out. This argument therefore requires \code{gets_selection = TRUE}.
 Variables that match this character will not be selected over (see \link{gets::getsm} for details).}
+
+\item{pretest_steps}{Logical. Default is \code{FALSE}. This argument controls
+whether isat should first be run for SIS in isolation before other saturation
+methods are added (IIS, TIS). This can lead to better results if there are many
+IIS identified at the end of the estimation sample/forecast origin. If \code{TRUE}
+then \code{\link[gets]{isat}} is first carried out just for SIS (if activated using 'sis = TRUE'),
+then the SIS breaks are pre-entered to another \code{\link[gets]{isat}} estimation but not selected over.
+After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.}
 
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }

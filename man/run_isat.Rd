@@ -10,9 +10,11 @@ run_isat(
   xvars,
   clean_data,
   ar = NULL,
+  mc,
   saturation,
   saturation.tpval,
   max.block.size,
+  pretest_steps,
   determine.blocksize
 )
 }
@@ -27,11 +29,21 @@ run_isat(
 
 \item{ar}{numeric vector or \code{NULL}. The AR order to be used.}
 
+\item{mc}{Logical. Whether to use an intercept.}
+
 \item{saturation}{Carry out Indicator Saturation using the 'isat' function in the 'gets' package. Needs a character vector or string. Default is 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator Saturation. Other possible values are 'NULL' to disable or 'TIS' or Trend Indicator Saturation. When disabled, estimation will be carried out using the 'arx' function from the 'gets' package.}
 
 \item{saturation.tpval}{The target p-value of the saturation methods (e.g. SIS and IIS, see the 'isat' function in the 'gets' package). Default is 0.01.}
 
 \item{max.block.size}{Integer. Maximum size of block of variables to be selected over, default = 20.}
+
+\item{pretest_steps}{Logical. Default is \code{FALSE}. This argument controls
+whether isat should first be run for SIS in isolation before other saturation
+methods are added (IIS, TIS). This can lead to better results if there are many
+IIS identified at the end of the estimation sample/forecast origin. If \code{TRUE}
+then \code{\link[gets]{isat}} is first carried out just for SIS (if activated using 'sis = TRUE'),
+then the SIS breaks are pre-entered to another \code{\link[gets]{isat}} estimation but not selected over.
+After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.}
 
 \item{determine.blocksize}{Logical. Whether max.block.size or needs to be determined.}
 }

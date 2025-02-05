@@ -34,6 +34,7 @@ estimate_module <- function(clean_data,
                             gets_selection = TRUE,
                             selection.tpval = 0.01,
                             keep,
+                            pretest_steps,
                             quiet = FALSE) {
   # Set-up ------------------------------------------------------------------
   log_opts <- use_logs
@@ -137,10 +138,12 @@ estimate_module <- function(clean_data,
                                    yvar = yvar,
                                    y.name = y.name,
                                    xvars  = xvars,
+                                   mc = TRUE,
                                    clean_data = clean_data,
                                    saturation = saturation,
                                    saturation.tpval = saturation.tpval,
                                    max.block.size = max.block.size,
+                                   pretest_steps = pretest_steps,
                                    determine.blocksize = TRUE)
         , silent = TRUE)
     } else {
@@ -245,9 +248,11 @@ estimate_module <- function(clean_data,
                                                 xvars  = retained.xvars,
                                                 clean_data = clean_data,
                                                 ar = ar_retained_num,
+                                                mc = any(grepl("mconst",best_isat_model.selected$aux$mXnames)),
                                                 saturation = saturation,
                                                 saturation.tpval = saturation.tpval,
                                                 determine.blocksize = FALSE,
+                                                pretest_steps = pretest_steps,
                                                 max.block.size = best_isat_model$aux$args$max.block.size)
 
       # best_isat_model.selected.isat <- gets::isat(y = zoo::zoo(yvar, order.by = clean_data$time),

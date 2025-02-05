@@ -2,6 +2,7 @@
 #' @param yvar The y variable
 #' @param y.name The name of the y variable.
 #' @param xvars All x variables.
+#' @param mc Logical. Whether to use an intercept.
 #' @param ar numeric vector or \code{NULL}. The AR order to be used.
 #' @inheritParams estimate_module
 #' @inheritParams run_module
@@ -14,9 +15,11 @@ run_isat <- function(yvar,
                      xvars,
                      clean_data,
                      ar = NULL,
+                     mc,
                      saturation,
                      saturation.tpval,
                      max.block.size,
+                     pretest_steps,
                      determine.blocksize){
 
   # debug_list <- list(yvar = yvar, xvars = xvars,i = i,saturation.tpval = saturation.tpval)
@@ -46,8 +49,6 @@ run_isat <- function(yvar,
     xvar_opts <- NULL
   }
 
-
-
   # try(intermed.model <- gets::isat(
   #   y = zoo::zoo(yvar, order.by = clean_data$time),
   #   mxreg = xvar_opts,
@@ -72,12 +73,12 @@ run_isat <- function(yvar,
   # environment(isat.default) <- asNamespace('gets')
   # assignInNamespace("isat.default", isat.default, ns = "gets")
 
-  if("SIS" %in% saturation){
+  if("SIS" %in% saturation & pretest_steps){
     init_sis_mod <- isat.osem.modified(
       y = zoo::zoo(yvar, order.by = clean_data$time),
       mxreg = xvar_opts,
       ar = ar,
-      mc = TRUE,
+      mc = mc,
       plot = FALSE,
       print.searchinfo = FALSE,
 
@@ -109,7 +110,7 @@ run_isat <- function(yvar,
       super_sat <- isat.osem.modified(y = zoo::zoo(yvar, order.by = clean_data$time),
                                       mxreg = new_data,
                                       ar = ar,
-                                      mc = TRUE,
+                                      mc = mc,
                                       sis = FALSE,
                                       iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
                                       tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
@@ -170,18 +171,18 @@ run_isat <- function(yvar,
   } else {
 
     # if SIS is FALSE, just do the standard isat
-
     try(intermed.model <- gets::isat(
       y = zoo::zoo(yvar, order.by = clean_data$time),
       mxreg = xvar_opts,
-      ar = ar_opts_isat,
+      ar = ar,
+      mc = mc,
       plot = FALSE,
       print.searchinfo = FALSE,
       iis = ifelse("IIS" %in% saturation, TRUE, FALSE),
       sis = ifelse("SIS" %in% saturation, TRUE, FALSE),
       tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
       t.pval = saturation.tpval,
-      max.block.size = maxblocksize
+      max.block.size = maxblocksize,
     ), silent = TRUE)
   }
 

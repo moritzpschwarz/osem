@@ -45,7 +45,7 @@ isat.osem.modified(
 )
 }
 \arguments{
-\item{y}{numeric vector, time-series, \code{\link{zoo}}, or object of class \code{\link{lm}} or \code{\link[gets]{arx}}. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command}
+\item{y}{numeric vector, time-series, \code{\link[zoo]{zoo}}, or object of class \code{\link{lm}} or \code{\link[gets]{arx}}. Missing values in the beginning and at the end of the series is allowed, as they are removed with the \code{\link[zoo]{na.trim}} command}
 
 \item{mc}{logical. \code{TRUE} (default) includes an intercept in the mean specification, whereas FALSE does not}
 
@@ -53,7 +53,7 @@ isat.osem.modified(
 
 \item{ewma}{either NULL (default) or a list with arguments sent to the \code{\link[gets]{eqwma}} function. In the latter case a lagged moving average of y is included as a regressor}
 
-\item{mxreg}{numeric vector or matrix, say, a \code{\link{zoo}} object, of conditioning variables. Note that missing values in the beginning or at the end of the series is allowed, as they are removed with the \code{\link{na.trim}} command. Note also that, if both \code{y} and \code{mxreg} are \code{zoo} objects, then their samples are chosen to match}
+\item{mxreg}{numeric vector or matrix, say, a \code{\link[zoo]{zoo}} object, of conditioning variables. Note that missing values in the beginning or at the end of the series is allowed, as they are removed with the \code{\link[zoo]{na.trim}} command. Note also that, if both \code{y} and \code{mxreg} are \code{\link[zoo]{zoo}} objects, then their samples are chosen to match}
 
 \item{iis}{logical. If \code{TRUE}, impulse indicator saturation is performed.}
 

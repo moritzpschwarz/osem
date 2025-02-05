@@ -28,6 +28,13 @@
 #' @param keep Character. A string that will be used as regex (in \code{grepl()})
 #' when selection is carried out. This argument therefore requires \code{gets_selection = TRUE}.
 #' Variables that match this character will not be selected over (see \link{gets::getsm} for details).
+#' @param pretest_steps Logical. Default is \code{FALSE}. This argument controls
+#' whether isat should first be run for SIS in isolation before other saturation
+#' methods are added (IIS, TIS). This can lead to better results if there are many
+#' IIS identified at the end of the estimation sample/forecast origin. If \code{TRUE}
+#' then \code{\link[gets]{isat}} is first carried out just for SIS (if activated using 'sis = TRUE'),
+#' then the SIS breaks are pre-entered to another \code{\link[gets]{isat}} estimation but not selected over.
+#' After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
 #' @param plot Logical with default = TRUE. Should plots be displayed?
@@ -103,6 +110,8 @@ run_model <- function(specification,
                       keep = NULL,
 
                       #manual_models = NULL,
+
+                      pretest_steps = FALSE,
 
                       present = FALSE,
                       quiet = FALSE,
@@ -254,6 +263,7 @@ run_model <- function(specification,
       selection.tpval = selection.tpval,
       opts_df = opts_df,
       keep = keep,
+      pretest_steps = pretest_steps,
       quiet = quiet
     )
 
