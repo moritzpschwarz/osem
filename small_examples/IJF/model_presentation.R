@@ -286,10 +286,29 @@ for(country in all_countries){
     arrange(base_num, base, desc(term)) %>%
     pull(term) -> coef_order
 
-  coef_renamed <- coef_order %>%
-    str_replace_all("ln\\.","ln(")
-  coef_renamed[grepl("ln\\(", coef_renamed)] <- paste0(coef_renamed[grepl("ln\\(", coef_renamed)], ")")
-  names(coef_renamed) <- coef_order
+  # extract transformations
+  # technically, the transformation of the same var could differ across modules because of different samples
+  # need to ensure first the transformations are the same (otherwise cannot be same row in output latex table)
+  trafo <- bind_rows(model_result_ext$opts_df %>% pull(log_opts))
+  trafo <- trafo %>%
+    reframe(across(everything(), ~ na.omit(unique(.x))))
+  stopifnot(NROW(trafo) == 1L) # then can use same transformation in all tables
+  trafo <- trafo %>% pivot_longer(everything(), names_to = "variable", values_to = "trafo")
+
+  trafo_fun <- function(x) {
+    stopifnot(length(x) == 1L)
+    if (grepl("ln\\.", x)) {
+      var <- sub(".*\\.", "", x)
+      tr <- trafo %>% filter(variable == var) %>% pull(trafo)
+      xtrans <- paste0(str_replace(x, "ln\\.", paste0(tr, "(")), ")")
+      return(xtrans)
+    } else {
+      return(x)
+    }
+  }
+
+  coef_renamed <- sapply(coef_order, trafo_fun)
+  names(coef_renamed) <- coef_order # names should already be set but to be sure
 
   ## Regression Tables -------------------------------------------------------
 
@@ -301,7 +320,7 @@ for(country in all_countries){
   for(i in 1:no_of_tables){
     # i = 1
     model_list[cut(1:length(model_list), breaks = no_of_tables, labels = FALSE) == i] -> model_list_temp
-    models_renamed <- paste0("ln(", names(model_list_temp), ")")
+    models_renamed <- sapply(names(model_list_temp), function(x) paste0(trafo %>% filter(variable == x) %>% pull(trafo), "(", x, ")"))
     names(model_list_temp) <- models_renamed
 
     table_output <- modelsummary::modelsummary(
@@ -325,7 +344,7 @@ for(country in all_countries){
   ## selected variables ------------------------------------------------------
 
   model_list[grepl(vars_to_grab, names(model_list))] -> model_list_temp
-  models_renamed <- paste0("ln(", names(model_list_temp), ")")
+  models_renamed <- sapply(names(model_list_temp), function(x) paste0(trafo %>% filter(variable == x) %>% pull(trafo), "(", x, ")"))
   names(model_list_temp) <- models_renamed
 
   table_output <- modelsummary::modelsummary(
