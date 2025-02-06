@@ -101,9 +101,15 @@ test_that("Testing general insample forecasting", {
                      24249.7797, 19797.1984, 38374.0713, 45805.7061, 24294.673, 18794.16,
                      38374.0713, 44875.0549, 24294.673))
 
+
+  expect_error(plot(mod_insfc, first_date = "asd"))
+  expect_error(plot(mod_insfc, first_date_insample_model = "asd"))
+  expect_error(plot(mod_insfc, first_date_insample_model = 20))
+
   skip_on_ci()
   skip_on_cran()
   expect_snapshot_plot("insample_forecast",code = plot(mod_insfc))
+
 
 
 
