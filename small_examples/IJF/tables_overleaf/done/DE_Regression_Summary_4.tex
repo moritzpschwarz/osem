@@ -1,0 +1,42 @@
+\begin{table}
+\label{tab:regression_summaryDE_4}
+\centering\centering
+\caption{Final OSEM Model result for each module for Germany. Part 4.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & ln(EmiCO2Residential) & ln(ElectrCons) & ln(EmiCH4EntericFerment) & ln(EmiCO2CivAvi)\\
+\midrule
+ar1 &  & \num{0.388}*** & \num{0.995}*** & \num{0.993}***\\
+ &  & (\num{0.081}) & (\num{0.013}) & (\num{0.002})\\
+mconst & \num{15.871}*** & \num{3.665}** & \num{0.606}** & \\
+ & (\num{1.147}) & (\num{1.212}) & (\num{0.191}) & \\
+ln(HDD) & \num{0.488}*** &  &  & \\
+ & (\num{0.021}) &  &  & \\
+ln(HICP\_Electricity) &  & \num{-0.220}*** &  & \\
+ &  & (\num{0.039}) &  & \\
+ln(PriceETS) &  & \num{0.026}** &  & \\
+ &  & (\num{0.008}) &  & \\
+L1.ln(PriceETS) &  & \num{-0.023}** &  & \\
+ &  & (\num{0.007}) &  & \\
+ln(RealConsHH) & \num{-0.642}*** & \num{0.370}*** &  & \\
+ & (\num{0.087}) & (\num{0.100}) &  & \\
+L1.ln(RealConsHH) &  &  & \num{-0.038}*** & \\
+ &  &  & (\num{0.010}) & \\
+ln(RealVAAgriculture) &  &  & \num{0.052}*** & \\
+ &  &  & (\num{0.007}) \vphantom{1} & \\
+L1.ln(RealVAAgriculture) &  &  & \num{-0.050}*** & \\
+ &  &  & (\num{0.007}) & \\
+L1.ln(Slaughter) &  &  & \num{-0.019}*** & \\
+ &  &  & (\num{0.005}) & \\
+\midrule
+Num.Obs. & \num{132} & \num{66} & \num{131} & \num{215}\\
+AIC & \num{-384.4} & \num{-316.9} & \num{-1073.8} & \num{-869.3}\\
+BIC & \num{-355.6} & \num{-290.6} & \num{-1013.4} & \num{-808.6}\\
+Log.Lik. & \num{202.201} & \num{170.427} & \num{557.901} & \num{452.660}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

@@ -1,0 +1,38 @@
+\begin{table}
+\label{tab:regression_summaryDK_4}
+\centering\centering
+\caption{Final OSEM Model result for each module for Denmark. Part 4.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & EmiCO2Residential & ElectrCons & EmiCH4EntericFerment & EmiCO2CivAvi\\
+\midrule
+mconst & \num{-1.765} & \num{9.554}*** & \num{4.210}*** & \num{1.277}\\
+ & (\num{1.189}) & (\num{0.148}) & (\num{0.226}) & (\num{1.563})\\
+trend & \num{-0.009}*** & \num{-0.002}*** & \num{-0.001}*** & \num{-0.012}***\\
+ & (\num{0.001}) & (\num{0.000}) & (\num{0.000}) & (\num{0.001})\\
+ln.CDD & \num{-0.039}*** &  &  & \\
+ & (\num{0.009}) &  &  & \\
+ln.HDD & \num{0.605}*** &  &  & \\
+ & (\num{0.022}) &  &  & \\
+ln.HICP\_Electricity &  & \num{-0.019} &  & \\
+ &  & (\num{0.027}) &  & \\
+ln.PriceETS &  & \num{0.008}+ &  & \\
+ &  & (\num{0.004}) &  & \\
+ln.RealConsHH & \num{0.630}*** &  & \num{-0.050}+ & \num{0.437}**\\
+ & (\num{0.121}) &  & (\num{0.025}) & (\num{0.163})\\
+ln.RealVAAgriculture &  &  & \num{-0.013}* & \\
+ &  &  & (\num{0.006}) & \\
+ln.Slaughter &  &  & \num{0.055}*** & \\
+ &  &  & (\num{0.014}) & \\
+\midrule
+Num.Obs. & \num{132} & \num{67} & \num{132} & \num{132}\\
+AIC & \num{-445.8} & \num{-338.1} & \num{-863.7} & \num{-348.5}\\
+BIC & \num{-405.4} & \num{-313.8} & \num{-829.2} & \num{-319.7}\\
+Log.Lik. & \num{236.893} & \num{180.043} & \num{443.874} & \num{184.274}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

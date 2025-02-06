@@ -1,0 +1,44 @@
+\begin{table}
+\label{tab:regression_summaryAT_3}
+\centering\centering
+\caption{Final OSEM Model result for each module for Austria. Part 3.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & ln(VAIndustry) & ln(VARetail) & ln(VARealEstate) & ln(Flights)\\
+\midrule
+ar1 &  &  & \num{0.899}*** & \\
+ &  &  & (\num{0.018}) & \\
+mconst &  & \num{0.638} &  & \\
+ &  & (\num{0.686}) &  & \\
+trend & \num{-0.001}*** & \num{0.002}** &  & \num{-0.018}***\\
+ & (\num{0.000}) & (\num{0.001}) &  & (\num{0.002})\\
+ln(CapForm) & \num{0.559}*** &  &  & \\
+ & (\num{0.075}) &  &  & \\
+L1.ln(CapForm) &  &  & \num{-0.078}*** & \\
+ &  &  & (\num{0.017}) & \\
+ln(ConsGov) & \num{-0.305}** &  &  & \\
+ & (\num{0.106}) &  &  & \\
+ln(ConsHH) & \num{0.701}*** & \num{0.824}*** &  & \\
+ & (\num{0.094}) & (\num{0.075}) &  & \\
+L1.ln(ConsHH) &  &  & \num{0.125}*** & \\
+ &  &  & (\num{0.020}) & \\
+ln(HICP\_AviaInt) &  &  &  & \num{0.683}***\\
+ &  &  &  & (\num{0.173})\\
+ln(HousePriceIndex) &  &  & \num{0.073}*** & \\
+ &  &  & (\num{0.011}) & \\
+ln(PriceETS) & \num{-0.004} &  &  & \\
+ & (\num{0.003}) &  &  & \\
+ln(RealConsHH) &  &  &  & \num{0.701}***\\
+ &  &  &  & (\num{0.106})\\
+\midrule
+Num.Obs. & \num{79} & \num{119} & \num{59} & \num{47}\\
+AIC & \num{-332.1} & \num{-619.5} & \num{-434.7} & \num{-99.6}\\
+BIC & \num{-303.7} & \num{-577.8} & \num{-424.3} & \num{-81.1}\\
+Log.Lik. & \num{178.062} & \num{324.740} & \num{222.339} & \num{59.807}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

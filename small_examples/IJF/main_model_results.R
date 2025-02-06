@@ -254,6 +254,7 @@ for(country in c("DE","AT","FR", "DK")){
     saturation.tpval = 0.001,
     gets_selection = TRUE,
     constrain.to.minimum.sample = FALSE,
+    pretest_steps = TRUE,
     plot = FALSE,
     keep = "PriceETS|RealVAIndustry"
   )

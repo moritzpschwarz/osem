@@ -1,0 +1,44 @@
+\begin{table}
+\label{tab:regression_summaryAT_2}
+\centering\centering
+\caption{Final OSEM Model result for each module for Austria. Part 2.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & ln(CapFormHH) & ln(DFGDP) & ln(VAService) & ln(VAGov)\\
+\midrule
+ar1 &  & \num{0.486}*** & \num{0.213}*** & \num{0.076}**\\
+ &  & (\num{0.081}) & (\num{0.049}) & (\num{0.026})\\
+ar2 &  & \num{0.324}*** & \num{-0.117}** & \num{0.144}***\\
+ &  & (\num{0.077}) & (\num{0.044}) & (\num{0.041})\\
+ar3 &  &  & \num{0.190}*** & \\
+ &  &  & (\num{0.044}) & \\
+ar4 &  &  & \num{0.742}*** & \num{0.421}***\\
+ &  &  & (\num{0.051}) & (\num{0.054})\\
+mconst & \num{4.831}*** & \num{0.717}*** &  & \num{-0.574}***\\
+ & (\num{0.092}) & (\num{0.138}) &  & (\num{0.091})\\
+trend &  & \num{0.001}*** &  & \\
+ &  & (\num{0.000}) &  & \\
+ln(ConsGov) &  &  &  & \num{0.658}***\\
+ &  &  &  & (\num{0.045})\\
+L4.ln(ConsGov) &  &  &  & \num{-0.406}***\\
+ &  &  &  & (\num{0.064})\\
+ln(ConsHH) &  &  & \num{0.697}*** & \\
+ &  &  & (\num{0.081}) & \\
+L4.ln(ConsHH) &  &  & \num{-0.721}*** & \\
+ &  &  & (\num{0.078}) & \\
+L3.ln(ConsHH) &  &  &  & \num{0.145}***\\
+ &  &  &  & (\num{0.026})\\
+ln(HousePriceIndex) & \num{0.761}*** &  &  & \\
+ & (\num{0.021}) &  &  & \\
+\midrule
+Num.Obs. & \num{59} & \num{117} & \num{115} & \num{115}\\
+AIC & \num{-215.3} & \num{-804.8} & \num{-557.1} & \num{-765.7}\\
+BIC & \num{-200.8} & \num{-774.4} & \num{-513.2} & \num{-710.8}\\
+Log.Lik. & \num{114.655} & \num{413.393} & \num{294.556} & \num{402.863}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

@@ -1,0 +1,34 @@
+\begin{table}
+\label{tab:regression_summaryAT_4}
+\centering\centering
+\caption{Final OSEM Model result for each module for Austria. Part 4.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & ln(EmiCO2Residential) & ln(ElectrCons) & ln(EmiCH4EntericFerment) & ln(EmiCO2CivAvi)\\
+\midrule
+ar1 &  & \num{0.220}*** & \num{1.000}*** & \num{0.999}***\\
+ &  & (\num{0.045}) & (\num{0.000}) & (\num{0.003})\\
+mconst & \num{6.968}*** & \num{6.769}*** &  & \\
+ & (\num{0.528}) & (\num{0.450}) &  & \\
+trend & \num{-0.001}+ &  &  & \\
+ & (\num{0.000}) &  &  & \\
+ln(HDD) & \num{0.614}*** &  &  & \\
+ & (\num{0.023}) &  &  & \\
+ln(HICP\_Electricity) & \num{-0.516}*** & \num{0.158}** &  & \\
+ & (\num{0.096}) & (\num{0.055}) &  & \\
+ln(PriceETS) &  & \num{0.001} &  & \\
+ &  & (\num{0.006}) &  \vphantom{1} & \\
+L1.ln(PriceETS) &  & \num{-0.012}* &  & \\
+ &  & (\num{0.006}) &  & \\
+\midrule
+Num.Obs. & \num{112} & \num{66} & \num{215} & \num{215}\\
+AIC & \num{-420.4} & \num{-351.1} & \num{-1835.5} & \num{-1061.9}\\
+BIC & \num{-382.3} & \num{-327.0} & \num{-1751.2} & \num{-974.2}\\
+Log.Lik. & \num{224.186} & \num{186.565} & \num{942.730} & \num{556.927}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

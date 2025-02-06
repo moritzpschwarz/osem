@@ -1,34 +1,44 @@
 \begin{table}
-\label{tab:regression_summaryDE_4}
+\label{tab:regression_summaryDE_5}
 \centering\centering
 \caption{Final OSEM Model result for selected modules for Germany.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & ElectrCons & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
+  & ln(ElectrCons) & ln(EmiCO2ManInd) & ln(EmiCO2RoaTra) & ln(EmiCO2ElecHeat)\\
 \midrule
-ar1 & \num{0.364}*** & \num{1.006}*** & \num{0.990}*** & \\
- & (\num{0.076}) & (\num{0.000}) & (\num{0.003}) & \\
-mconst & \num{3.199}** &  & \num{0.029} & \num{6.783}***\\
- & (\num{1.071}) &  & (\num{0.033}) & (\num{1.203})\\
-trend &  &  &  & \num{-0.009}***\\
+ar1 & \num{0.388}*** & \num{1.002}*** & \num{1.006}*** & \\
+ & (\num{0.081}) & (\num{0.005}) & (\num{0.010}) & \\
+mconst & \num{3.665}** &  &  & \num{8.963}***\\
+ & (\num{1.212}) &  &  & (\num{1.077})\\
+trend &  &  &  & \num{-0.004}***\\
  &  &  &  & (\num{0.001})\\
-ln.HICP\_Electricity & \num{-0.228}*** &  &  & \\
- & (\num{0.034}) &  &  & \\
-ln.PriceETS & \num{0.025}*** &  &  & \num{-0.017}**\\
- & (\num{0.006}) &  &  & (\num{0.005})\\
-L1.ln.PriceETS & \num{-0.023}** &  &  & \\
+ln(HICP\_Electricity) & \num{-0.220}*** &  &  & \\
+ & (\num{0.039}) &  &  & \\
+ln(HICPlocal) &  &  & \num{-0.096}* & \\
+ &  &  & (\num{0.047}) \vphantom{1} & \\
+L2.ln(HICPlocal) &  &  & \num{0.112}* & \\
+ &  &  & (\num{0.047}) & \\
+ln(PriceETS) & \num{0.026}** &  &  & \num{-0.012}*\\
+ & (\num{0.008}) &  &  & (\num{0.005})\\
+L1.ln(PriceETS) & \num{-0.023}** &  &  & \\
  & (\num{0.007}) &  &  & \\
-ln.RealConsHH & \num{0.432}*** &  &  & \\
- & (\num{0.091}) &  &  & \\
-ln.RealVAIndustry &  &  &  & \num{0.511}***\\
- &  &  &  & (\num{0.110})\\
+ln(RealConsHH) & \num{0.370}*** &  &  & \\
+ & (\num{0.100}) &  &  & \\
+L2.ln(RealConsHH) &  &  & \num{0.006} & \\
+ &  &  & (\num{0.022}) & \\
+L1.ln(RealConsHH) &  &  & \num{-0.022} & \\
+ &  &  & (\num{0.023}) & \\
+ln(RealVAIndustry) &  & \num{-0.003} &  & \num{0.259}**\\
+ &  & (\num{0.019}) &  & (\num{0.095})\\
+L1.ln(RealVAIndustry) &  & \num{0.007} &  & \\
+ &  & (\num{0.019}) &  & \\
 \midrule
-Num.Obs. & \num{66} & \num{215} & \num{215} & \num{76}\\
-AIC & \num{-331.0} & \num{-1171.8} & \num{-1414.6} & \num{-254.5}\\
-BIC & \num{-298.1} & \num{-1124.6} & \num{-1353.9} & \num{-210.2}\\
-Log.Lik. & \num{180.489} & \num{599.905} & \num{725.281} & \num{146.249}\\
+Num.Obs. & \num{66} & \num{131} & \num{110} & \num{76}\\
+AIC & \num{-316.9} & \num{-935.6} & \num{-877.2} & \num{-259.3}\\
+BIC & \num{-290.6} & \num{-852.3} & \num{-812.4} & \num{-229.0}\\
+Log.Lik. & \num{170.427} & \num{496.824} & \num{462.611} & \num{142.661}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\

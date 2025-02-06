@@ -1,0 +1,50 @@
+\begin{table}
+\label{tab:regression_summaryFR_4}
+\centering\centering
+\caption{Final OSEM Model result for each module for France. Part 4.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & ln(EmiCO2Residential) & ln(ElectrCons) & ln(EmiCH4EntericFerment) & ln(EmiCO2CivAvi)\\
+\midrule
+ar1 &  &  & \num{0.971}*** & \num{0.965}***\\
+ &  &  & (\num{0.016}) & (\num{0.022})\\
+mconst & \num{10.106}*** &  &  & \\
+ & (\num{0.241}) &  &  & \\
+trend &  & \num{-0.003}*** & \num{0.000}*** & \num{0.000}+\\
+ &  & (\num{0.000}) & (\num{0.000}) & (\num{0.000})\\
+ln(CDD) & \num{-0.029}*** &  &  & \\
+ & (\num{0.007}) &  &  & \\
+ln(Flights) &  &  &  & \num{0.017}\\
+ &  &  &  & (\num{0.010})\\
+L1.ln(Flights) &  &  &  & \num{0.000}\\
+ &  &  &  & (\num{0.008})\\
+ln(HDD) & \num{0.473}*** &  &  & \\
+ & (\num{0.019}) &  &  & \\
+ln(HICP\_Electricity) & \num{-0.513}*** &  &  & \\
+ & (\num{0.032}) &  &  & \\
+L1.ln(HICPlocal) &  &  &  & \num{-0.036}\\
+ &  &  &  & (\num{0.066})\\
+ln(PriceETS) &  & \num{0.009}+ &  & \\
+ &  & (\num{0.005}) &  & \\
+ln(RealConsHH) &  & \num{0.994}*** &  & \\
+ &  & (\num{0.006}) &  & \\
+L1.ln(RealConsHH) &  &  & \num{0.030}*** & \\
+ &  &  & (\num{0.008}) & \\
+ln(RealVAService) &  &  &  & \num{-0.098}\\
+ &  &  &  & \vphantom{1} (\num{0.083})\\
+L1.ln(RealVAService) &  &  &  & \num{0.109}\\
+ &  &  &  & (\num{0.083})\\
+L1.ln(Slaughter) &  &  & \num{-0.030}*** & \\
+ &  &  & (\num{0.007}) & \\
+\midrule
+Num.Obs. & \num{112} & \num{67} & \num{175} & \num{87}\\
+AIC & \num{-391.6} & \num{-284.5} & \num{-1386.4} & \num{-515.2}\\
+BIC & \num{-350.9} & \num{-264.7} & \num{-1329.4} & \num{-468.3}\\
+Log.Lik. & \num{210.822} & \num{151.248} & \num{711.192} & \num{276.588}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

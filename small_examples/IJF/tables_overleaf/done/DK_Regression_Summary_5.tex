@@ -1,0 +1,38 @@
+\begin{table}
+\label{tab:regression_summaryDK_5}
+\centering\centering
+\caption{Final OSEM Model result for each module for Denmark. Part 5.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & RoadFreight & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
+\midrule
+mconst & \num{8.620}*** & \num{8.436}*** & \num{3.113}*** & \num{14.712}*\\
+ & (\num{0.012}) & (\num{0.614}) & (\num{0.502}) & (\num{6.755})\\
+trend &  & \num{0.002}*** &  & \num{-0.036}***\\
+ &  & (\num{0.001}) &  & (\num{0.003})\\
+ln.ElectrCons &  &  &  & \num{0.718}\\
+ &  &  &  & (\num{0.611})\\
+ln.HICPlocal &  & \num{-1.261}*** &  & \\
+ &  & (\num{0.130}) &  & \\
+ln.PriceETS &  &  &  & \num{-0.004}\\
+ &  &  &  & (\num{0.032})\\
+ln.RealCapFormHH &  &  &  & \num{-0.814}***\\
+ &  &  &  & (\num{0.162})\\
+ln.RealConsHH &  &  & \num{0.483}*** & \\
+ &  &  & (\num{0.040}) & \\
+ln.RealVAIndustry &  & \num{0.425}*** &  & \num{-0.011}\\
+ &  & (\num{0.044}) &  & (\num{0.337})\\
+ln.RoadFreight &  &  & \num{-0.013} & \\
+ &  &  & (\num{0.027}) & \\
+\midrule
+Num.Obs. & \num{102} & \num{112} & \num{100} & \num{64}\\
+AIC & \num{-276.8} & \num{-444.2} & \num{-523.4} & \num{-70.4}\\
+BIC & \num{-261.1} & \num{-419.7} & \num{-494.8} & \num{-46.6}\\
+Log.Lik. & \num{144.402} & \num{231.077} & \num{272.718} & \num{46.193}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

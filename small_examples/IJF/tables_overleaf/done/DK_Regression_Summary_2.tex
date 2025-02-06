@@ -1,0 +1,38 @@
+\begin{table}
+\label{tab:regression_summaryDK_2}
+\centering\centering
+\caption{Final OSEM Model result for each module for Denmark. Part 2.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & CapFormHH & DFGDP & VAService & VAGov\\
+\midrule
+mconst & \num{-6.539}*** & \num{3.660}*** & \num{-1.765} & \num{1.167}***\\
+ & (\num{1.211}) & (\num{0.008}) & (\num{1.127}) & (\num{0.222})\\
+trend & \num{-0.008}*** & \num{0.005}*** & \num{0.005}*** & \num{0.001}***\\
+ & (\num{0.002}) & (\num{0.000}) & (\num{0.001}) & (\num{0.000})\\
+ln.BuildingPermits & \num{0.032} &  &  & \\
+ & (\num{0.026}) &  &  & \\
+ln.ConsGov &  &  & \num{0.501}*** & \num{0.457}***\\
+ &  &  & (\num{0.107}) & (\num{0.030})\\
+L1.ln.ConsGov &  &  &  & \num{0.322}***\\
+ &  &  &  & (\num{0.030})\\
+ln.ConsHH &  &  & \num{0.433}** & \num{0.208}***\\
+ &  &  & (\num{0.130}) & (\num{0.031})\\
+L1.ln.ConsHH &  &  &  & \num{-0.152}***\\
+ &  &  &  & (\num{0.028})\\
+ln.HICPlocal & \num{1.739}*** &  &  & \\
+ & (\num{0.300}) &  &  & \\
+ln.HousePriceIndex & \num{1.813}*** &  &  & \\
+ & (\num{0.123}) &  &  & \\
+\midrule
+Num.Obs. & \num{75} & \num{135} & \num{135} & \num{134}\\
+AIC & \num{-236.3} & \num{-832.2} & \num{-465.2} & \num{-923.8}\\
+BIC & \num{-213.1} & \num{-800.3} & \num{-439.0} & \num{-883.2}\\
+Log.Lik. & \num{128.153} & \num{427.117} & \num{241.581} & \num{475.881}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

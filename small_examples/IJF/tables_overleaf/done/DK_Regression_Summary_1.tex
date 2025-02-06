@@ -1,0 +1,38 @@
+\begin{table}
+\label{tab:regression_summaryDK_1}
+\centering\centering
+\caption{Final OSEM Model result for each module for Denmark. Part 1.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
+\toprule
+  & Imports & Exports & HICPlocal & Inflation & ConsHH\\
+\midrule
+mconst & \num{13.639}*** & \num{12.170}*** & \num{4.314}*** & \num{0.167} & \num{7.681}***\\
+ & (\num{0.686}) & (\num{0.646}) & (\num{0.111}) & (\num{0.274}) & (\num{0.444})\\
+trend & \num{0.017}*** & \num{0.013}*** & \num{0.005}*** &  & \num{0.007}***\\
+ & (\num{0.000}) & (\num{0.001}) & (\num{0.000}) &  & (\num{0.001})\\
+ln.FinWealthHH &  &  &  &  & \num{0.058}*\\
+ &  &  &  &  & (\num{0.023})\\
+ln.HICPlocal &  &  &  &  & \num{0.167}*\\
+ &  &  &  &  & (\num{0.079})\\
+ln.LabourProd &  &  & \num{-0.120}*** &  & \\
+ &  &  & (\num{0.025}) &  & \\
+ln.PriceImports &  &  & \num{-0.023}** &  & \\
+ &  &  & (\num{0.008}) &  & \\
+ln.PriceOil &  &  & \num{0.027}*** & \num{0.951}*** & \\
+ &  &  & (\num{0.004}) & (\num{0.248}) & \\
+L1.ln.PriceOil &  &  &  & \num{-0.865}*** & \\
+ &  &  &  & (\num{0.247}) & \\
+ln.REER & \num{-1.005}*** & \num{-0.871}*** &  &  & \\
+ & (\num{0.148}) & (\num{0.140}) &  &  & \\
+\midrule
+Num.Obs. & \num{123} & \num{123} & \num{115} & \num{115} & \num{103}\\
+AIC & \num{-450.1} & \num{-455.3} & \num{-838.0} & \num{114.8} & \num{-595.1}\\
+BIC & \num{-413.5} & \num{-415.9} & \num{-799.6} & \num{136.8} & \num{-558.2}\\
+Log.Lik. & \num{238.040} & \num{241.642} & \num{432.995} & \num{-49.411} & \num{311.553}\\
+\bottomrule
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

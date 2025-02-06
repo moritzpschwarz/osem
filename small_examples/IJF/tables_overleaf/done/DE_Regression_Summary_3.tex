@@ -1,0 +1,36 @@
+\begin{table}
+\label{tab:regression_summaryDE_3}
+\centering\centering
+\caption{Final OSEM Model result for each module for Germany. Part 3.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & ln(VAIndustry) & ln(VARetail) & ln(VARealEstate) & ln(Flights)\\
+\midrule
+mconst &  & \num{-2.476}*** & \num{7.340}*** & \num{7.987}***\\
+ &  & (\num{0.400}) & (\num{0.745}) & (\num{0.794})\\
+trend &  & \num{0.001}** & \num{0.008}*** & \\
+ &  & (\num{0.000}) & (\num{0.001}) & \\
+ln(CapForm) & \num{0.564}*** & \num{0.199}*** & \num{-0.137}** & \\
+ & (\num{0.050}) & (\num{0.022}) & (\num{0.047}) & \\
+ln(ConsGov) &  & \num{-0.052}* &  & \\
+ &  & (\num{0.023}) &  & \\
+ln(ConsHH) & \num{0.418}*** & \num{0.943}*** & \num{0.410}*** & \\
+ & (\num{0.046}) & (\num{0.044}) & (\num{0.064}) & \\
+ln(HICP\_AviaInt) &  &  &  & \num{0.651}***\\
+ &  &  &  & (\num{0.139})\\
+ln(HousePriceIndex) &  &  & \num{-0.260}*** & \\
+ &  &  & (\num{0.025}) & \\
+ln(PriceETS) & \num{-0.003} &  &  & \\
+ & (\num{0.002}) &  &  & \\
+\midrule
+Num.Obs. & \num{79} & \num{103} & \num{79} & \num{38}\\
+AIC & \num{-410.0} & \num{-636.7} & \num{-516.7} & \num{-133.6}\\
+BIC & \num{-379.2} & \num{-602.5} & \num{-478.8} & \num{-110.7}\\
+Log.Lik. & \num{217.995} & \num{331.357} & \num{274.369} & \num{80.822}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

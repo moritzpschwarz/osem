@@ -1,0 +1,38 @@
+\begin{table}
+\label{tab:regression_summaryAT_5}
+\centering\centering
+\caption{Final OSEM Model result for selected modules for Austria.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & ln(ElectrCons) & ln(EmiCO2ManInd) & ln(EmiCO2RoaTra) & ln(EmiCO2ElecHeat)\\
+\midrule
+ar1 & \num{0.220}*** & \num{1.008}*** & \num{0.992}*** & \\
+ & (\num{0.045}) & (\num{0.010}) & (\num{0.001}) & \\
+mconst & \num{6.769}*** &  &  & \\
+ & (\num{0.450}) &  &  & \\
+trend &  &  &  & \num{-0.010}***\\
+ &  &  &  & (\num{0.001})\\
+ln(HDD) &  &  &  & \num{0.361}***\\
+ &  &  &  & (\num{0.019})\\
+ln(HICP\_Electricity) & \num{0.158}** &  &  & \\
+ & (\num{0.055}) &  &  & \\
+ln(PriceETS) & \num{0.001} &  &  & \num{0.002}\\
+ & (\num{0.006}) &  &  & (\num{0.013})\\
+L1.ln(PriceETS) & \num{-0.012}* &  &  & \\
+ & (\num{0.006}) &  &  & \\
+ln(RealVAIndustry) &  & \num{-0.012} &  & \num{0.791}***\\
+ &  & (\num{0.023}) &  & (\num{0.020})\\
+L1.ln(RealVAIndustry) &  & \num{0.014} &  & \\
+ &  & (\num{0.022}) &  & \\
+\midrule
+Num.Obs. & \num{66} & \num{115} & \num{215} & \num{76}\\
+AIC & \num{-351.1} & \num{-784.6} & \num{-1358.5} & \num{-89.9}\\
+BIC & \num{-327.0} & \num{-707.7} & \num{-1247.3} & \num{-73.5}\\
+Log.Lik. & \num{186.565} & \num{420.297} & \num{712.243} & \num{51.931}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

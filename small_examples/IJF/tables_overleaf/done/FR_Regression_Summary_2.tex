@@ -1,0 +1,52 @@
+\begin{table}
+\label{tab:regression_summaryFR_2}
+\centering\centering
+\caption{Final OSEM Model result for each module for France. Part 2.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & ln(CapFormHH) & ln(DFGDP) & ln(VAService) & ln(VAGov)\\
+\midrule
+ar1 & \num{0.840}*** & \num{0.462}*** & \num{0.739}*** & \num{0.374}***\\
+ & (\num{0.035}) & (\num{0.054}) & (\num{0.060}) & (\num{0.048})\\
+ar2 &  & \num{0.385}*** & \num{-0.228}*** & \\
+ &  & (\num{0.059}) & (\num{0.056}) & \\
+ar3 &  & \num{-0.143}* & \num{0.107}** & \\
+ &  & (\num{0.056}) & (\num{0.037}) & \\
+ar4 &  & \num{0.292}*** & \num{0.369}*** & \num{0.633}***\\
+ &  & (\num{0.054}) & (\num{0.053}) & (\num{0.046})\\
+mconst &  & \num{0.061}* &  & \num{-0.358}***\\
+ &  & (\num{0.024}) &  & (\num{0.100})\\
+trend &  &  &  & \num{0.000}***\\
+ &  &  &  & (\num{0.000})\\
+ln(BuildingPermits) & \num{0.091}*** &  &  & \\
+ & (\num{0.020}) &  &  & \\
+ln(ConsGov) &  &  & \num{0.375}*** & \num{0.877}***\\
+ &  &  & (\num{0.084}) & (\num{0.025})\\
+L4.ln(ConsGov) &  &  & \num{0.273}*** & \num{-0.604}***\\
+ &  &  & (\num{0.061}) & (\num{0.053})\\
+L2.ln(ConsGov) &  &  & \num{0.200}* & \\
+ &  &  & (\num{0.081}) & \\
+L1.ln(ConsGov) &  &  & \num{-0.806}*** & \num{-0.286}***\\
+ &  &  & (\num{0.083}) & (\num{0.045})\\
+ln(ConsHH) &  &  & \num{0.916}*** & \num{0.081}***\\
+ &  &  & (\num{0.049}) & (\num{0.014})\\
+L4.ln(ConsHH) &  &  & \num{-0.525}*** & \\
+ &  &  & (\num{0.060}) & \\
+L3.ln(ConsHH) &  &  &  & \num{-0.041}**\\
+ &  &  &  & (\num{0.013})\\
+L1.ln(ConsHH) &  &  & \num{-0.421}*** & \\
+ &  &  & (\num{0.044}) & \\
+ln(IncomeHH) & \num{0.090}*** &  &  & \\
+ & (\num{0.025}) &  &  & \\
+\midrule
+Num.Obs. & \num{120} & \num{176} & \num{175} & \num{175}\\
+AIC & \num{-506.1} & \num{-1236.7} & \num{-1018.7} & \num{-1351.8}\\
+BIC & \num{-475.4} & \num{-1179.6} & \num{-958.5} & \num{-1294.8}\\
+Log.Lik. & \num{264.029} & \num{636.356} & \num{528.331} & \num{693.880}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

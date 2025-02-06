@@ -1,0 +1,42 @@
+\begin{table}
+\label{tab:regression_summaryDE_5}
+\centering\centering
+\caption{Final OSEM Model result for each module for Germany. Part 5.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & ln(RoadFreight) & ln(EmiCO2ManInd) & ln(EmiCO2RoaTra) & ln(EmiCO2ElecHeat)\\
+\midrule
+ar1 &  & \num{1.002}*** & \num{1.006}*** & \\
+ &  & (\num{0.005}) & (\num{0.010}) & \\
+mconst & \num{8.838}*** &  &  & \num{8.963}***\\
+ & (\num{0.481}) &  &  & (\num{1.077})\\
+trend &  &  &  & \num{-0.004}***\\
+ &  &  &  & (\num{0.001})\\
+ln(HICPlocal) & \num{-0.676}*** &  & \num{-0.096}* & \\
+ & (\num{0.067}) &  & (\num{0.047}) & \\
+L2.ln(HICPlocal) &  &  & \num{0.112}* & \\
+ &  &  & (\num{0.047}) & \\
+ln(PriceETS) &  &  &  & \num{-0.012}*\\
+ &  &  &  & (\num{0.005})\\
+L2.ln(RealConsHH) &  &  & \num{0.006} & \\
+ &  &  & (\num{0.022}) & \\
+L1.ln(RealConsHH) &  &  & \num{-0.022} & \\
+ &  &  & (\num{0.023}) & \\
+ln(RealVAIndustry) &  & \num{-0.003} &  & \num{0.259}**\\
+ &  & (\num{0.019}) &  & (\num{0.095})\\
+L1.ln(RealVAIndustry) &  & \num{0.007} &  & \\
+ &  & (\num{0.019}) &  & \\
+ln(RealVAService) & \num{0.471}*** &  &  & \\
+ & (\num{0.063}) &  &  & \\
+\midrule
+Num.Obs. & \num{102} & \num{131} & \num{110} & \num{76}\\
+AIC & \num{-472.9} & \num{-935.6} & \num{-877.2} & \num{-259.3}\\
+BIC & \num{-438.7} & \num{-852.3} & \num{-812.4} & \num{-229.0}\\
+Log.Lik. & \num{249.427} & \num{496.824} & \num{462.611} & \num{142.661}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

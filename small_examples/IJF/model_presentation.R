@@ -14,8 +14,8 @@ all_countries <- c("DE","AT","FR","DK")
 
 # control what to run right now
 run_modelplots <- FALSE
-run_forecasts <- TRUE
-run_insample <- FALSE
+run_forecasts <- FALSE
+run_insample <- TRUE
 run_inventory_diagnostics <- FALSE
 run_network <- FALSE
 run_scenario <- FALSE
@@ -227,7 +227,7 @@ for(country in all_countries){
   if(run_insample){
     if(!file.exists(paste0("small_examples/IJF/", country, "/insample.RData"))){
       set.seed(8899)
-      insample <- forecast_insample(model_result_ext, sample_share = .96, exog_fill_method = c("auto"))
+      insample <- forecast_insample(model_result_ext, sample_share = .90, exog_fill_method = c("auto", "AR"))
       save(insample, file = paste0("small_examples/IJF/", country, "/insample.RData"))
     } else {
       load(paste0("small_examples/IJF/", country, "/insample.RData"))
@@ -573,6 +573,14 @@ for (country in all_countries[!grepl(main_country, all_countries)]) {
     \\label{fig:", country, "_entire_forecast}
 \\end{figure}
 
+
+\\begin{figure}
+    \\centering
+    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_AR.pdf}
+    \\caption{Forecast for ",country," for selected variables using an AR(4) Forecast with Indicator Saturation.}
+    \\label{fig:", country, "_entire_forecast}
+\\end{figure}
+
 %\\begin{figure}
 %    \\centering
 %    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_Selected.pdf}
@@ -636,7 +644,9 @@ cat("Figures LaTeX file generated:", output_file, "\n")
 # make linewidth smaller
 # Mean Absolute Percentage Error MAPE
 # log transformation in Regression Summaries
-
+# RMSE is for different forecasts
+# AR model --> same sample as the model
+# Random Walk from final value
 
 load(paste0("./small_examples/IJF/DE/model_sel.RData"))
 a <- forecast_comparison(model = model_result_ext_sel, n.ahead = 10, forecast_type = "AR")
