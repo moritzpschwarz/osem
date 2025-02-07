@@ -59,6 +59,30 @@ for(country in all_countries){
                             country == "AT" ~ "Austria",
                             country == "FR" ~ "France")
 
+  # create inflation from HICP module
+  hicp <- model_result_ext$full_data %>%
+    filter(na_item == "HICPlocal.hat") %>%
+    select(time, values) %>%
+    rename(HICP.hat = values) %>%
+    arrange(time) %>%
+    mutate(values = (HICP.hat - lag(HICP.hat, 1)) / lag(HICP.hat, 1) * 100) %>%
+    mutate(na_item = "Inflation2.hat") %>%
+    select(time, na_item, values)
+  inf2 <- model_result_ext$full_data %>%
+    filter(na_item == "Inflation") %>%
+    mutate(na_item = "Inflation2") %>%
+    arrange(time)
+  model_result_ext$full_data <- bind_rows(model_result_ext$full_data, hicp, inf2)
+  model_result_comp <- model_result_ext
+  # create plot for comparison as sanity check
+  plot(model_result_comp, grepl_variables = "Inflation", title = paste0("OSEM Model Output for ",country_long), linewidth = 0.75)
+  # now that have compared, replaced the original inflation with the HICP one
+  model_result_ext$full_data <- model_result_ext$full_data %>%
+    filter(na_item != "Inflation") %>%
+    filter(na_item != "Inflation.hat") %>%
+    mutate(na_item = case_when(na_item == "Inflation2" ~ "Inflation",
+                               na_item == "Inflation2.hat" ~ "Inflation.hat",
+                               TRUE ~ na_item))
 
   # Specification Table -----------------------------------------------------
 
@@ -141,7 +165,45 @@ for(country in all_countries){
 
     set.seed(8899)
     fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
+    set.seed(8899)
+    fc_comp <- forecast_model(model_result_comp, exog_fill_method = "auto")
 
+    # create inflation from HICP module
+    hicp <- fc_ext$full_forecast_data %>%
+      filter(na_item == "HICPlocal") %>%
+      select(time, values, type)
+    # first implied forecast of inflation is (HICPforecast1 - HICPobservedlast) / HICPobservedlast * 100
+    firstforecast <- hicp %>% filter(type == "Forecast") %>% pull(time) %>% min()
+    obsbefore <- seq(firstforecast, by = "-1 quarter", length.out = 2)[2]
+    valuebefore <- hicp %>% filter(time == obsbefore & type == "Observation") %>% pull(values)
+    hicp <- hicp %>% add_row(time = obsbefore, values = valuebefore, type = "Forecast")
+    hicp <- hicp %>%
+      arrange(type, time) %>%
+      group_by(type) %>%
+      mutate(Inflation = (values - lag(values, 1)) / lag(values, 1) * 100) %>%
+      # remove forecast first observation again (should be NA anyway)
+      ungroup() %>%
+      filter(!(time == obsbefore & type == "Forecast")) %>%
+      mutate(na_item = "Inflation2") %>%
+      select(time, na_item, Inflation, type) %>%
+      rename(values = Inflation)
+    # add inflation data to forecast data (keep both Inflation and Inflation2 for comparison initially)
+    fc_comp$full_forecast_data <- bind_rows(fc_comp$full_forecast_data, hicp)
+    fc_comp$forecast <- fc_comp$forecast %>% add_row(dep_var = "Inflation2", central.estimate = list(hicp %>% filter(type == "Forecast") %>% select(time, values) %>% rename(Inflation2 = values)))
+    fc_comp$orig_model$opts_df <- fc_comp$orig_model$opts_df %>% add_row(dependent = "Inflation2", log_opts = list(tibble(Inflation2 = "none")))
+    plot(fc_comp, title = paste0("Forecast for ",country_long), linewidth = lwidth, grepl_variables = "Inflation")
+    # now that have compared, replace the original inflation with the HICP one
+    fc_ext$full_forecast_data <- bind_rows(fc_ext$full_forecast_data %>% filter(na_item != "Inflation"), hicp %>% mutate(na_item = "Inflation"))
+    # also replace $forecast
+    # identify current inflation module
+    inflocation <- which(fc_ext$forecast$dep_var == "Inflation")
+    # replace central.estimate object
+    mintime <- fc_ext$forecast %>% filter(dep_var == "Inflation") %>% pull(central.estimate) %>% pluck(1) %>% pull(time) %>% min()
+    fc_ext$forecast[inflocation, "central.estimate"][[1]] <- list(hicp %>% filter(time >= mintime) %>% select(time, values) %>% rename(Inflation = values))
+    fc_ext$forecast[inflocation, "all.estimates"] <- tibble(all.estimates = list(NULL))
+    # identify current inflation module
+    inflocation <- which(fc_ext$orig_model$opts_df$dependent == "Inflation")
+    fc_ext$orig_model$opts_df[inflocation, "log_opts"][[1]] <- list(tibble(Inflation = "none"))
 
     # Forecast Plot -----------------------------------------------------------
 
