@@ -526,21 +526,22 @@ for(country in all_countries){
       mutate(DInventories_pct = DInventories / GDP * 100) %>%
       select(time, type, DInventories, DInventories_pct) %>%
       pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
-      mutate(unit = case_when(unit == "DInventories" ~ "CP_MEUR", unit == "DInventories_pct" ~ "% of GDP"))
+      mutate(unit = case_when(unit == "DInventories" ~ "Million EUR (current prices)", unit == "DInventories_pct" ~ "% of GDP"))
     # obtain DInventories and GDP model values and forecasts (fc_ext should be created above)
     fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
     DInventories_model <- fc_ext$full_forecast_data %>%
       filter(na_item %in% c("DInventories", "GDPExpenditure")) %>%
-      filter(type %in% c("Forecast", "Insample Fit")) %>%
+      filter(type %in% c("Forecast", "Insample Fit", "Nowcast")) %>%
       select(time, na_item, values, type) %>%
       pivot_wider(id_cols = c(time, type), names_from = na_item, values_from = values) %>%
       mutate(DInventories_pct = DInventories / GDPExpenditure * 100) %>%
       select(time, type, DInventories, DInventories_pct) %>%
       drop_na()
-    stopifnot(sum(duplicated(DInventories_model$time)) == 0)
+    # with nowcasts may now have duplicates
+    # stopifnot(sum(duplicated(DInventories_model$time)) == 0)
     DInventories_model <- DInventories_model %>%
       pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
-      mutate(unit = case_when(unit == "DInventories" ~ "CP_MEUR", unit == "DInventories_pct" ~ "% of GDP"))
+      mutate(unit = case_when(unit == "DInventories" ~ "Million EUR (current prices)", unit == "DInventories_pct" ~ "% of GDP"))
     # combine data and model values for comparison
     DInventories_comp <- bind_rows(DInventories_model, DInventories_data) %>%
       arrange(time) %>%
