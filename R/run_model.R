@@ -296,7 +296,8 @@ run_model <- function(specification,
                    max.block.size = max.block.size,
                    gets_selection = gets_selection,
                    selection.tpval = selection.tpval,
-                   constrain.to.minimum.sample = constrain.to.minimum.sample)
+                   constrain.to.minimum.sample = constrain.to.minimum.sample,
+                   pretest_steps = pretest_steps)
 
   out$module_order <- module_order
   out$module_collection <- module_collection
