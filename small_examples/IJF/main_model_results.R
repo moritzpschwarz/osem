@@ -34,12 +34,12 @@ spec_econ <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), indep
   add_row(type = "d", dependent = "RealCapFormHH", independent = "CapFormHH / DFCapForm * Factor") %>% # cannot find deflator specific for households, use general deflator for  Gross Fixed Capital Formation (better to use house prices?)
   add_row(type = "d", dependent = "RealConsHH", independent = "ConsHH / DFConsHH * Factor") %>%
   # can explicitly model deflators if want to (example GDP deflator)
-  add_row(type = "n", dependent = "DFGDP", independent = "") %>%
+  #add_row(type = "n", dependent = "DFGDP", independent = "") %>%
   # level model of price level
   # could add URate but only available from 2009 and LabourCI only available from 2021Q4
-  add_row(type = "n", dependent = "HICPlocal", independent = "PriceOil + PriceImports + LabourProd + EfExchange") %>%
+  add_row(type = "n", dependent = "HICPlocal", independent = "PriceOil + PriceImports + LabourProd + EfExchange") #%>%
   # add simple Phillips curve
-  add_row(type = "n", dependent = "Inflation", independent = "URate + PriceOil")
+  #add_row(type = "n", dependent = "Inflation", independent = "URate + PriceOil")
 
 
 spec_envi <- tibble(
