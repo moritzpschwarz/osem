@@ -1,5 +1,5 @@
 \begin{table}
-\centering\centering
+\centering
 \caption{\label{tab:spec_full}Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models.}
 \centering
 \fontsize{8}{10}\selectfont
@@ -47,7 +47,7 @@ Model & Type & Dependent & Independent\\
 32 & Estimated & Inflation & f(URate, PriceOil)\\
 33 & Estimated & EmiCO2ManInd & f(RealVAIndustry, HICPlocal)\\
 34 & Estimated & Flights & f(RealConsHH, FinWealthHH,  HICP\_AviaInt)\\
-35 & Estimated & EmiCO2CivAvi & f(HICPlocal, RealConsHH, RealVAService)\\
+35 & Estimated & EmiCO2CivAvi & f(HICPlocal, RealConsHH, RealVAService, Flights)\\
 \addlinespace
 36 & Estimated & RoadFreight & f(RealConsHH, HICPlocal, RealVAService)\\
 37 & Estimated & EmiCO2RoaTra & f(RoadFreight, RealConsHH, HICPlocal)\\

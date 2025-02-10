@@ -6,7 +6,7 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & ln(EmiCO2Residential) & ln(ElectrCons) & ln(EmiCH4EntericFerment) & ln(EmiCO2CivAvi)\\
+  & log(EmiCO2Residential) & log(ElectrCons) & log(EmiCH4EntericFerment) & log(EmiCO2CivAvi)\\
 \midrule
 ar1 &  &  & \num{0.971}*** & \num{0.965}***\\
  &  &  & (\num{0.016}) & (\num{0.022})\\
@@ -14,29 +14,29 @@ mconst & \num{10.106}*** &  &  & \\
  & (\num{0.241}) &  &  & \\
 trend &  & \num{-0.003}*** & \num{0.000}*** & \num{0.000}+\\
  &  & (\num{0.000}) & (\num{0.000}) & (\num{0.000})\\
-ln(CDD) & \num{-0.029}*** &  &  & \\
+asinh(CDD) & \num{-0.029}*** &  &  & \\
  & (\num{0.007}) &  &  & \\
-ln(Flights) &  &  &  & \num{0.017}\\
+log(Flights) &  &  &  & \num{0.017}\\
  &  &  &  & (\num{0.010})\\
-L1.ln(Flights) &  &  &  & \num{0.000}\\
+L1.log(Flights) &  &  &  & \num{0.000}\\
  &  &  &  & (\num{0.008})\\
-ln(HDD) & \num{0.473}*** &  &  & \\
+log(HDD) & \num{0.473}*** &  &  & \\
  & (\num{0.019}) &  &  & \\
-ln(HICP\_Electricity) & \num{-0.513}*** &  &  & \\
+log(HICP\_Electricity) & \num{-0.513}*** &  &  & \\
  & (\num{0.032}) &  &  & \\
-L1.ln(HICPlocal) &  &  &  & \num{-0.036}\\
+L1.log(HICPlocal) &  &  &  & \num{-0.036}\\
  &  &  &  & (\num{0.066})\\
-ln(PriceETS) &  & \num{0.009}+ &  & \\
+log(PriceETS) &  & \num{0.009}+ &  & \\
  &  & (\num{0.005}) &  & \\
-ln(RealConsHH) &  & \num{0.994}*** &  & \\
+log(RealConsHH) &  & \num{0.994}*** &  & \\
  &  & (\num{0.006}) &  & \\
-L1.ln(RealConsHH) &  &  & \num{0.030}*** & \\
+L1.log(RealConsHH) &  &  & \num{0.030}*** & \\
  &  &  & (\num{0.008}) & \\
-ln(RealVAService) &  &  &  & \num{-0.098}\\
+log(RealVAService) &  &  &  & \num{-0.098}\\
  &  &  &  & \vphantom{1} (\num{0.083})\\
-L1.ln(RealVAService) &  &  &  & \num{0.109}\\
+L1.log(RealVAService) &  &  &  & \num{0.109}\\
  &  &  &  & (\num{0.083})\\
-L1.ln(Slaughter) &  &  & \num{-0.030}*** & \\
+L1.log(Slaughter) &  &  & \num{-0.030}*** & \\
  &  &  & (\num{0.007}) & \\
 \midrule
 Num.Obs. & \num{112} & \num{67} & \num{175} & \num{87}\\

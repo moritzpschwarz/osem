@@ -6,7 +6,7 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & ln(RoadFreight) & ln(EmiCO2ManInd) & ln(EmiCO2RoaTra) & ln(EmiCO2ElecHeat)\\
+  & log(RoadFreight) & log(EmiCO2ManInd) & log(EmiCO2RoaTra) & log(EmiCO2ElecHeat)\\
 \midrule
 ar1 &  & \num{1.008}*** & \num{0.992}*** & \\
  &  & (\num{0.010}) & (\num{0.001}) & \\
@@ -14,17 +14,17 @@ mconst & \num{9.101}*** &  &  & \\
  & (\num{0.772}) &  &  & \\
 trend & \num{0.003}** &  &  & \num{-0.010}***\\
  & (\num{0.001}) &  &  & (\num{0.001})\\
-ln(HDD) &  &  &  & \num{0.361}***\\
+log(HDD) &  &  &  & \num{0.361}***\\
  &  &  &  & (\num{0.019})\\
-ln(HICPlocal) & \num{-0.729}*** &  &  & \\
+log(HICPlocal) & \num{-0.729}*** &  &  & \\
  & (\num{0.140}) &  &  & \\
-ln(PriceETS) &  &  &  & \num{0.002}\\
+log(PriceETS) &  &  &  & \num{0.002}\\
  &  &  &  & (\num{0.013})\\
-ln(RealConsHH) & \num{0.263}*** &  &  & \\
+log(RealConsHH) & \num{0.263}*** &  &  & \\
  & (\num{0.062}) &  &  & \\
-ln(RealVAIndustry) &  & \num{-0.012} &  & \num{0.791}***\\
+log(RealVAIndustry) &  & \num{-0.012} &  & \num{0.791}***\\
  &  & (\num{0.023}) &  & (\num{0.020})\\
-L1.ln(RealVAIndustry) &  & \num{0.014} &  & \\
+L1.log(RealVAIndustry) &  & \num{0.014} &  & \\
  &  & (\num{0.022}) &  & \\
 \midrule
 Num.Obs. & \num{102} & \num{115} & \num{215} & \num{76}\\

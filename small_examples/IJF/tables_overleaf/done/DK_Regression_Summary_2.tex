@@ -6,31 +6,33 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & CapFormHH & DFGDP & VAService & VAGov\\
+  & log(CapFormHH) & log(DFGDP) & log(VAService) & log(VAGov)\\
 \midrule
-mconst & \num{-6.539}*** & \num{3.660}*** & \num{-1.765} & \num{1.167}***\\
- & (\num{1.211}) & (\num{0.008}) & (\num{1.127}) & (\num{0.222})\\
-trend & \num{-0.008}*** & \num{0.005}*** & \num{0.005}*** & \num{0.001}***\\
- & (\num{0.002}) & (\num{0.000}) & (\num{0.001}) & (\num{0.000})\\
-ln.BuildingPermits & \num{0.032} &  &  & \\
+ar1 &  & \num{1.001}*** & \num{0.323}*** & \num{0.247}***\\
+ &  & (\num{0.001}) & (\num{0.069}) & (\num{0.064})\\
+mconst & \num{-6.539}*** &  & \num{-4.347}*** & \num{0.683}***\\
+ & (\num{1.211}) &  & (\num{0.463}) & (\num{0.178})\\
+trend & \num{-0.008}*** &  &  & \num{0.000}**\\
+ & (\num{0.002}) &  &  & (\num{0.000})\\
+log(BuildingPermits) & \num{0.032} &  &  & \\
  & (\num{0.026}) &  &  & \\
-ln.ConsGov &  &  & \num{0.501}*** & \num{0.457}***\\
- &  &  & (\num{0.107}) & (\num{0.030})\\
-L1.ln.ConsGov &  &  &  & \num{0.322}***\\
- &  &  &  & (\num{0.030})\\
-ln.ConsHH &  &  & \num{0.433}** & \num{0.208}***\\
- &  &  & (\num{0.130}) & (\num{0.031})\\
-L1.ln.ConsHH &  &  &  & \num{-0.152}***\\
- &  &  &  & (\num{0.028})\\
-ln.HICPlocal & \num{1.739}*** &  &  & \\
+log(ConsGov) &  &  & \num{0.296}*** & \num{0.435}***\\
+ &  &  & (\num{0.086}) & (\num{0.038})\\
+L1.log(ConsGov) &  &  &  & \num{0.185}***\\
+ &  &  &  & (\num{0.047})\\
+log(ConsHH) &  &  & \num{0.687}*** & \num{0.171}***\\
+ &  &  & (\num{0.108}) & (\num{0.032})\\
+L1.log(ConsHH) &  &  &  & \num{-0.137}***\\
+ &  &  &  & (\num{0.031})\\
+log(HICPlocal) & \num{1.739}*** &  &  & \\
  & (\num{0.300}) &  &  & \\
-ln.HousePriceIndex & \num{1.813}*** &  &  & \\
+log(HousePriceIndex) & \num{1.813}*** &  &  & \\
  & (\num{0.123}) &  &  & \\
 \midrule
-Num.Obs. & \num{75} & \num{135} & \num{135} & \num{134}\\
-AIC & \num{-236.3} & \num{-832.2} & \num{-465.2} & \num{-923.8}\\
-BIC & \num{-213.1} & \num{-800.3} & \num{-439.0} & \num{-883.2}\\
-Log.Lik. & \num{128.153} & \num{427.117} & \num{241.581} & \num{475.881}\\
+Num.Obs. & \num{75} & \num{134} & \num{134} & \num{134}\\
+AIC & \num{-236.3} & \num{-942.5} & \num{-486.1} & \num{-895.2}\\
+BIC & \num{-213.1} & \num{-913.5} & \num{-457.1} & \num{-866.3}\\
+Log.Lik. & \num{128.153} & \num{481.232} & \num{253.051} & \num{457.622}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\

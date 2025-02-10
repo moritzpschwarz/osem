@@ -6,7 +6,7 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & ln(ElectrCons) & ln(EmiCO2ManInd) & ln(EmiCO2RoaTra) & ln(EmiCO2ElecHeat)\\
+  & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2RoaTra) & log(EmiCO2ElecHeat)\\
 \midrule
 ar1 & \num{0.388}*** & \num{1.002}*** & \num{1.006}*** & \\
  & (\num{0.081}) & (\num{0.005}) & (\num{0.010}) & \\
@@ -14,25 +14,25 @@ mconst & \num{3.665}** &  &  & \num{8.963}***\\
  & (\num{1.212}) &  &  & (\num{1.077})\\
 trend &  &  &  & \num{-0.004}***\\
  &  &  &  & (\num{0.001})\\
-ln(HICP\_Electricity) & \num{-0.220}*** &  &  & \\
+log(HICP\_Electricity) & \num{-0.220}*** &  &  & \\
  & (\num{0.039}) &  &  & \\
-ln(HICPlocal) &  &  & \num{-0.096}* & \\
+log(HICPlocal) &  &  & \num{-0.096}* & \\
  &  &  & (\num{0.047}) \vphantom{1} & \\
-L2.ln(HICPlocal) &  &  & \num{0.112}* & \\
+L2.log(HICPlocal) &  &  & \num{0.112}* & \\
  &  &  & (\num{0.047}) & \\
-ln(PriceETS) & \num{0.026}** &  &  & \num{-0.012}*\\
+log(PriceETS) & \num{0.026}** &  &  & \num{-0.012}*\\
  & (\num{0.008}) &  &  & (\num{0.005})\\
-L1.ln(PriceETS) & \num{-0.023}** &  &  & \\
+L1.log(PriceETS) & \num{-0.023}** &  &  & \\
  & (\num{0.007}) &  &  & \\
-ln(RealConsHH) & \num{0.370}*** &  &  & \\
+log(RealConsHH) & \num{0.370}*** &  &  & \\
  & (\num{0.100}) &  &  & \\
-L2.ln(RealConsHH) &  &  & \num{0.006} & \\
+L2.log(RealConsHH) &  &  & \num{0.006} & \\
  &  &  & (\num{0.022}) & \\
-L1.ln(RealConsHH) &  &  & \num{-0.022} & \\
+L1.log(RealConsHH) &  &  & \num{-0.022} & \\
  &  &  & (\num{0.023}) & \\
-ln(RealVAIndustry) &  & \num{-0.003} &  & \num{0.259}**\\
+log(RealVAIndustry) &  & \num{-0.003} &  & \num{0.259}**\\
  &  & (\num{0.019}) &  & (\num{0.095})\\
-L1.ln(RealVAIndustry) &  & \num{0.007} &  & \\
+L1.log(RealVAIndustry) &  & \num{0.007} &  & \\
  &  & (\num{0.019}) &  & \\
 \midrule
 Num.Obs. & \num{66} & \num{131} & \num{110} & \num{76}\\

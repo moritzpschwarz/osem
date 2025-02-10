@@ -6,33 +6,33 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & ElectrCons & EmiCO2ManInd & EmiCO2RoaTra & EmiCO2ElecHeat\\
+  & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2RoaTra) & log(EmiCO2ElecHeat)\\
 \midrule
-mconst & \num{9.554}*** & \num{8.436}*** & \num{3.113}*** & \num{14.712}*\\
- & (\num{0.148}) & (\num{0.614}) & (\num{0.502}) & (\num{6.755})\\
-trend & \num{-0.002}*** & \num{0.002}*** &  & \num{-0.036}***\\
- & (\num{0.000}) & (\num{0.001}) &  & (\num{0.003})\\
-ln.ElectrCons &  &  &  & \num{0.718}\\
- &  &  &  & (\num{0.611})\\
-ln.HICP\_Electricity & \num{-0.019} &  &  & \\
+ar1 &  & \num{0.873}*** & \num{0.996}*** & \num{0.341}***\\
+ &  & (\num{0.041}) & (\num{0.000}) & (\num{0.083})\\
+mconst & \num{9.554}*** & \num{1.385}*** &  & \\
+ & (\num{0.148}) & (\num{0.406}) &  & \\
+trend & \num{-0.002}*** & \num{0.000}+ &  & \num{-0.019}***\\
+ & (\num{0.000}) & (\num{0.000}) &  & (\num{0.002})\\
+L1.log(ElectrCons) &  &  &  & \num{0.701}**\\
+ &  &  &  & (\num{0.248})\\
+log(HICP\_Electricity) & \num{-0.019} &  &  & \\
  & (\num{0.027}) &  &  & \\
-ln.HICPlocal &  & \num{-1.261}*** &  & \\
- &  & (\num{0.130}) &  & \\
-ln.PriceETS & \num{0.008}+ &  &  & \num{-0.004}\\
- & (\num{0.004}) &  &  & (\num{0.032})\\
-ln.RealCapFormHH &  &  &  & \num{-0.814}***\\
- &  &  &  & (\num{0.162})\\
-ln.RealConsHH &  &  & \num{0.483}*** & \\
- &  &  & (\num{0.040}) & \\
-ln.RealVAIndustry &  & \num{0.425}*** &  & \num{-0.011}\\
- &  & (\num{0.044}) &  & (\num{0.337})\\
-ln.RoadFreight &  &  & \num{-0.013} & \\
- &  &  & (\num{0.027}) & \\
+log(HICPlocal) &  & \num{-0.193}** &  & \\
+ &  & (\num{0.071}) &  & \\
+log(PriceETS) & \num{0.008}+ &  &  & \num{-0.012}\\
+ & (\num{0.004}) &  &  & (\num{0.043})\\
+L1.log(PriceETS) &  &  &  & \num{-0.024}\\
+ &  &  &  & (\num{0.042})\\
+log(RealVAIndustry) &  & \num{0.045} &  & \num{1.531}***\\
+ &  & (\num{0.042}) &  & (\num{0.371})\\
+L1.log(RealVAIndustry) &  & \num{-0.016} &  & \num{-1.241}**\\
+ &  & (\num{0.045}) &  & (\num{0.420})\\
 \midrule
-Num.Obs. & \num{67} & \num{112} & \num{100} & \num{64}\\
-AIC & \num{-338.1} & \num{-444.2} & \num{-523.4} & \num{-70.4}\\
-BIC & \num{-313.8} & \num{-419.7} & \num{-494.8} & \num{-46.6}\\
-Log.Lik. & \num{180.043} & \num{231.077} & \num{272.718} & \num{46.193}\\
+Num.Obs. & \num{67} & \num{112} & \num{215} & \num{63}\\
+AIC & \num{-338.1} & \num{-600.0} & \num{-1541.3} & \num{-85.7}\\
+BIC & \num{-313.8} & \num{-559.2} & \num{-1440.1} & \num{-64.2}\\
+Log.Lik. & \num{180.043} & \num{314.990} & \num{800.634} & \num{52.834}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\

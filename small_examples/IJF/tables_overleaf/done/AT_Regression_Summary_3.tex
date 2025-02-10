@@ -6,7 +6,7 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & ln(VAIndustry) & ln(VARetail) & ln(VARealEstate) & ln(Flights)\\
+  & log(VAIndustry) & log(VARetail) & log(VARealEstate) & log(Flights)\\
 \midrule
 ar1 &  &  & \num{0.899}*** & \\
  &  &  & (\num{0.018}) & \\
@@ -14,23 +14,23 @@ mconst &  & \num{0.638} &  & \\
  &  & (\num{0.686}) &  & \\
 trend & \num{-0.001}*** & \num{0.002}** &  & \num{-0.018}***\\
  & (\num{0.000}) & (\num{0.001}) &  & (\num{0.002})\\
-ln(CapForm) & \num{0.559}*** &  &  & \\
+log(CapForm) & \num{0.559}*** &  &  & \\
  & (\num{0.075}) &  &  & \\
-L1.ln(CapForm) &  &  & \num{-0.078}*** & \\
+L1.log(CapForm) &  &  & \num{-0.078}*** & \\
  &  &  & (\num{0.017}) & \\
-ln(ConsGov) & \num{-0.305}** &  &  & \\
+log(ConsGov) & \num{-0.305}** &  &  & \\
  & (\num{0.106}) &  &  & \\
-ln(ConsHH) & \num{0.701}*** & \num{0.824}*** &  & \\
+log(ConsHH) & \num{0.701}*** & \num{0.824}*** &  & \\
  & (\num{0.094}) & (\num{0.075}) &  & \\
-L1.ln(ConsHH) &  &  & \num{0.125}*** & \\
+L1.log(ConsHH) &  &  & \num{0.125}*** & \\
  &  &  & (\num{0.020}) & \\
-ln(HICP\_AviaInt) &  &  &  & \num{0.683}***\\
+log(HICP\_AviaInt) &  &  &  & \num{0.683}***\\
  &  &  &  & (\num{0.173})\\
-ln(HousePriceIndex) &  &  & \num{0.073}*** & \\
+log(HousePriceIndex) &  &  & \num{0.073}*** & \\
  &  &  & (\num{0.011}) & \\
-ln(PriceETS) & \num{-0.004} &  &  & \\
+log(PriceETS) & \num{-0.004} &  &  & \\
  & (\num{0.003}) &  &  & \\
-ln(RealConsHH) &  &  &  & \num{0.701}***\\
+log(RealConsHH) &  &  &  & \num{0.701}***\\
  &  &  &  & (\num{0.106})\\
 \midrule
 Num.Obs. & \num{79} & \num{119} & \num{59} & \num{47}\\

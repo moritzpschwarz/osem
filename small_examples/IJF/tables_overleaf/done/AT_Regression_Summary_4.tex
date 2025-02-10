@@ -6,7 +6,7 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & ln(EmiCO2Residential) & ln(ElectrCons) & ln(EmiCH4EntericFerment) & ln(EmiCO2CivAvi)\\
+  & log(EmiCO2Residential) & log(ElectrCons) & log(EmiCH4EntericFerment) & log(EmiCO2CivAvi)\\
 \midrule
 ar1 &  & \num{0.220}*** & \num{1.000}*** & \num{0.999}***\\
  &  & (\num{0.045}) & (\num{0.000}) & (\num{0.003})\\
@@ -14,13 +14,13 @@ mconst & \num{6.968}*** & \num{6.769}*** &  & \\
  & (\num{0.528}) & (\num{0.450}) &  & \\
 trend & \num{-0.001}+ &  &  & \\
  & (\num{0.000}) &  &  & \\
-ln(HDD) & \num{0.614}*** &  &  & \\
+log(HDD) & \num{0.614}*** &  &  & \\
  & (\num{0.023}) &  &  & \\
-ln(HICP\_Electricity) & \num{-0.516}*** & \num{0.158}** &  & \\
+log(HICP\_Electricity) & \num{-0.516}*** & \num{0.158}** &  & \\
  & (\num{0.096}) & (\num{0.055}) &  & \\
-ln(PriceETS) &  & \num{0.001} &  & \\
+log(PriceETS) &  & \num{0.001} &  & \\
  &  & (\num{0.006}) &  \vphantom{1} & \\
-L1.ln(PriceETS) &  & \num{-0.012}* &  & \\
+L1.log(PriceETS) &  & \num{-0.012}* &  & \\
  &  & (\num{0.006}) &  & \\
 \midrule
 Num.Obs. & \num{112} & \num{66} & \num{215} & \num{215}\\

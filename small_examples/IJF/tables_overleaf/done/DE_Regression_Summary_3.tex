@@ -6,23 +6,23 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & ln(VAIndustry) & ln(VARetail) & ln(VARealEstate) & ln(Flights)\\
+  & log(VAIndustry) & log(VARetail) & log(VARealEstate) & asinh(Flights)\\
 \midrule
 mconst &  & \num{-2.476}*** & \num{7.340}*** & \num{7.987}***\\
  &  & (\num{0.400}) & (\num{0.745}) & (\num{0.794})\\
 trend &  & \num{0.001}** & \num{0.008}*** & \\
  &  & (\num{0.000}) & (\num{0.001}) & \\
-ln(CapForm) & \num{0.564}*** & \num{0.199}*** & \num{-0.137}** & \\
+log(CapForm) & \num{0.564}*** & \num{0.199}*** & \num{-0.137}** & \\
  & (\num{0.050}) & (\num{0.022}) & (\num{0.047}) & \\
-ln(ConsGov) &  & \num{-0.052}* &  & \\
+log(ConsGov) &  & \num{-0.052}* &  & \\
  &  & (\num{0.023}) &  & \\
-ln(ConsHH) & \num{0.418}*** & \num{0.943}*** & \num{0.410}*** & \\
+log(ConsHH) & \num{0.418}*** & \num{0.943}*** & \num{0.410}*** & \\
  & (\num{0.046}) & (\num{0.044}) & (\num{0.064}) & \\
-ln(HICP\_AviaInt) &  &  &  & \num{0.651}***\\
+log(HICP\_AviaInt) &  &  &  & \num{0.651}***\\
  &  &  &  & (\num{0.139})\\
-ln(HousePriceIndex) &  &  & \num{-0.260}*** & \\
+log(HousePriceIndex) &  &  & \num{-0.260}*** & \\
  &  &  & (\num{0.025}) & \\
-ln(PriceETS) & \num{-0.003} &  &  & \\
+log(PriceETS) & \num{-0.003} &  &  & \\
  & (\num{0.002}) &  &  & \\
 \midrule
 Num.Obs. & \num{79} & \num{103} & \num{79} & \num{38}\\

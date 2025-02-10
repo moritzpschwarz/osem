@@ -6,7 +6,7 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & ln(VAIndustry) & ln(VARetail) & ln(VARealEstate) & ln(Flights)\\
+  & log(VAIndustry) & log(VARetail) & log(VARealEstate) & log(Flights)\\
 \midrule
 ar1 & \num{0.353}*** & \num{0.693}*** & \num{0.806}*** & \\
  & (\num{0.052}) & (\num{0.039}) & (\num{0.018}) & \\
@@ -18,29 +18,29 @@ mconst & \num{15.030}*** & \num{-0.504}*** & \num{1.310}*** & \num{-5.664}*\\
  & (\num{1.316}) & (\num{0.094}) & (\num{0.321}) & (\num{2.792})\\
 trend & \num{0.006}*** &  & \num{0.001}*** & \num{-0.013}***\\
  & (\num{0.001}) &  & (\num{0.000}) & (\num{0.001})\\
-ln(CapForm) & \num{0.337}*** &  & \num{0.055}*** & \\
+log(CapForm) & \num{0.337}*** &  & \num{0.055}*** & \\
  & (\num{0.039}) &  & (\num{0.014}) & \\
-L4.ln(CapForm) &  & \num{-0.226}*** &  & \\
+L4.log(CapForm) &  & \num{-0.226}*** &  & \\
  &  & (\num{0.025}) &  & \\
-L3.ln(CapForm) &  & \num{0.223}*** &  & \\
+L3.log(CapForm) &  & \num{0.223}*** &  & \\
  &  & (\num{0.030}) &  & \\
-L1.ln(CapForm) & \num{-0.228}*** & \num{-0.066}* & \num{-0.134}*** & \\
+L1.log(CapForm) & \num{-0.228}*** & \num{-0.066}* & \num{-0.134}*** & \\
  & (\num{0.043}) & (\num{0.030}) & (\num{0.009}) & \\
-ln(ConsGov) & \num{-0.870}*** &  & \num{-0.126}*** & \\
+log(ConsGov) & \num{-0.870}*** &  & \num{-0.126}*** & \\
  & (\num{0.106}) &  & (\num{0.029}) & \\
-L1.ln(ConsGov) &  & \num{-0.214}*** &  & \\
+L1.log(ConsGov) &  & \num{-0.214}*** &  & \\
  &  & (\num{0.035}) &  & \\
-ln(ConsHH) &  & \num{1.015}*** & \num{0.204}*** & \\
+log(ConsHH) &  & \num{1.015}*** & \num{0.204}*** & \\
  &  & (\num{0.048}) & (\num{0.020}) & \\
-L1.ln(ConsHH) &  & \num{-0.577}*** &  & \\
+L1.log(ConsHH) &  & \num{-0.577}*** &  & \\
  &  & (\num{0.058}) &  & \\
-ln(HousePriceIndex) &  &  & \num{0.110}*** & \\
+log(HousePriceIndex) &  &  & \num{0.110}*** & \\
  &  &  & (\num{0.013}) & \\
-ln(PriceETS) & \num{-0.004} &  &  & \\
+log(PriceETS) & \num{-0.004} &  &  & \\
  & (\num{0.003}) &  &  \vphantom{1} & \\
-L1.ln(PriceETS) & \num{0.002} &  &  & \\
+L1.log(PriceETS) & \num{0.002} &  &  & \\
  & (\num{0.003}) &  &  & \\
-ln(RealConsHH) &  &  &  & \num{1.545}***\\
+log(RealConsHH) &  &  &  & \num{1.545}***\\
  &  &  &  & (\num{0.236})\\
 \midrule
 Num.Obs. & \num{78} & \num{175} & \num{79} & \num{91}\\

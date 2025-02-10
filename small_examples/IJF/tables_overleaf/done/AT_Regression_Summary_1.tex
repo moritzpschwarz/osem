@@ -6,7 +6,7 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
 \toprule
-  & ln(Imports) & ln(Exports) & ln(HICPlocal) & ln(Inflation) & ln(ConsHH)\\
+  & log(Imports) & log(Exports) & log(HICPlocal) & asinh(Inflation) & log(ConsHH)\\
 \midrule
 ar1 & \num{0.876}*** & \num{0.566}*** & \num{0.793}*** &  & \num{-0.170}***\\
  & (\num{0.032}) & (\num{0.073}) & (\num{0.021}) &  & (\num{0.038})\\
@@ -18,29 +18,29 @@ mconst & \num{1.172}*** & \num{3.616}*** & \num{1.121}*** & \num{-0.545}* & \num
  & (\num{0.312}) & (\num{0.922}) & (\num{0.119}) & (\num{0.219}) & (\num{0.506})\\
 trend & \num{0.002}** & \num{0.003}** & \num{0.001}*** &  & \num{0.003}***\\
  & (\num{0.000}) & (\num{0.001}) & (\num{0.000}) &  & (\num{0.001})\\
-L1.ln(EfExchange) &  &  & \num{-0.098}*** &  & \\
+L1.log(EfExchange) &  &  & \num{-0.098}*** &  & \\
  &  &  & (\num{0.016}) &  & \\
-ln(HICPlocal) &  &  &  &  & \num{1.354}***\\
+log(HICPlocal) &  &  &  &  & \num{1.354}***\\
  &  &  &  &  & (\num{0.251})\\
-L4.ln(HICPlocal) &  &  &  &  & \num{-0.644}***\\
+L4.log(HICPlocal) &  &  &  &  & \num{-0.644}***\\
  &  &  &  &  & (\num{0.110})\\
-L1.ln(HICPlocal) &  &  &  &  & \num{-0.872}**\\
+L1.log(HICPlocal) &  &  &  &  & \num{-0.872}**\\
  &  &  &  &  & (\num{0.301})\\
-ln(IncomeHH) &  &  &  &  & \num{0.169}***\\
+log(IncomeHH) &  &  &  &  & \num{0.169}***\\
  &  &  &  &  & (\num{0.044})\\
-L4.ln(IncomeHH) &  &  &  &  & \num{-0.207}***\\
+L4.log(IncomeHH) &  &  &  &  & \num{-0.207}***\\
  &  &  &  &  & (\num{0.047})\\
-L1.ln(IncomeHH) &  &  &  &  & \num{0.139}***\\
+L1.log(IncomeHH) &  &  &  &  & \num{0.139}***\\
  &  &  &  &  & (\num{0.037})\\
-ln(PriceImports) &  &  & \num{0.025}*** &  & \\
+log(PriceImports) &  &  & \num{0.025}*** &  & \\
  &  &  & (\num{0.003}) &  & \\
-ln(PriceOil) &  &  &  & \num{1.171}*** & \\
+log(PriceOil) &  &  &  & \num{1.171}*** & \\
  &  &  &  & (\num{0.207}) & \\
-L1.ln(PriceOil) &  &  & \num{-0.006}*** & \num{-0.996}*** & \\
+L1.log(PriceOil) &  &  & \num{-0.006}*** & \num{-0.996}*** & \\
  &  &  & (\num{0.001}) & (\num{0.205}) & \\
-L2.ln(REER) &  & \num{1.029}** &  &  & \\
+L2.log(REER) &  & \num{1.029}** &  &  & \\
  &  & (\num{0.313}) &  &  & \\
-L1.ln(REER) &  & \num{-1.458}*** &  &  & \\
+L1.log(REER) &  & \num{-1.458}*** &  &  & \\
  &  & (\num{0.323}) &  &  & \\
 \midrule
 Num.Obs. & \num{118} & \num{117} & \num{114} & \num{115} & \num{99}\\

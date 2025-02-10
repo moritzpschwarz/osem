@@ -6,7 +6,7 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
 \toprule
-  & ln(Imports) & ln(Exports) & ln(HICPlocal) & ln(Inflation) & ln(ConsHH)\\
+  & log(Imports) & log(Exports) & log(HICPlocal) & asinh(Inflation) & log(ConsHH)\\
 \midrule
 ar1 & \num{0.834}*** & \num{0.992}*** & \num{0.805}*** &  & \num{0.597}***\\
  & (\num{0.037}) & (\num{0.008}) & (\num{0.028}) &  & (\num{0.075})\\
@@ -16,25 +16,25 @@ mconst & \num{2.682}*** &  & \num{1.071}*** & \num{-0.194} & \num{1.258}***\\
  & (\num{0.670}) &  & (\num{0.175}) & (\num{0.249}) & (\num{0.345})\\
 trend & \num{0.002}*** &  & \num{0.001}*** &  & \num{0.001}***\\
  & (\num{0.000}) &  & (\num{0.000}) &  & (\num{0.000})\\
-L1.ln(EfExchange) &  &  & \num{-0.069}*** &  & \\
+L1.log(EfExchange) &  &  & \num{-0.069}*** &  & \\
  &  &  & (\num{0.013}) &  & \\
-ln(IncomeHH) &  &  &  &  & \num{0.820}***\\
+log(IncomeHH) &  &  &  &  & \num{0.820}***\\
  &  &  &  &  & (\num{0.035})\\
-L1.ln(IncomeHH) &  &  &  &  & \num{-0.530}***\\
+L1.log(IncomeHH) &  &  &  &  & \num{-0.530}***\\
  &  &  &  &  & (\num{0.068})\\
-ln(LabourProd) &  &  & \num{-0.141}*** &  & \\
+log(LabourProd) &  &  & \num{-0.141}*** &  & \\
  &  &  & (\num{0.021}) &  \vphantom{1} & \\
-L1.ln(LabourProd) &  &  & \num{0.126}*** &  & \\
+L1.log(LabourProd) &  &  & \num{0.126}*** &  & \\
  &  &  & (\num{0.021}) &  & \\
-L1.ln(PriceImports) &  &  & \num{0.021}*** &  & \\
+L1.log(PriceImports) &  &  & \num{0.021}*** &  & \\
  &  &  & (\num{0.005}) &  & \\
-ln(PriceOil) &  &  & \num{0.018}*** & \num{1.257}*** & \\
+log(PriceOil) &  &  & \num{0.018}*** & \num{1.257}*** & \\
  &  &  & (\num{0.002}) & (\num{0.233}) & \\
-L1.ln(PriceOil) &  &  & \num{-0.025}*** & \num{-1.083}*** & \\
+L1.log(PriceOil) &  &  & \num{-0.025}*** & \num{-1.083}*** & \\
  &  &  & (\num{0.004}) & (\num{0.232}) & \\
-ln(REER) & \num{-0.857}*** & \num{-0.517}** &  &  & \\
+log(REER) & \num{-0.857}*** & \num{-0.517}** &  &  & \\
  & (\num{0.196}) & (\num{0.174}) &  &  & \\
-L1.ln(REER) & \num{0.686}*** & \num{0.535}** &  &  & \\
+L1.log(REER) & \num{0.686}*** & \num{0.535}** &  &  & \\
  & (\num{0.199}) & (\num{0.172}) &  &  & \\
 \midrule
 Num.Obs. & \num{122} & \num{122} & \num{115} & \num{113} & \num{102}\\
