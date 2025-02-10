@@ -49,23 +49,17 @@ for(country in all_countries){
     rename(HICP.hat = values) %>%
     arrange(time) %>%
     mutate(values = (HICP.hat - lag(HICP.hat, 1)) / lag(HICP.hat, 1) * 100) %>%
-    mutate(na_item = "Inflation2.hat") %>%
+    mutate(na_item = "Inflation.hat") %>%
     select(time, na_item, values)
-  inf2 <- model_result_ext$full_data %>%
-    filter(na_item == "Inflation") %>%
-    mutate(na_item = "Inflation2") %>%
-    arrange(time)
-  model_result_ext$full_data <- bind_rows(model_result_ext$full_data, hicp, inf2)
-  model_result_comp <- model_result_ext
-  # create plot for comparison as sanity check
-  plot(model_result_comp, grepl_variables = "Inflation", title = paste0("OSEM Model Output for ",country_long), linewidth = 0.75)
-  # now that have compared, replaced the original inflation with the HICP one
-  model_result_ext$full_data <- model_result_ext$full_data %>%
-    filter(na_item != "Inflation") %>%
-    filter(na_item != "Inflation.hat") %>%
-    mutate(na_item = case_when(na_item == "Inflation2" ~ "Inflation",
-                               na_item == "Inflation2.hat" ~ "Inflation.hat",
-                               TRUE ~ na_item))
+  inf <- model_result_ext$full_data %>%
+    filter(na_item == "HICPlocal") %>%
+    select(time, values) %>%
+    rename(HICP = values) %>%
+    arrange(time) %>%
+    mutate(values = (HICP - lag(HICP, 1)) / lag(HICP, 1) * 100) %>%
+    mutate(na_item = "Inflation") %>%
+    select(time, na_item, values)
+  model_result_ext$full_data <- bind_rows(model_result_ext$full_data, hicp, inf)
 
   # Specification Table -----------------------------------------------------
 
@@ -173,38 +167,35 @@ for(country in all_countries){
   hicp <- fc_ets$full_forecast_data %>%
     filter(na_item == "HICPlocal") %>%
     select(time, values, type)
-  # first implied forecast of inflation is (HICPforecast1 - HICPobservedlast) / HICPobservedlast * 100
-  firstforecast <- hicp %>% filter(type == "Forecast") %>% pull(time) %>% min()
-  obsbefore <- seq(firstforecast, by = "-1 quarter", length.out = 2)[2]
-  valuebefore <- hicp %>% filter(time == obsbefore & type == "Observation") %>% pull(values)
-  hicp <- hicp %>% add_row(time = obsbefore, values = valuebefore, type = "Forecast")
+  # the last observation also exists as forecast to connect lines
+  # can therefore use group_by and this will then create first inflation forecast from first "real" HICP forecats and last obs
   hicp <- hicp %>%
     arrange(type, time) %>%
     group_by(type) %>%
     mutate(Inflation = (values - lag(values, 1)) / lag(values, 1) * 100) %>%
-    # remove forecast first observation again (should be NA anyway)
     ungroup() %>%
-    filter(!(time == obsbefore & type == "Forecast")) %>%
-    mutate(na_item = "Inflation2") %>%
-    select(time, na_item, Inflation, type) %>%
-    rename(values = Inflation)
-  # add inflation data to forecast data (keep both Inflation and Inflation2 for comparison initially)
-  fc_ets$full_forecast_data <- bind_rows(fc_ets$full_forecast_data, hicp)
-  fc_ets$forecast <- fc_ets$forecast %>% add_row(dep_var = "Inflation2", central.estimate = list(hicp %>% filter(type == "Forecast") %>% select(time, values) %>% rename(Inflation2 = values)))
-  fc_ets$orig_model$opts_df <- fc_ets$orig_model$opts_df %>% add_row(dependent = "Inflation2", log_opts = list(tibble(Inflation2 = "none")))
-  plot(fc_ets, title = paste0("Forecast for ",country_long), linewidth = lwidth, grepl_variables = "Inflation")
-  # now that have compared, replace the original inflation with the HICP one
-  fc_ets$full_forecast_data <- bind_rows(fc_ets$full_forecast_data %>% filter(na_item != "Inflation"), hicp %>% mutate(na_item = "Inflation"))
-  # also replace $forecast
-  # identify current inflation module
-  inflocation <- which(fc_ets$forecast$dep_var == "Inflation")
-  # replace central.estimate object
-  mintime <- fc_ets$forecast %>% filter(dep_var == "Inflation") %>% pull(central.estimate) %>% pluck(1) %>% pull(time) %>% min()
-  fc_ets$forecast[inflocation, "central.estimate"][[1]] <- list(hicp %>% filter(time >= mintime) %>% select(time, values) %>% rename(Inflation = values))
-  fc_ets$forecast[inflocation, "all.estimates"] <- tibble(all.estimates = list(NULL))
-  # identify current inflation module
-  inflocation <- which(fc_ets$orig_model$opts_df$dependent == "Inflation")
-  fc_ets$orig_model$opts_df[inflocation, "log_opts"][[1]] <- list(tibble(Inflation = "none"))
+    filter(!(type == "Forecast" & is.na(Inflation)))
+  # to connect lines, need to add latest observation as a labelled forecast
+  most_recent <- hicp %>%
+    filter(type == "Observation") %>%
+    slice_max(time, n = 1) %>%
+    mutate(type = "Forecast")
+  hicp <- bind_rows(hicp, most_recent) %>%
+    select(time, Inflation, type) %>%
+    rename(values = Inflation) %>%
+    mutate(na_item = "Inflation") %>%
+    select(time, na_item, values, type)
+  # add inflation data to $full_forecastdata
+  fc_ets$full_forecast_data <- bind_rows(fc_ets$full_forecast_data, hicp) # (leaves quaniles NA)
+  # add inflation data to $forecast
+  central_tibble <- hicp %>%
+    filter(type == "Forecast") %>%
+    select(time, values) %>%
+    rename(Inflation = values) %>%
+    filter(time != most_recent$time) # they do not contain most recent observation as forecast
+  fc_ets$forecast <- fc_ets$forecast %>% add_row(dep_var = "Inflation", central.estimate = list(central_tibble))
+  # add inflation options to $orig_model$opts_df
+  fc_ets$orig_model$opts_df <- fc_ets$orig_model$opts_df %>% add_row(dependent = "Inflation", log_opts = list(tibble(Inflation = "none")))
 
   if(plot_forecasts){
     # Forecast Plot -----------------------------------------------------------
