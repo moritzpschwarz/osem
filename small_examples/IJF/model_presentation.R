@@ -15,11 +15,11 @@ all_countries <- c("DE","AT","FR","DK")
 # control what to run right now
 run_modelplots <- TRUE
 plot_forecasts <- TRUE
-run_insample <- FALSE
+run_insample <- TRUE
 run_inventory_diagnostics <- TRUE
 run_network <- TRUE
 run_scenario <- FALSE
-run_fc_comparison <- FALSE
+run_fc_comparison <- TRUE
 
 lwidth <- 0.75
 
@@ -289,7 +289,7 @@ for(country in all_countries){
 
   if(!file.exists(paste0("small_examples/IJF/", country, "/insample.RData"))){
     set.seed(8899)
-    insample <- forecast_insample(model_result_ext, sample_share = .9, exog_fill_method = c("auto", "AR", "ets"))
+    insample <- forecast_insample(model_result_ext, sample_share = .9, exog_fill_method = c("auto", "ets"))
     save(insample, file = paste0("small_examples/IJF/", country, "/insample.RData"))
   } else {
     load(paste0("small_examples/IJF/", country, "/insample.RData"))

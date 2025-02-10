@@ -40,7 +40,7 @@ spec_envi <- tibble(
   type = "n", dependent = "EmiCO2ManInd", independent = "RealVAIndustry + HICPlocal") %>%
   add_row(type = "n", dependent = "Flights", independent = "RealConsHH + FinWealthHH +  HICP_AviaInt") %>%
   add_row(type = "n", dependent = "EmiCO2CivAvi", independent = "HICPlocal + RealConsHH + RealVAService + Flights") %>%
-  add_row(type = "n", dependent = "RoadFreight", independent = "RealConsHH + HICPlocal + RealVAService + PriceOil + HICPDiesel + HICPPetrol") %>%
+  add_row(type = "n", dependent = "RoadFreight", independent = "RealConsHH + HICPlocal + RealVAService + PriceOil + HICPDiesel + HICPPetrol + RealVAIndustry") %>%
   add_row(type = "n", dependent = "EmiCO2RoaTra", independent = "RoadFreight + RealConsHH + HICPlocal + PriceOil + HICPDiesel + HICPPetrol") %>%
   add_row(type = "n", dependent = "EmiCO2Residential", independent = "RealConsHH + HICP_Electricity + CDD + HDD") %>%
   add_row(type = "n", dependent = "ElectrCons", independent = "RealConsHH + HICP_Electricity + PriceETS") %>%
@@ -90,7 +90,7 @@ dictionary <- dplyr::bind_rows(dict_identities, dict_eurostat, dict_edgar, dict_
 
 for(country in c("DE","AT","FR", "DK")){
 
-  if(file.exists(paste0("./small_examples/IJF/", country, "/model_sel.RData"))){next}
+  #if(file.exists(paste0("./small_examples/IJF/", country, "/model_sel.RData"))){next}
 
   # country = "DE"
 
