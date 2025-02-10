@@ -40,11 +40,11 @@ spec_envi <- tibble(
   type = "n", dependent = "EmiCO2ManInd", independent = "RealVAIndustry + HICPlocal") %>%
   add_row(type = "n", dependent = "Flights", independent = "RealConsHH + FinWealthHH +  HICP_AviaInt") %>%
   add_row(type = "n", dependent = "EmiCO2CivAvi", independent = "HICPlocal + RealConsHH + RealVAService + Flights") %>%
-  add_row(type = "n", dependent = "RoadFreight", independent = "RealConsHH + HICPlocal + RealVAService") %>%
-  add_row(type = "n", dependent = "EmiCO2RoaTra", independent = "RoadFreight + RealConsHH + HICPlocal") %>%
+  add_row(type = "n", dependent = "RoadFreight", independent = "RealConsHH + HICPlocal + RealVAService + PriceOil + HICPDiesel + HICPPetrol") %>%
+  add_row(type = "n", dependent = "EmiCO2RoaTra", independent = "RoadFreight + RealConsHH + HICPlocal + PriceOil + HICPDiesel + HICPPetrol") %>%
   add_row(type = "n", dependent = "EmiCO2Residential", independent = "RealConsHH + HICP_Electricity + CDD + HDD") %>%
   add_row(type = "n", dependent = "ElectrCons", independent = "RealConsHH + HICP_Electricity + PriceETS") %>%
-  add_row(type = "n", dependent = "EmiCO2ElecHeat", independent = "ElectrCons + RealVAIndustry + RealCapFormHH + PriceETS + CDD + HDD") %>%
+  add_row(type = "n", dependent = "EmiCO2ElecHeat", independent = "ElectrCons + RealVAIndustry + RealCapFormHH + PriceETS + CDD + HDD + HICPGas") %>%
   add_row(type = "d", dependent = "EmiCO2Total", independent = "EmiCO2ElecHeat + EmiCO2RoaTra + EmiCO2ManInd + EmiCO2OilandGas + EmiCO2PetrRef + EmiCO2WatNav + EmiCO2CivAvi + EmiCO2GlassProd + EmiCO2LimeProd + EmiCO2OthTransp + EmiCO2Rail + EmiCO2Residential + EmiCO2SolidFuel + EmiCO2OthCarb + EmiCO2CemPro + EmiCO2ChemInd + EmiCO2Liming + EmiCO2MetalInd + EmiCO2NonEnergProd + EmiCO2UreaApp + EmiCO2Waste") %>%
   add_row(type = "d", dependent = "EmiCH4Total", independent = "EmiCH4ElecHeat + EmiCH4PetrRef + EmiCH4ManInd + EmiCH4CivAvi + EmiCH4RoaTra + EmiCH4Rail + EmiCH4WatNav + EmiCH4OthTransp + EmiCH4Residential + EmiCH4SolidFuel + EmiCH4OilandGas + EmiCH4ChemInd + EmiCH4MetalInd + EmiCH4EntericFerment + EmiCH4ManureMgmt + EmiCH4BiomassBurn + EmiCH4SolidWaste + EmiCH4BioWasteTreat + EmiCH4Waste + EmiCH4Wastewater") %>%
   add_row(type = "d", dependent = "EmiCH4Livestock", independent = "EmiCH4EntericFerment + EmiCH4ManureMgmt") %>%
@@ -303,7 +303,7 @@ for(country in c("DE","AT","FR", "DK")){
     constrain.to.minimum.sample = FALSE,
     pretest_steps = TRUE,
     plot = FALSE,
-    keep = "PriceETS|RealVAIndustry"
+    keep = "PriceETS|RealVAIndustry|ElectrCons|Flights"
   )
 
   save(model_result_ext_sel, file = paste0("./small_examples/IJF/", country, "/model_sel.RData"))
