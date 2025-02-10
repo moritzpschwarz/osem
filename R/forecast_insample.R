@@ -54,6 +54,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
         saturation.tpval = model$args$saturation.tpval,
         gets_selection = model$args$gets_selection,
         selection.tpval = model$args$selection.tpval,
+        constrain.to.minimum.sample = model$args$constrain.to.minimum.sample,
 
         present = FALSE,
         quiet = TRUE,

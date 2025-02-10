@@ -10,6 +10,7 @@
   first_date = NULL,
   first_date_insample_model = NULL,
   grepl_variables = NULL,
+  grepl_method = NULL,
   ...
 )
 }
@@ -25,6 +26,8 @@ a Date that indicates the first insample forecast to show in the plot. By defaul
 (\code{NULL}) all insample forecasts will be shown.}
 
 \item{grepl_variables}{Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.}
+
+\item{grepl_method}{A character string that will be used to filter the forecasting method.}
 
 \item{...}{Additional arguments passed to the plotting function.}
 }

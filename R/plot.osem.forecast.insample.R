@@ -4,6 +4,7 @@
 #' @param first_date_insample_model A character string that will be converted to
 #' a Date that indicates the first insample forecast to show in the plot. By default
 #' (\code{NULL}) all insample forecasts will be shown.
+#' @param grepl_method A character string that will be used to filter the forecasting method.
 #' @inheritParams plot.osem.forecast
 #'
 #' @export
@@ -38,6 +39,7 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
                                         first_date = NULL,
                                         first_date_insample_model = NULL,
                                         grepl_variables = NULL,
+                                        grepl_method  = NULL,
                                         #exclude.exogenous = TRUE, order.as.run = FALSE, interactive = FALSE, first_date = NULL, grepl_variables = NULL, return.data = FALSE,
                                         ...){
 
@@ -100,13 +102,8 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
       dplyr::arrange(.data$dep_var, .data$time) %>%
       dplyr::mutate(n = 1:dplyr::n(), .by = "dep_var")
 
-    rank_of_i <- hist_intermed %>%
-      dplyr::filter(.data$time == i) %>%
-      dplyr::distinct(.data$n) %>%
-      dplyr::pull(.data$n)
-
     hist_intermed %>%
-      dplyr::filter(.data$n == rank_of_i) %>%
+      dplyr::filter(.data$time == as.Date(i)) %>%
       dplyr::select(-"n") %>%
       dplyr::mutate(start = as.Date(i)) %>%
       dplyr::cross_join(dplyr::tibble(method = unique(centrals$method))) %>%
@@ -114,7 +111,7 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
 
     if(!is.null(x$uncertainty)){
       hist_intermed %>%
-        dplyr::filter(.data$n == rank_of_i) %>%
+        dplyr::filter(.data$time == as.Date(i)) %>%
         dplyr::select(-"n") %>%
         dplyr::mutate(min = .data$values,
                       max = .data$values,
@@ -133,6 +130,9 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
     dplyr::rename(Method = "method") %>%
     {if(!is.null(grepl_variables)){
       dplyr::filter(.,grepl(grepl_variables, .data$dep_var))
+    } else {.}} %>%
+    {if(!is.null(grepl_method)){
+      dplyr::filter(.,grepl(grepl_method, .data$Method))
     } else {.}}
 
   if(exists("uncertainties")){
@@ -140,6 +140,9 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
       dplyr::rename(Method = "method") %>%
       {if(!is.null(grepl_variables)){
         dplyr::filter(.,grepl(grepl_variables, .data$dep_var))
+      } else {.}} %>%
+      {if(!is.null(grepl_method)){
+        dplyr::filter(.,grepl(grepl_method, .data$Method))
       } else {.}}
   }
 
@@ -160,8 +163,7 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
   )
 
   ggplot2::ggplot() +
-    ggplot2::geom_line(data = hist_data_ready,
-                       ggplot2::aes(x = .data$time, y = .data$values), linewidth = 1) +
+
 
     ggplot2::facet_wrap(~.data$dep_var, scales = "free") +
 
@@ -172,6 +174,10 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
                                                      linetype = .data$Method,
                                                      color = as.factor(.data$start)),
                        inherit.aes = FALSE) +
+
+    ggplot2::geom_line(data = hist_data_ready,
+                       ggplot2::aes(x = .data$time, y = .data$values), linewidth = 1) +
+
     ggplot2::facet_wrap(~.data$dep_var, scales = "free") +
     #ggplot2::scale_color_brewer(palette = "PRGn") +
     ggplot2::scale_colour_viridis_d() +
