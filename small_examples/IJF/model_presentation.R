@@ -14,32 +14,16 @@ all_countries <- c("DE","AT","FR","DK")
 
 # control what to run right now
 run_modelplots <- TRUE
-plot_forecasts <- FALSE
-run_insample <- TRUE
-run_inventory_diagnostics <- FALSE
-run_network <- FALSE
+plot_forecasts <- TRUE
+run_insample <- FALSE
+run_inventory_diagnostics <- TRUE
+run_network <- TRUE
 run_scenario <- FALSE
+run_fc_comparison <- FALSE
 
 lwidth <- 0.75
 
-table_change <- function(input_table, label){
-
-  lab_use <- if(!is.null(label)){paste0("\\label{",label,"}")} else {""}
-
-  # insert caption
-  tab <- gsub("\\begin{table}",
-              paste0("\\begin{table}\n",lab_use), input_table, fixed = TRUE)
-
-  # insert resizebox
-  tab <- gsub("\\begin{tabular}",
-              "\\resizebox{\\textwidth}{!}{\\begin{tabular}", tab, fixed = TRUE)
-
-  # fixing the footer
-  tab <- gsub("\\end{tabular}",
-              "\\end{tabular}}",tab, fixed = TRUE)
-
-  return(tab)
-}
+source("small_examples/IJF/model_presentation_functions.R")
 
 
 for(country in all_countries){
@@ -48,7 +32,6 @@ for(country in all_countries){
   # country = "DE"
 
   # Loading the model -------------------------------------------------------
-
 
   load(paste0("./small_examples/IJF/", country, "/model_sel.RData"))
 
@@ -168,17 +151,26 @@ for(country in all_countries){
     load(paste0("small_examples/IJF/", country, "/forecast.RData"))
   }
 
-  # AR
-  if(!file.exists(paste0("small_examples/IJF/", country, "/forecast_AR.RData"))){
+  # ets
+  if(!file.exists(paste0("small_examples/IJF/", country, "/forecast_ets.RData"))){
     set.seed(8899)
-    fc_ar <- forecast_model(model_result_ext, exog_fill_method = "AR")
-    save(fc_ar, file = paste0("small_examples/IJF/", country, "/forecast_AR.RData"))
+    fc_ets <- forecast_model(model_result_ext, exog_fill_method = "ets")
+    save(fc_ets, file = paste0("small_examples/IJF/", country, "/forecast_ets.RData"))
   } else {
-    load(paste0("small_examples/IJF/", country, "/forecast_AR.RData"))
+    load(paste0("small_examples/IJF/", country, "/forecast_ets.RData"))
   }
 
+  # # AR
+  # if(!file.exists(paste0("small_examples/IJF/", country, "/forecast_ets.RData"))){
+  #   set.seed(8899)
+  #   fc_ets <- forecast_model(model_result_ext, exog_fill_method = "AR")
+  #   save(fc_ets, file = paste0("small_examples/IJF/", country, "/forecast_ets.RData"))
+  # } else {
+  #   load(paste0("small_examples/IJF/", country, "/forecast_ets.RData"))
+  # }
+
   # create inflation from HICP module
-  hicp <- fc_ext$full_forecast_data %>%
+  hicp <- fc_ets$full_forecast_data %>%
     filter(na_item == "HICPlocal") %>%
     select(time, values, type)
   # first implied forecast of inflation is (HICPforecast1 - HICPobservedlast) / HICPobservedlast * 100
@@ -197,22 +189,22 @@ for(country in all_countries){
     select(time, na_item, Inflation, type) %>%
     rename(values = Inflation)
   # add inflation data to forecast data (keep both Inflation and Inflation2 for comparison initially)
-  fc_comp$full_forecast_data <- bind_rows(fc_comp$full_forecast_data, hicp)
-  fc_comp$forecast <- fc_comp$forecast %>% add_row(dep_var = "Inflation2", central.estimate = list(hicp %>% filter(type == "Forecast") %>% select(time, values) %>% rename(Inflation2 = values)))
-  fc_comp$orig_model$opts_df <- fc_comp$orig_model$opts_df %>% add_row(dependent = "Inflation2", log_opts = list(tibble(Inflation2 = "none")))
-  plot(fc_comp, title = paste0("Forecast for ",country_long), linewidth = lwidth, grepl_variables = "Inflation")
+  fc_ets$full_forecast_data <- bind_rows(fc_ets$full_forecast_data, hicp)
+  fc_ets$forecast <- fc_ets$forecast %>% add_row(dep_var = "Inflation2", central.estimate = list(hicp %>% filter(type == "Forecast") %>% select(time, values) %>% rename(Inflation2 = values)))
+  fc_ets$orig_model$opts_df <- fc_ets$orig_model$opts_df %>% add_row(dependent = "Inflation2", log_opts = list(tibble(Inflation2 = "none")))
+  plot(fc_ets, title = paste0("Forecast for ",country_long), linewidth = lwidth, grepl_variables = "Inflation")
   # now that have compared, replace the original inflation with the HICP one
-  fc_ext$full_forecast_data <- bind_rows(fc_ext$full_forecast_data %>% filter(na_item != "Inflation"), hicp %>% mutate(na_item = "Inflation"))
+  fc_ets$full_forecast_data <- bind_rows(fc_ets$full_forecast_data %>% filter(na_item != "Inflation"), hicp %>% mutate(na_item = "Inflation"))
   # also replace $forecast
   # identify current inflation module
-  inflocation <- which(fc_ext$forecast$dep_var == "Inflation")
+  inflocation <- which(fc_ets$forecast$dep_var == "Inflation")
   # replace central.estimate object
-  mintime <- fc_ext$forecast %>% filter(dep_var == "Inflation") %>% pull(central.estimate) %>% pluck(1) %>% pull(time) %>% min()
-  fc_ext$forecast[inflocation, "central.estimate"][[1]] <- list(hicp %>% filter(time >= mintime) %>% select(time, values) %>% rename(Inflation = values))
-  fc_ext$forecast[inflocation, "all.estimates"] <- tibble(all.estimates = list(NULL))
+  mintime <- fc_ets$forecast %>% filter(dep_var == "Inflation") %>% pull(central.estimate) %>% pluck(1) %>% pull(time) %>% min()
+  fc_ets$forecast[inflocation, "central.estimate"][[1]] <- list(hicp %>% filter(time >= mintime) %>% select(time, values) %>% rename(Inflation = values))
+  fc_ets$forecast[inflocation, "all.estimates"] <- tibble(all.estimates = list(NULL))
   # identify current inflation module
-  inflocation <- which(fc_ext$orig_model$opts_df$dependent == "Inflation")
-  fc_ext$orig_model$opts_df[inflocation, "log_opts"][[1]] <- list(tibble(Inflation = "none"))
+  inflocation <- which(fc_ets$orig_model$opts_df$dependent == "Inflation")
+  fc_ets$orig_model$opts_df[inflocation, "log_opts"][[1]] <- list(tibble(Inflation = "none"))
 
   if(plot_forecasts){
     # Forecast Plot -----------------------------------------------------------
@@ -235,25 +227,25 @@ for(country in all_countries){
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015",".pdf"), width = 7, height = 5)
 
 
-    # AR Plots
+    ## ETS Plots -----------
 
 
-    plot(fc_ar, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+    plot(fc_ets, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
-    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_AR",".pdf"), width = 12, height = 10)
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_ets",".pdf"), width = 12, height = 10)
 
     # Forecast Plot with selected variables -----------------------------------------------------------
-    plot(fc_ar, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+    plot(fc_ets, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
-    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_AR",".pdf"), width = 7, height = 5)
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_ets",".pdf"), width = 7, height = 5)
 
     # Forecast Plot with selected variables -----------------------------------------------------------
-    plot(fc_ar, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+    plot(fc_ets, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
-    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015_AR",".pdf"), width = 7, height = 5)
+    ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015_ets",".pdf"), width = 7, height = 5)
 
   }
 
@@ -276,7 +268,7 @@ for(country in all_countries){
     writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast.tex"))
 
   # table for forecasts
-  fc_ar$forecast %>%
+  fc_ets$forecast %>%
     filter(grepl(vars_to_grab, dep_var)) %>%
     select(dep_var, central.estimate) %>%
     unnest(central.estimate) %>%
@@ -291,7 +283,7 @@ for(country in all_countries){
           caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
     kable_styling() %>%
     table_change(label = paste0("tab:forecast_",country)) %>%
-    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_AR.tex"))
+    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_ets.tex"))
 
   # Insample Forecasting ----------------------------------------------------
 
@@ -306,7 +298,7 @@ for(country in all_countries){
     # Insample Forecasting Plots ----------------------------------------------------
 
     plot(insample, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
-      ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample",".pdf"), width = 7, height = 5)
+      ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample",".pdf"), width = 10, height = 10)
 
     # Insample Forecasting Plots with selected variables ----------------------------------------------------
 
@@ -319,18 +311,127 @@ for(country in all_countries){
       ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected_2015",".pdf"), width = 7, height = 5)
 
   }
-  # table for RMSFE
-  insample$rmsfe %>%
-    filter(grepl(vars_to_grab, na_item)) %>%
-    pivot_wider(id_cols = start, names_from = na_item, values_from = rmsfe) %>%
+  # # table for RMSFE
+  # insample$rmsfe %>%
+  #   filter(grepl(vars_to_grab, na_item)) %>%
+  #   pivot_wider(id_cols = start, names_from = na_item, values_from = rmsfe) %>%
+  #
+  #   kable(format = "latex",
+  #         booktabs = TRUE, label = paste0("tab:RMSFE_",country),
+  #         caption = paste0("Root Mean Squared Forecast Error for each module for ", country_long, ".")) %>%
+  #   kable_styling() %>%
+  #   writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_RMSFE.tex"))
 
-    kable(format = "latex",
-          booktabs = TRUE, label = paste0("tab:RMSFE_",country),
-          caption = paste0("Root Mean Squared Forecast Error for each module for ", country_long, ".")) %>%
-    kable_styling() %>%
-    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_RMSFE.tex"))
+
+  # Insample Forecast Comparison --------------------------------------------
+  if(run_fc_comparison){
 
 
+    fc_comparison_base <- insample$all_models[length(insample$all_models) - 7][[1]]
+    set.seed(8899)
+    naive_ar <- forecast_comparison(model = fc_comparison_base, n.ahead = 8, forecast_type = "AR")
+    set.seed(8899)
+    naive_rw <- forecast_comparison(model = fc_comparison_base, n.ahead = 8, forecast_type = "RW")
+    set.seed(8899)
+    naive_ets <- forecast_comparison(model = fc_comparison_base, n.ahead = 8, forecast_type = "ets")
+    set.seed(8899)
+    naive_auto <- forecast_comparison(model = fc_comparison_base, n.ahead = 8, forecast_type = "auto")
+
+
+    # set.seed(8899)
+    # fc_comparison_AR <- forecast_model(fc_comparison_base, n.ahead = 8, exog_fill_method = "AR")
+    set.seed(8899)
+    fc_comparison_auto <- forecast_model(fc_comparison_base, n.ahead = 8, exog_fill_method = "auto")
+    set.seed(8899)
+    fc_comparison_ets <- forecast_model(fc_comparison_base, n.ahead = 8, exog_fill_method = "ets")
+
+    insample$hist_data %>%
+      rename(na_item = dep_var,
+             hist = values) %>%
+      right_join(naive_ar %>% select(-forecast_type), by = join_by(time, na_item)) %>%
+      # calculate rmsfe
+      mutate(sfe = (hist - values)^2) %>%
+      group_by(na_item) %>%
+      summarise(rmsfe = sqrt(mean(sfe, na.rm = TRUE))) -> rmsfe_ar_naive
+
+    insample$hist_data %>%
+      rename(na_item = dep_var,
+             hist = values) %>%
+      right_join(naive_rw %>% select(-forecast_type), by = join_by(time, na_item)) %>%
+      # calculate rmsfe
+      mutate(sfe = (hist - values)^2) %>%
+      group_by(na_item) %>%
+      summarise(rmsfe = sqrt(mean(sfe, na.rm = TRUE))) -> rmsfe_rw_naive
+
+    insample$hist_data %>%
+      rename(na_item = dep_var,
+             hist = values) %>%
+      right_join(naive_ets %>% select(-forecast_type), by = join_by(time, na_item)) %>%
+      # calculate rmsfe
+      mutate(sfe = (hist - values)^2) %>%
+      group_by(na_item) %>%
+      summarise(rmsfe = sqrt(mean(sfe, na.rm = TRUE))) -> rmsfe_ets_naive
+
+    insample$hist_data %>%
+      rename(na_item = dep_var,
+             hist = values) %>%
+      right_join(naive_auto %>% select(-forecast_type), by = join_by(time, na_item)) %>%
+      # calculate rmsfe
+      mutate(sfe = (hist - values)^2) %>%
+      group_by(na_item) %>%
+      summarise(rmsfe = sqrt(mean(sfe, na.rm = TRUE))) -> rmsfe_auto_naive
+
+    # rmsfe(fc_comparison_AR, data = insample$hist_data %>% rename(na_item = dep_var)) %>%
+    #   mutate(type = "AR") %>%
+    rmsfe(fc_comparison_auto, data = insample$hist_data %>% rename(na_item = dep_var)) %>%
+      mutate(type = "Auto") %>%
+      bind_rows(rmsfe(fc_comparison_ets, data = insample$hist_data %>% rename(na_item = dep_var)) %>%
+                  mutate(type = "ETS")) %>%
+      bind_rows(rmsfe_ar_naive %>% mutate(type = "Naive AR")) %>%
+      bind_rows(rmsfe_rw_naive %>% mutate(type = "Naive RW")) %>%
+      bind_rows(rmsfe_ets_naive %>% mutate(type = "Naive ets")) %>%
+      bind_rows(rmsfe_auto_naive %>% mutate(type = "Naive auto"))-> all_rsmfe
+
+    all_rsmfe %>%
+      filter(type == "Naive AR") %>%
+      rename(base = rmsfe) %>%
+      select(-type) %>%
+
+      full_join(all_rsmfe, by = "na_item") %>%
+
+      filter(grepl(vars_for_spec_table, na_item)) %>%
+
+      mutate(comparison = rmsfe/base) %>%
+      pivot_wider(id_cols = na_item, names_from = type, values_from = comparison) %>%
+      summarise(across(-na_item, list(mean = ~mean(.x, na.rm = TRUE),
+                                      median = ~median(.x, na.rm = TRUE))))
+
+
+    # create a ggplot with the observational record from insample$hist_data
+    # and all forecasts from naive_ar and naive_rw, fc_comparison_auto, fc_comparison_ets and fc_comparison_AR
+    insample$hist_data %>%
+      rename(na_item = dep_var) %>%
+      mutate(type = "Observation") %>%
+      bind_rows(naive_ar %>% select(-forecast_type) %>% mutate(type = "Naive AR")) %>%
+      bind_rows(naive_rw %>% select(-forecast_type) %>% mutate(type = "Naive RW")) %>%
+      bind_rows(naive_ets %>% select(-forecast_type) %>% mutate(type = "Naive ets")) %>%
+      bind_rows(naive_auto %>% select(-forecast_type) %>% mutate(type = "Naive auto")) %>%
+      bind_rows(extract_central_forecasts(fc_comparison_auto) %>% mutate(type = "Auto") %>% rename(values = forecast)) %>%
+      bind_rows(extract_central_forecasts(fc_comparison_ets) %>% mutate(type = "ETS") %>% rename(values = forecast)) %>%
+      #bind_rows(extract_central_forecasts(fc_comparison_AR) %>% mutate(type = "AR") %>% rename(values = forecast)) %>%
+
+      filter(grepl(vars_for_spec_table, na_item)) %>%
+
+      ggplot() +
+      geom_line(aes(x = time, y = values, color = type)) +
+      facet_wrap(~na_item, scale = "free_y") +
+      labs(title = paste0("Insample Forecast Comparison for ",country_long),
+           subtitle = "Showing the <span style = color:#440154FF>Observed</span> and <span style = color:#FDE725FF>Fitted</span> values.") +
+      theme_minimal(base_size = 12) +
+      theme(plot.subtitle = element_markdown()) +
+      theme(legend.position = "bottom")
+
+  }
   # Regression Summary ------------------------------------------------------
 
   # remove NULL results
@@ -361,18 +462,6 @@ for(country in all_countries){
     reframe(across(everything(), ~ na.omit(unique(.x))))
   stopifnot(NROW(trafo) == 1L) # then can use same transformation in all tables
   trafo <- trafo %>% pivot_longer(everything(), names_to = "variable", values_to = "trafo")
-
-  trafo_fun <- function(x) {
-    stopifnot(length(x) == 1L)
-    if (grepl("ln\\.", x)) {
-      var <- sub(".*\\.", "", x)
-      tr <- trafo %>% filter(variable == var) %>% pull(trafo)
-      xtrans <- paste0(str_replace(x, "ln\\.", paste0(tr, "(")), ")")
-      return(xtrans)
-    } else {
-      return(x)
-    }
-  }
 
   coef_renamed <- sapply(coef_order, trafo_fun)
   names(coef_renamed) <- coef_order # names should already be set but to be sure
@@ -478,7 +567,8 @@ for(country in all_countries){
     rename(na_item = " ") %>%
     full_join(time_sample, by = "na_item") %>%
     relocate(`Sample Period`, .after = na_item) %>%
-    rename(" " = na_item) -> summary_stats_ready
+    rename(" " = na_item) %>%
+    select(-`Missing (%)`) -> summary_stats_ready
 
   kable(summary_stats_ready, format = "latex", longtable = TRUE, booktabs = TRUE, caption = paste0("Summary Statistics for ", country_long, ".")) %>%
     kable_styling(font_size = 7) %>%
@@ -490,8 +580,8 @@ for(country in all_countries){
 
   # Scenario ----------------------------------------------------------------
   if(run_scenario){
-    base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "auto")
-    base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "AR")
+    base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "ets")
+    #base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "AR")
 
     base_fc$exog_data_nowcast %>%
       mutate(PriceETS = PriceETS + 100,
@@ -552,7 +642,7 @@ for(country in all_countries){
       pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
       mutate(unit = case_when(unit == "DInventories" ~ "Million EUR (current prices)", unit == "DInventories_pct" ~ "% of GDP"))
     # obtain DInventories and GDP model values and forecasts (fc_ext should be created above)
-    fc_ext <- forecast_model(model_result_ext, exog_fill_method = "AR")
+    fc_ext <- forecast_model(model_result_ext, exog_fill_method = "ets")
     DInventories_model <- fc_ext$full_forecast_data %>%
       filter(na_item %in% c("DInventories", "GDPExpenditure")) %>%
       filter(type %in% c("Forecast", "Insample Fit", "Nowcast")) %>%
@@ -702,9 +792,9 @@ for (country in all_countries[!grepl(main_country, all_countries)]) {
 
 \\begin{figure}
     \\centering
-    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_AR.pdf}
+    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_ets.pdf}
     \\caption{Forecast for ",country," for selected variables using an AR(4) Forecast with Indicator Saturation.}
-    \\label{fig:", country, "_entire_forecast_AR}
+    \\label{fig:", country, "_entire_forecast_ets}
 \\end{figure}
 
 %\\begin{figure}
@@ -774,9 +864,6 @@ cat("Figures LaTeX file generated:", output_file, "\n")
 # AR model --> same sample as the model --> DONE
 # Random Walk from final value --> DONE
 
-load(paste0("./small_examples/IJF/DE/model_sel.RData"))
-a <- forecast_comparison(model = model_result_ext_sel, n.ahead = 10, forecast_type = "AR")
-b <- forecast_comparison(model = model_result_ext_sel, n.ahead = 10, forecast_type = "RW")
 
 
 # summary statistics and specification tables --> DONE
@@ -784,7 +871,9 @@ b <- forecast_comparison(model = model_result_ext_sel, n.ahead = 10, forecast_ty
 # take out inflation
 # scenario?
 # restructuring the paper --> JONAS
-# rerun the inventories with AR
+# rerun the inventories with AR --> DONE
 # push the latest model
 # fix Figure 1 --> JONAS
 # take out DFlator
+# ets and auto exog for comparison
+

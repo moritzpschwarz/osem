@@ -269,7 +269,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         dplyr::pull(2) -> y_ar_predict
 
       arima_model <- forecast::auto.arima(y_ar_predict)
-      pred_values <- forecast::forecast(y_ar_predict, h = length(time_to_forecast))
+      pred_values <- forecast::forecast(arima_model, h = length(time_to_forecast))
 
       dplyr::tibble(time = time_to_forecast,
                     data = pred_values$mean) %>%
