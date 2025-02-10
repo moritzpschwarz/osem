@@ -31,15 +31,9 @@ spec_econ <- tibble(type = c("d", "d"), dependent = c("Supply", "Demand"), indep
   add_row(type = "d", dependent = "RealVAGov", independent = "VAGov / DFVAGov * Factor") %>%
   add_row(type = "d", dependent = "RealVAOther", independent = "VAOther / DFVAOther * Factor") %>%
   add_row(type = "d", dependent = "RealCapForm", independent = "CapForm / DFCapForm * Factor") %>%
-  add_row(type = "d", dependent = "RealCapFormHH", independent = "CapFormHH / DFCapForm * Factor") %>% # cannot find deflator specific for households, use general deflator for  Gross Fixed Capital Formation (better to use house prices?)
+  add_row(type = "d", dependent = "RealCapFormHH", independent = "CapFormHH / DFCapForm * Factor") %>%
   add_row(type = "d", dependent = "RealConsHH", independent = "ConsHH / DFConsHH * Factor") %>%
-  # can explicitly model deflators if want to (example GDP deflator)
-  #add_row(type = "n", dependent = "DFGDP", independent = "") %>%
-  # level model of price level
-  # could add URate but only available from 2009 and LabourCI only available from 2021Q4
-  add_row(type = "n", dependent = "HICPlocal", independent = "PriceOil + PriceImports + LabourProd + EfExchange") #%>%
-  # add simple Phillips curve
-  #add_row(type = "n", dependent = "Inflation", independent = "URate + PriceOil")
+  add_row(type = "n", dependent = "HICPlocal", independent = "PriceOil + PriceImports + LabourProd + EfExchange")
 
 
 spec_envi <- tibble(
@@ -61,22 +55,25 @@ spec_extended <- spec_econ %>% bind_rows(spec_envi)
 # dictionary
 dict_local <- structure(
   list(
-    model_varname = c("PriceETS", "PriceOil", "HICPlocal", "Factor", "Inflation", "PriceImports"),
+    model_varname = c("PriceETS", "PriceOil", "HICPlocal", "Factor", "Inflation", "PriceImports", "HICPDiesel", "HICPPetrol", "HICPGas"),
     full_name = c(
       "Average EU ETS Price, Nominal",
       "Average Crude Brent Oil Price in EUR, Nominal",
       "Harmonised Index of Consumer Prices, All Goods",
       "100",
       "Quarter-on-Quarter HICP Inflation",
-      "Import Price Index"
+      "Import Price Index",
+      "Harmonised Index of Consumer Prices, Diesel",
+      "Harmonised Index of Consumer Prices, Petrol",
+      "Harmonised Index of Consumer Prices, Gas"
     ),
-    database = c("local", "local", "local", "local", "local", "local"),
-    variable_code = c("PriceETS", "PriceOil", "HICPlocal", "Factor", "Inflation", "PriceImports"),
-    var_col = c("na_item", "na_item", "na_item", "na_item", "na_item", "na_item"),
-    freq = c(NA, NA, NA, NA, NA, NA),
-    geo = c("DE", "DE", "DE", "DE", "DE", "DE")
+    database = c("local", "local", "local", "local", "local", "local", "local", "local", "local"),
+    variable_code = c("PriceETS", "PriceOil", "HICPlocal", "Factor", "Inflation", "PriceImports", "HICPDiesel", "HICPPetrol", "HICPGas"),
+    var_col = c("na_item", "na_item", "na_item", "na_item", "na_item", "na_item", "na_item", "na_item", "na_item"),
+    freq = c(NA, NA, NA, NA, NA, NA, NA, NA, NA),
+    geo = c("DE", "DE", "DE", "DE", "DE", "DE", "DE", "DE", "DE")
   ),
-  row.names = c(NA, -6L),
+  row.names = c(NA, -9L),
   class = c("tbl_df", "tbl", "data.frame")
 )
 
@@ -173,6 +170,56 @@ for(country in c("DE","AT","FR", "DK")){
     mutate(geo = country,
            na_item = "HICPlocal") %>%
     arrange(time)
+  hicp_diesel <- eurostat::get_eurostat("prc_hicp_midx", filters = list(geo = country, freq = "M", coicop = "CP07221", unit = "I15")) %>%
+    select(time, values) %>%
+    mutate(quarter = quarter(time),
+           year = year(time)) %>%
+    group_by(year, quarter) %>%
+    summarise(values = mean(values)) %>%
+    ungroup() %>%
+    mutate(month = case_when(quarter == 1L ~ "01",
+                             quarter == 2L ~ "04",
+                             quarter == 3L ~ "07",
+                             quarter == 4L ~ "10"),
+           time = as.Date(paste0(year, "-", month, "-01"))) %>%
+    select(time, values) %>%
+    mutate(geo = country,
+           na_item = "HICPDiesel") %>%
+    arrange(time)
+  hicp_petrol <- eurostat::get_eurostat("prc_hicp_midx", filters = list(geo = country, freq = "M", coicop = "CP07222", unit = "I15")) %>%
+    select(time, values) %>%
+    mutate(quarter = quarter(time),
+           year = year(time)) %>%
+    group_by(year, quarter) %>%
+    summarise(values = mean(values)) %>%
+    ungroup() %>%
+    mutate(month = case_when(quarter == 1L ~ "01",
+                             quarter == 2L ~ "04",
+                             quarter == 3L ~ "07",
+                             quarter == 4L ~ "10"),
+           time = as.Date(paste0(year, "-", month, "-01"))) %>%
+    select(time, values) %>%
+    mutate(geo = country,
+           na_item = "HICPPetrol") %>%
+    arrange(time)
+  hicp_gas <- eurostat::get_eurostat("prc_hicp_midx", filters = list(geo = country, freq = "M", coicop = "CP0452", unit = "I15")) %>%
+    select(time, values) %>%
+    mutate(quarter = quarter(time),
+           year = year(time)) %>%
+    group_by(year, quarter) %>%
+    summarise(values = mean(values)) %>%
+    ungroup() %>%
+    mutate(month = case_when(quarter == 1L ~ "01",
+                             quarter == 2L ~ "04",
+                             quarter == 3L ~ "07",
+                             quarter == 4L ~ "10"),
+           time = as.Date(paste0(year, "-", month, "-01"))) %>%
+    select(time, values) %>%
+    mutate(geo = country,
+           na_item = "HICPGas") %>%
+    arrange(time)
+  hicp <- bind_rows(hicp, hicp_gas, hicp_petrol, hicp_diesel) %>%
+    filter(time <= as.Date("2024-12-01")) # ignore Jan 2025, incomplete quarter
   write_csv(hicp, file = paste0("./small_examples/IJF/",country,"/hicp.csv"))
 
   # import price index
