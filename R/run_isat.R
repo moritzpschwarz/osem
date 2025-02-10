@@ -105,7 +105,7 @@ run_isat <- function(yvar,
                                   print.searchinfo = FALSE,
                                   ar.LjungB = NULL,
                                   arch.LjungB = NULL,
-                                  normality.JarqueB = FALSE,
+                                  normality.JarqueB = NULL,
                                   plot = FALSE)
 
       # modify the super_sat_sel into an isat object

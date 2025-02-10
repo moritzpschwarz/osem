@@ -1,8 +1,8 @@
 library(tidyverse)
 library(kableExtra)
-library(osem)
 library(ggtext)
 library(modelsummary)
+devtools::load_all()
 
 vars_to_grab <- "ElectrCons|EmiCO2RoaTra|EmiCO2ManInd|EmiCO2ElecHeat|RealVAIndustry|RealConsHH"
 vars_for_spec_table <- paste0(vars_to_grab, "|VAIndustry|HICP|CapForm|CapFormHH")
@@ -13,8 +13,8 @@ main_country <- "DE"
 all_countries <- c("DE","AT","FR","DK")
 
 # control what to run right now
-run_modelplots <- FALSE
-run_forecasts <- FALSE
+run_modelplots <- TRUE
+plot_forecasts <- FALSE
 run_insample <- TRUE
 run_inventory_diagnostics <- FALSE
 run_network <- FALSE
@@ -86,7 +86,7 @@ for(country in all_countries){
 
   # Specification Table -----------------------------------------------------
 
-  if(!file.exists(paste0("small_examples/IJF/tables_overleaf/general/Specification for all countries.tex"))){
+  if(!file.exists(paste0("small_examples/IJF/tables_overleaf/general/Specification_all_countries.tex"))){
     model_result_ext$args$specification %>%
       mutate(type = case_when(type == "n" ~ "Estimated",
                               type == "d" ~ "Identity",
@@ -103,10 +103,9 @@ for(country in all_countries){
     full_table %>%
       kable(format = "latex", booktabs = TRUE, label = "spec_full",
             caption = "Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models.") %>%
-      kable_styling() %>%
       kable_styling(font_size = 8) %>%
       column_spec(4, width = "10cm") %>%
-      writeLines(paste0("small_examples/IJF/tables_overleaf/general/Specification for all countries.tex"))
+      writeLines(paste0("small_examples/IJF/tables_overleaf/general/Specification_all_countries.tex"))
 
 
     full_table %>%
@@ -117,10 +116,9 @@ for(country in all_countries){
             caption = "Selected specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models. The full model specification table is available in the Appendix.") %>%
       kable_styling() %>%
       kable_styling(font_size = 8) %>%
-      column_spec(4, width = "7cm") %>%
-      writeLines(paste0("small_examples/IJF/tables_overleaf/general/Specification selected for all countries.tex"))
-
-
+      column_spec(4, width = "10cm") %>%
+      #table_change(label = "spec_subset") %>%
+      writeLines(paste0("small_examples/IJF/tables_overleaf/general/Specification_selected.tex"))
   }
 
 
@@ -161,140 +159,150 @@ for(country in all_countries){
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Model_Selected_2015",".pdf"), width = 7, height = 5)
   }
   # Forecast ----------------------------------------------------------------
-  if(run_forecasts){
-
+  # auto
+  if(!file.exists(paste0("small_examples/IJF/", country, "/forecast.RData"))){
     set.seed(8899)
-    fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
+    fc <- forecast_model(model_result_ext, exog_fill_method = "auto")
+    save(fc, file = paste0("small_examples/IJF/", country, "/forecast.RData"))
+  } else {
+    load(paste0("small_examples/IJF/", country, "/forecast.RData"))
+  }
+
+  # AR
+  if(!file.exists(paste0("small_examples/IJF/", country, "/forecast_AR.RData"))){
     set.seed(8899)
-    fc_comp <- forecast_model(model_result_comp, exog_fill_method = "auto")
+    fc_ar <- forecast_model(model_result_ext, exog_fill_method = "AR")
+    save(fc_ar, file = paste0("small_examples/IJF/", country, "/forecast_AR.RData"))
+  } else {
+    load(paste0("small_examples/IJF/", country, "/forecast_AR.RData"))
+  }
 
-    # create inflation from HICP module
-    hicp <- fc_ext$full_forecast_data %>%
-      filter(na_item == "HICPlocal") %>%
-      select(time, values, type)
-    # first implied forecast of inflation is (HICPforecast1 - HICPobservedlast) / HICPobservedlast * 100
-    firstforecast <- hicp %>% filter(type == "Forecast") %>% pull(time) %>% min()
-    obsbefore <- seq(firstforecast, by = "-1 quarter", length.out = 2)[2]
-    valuebefore <- hicp %>% filter(time == obsbefore & type == "Observation") %>% pull(values)
-    hicp <- hicp %>% add_row(time = obsbefore, values = valuebefore, type = "Forecast")
-    hicp <- hicp %>%
-      arrange(type, time) %>%
-      group_by(type) %>%
-      mutate(Inflation = (values - lag(values, 1)) / lag(values, 1) * 100) %>%
-      # remove forecast first observation again (should be NA anyway)
-      ungroup() %>%
-      filter(!(time == obsbefore & type == "Forecast")) %>%
-      mutate(na_item = "Inflation2") %>%
-      select(time, na_item, Inflation, type) %>%
-      rename(values = Inflation)
-    # add inflation data to forecast data (keep both Inflation and Inflation2 for comparison initially)
-    fc_comp$full_forecast_data <- bind_rows(fc_comp$full_forecast_data, hicp)
-    fc_comp$forecast <- fc_comp$forecast %>% add_row(dep_var = "Inflation2", central.estimate = list(hicp %>% filter(type == "Forecast") %>% select(time, values) %>% rename(Inflation2 = values)))
-    fc_comp$orig_model$opts_df <- fc_comp$orig_model$opts_df %>% add_row(dependent = "Inflation2", log_opts = list(tibble(Inflation2 = "none")))
-    plot(fc_comp, title = paste0("Forecast for ",country_long), linewidth = lwidth, grepl_variables = "Inflation")
-    # now that have compared, replace the original inflation with the HICP one
-    fc_ext$full_forecast_data <- bind_rows(fc_ext$full_forecast_data %>% filter(na_item != "Inflation"), hicp %>% mutate(na_item = "Inflation"))
-    # also replace $forecast
-    # identify current inflation module
-    inflocation <- which(fc_ext$forecast$dep_var == "Inflation")
-    # replace central.estimate object
-    mintime <- fc_ext$forecast %>% filter(dep_var == "Inflation") %>% pull(central.estimate) %>% pluck(1) %>% pull(time) %>% min()
-    fc_ext$forecast[inflocation, "central.estimate"][[1]] <- list(hicp %>% filter(time >= mintime) %>% select(time, values) %>% rename(Inflation = values))
-    fc_ext$forecast[inflocation, "all.estimates"] <- tibble(all.estimates = list(NULL))
-    # identify current inflation module
-    inflocation <- which(fc_ext$orig_model$opts_df$dependent == "Inflation")
-    fc_ext$orig_model$opts_df[inflocation, "log_opts"][[1]] <- list(tibble(Inflation = "none"))
+  # create inflation from HICP module
+  hicp <- fc_ext$full_forecast_data %>%
+    filter(na_item == "HICPlocal") %>%
+    select(time, values, type)
+  # first implied forecast of inflation is (HICPforecast1 - HICPobservedlast) / HICPobservedlast * 100
+  firstforecast <- hicp %>% filter(type == "Forecast") %>% pull(time) %>% min()
+  obsbefore <- seq(firstforecast, by = "-1 quarter", length.out = 2)[2]
+  valuebefore <- hicp %>% filter(time == obsbefore & type == "Observation") %>% pull(values)
+  hicp <- hicp %>% add_row(time = obsbefore, values = valuebefore, type = "Forecast")
+  hicp <- hicp %>%
+    arrange(type, time) %>%
+    group_by(type) %>%
+    mutate(Inflation = (values - lag(values, 1)) / lag(values, 1) * 100) %>%
+    # remove forecast first observation again (should be NA anyway)
+    ungroup() %>%
+    filter(!(time == obsbefore & type == "Forecast")) %>%
+    mutate(na_item = "Inflation2") %>%
+    select(time, na_item, Inflation, type) %>%
+    rename(values = Inflation)
+  # add inflation data to forecast data (keep both Inflation and Inflation2 for comparison initially)
+  fc_comp$full_forecast_data <- bind_rows(fc_comp$full_forecast_data, hicp)
+  fc_comp$forecast <- fc_comp$forecast %>% add_row(dep_var = "Inflation2", central.estimate = list(hicp %>% filter(type == "Forecast") %>% select(time, values) %>% rename(Inflation2 = values)))
+  fc_comp$orig_model$opts_df <- fc_comp$orig_model$opts_df %>% add_row(dependent = "Inflation2", log_opts = list(tibble(Inflation2 = "none")))
+  plot(fc_comp, title = paste0("Forecast for ",country_long), linewidth = lwidth, grepl_variables = "Inflation")
+  # now that have compared, replace the original inflation with the HICP one
+  fc_ext$full_forecast_data <- bind_rows(fc_ext$full_forecast_data %>% filter(na_item != "Inflation"), hicp %>% mutate(na_item = "Inflation"))
+  # also replace $forecast
+  # identify current inflation module
+  inflocation <- which(fc_ext$forecast$dep_var == "Inflation")
+  # replace central.estimate object
+  mintime <- fc_ext$forecast %>% filter(dep_var == "Inflation") %>% pull(central.estimate) %>% pluck(1) %>% pull(time) %>% min()
+  fc_ext$forecast[inflocation, "central.estimate"][[1]] <- list(hicp %>% filter(time >= mintime) %>% select(time, values) %>% rename(Inflation = values))
+  fc_ext$forecast[inflocation, "all.estimates"] <- tibble(all.estimates = list(NULL))
+  # identify current inflation module
+  inflocation <- which(fc_ext$orig_model$opts_df$dependent == "Inflation")
+  fc_ext$orig_model$opts_df[inflocation, "log_opts"][[1]] <- list(tibble(Inflation = "none"))
 
+  if(plot_forecasts){
     # Forecast Plot -----------------------------------------------------------
 
-    plot(fc_ext, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+    plot(fc, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast",".pdf"), width = 12, height = 10)
 
     # Forecast Plot with selected variables -----------------------------------------------------------
-    plot(fc_ext, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+    plot(fc, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected",".pdf"), width = 7, height = 5)
 
     # Forecast Plot with selected variables -----------------------------------------------------------
-    plot(fc_ext, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+    plot(fc, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015",".pdf"), width = 7, height = 5)
 
-    # table for forecasts
-    fc_ext$forecast %>%
-      filter(grepl(vars_to_grab, dep_var)) %>%
-      select(dep_var, central.estimate) %>%
-      unnest(central.estimate) %>%
-      select(-dep_var) %>%
-      pivot_longer(-c(time)) %>%
-      drop_na %>%
-      pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
-      rename(Forecast = time) %>%
 
-      kable(format = "latex",
-            booktabs = TRUE, label = paste0("tab:forecast_",country),
-            caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
-      kable_styling() %>%
-      table_change(label = paste0("tab:forecast_",country)) %>%
-      writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast.tex"))
+    # AR Plots
 
 
-    # AR ----------------------------------------------------------------------
-    set.seed(8899)
-    fc_ext_ar <- forecast_model(model_result_ext, exog_fill_method = "AR")
-
-    plot(fc_ext_ar, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+    plot(fc_ar, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_AR",".pdf"), width = 12, height = 10)
 
     # Forecast Plot with selected variables -----------------------------------------------------------
-    plot(fc_ext_ar, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+    plot(fc_ar, grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_AR",".pdf"), width = 7, height = 5)
 
     # Forecast Plot with selected variables -----------------------------------------------------------
-    plot(fc_ext_ar, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
+    plot(fc_ar, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
       theme(plot.subtitle = element_markdown()) -> p
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015_AR",".pdf"), width = 7, height = 5)
 
-    # table for forecasts
-    fc_ext_ar$forecast %>%
-      filter(grepl(vars_to_grab, dep_var)) %>%
-      select(dep_var, central.estimate) %>%
-      unnest(central.estimate) %>%
-      select(-dep_var) %>%
-      pivot_longer(-c(time)) %>%
-      drop_na %>%
-      pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
-      rename(Forecast = time) %>%
-
-      kable(format = "latex",
-            booktabs = TRUE, label = paste0("tab:forecast_",country),
-            caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
-      kable_styling() %>%
-      table_change(label = paste0("tab:forecast_",country)) %>%
-      writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_AR.tex"))
-
   }
 
+  # table for forecasts
+  fc$forecast %>%
+    filter(grepl(vars_to_grab, dep_var)) %>%
+    select(dep_var, central.estimate) %>%
+    unnest(central.estimate) %>%
+    select(-dep_var) %>%
+    pivot_longer(-c(time)) %>%
+    drop_na %>%
+    pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
+    rename(Forecast = time) %>%
+
+    kable(format = "latex",
+          booktabs = TRUE, label = paste0("tab:forecast_",country),
+          caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
+    kable_styling() %>%
+    table_change(label = paste0("tab:forecast_",country)) %>%
+    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast.tex"))
+
+  # table for forecasts
+  fc_ar$forecast %>%
+    filter(grepl(vars_to_grab, dep_var)) %>%
+    select(dep_var, central.estimate) %>%
+    unnest(central.estimate) %>%
+    select(-dep_var) %>%
+    pivot_longer(-c(time)) %>%
+    drop_na %>%
+    pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
+    rename(Forecast = time) %>%
+
+    kable(format = "latex",
+          booktabs = TRUE, label = paste0("tab:forecast_",country),
+          caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
+    kable_styling() %>%
+    table_change(label = paste0("tab:forecast_",country)) %>%
+    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_AR.tex"))
 
   # Insample Forecasting ----------------------------------------------------
-  if(run_insample){
-    if(!file.exists(paste0("small_examples/IJF/", country, "/insample.RData"))){
-      set.seed(8899)
-      insample <- forecast_insample(model_result_ext, sample_share = .90, exog_fill_method = c("auto", "AR"))
-      save(insample, file = paste0("small_examples/IJF/", country, "/insample.RData"))
-    } else {
-      load(paste0("small_examples/IJF/", country, "/insample.RData"))
-    }
 
+  if(!file.exists(paste0("small_examples/IJF/", country, "/insample.RData"))){
+    set.seed(8899)
+    insample <- forecast_insample(model_result_ext, sample_share = .9, exog_fill_method = c("auto", "AR", "ets"))
+    save(insample, file = paste0("small_examples/IJF/", country, "/insample.RData"))
+  } else {
+    load(paste0("small_examples/IJF/", country, "/insample.RData"))
+  }
+  if(run_insample){
     # Insample Forecasting Plots ----------------------------------------------------
 
     plot(insample, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
@@ -310,22 +318,19 @@ for(country in all_countries){
     plot(insample, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
       ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected_2015",".pdf"), width = 7, height = 5)
 
-
-    # table for RMSFE
-    insample$rmsfe %>%
-      filter(grepl(vars_to_grab, na_item)) %>%
-      pivot_wider(id_cols = start, names_from = na_item, values_from = rmsfe) %>%
-
-      kable(format = "latex",
-            booktabs = TRUE, label = paste0("tab:RMSFE_",country),
-            caption = paste0("Root Mean Squared Forecast Error for each module for ", country_long, ".")) %>%
-      kable_styling() %>%
-      writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_RMSFE.tex"))
-
-
-
-
   }
+  # table for RMSFE
+  insample$rmsfe %>%
+    filter(grepl(vars_to_grab, na_item)) %>%
+    pivot_wider(id_cols = start, names_from = na_item, values_from = rmsfe) %>%
+
+    kable(format = "latex",
+          booktabs = TRUE, label = paste0("tab:RMSFE_",country),
+          caption = paste0("Root Mean Squared Forecast Error for each module for ", country_long, ".")) %>%
+    kable_styling() %>%
+    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_RMSFE.tex"))
+
+
   # Regression Summary ------------------------------------------------------
 
   # remove NULL results
@@ -458,9 +463,26 @@ for(country in all_countries){
 
   summary_stats <- datasummary_skim(model_result_ext$processed_input_data %>%
                                       pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
-                                      as.data.frame(), histogram = FALSE, output = "latex_tabular")
+                                      as.data.frame() %>%
+                                      arrange(time), histogram = FALSE, output = "data.frame")
 
-  table_change(summary_stats, label = paste0("tab:summarystats_",country)) %>%
+  time_sample <- model_result_ext$processed_input_data %>% summarise(min = min(time, na.rm = TRUE), max = max(time, na.rm = TRUE), .by = na_item) %>%
+    # turn date into Q and year
+    mutate(min = paste0("Q",quarter(min, type = "quarter"),"-", year(min)),
+           max = paste0("Q",quarter(max, type = "quarter"),"-", year(max))) %>%
+    mutate(`Sample Period` = paste0(min, " - ", max),
+           min = NULL,
+           max = NULL)
+
+  summary_stats %>%
+    rename(na_item = " ") %>%
+    full_join(time_sample, by = "na_item") %>%
+    relocate(`Sample Period`, .after = na_item) %>%
+    rename(" " = na_item) -> summary_stats_ready
+
+  kable(summary_stats_ready, format = "latex", longtable = TRUE, booktabs = TRUE, caption = paste0("Summary Statistics for ", country_long, ".")) %>%
+    kable_styling(font_size = 7) %>%
+    table_change(., label = paste0("tab:summarystats_",country)) %>%
     writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Summary_Statistics.tex"))
 
 
@@ -469,16 +491,18 @@ for(country in all_countries){
   # Scenario ----------------------------------------------------------------
   if(run_scenario){
     base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "auto")
-    #base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "AR")
+    base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "AR")
 
     base_fc$exog_data_nowcast %>%
-      mutate(PriceETS = PriceETS + 100) -> exog_data_new
+      mutate(PriceETS = PriceETS + 100,
+             HICP_AviaInt = HICP_AviaInt * 1.1,
+             HICP_Electricity = HICP_Electricity * 1.1) -> exog_data_new
 
 
-    scen_fc <- forecast_model(model_result_ext_sel, exog_predictions = exog_data_new)
+    scen_fc <- forecast_model(model_result_ext_sel, exog_predictions = exog_data_new, exog_fill_method = "AR")
 
-    base_df <- plot(base_fc, grepl_variables = "EmiCO2Total", return.data = TRUE)
-    scen_df <- plot(scen_fc, grepl_variables = "EmiCO2Total", return.data = TRUE)
+    base_df <- plot(base_fc, grepl_variables = "EmiCO2ElecHeat", return.data = TRUE)
+    scen_df <- plot(scen_fc, grepl_variables = "EmiCO2ElecHeat", return.data = TRUE)
 
     plot(base_fc, grepl_variables = "EmiCO2Total")
     plot(scen_fc, grepl_variables = "EmiCO2Total")
@@ -528,7 +552,7 @@ for(country in all_countries){
       pivot_longer(cols = c(DInventories, DInventories_pct), names_to = "unit", values_to = "DInventories") %>%
       mutate(unit = case_when(unit == "DInventories" ~ "Million EUR (current prices)", unit == "DInventories_pct" ~ "% of GDP"))
     # obtain DInventories and GDP model values and forecasts (fc_ext should be created above)
-    fc_ext <- forecast_model(model_result_ext, exog_fill_method = "auto")
+    fc_ext <- forecast_model(model_result_ext, exog_fill_method = "AR")
     DInventories_model <- fc_ext$full_forecast_data %>%
       filter(na_item %in% c("DInventories", "GDPExpenditure")) %>%
       filter(type %in% c("Forecast", "Insample Fit", "Nowcast")) %>%
@@ -546,11 +570,31 @@ for(country in all_countries){
     DInventories_comp <- bind_rows(DInventories_model, DInventories_data) %>%
       arrange(time) %>%
       filter(cumsum(!is.na(DInventories)) > 0)
-    ggplot(DInventories_comp) +
-      geom_line(aes(x = time, y = DInventories, color = type)) +
-      facet_grid(rows = vars(unit), cols = NULL, scales = "free") -> DInventories_plot
 
-    ggsave(DInventories_plot, filename = paste0("small_examples/IJF/figures_overleaf/internal/", country, "_DInventories",".pdf"), width = 7, height = 5)
+    colors <- c(
+      "Forecast/Assumption of\nExogenous Variables" = "#31688EFF",
+      "Forecast" = "#3B528BFF",
+      "Insample Fit" = "#FDE725FF",
+      "Observation" = "#440154FF",
+      "Nowcast" = "#35B779FF"
+    )
+
+    DInventories_comp %>%
+      filter(unit == "% of GDP") %>%
+      mutate(type = case_when(type == "Data" ~ "Observation", TRUE ~ type)) %>%
+      ggplot() +
+      geom_line(aes(x = time, y = DInventories, color = type), linewidth = lwidth) +
+      labs(x = NULL, y = "Change in Inventories (% of GDP)", title = paste0("Inventory Diagnostic Plot for ", country_long), subtitle = fc_subtitle) +
+      #facet_grid(rows = vars(unit), cols = NULL, scales = "free") +
+      scale_colour_manual(values = colors) +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(legend.position = "none",
+                     panel.grid.major.x = ggplot2::element_blank(),
+                     panel.grid.minor.x = ggplot2::element_blank(),
+                     panel.grid.minor.y = ggplot2::element_blank(),
+                     plot.subtitle = element_markdown()) -> DInventories_plot
+
+    ggsave(DInventories_plot, filename = paste0("small_examples/IJF/figures_overleaf/", country, "_DInventories",".pdf"), width = 7, height = 5)
   }
 
 
@@ -660,13 +704,13 @@ for (country in all_countries[!grepl(main_country, all_countries)]) {
     \\centering
     \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_AR.pdf}
     \\caption{Forecast for ",country," for selected variables using an AR(4) Forecast with Indicator Saturation.}
-    \\label{fig:", country, "_entire_forecast}
+    \\label{fig:", country, "_entire_forecast_AR}
 \\end{figure}
 
 %\\begin{figure}
 %    \\centering
 %    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_Selected.pdf}
-\\caption{Insample Forecast for ",country,". Data shown from 2015 onwards.}
+% \\caption{Insample Forecast for ",country,". Data shown from 2015 onwards.}
 %    \\label{fig:", country, "_selected_forecast}
 %\\end{figure}
 
@@ -677,12 +721,12 @@ for (country in all_countries[!grepl(main_country, all_countries)]) {
     \\label{fig:", country, "_selected_forecast_2015}
 \\end{figure}
 
-\\begin{figure}
-    \\centering
-    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Insample.pdf}
-    \\caption{Insample Forecast for ",country,".}
-    \\label{fig:", country, "_insample_forecast}
-\\end{figure}
+%\\begin{figure}
+%    \\centering
+%    \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Insample.pdf}
+%    \\caption{Insample Forecast for ",country,".}
+%    \\label{fig:", country, "_insample_forecast}
+%\\end{figure}
 
 
 \\begin{figure}
@@ -721,17 +765,26 @@ cat("Figures LaTeX file generated:", output_file, "\n")
 # keep argument for ETS --> DONE
 # change the central.estimate from forecast_model
 # check the insample results --> DONE
-# bring back documentation of use_logs
-# step-wise indicator selection - first STEPS then INDICATORS
-# make linewidth smaller
+# bring back documentation of use_logs --> DONE
+# step-wise indicator selection - first STEPS then INDICATORS --> DNOE
+# make linewidth smaller --> DONE
 # Mean Absolute Percentage Error MAPE
-# log transformation in Regression Summaries
-# RMSE is for different forecasts
-# AR model --> same sample as the model
-# Random Walk from final value
+# log transformation in Regression Summaries --> DONE
+# RMSE is for different forecasts --> DONE
+# AR model --> same sample as the model --> DONE
+# Random Walk from final value --> DONE
 
 load(paste0("./small_examples/IJF/DE/model_sel.RData"))
 a <- forecast_comparison(model = model_result_ext_sel, n.ahead = 10, forecast_type = "AR")
 b <- forecast_comparison(model = model_result_ext_sel, n.ahead = 10, forecast_type = "RW")
 
 
+# summary statistics and specification tables --> DONE
+# style the inventories plot --> DONE
+# take out inflation
+# scenario?
+# restructuring the paper --> JONAS
+# rerun the inventories with AR
+# push the latest model
+# fix Figure 1 --> JONAS
+# take out DFlator

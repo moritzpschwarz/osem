@@ -119,13 +119,24 @@ forecast_setup_estimated_relationships <- function(model,
 
       if (!mvar_name %in% x_names_vec_nolag) {
         if (paste0("ln.",mvar_name) %in% x_names_vec_nolag) {
-          mvar_tibble %>%
-            dplyr::mutate(dplyr::across(dplyr::all_of(mvar_euname), log, .names = "ln.{.col}")) %>%
-            dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
 
-          mvar_all.estimates.tibble %>%
-            dplyr::mutate(dplyr::across(dplyr::all_of(paste0(mvar_euname, ".all")), ~purrr::map(.,log), .names = "ln.{.col}")) %>%
-            dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname,".all"))) -> mvar_all.estimates.tibble
+          log_possible <- all(mvar_tibble[, mvar_euname, drop = TRUE] > 0)
+          # TODO record that log_possible chose asinh
+          if(log_possible){
+            mvar_tibble %>%
+              dplyr::mutate(dplyr::across(dplyr::all_of(mvar_euname), log, .names = "ln.{.col}")) %>%
+              dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
+            mvar_all.estimates.tibble %>%
+              dplyr::mutate(dplyr::across(dplyr::all_of(paste0(mvar_euname, ".all")), ~purrr::map(.,log), .names = "ln.{.col}")) %>%
+              dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname,".all"))) -> mvar_all.estimates.tibble
+          } else {
+            mvar_tibble %>%
+              dplyr::mutate(dplyr::across(dplyr::all_of(mvar_euname), asinh, .names = "ln.{.col}")) %>%
+              dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
+            mvar_all.estimates.tibble %>%
+              dplyr::mutate(dplyr::across(dplyr::all_of(paste0(mvar_euname, ".all")), ~purrr::map(.,asinh), .names = "ln.{.col}")) %>%
+              dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname,".all"))) -> mvar_all.estimates.tibble
+          }
         } else {
           stop("Error occurred in adding missing/lower estimated variables (likely identities) to a subsequent/higher model. This is likely being caused by either log specification or lag specifiction. Check code.")
         }
