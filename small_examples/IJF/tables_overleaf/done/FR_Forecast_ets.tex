@@ -1,23 +1,84 @@
 \begin{table}
 \label{tab:forecast_FR}
-\centering
-\caption{\label{tab:tab:forecast_FR}Forecast for selected modules for France.}
-\centering
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lrrrrrr}
+\centering\begingroup\fontsize{7.5}{9.5}\selectfont
+
+\resizebox{\textwidth}{!}{\begin{tabular}{ccccc}
 \toprule
-Forecast & RealConsHH & ln.ElectrCons & RealVAIndustry & ln.EmiCO2ManInd & ln.EmiCO2RoaTra & ln.EmiCO2ElecHeat\\
+Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 \midrule
-2025-04-01 & 334822.7 & 11.43100 & 66490.58 & 9.089610 & 10.37013 & 8.526919\\
-2025-07-01 & 328873.2 & 11.35492 & 61911.54 & 8.925700 & 10.36608 & 8.508851\\
-2025-10-01 & 364197.7 & 11.66888 & 67249.05 & 9.120152 & 10.34671 & 9.401996\\
-2026-01-01 & 356282.8 & 11.76890 & 68005.08 & 9.158239 & 10.26644 & 9.349925\\
-2026-04-01 & 359474.1 & 11.48835 & 65936.15 & 9.049545 & 10.35851 & 8.662947\\
-\addlinespace
-2026-07-01 & 348193.1 & 11.39840 & 59907.17 & 8.885121 & 10.35476 & 8.693859\\
-2026-10-01 & 383691.2 & 11.70745 & 64540.58 & 9.079284 & 10.33570 & 9.608157\\
-2027-01-01 & 374062.4 & 11.80405 & 65130.32 & 9.117171 & 10.25573 & 9.560648\\
-2027-04-01 & 376631.3 & 11.52144 & 63127.69 & 9.008303 & 10.34808 & 8.875329\\
-2027-07-01 & 364302.3 & 11.43010 & 57380.84 & 8.843720 & 10.34461 & 8.906296\\
+\addlinespace[0.3em]
+\multicolumn{5}{l}{\textbf{ElectrCons}}\\
+\hspace{1em}2025-04-01 & 92133.984 & 87634.769 - 96393.404 &  & RMSFE with AR Baseline:\\
+\hspace{1em}2025-07-01 & 85384.107 & 81521.405 - 89675.792 &  & \\
+\hspace{1em}2025-10-01 & 116877.403 & 112136.195 - 123495.611 &  & MAPE with AR Baseline:\\
+\hspace{1em}2026-01-01 & 129172.434 & 123556.185 - 136885.616 &  & \\
+\hspace{1em}2026-04-01 & 97572.332 & 93919.838 - 104089.93 &  & RMSFE with RW Baseline:\\
+\hspace{1em}2026-07-01 & 89178.710 & 85276.631 - 94638.338 &  & \\
+\hspace{1em}2026-10-01 & 121473.359 & 117225.657 - 128224.341 &  & MAPE with RW Baseline:\\
+\hspace{1em}2027-01-01 & 133793.267 & 128100.74 - 140910.176 &  & \\
+\hspace{1em}2027-04-01 & 100854.776 & 95874.908 - 105850.335 &  & Mincer-Zarnowitz:\\
+\hspace{1em}2027-07-01 & 92050.824 & 88515.278 - 96194.423 &  & \\
+\addlinespace[0.3em]
+\multicolumn{5}{l}{\textbf{EmiCO2ElecHeat}}\\
+\hspace{1em}2025-04-01 & 5298.699 & 3962.169 - 6861.574 &  & RMSFE with AR Baseline:\\
+\hspace{1em}2025-07-01 & 5525.511 & 4370.691 - 6887.062 &  & \\
+\hspace{1em}2025-10-01 & 12206.149 & 9521.69 - 15808.788 &  & MAPE with AR Baseline:\\
+\hspace{1em}2026-01-01 & 12561.354 & 9597.068 - 15530.71 &  & \\
+\hspace{1em}2026-04-01 & 5773.562 & 4357.152 - 7657.077 &  & RMSFE with RW Baseline:\\
+\hspace{1em}2026-07-01 & 6400.471 & 4751.752 - 8337.468 &  & \\
+\hspace{1em}2026-10-01 & 14547.152 & 10806.491 - 18807.7 &  & MAPE with RW Baseline:\\
+\hspace{1em}2027-01-01 & 15136.166 & 11336.68 - 19512.164 &  & \\
+\hspace{1em}2027-04-01 & 7003.722 & 5289.019 - 8475.753 &  & Mincer-Zarnowitz:\\
+\hspace{1em}2027-07-01 & 7796.368 & 5999.408 - 10015.233 &  & \\
+\addlinespace[0.3em]
+\multicolumn{5}{l}{\textbf{EmiCO2ManInd}}\\
+\hspace{1em}2025-04-01 & 8862.725 & 8729.244 - 9054.123 &  & RMSFE with AR Baseline:\\
+\hspace{1em}2025-07-01 & 7522.846 & 7490.863 - 7763.224 &  & \\
+\hspace{1em}2025-10-01 & 9137.591 & 8757.824 - 9494.669 &  & MAPE with AR Baseline:\\
+\hspace{1em}2026-01-01 & 9492.326 & 9257.731 - 9714.371 &  & \\
+\hspace{1em}2026-04-01 & 8514.666 & 8168.052 - 8717.272 &  & RMSFE with RW Baseline:\\
+\hspace{1em}2026-07-01 & 7223.690 & 6964.122 - 7421.297 &  & \\
+\hspace{1em}2026-10-01 & 8771.684 & 8526.787 - 8975.39 &  & MAPE with RW Baseline:\\
+\hspace{1em}2027-01-01 & 9110.388 & 8730.717 - 9336.034 &  & \\
+\hspace{1em}2027-04-01 & 8170.647 & 8029.024 - 8617.57 &  & Mincer-Zarnowitz:\\
+\hspace{1em}2027-07-01 & 6930.728 & 6816.267 - 7108.078 &  & \\
+\addlinespace[0.3em]
+\multicolumn{5}{l}{\textbf{EmiCO2RoaTra}}\\
+\hspace{1em}2025-04-01 & 31847.201 & 31713.828 - 32125.16 &  & RMSFE with AR Baseline:\\
+\hspace{1em}2025-07-01 & 31646.293 & 31338.804 - 31821.98 &  & \\
+\hspace{1em}2025-10-01 & 30944.189 & 30691.288 - 31198.823 &  & MAPE with AR Baseline:\\
+\hspace{1em}2026-01-01 & 28544.128 & 28244.066 - 28760.472 &  & \\
+\hspace{1em}2026-04-01 & 31303.016 & 30992.455 - 31525.919 &  & RMSFE with RW Baseline:\\
+\hspace{1em}2026-07-01 & 31198.611 & 30923.718 - 31369.221 &  & \\
+\hspace{1em}2026-10-01 & 30568.151 & 30278.403 - 30752.319 &  & MAPE with RW Baseline:\\
+\hspace{1em}2027-01-01 & 28244.080 & 28074.096 - 28494.749 &  & \\
+\hspace{1em}2027-04-01 & 31017.441 & 30751.408 - 31218.881 &  & Mincer-Zarnowitz:\\
+\hspace{1em}2027-07-01 & 30952.289 & 30457.574 - 31135.721 &  & \\
+\addlinespace[0.3em]
+\multicolumn{5}{l}{\textbf{RealConsHH}}\\
+\hspace{1em}2025-04-01 & 334822.744 & 329940.13 - 338994.905 &  & RMSFE with AR Baseline:\\
+\hspace{1em}2025-07-01 & 328873.150 & 324630.812 - 333901.485 &  & \\
+\hspace{1em}2025-10-01 & 364197.722 & 359526.172 - 369051.76 &  & MAPE with AR Baseline:\\
+\hspace{1em}2026-01-01 & 356282.849 & 351839.14 - 360939.653 &  & \\
+\hspace{1em}2026-04-01 & 359474.074 & 353850.912 - 364797.019 &  & RMSFE with RW Baseline:\\
+\hspace{1em}2026-07-01 & 348193.142 & 342819.097 - 352725.843 &  & \\
+\hspace{1em}2026-10-01 & 383691.205 & 377127.922 - 388850.557 &  & MAPE with RW Baseline:\\
+\hspace{1em}2027-01-01 & 374062.396 & 368518.9 - 379373.897 &  & \\
+\hspace{1em}2027-04-01 & 376631.301 & 371094.77 - 381352.706 &  & Mincer-Zarnowitz:\\
+\hspace{1em}2027-07-01 & 364302.322 & 359397.207 - 368545.548 &  & \\
+\addlinespace[0.3em]
+\multicolumn{5}{l}{\textbf{RealVAIndustry}}\\
+\hspace{1em}2025-04-01 & 66490.585 & 64746.647 - 68176.404 &  & RMSFE with AR Baseline:\\
+\hspace{1em}2025-07-01 & 61911.537 & 60324.324 - 63284.891 &  & \\
+\hspace{1em}2025-10-01 & 67249.048 & 65576.492 - 69161.478 &  & MAPE with AR Baseline:\\
+\hspace{1em}2026-01-01 & 68005.083 & 65933.55 - 69900.316 &  & \\
+\hspace{1em}2026-04-01 & 65936.151 & 64346.378 - 67622.343 &  & RMSFE with RW Baseline:\\
+\hspace{1em}2026-07-01 & 59907.173 & 57831.587 - 61121.415 &  & \\
+\hspace{1em}2026-10-01 & 64540.578 & 62520.127 - 66228.472 &  & MAPE with RW Baseline:\\
+\hspace{1em}2027-01-01 & 65130.317 & 63199.743 - 66431.533 &  & \\
+\hspace{1em}2027-04-01 & 63127.686 & 61251.082 - 65124.397 &  & Mincer-Zarnowitz:\\
+\hspace{1em}2027-07-01 & 57380.838 & 55476.467 - 59033.55 &  & \\
 \bottomrule
 \end{tabular}}
+\endgroup{}
 \end{table}

@@ -240,52 +240,59 @@ for(country in all_countries){
 
   }
 
-  # table for forecasts
-  fc$forecast %>%
-    filter(grepl(vars_to_grab, dep_var)) %>%
-    select(dep_var, central.estimate) %>%
-    unnest(central.estimate) %>%
-    select(-dep_var) %>%
-    pivot_longer(-c(time)) %>%
-    drop_na %>%
-    pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
-    rename(Forecast = time) %>%
+  # # table for forecasts
+  # fc$forecast %>%
+  #   filter(grepl(vars_to_grab, dep_var)) %>%
+  #   select(dep_var, central.estimate) %>%
+  #   unnest(central.estimate) %>%
+  #   select(-dep_var) %>%
+  #   pivot_longer(-c(time)) %>%
+  #   drop_na %>%
+  #   pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
+  #   rename(Forecast = time) %>%
+  #
+  #   kable(format = "latex",
+  #         booktabs = TRUE, label = paste0("tab:forecast_",country),
+  #         caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
+  #   kable_styling() %>%
+  #   table_change(label = paste0("tab:forecast_",country)) %>%
+  #   writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast.tex"))
+  #
+  # # table for forecasts
+  # fc_ets$forecast %>%
+  #   filter(grepl(vars_to_grab, dep_var)) %>%
+  #   select(dep_var, central.estimate) %>%
+  #   unnest(central.estimate) %>%
+  #   select(-dep_var) %>%
+  #   pivot_longer(-c(time)) %>%
+  #   drop_na %>%
+  #   pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
+  #   rename(Forecast = time) %>%
+  #
+  #   kable(format = "latex",
+  #         booktabs = TRUE, label = paste0("tab:forecast_",country),
+  #         caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
+  #   kable_styling() %>%
+  #   table_change(label = paste0("tab:forecast_",country)) %>%
+  #   writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_ets.tex"))
 
-    kable(format = "latex",
-          booktabs = TRUE, label = paste0("tab:forecast_",country),
-          caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
-    kable_styling() %>%
-    table_change(label = paste0("tab:forecast_",country)) %>%
-    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast.tex"))
-
-  # table for forecasts
-  fc_ets$forecast %>%
-    filter(grepl(vars_to_grab, dep_var)) %>%
-    select(dep_var, central.estimate) %>%
-    unnest(central.estimate) %>%
-    select(-dep_var) %>%
-    pivot_longer(-c(time)) %>%
-    drop_na %>%
-    pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
-    rename(Forecast = time) %>%
-
-    kable(format = "latex",
-          booktabs = TRUE, label = paste0("tab:forecast_",country),
-          caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
-    kable_styling() %>%
+  forecasting_table_ijf(fc_ets, selected_vars = vars_to_grab, accuracy = 3) %>%
     table_change(label = paste0("tab:forecast_",country)) %>%
     writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_ets.tex"))
+
 
   # Insample Forecasting ----------------------------------------------------
 
   if(!file.exists(paste0("small_examples/IJF/", country, "/insample.RData"))){
-    set.seed(8899)
-    insample <- forecast_insample(model_result_ext, sample_share = .9, exog_fill_method = c("auto", "ets"))
-    save(insample, file = paste0("small_examples/IJF/", country, "/insample.RData"))
+    if(run_insample){
+      set.seed(8899)
+      insample <- forecast_insample(model_result_ext, sample_share = .9, exog_fill_method = c("auto", "ets"))
+      save(insample, file = paste0("small_examples/IJF/", country, "/insample.RData"))
+      }
   } else {
     load(paste0("small_examples/IJF/", country, "/insample.RData"))
   }
-  if(run_insample){
+  if(exists("insample")){
     # Insample Forecasting Plots ----------------------------------------------------
 
     plot(insample, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
@@ -301,6 +308,7 @@ for(country in all_countries){
     plot(insample, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
       ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected_2015",".pdf"), width = 7, height = 5)
 
+
   }
   # # table for RMSFE
   # insample$rmsfe %>%
@@ -315,7 +323,7 @@ for(country in all_countries){
 
 
   # Insample Forecast Comparison --------------------------------------------
-  if(run_fc_comparison){
+  if(run_fc_comparison & exists("insample")){
 
 
     fc_comparison_base <- insample$all_models[length(insample$all_models) - 7][[1]]
@@ -394,8 +402,15 @@ for(country in all_countries){
 
       mutate(comparison = rmsfe/base) %>%
       pivot_wider(id_cols = na_item, names_from = type, values_from = comparison) %>%
-      summarise(across(-na_item, list(mean = ~mean(.x, na.rm = TRUE),
-                                      median = ~median(.x, na.rm = TRUE))))
+
+      kable(format = "latex",digits = 3,
+            booktabs = TRUE, label = paste0("rmsfe_",country),
+            caption = paste0("Root Mean Squared Forecast Error for selected modules for ", country_long, ". The values are relative to a naive AR forecast and calculated insample for the last 8 quarters.")) %>%
+      table_change(label = NULL) %>%
+      writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_rmsfe.tex"))
+
+      # summarise(across(-na_item, list(mean = ~mean(.x, na.rm = TRUE),
+      #                                 median = ~median(.x, na.rm = TRUE))))
 
 
     # create a ggplot with the observational record from insample$hist_data
@@ -580,7 +595,7 @@ for(country in all_countries){
              HICP_Electricity = HICP_Electricity * 1.1) -> exog_data_new
 
 
-    scen_fc <- forecast_model(model_result_ext_sel, exog_predictions = exog_data_new, exog_fill_method = "AR")
+    scen_fc <- forecast_model(model_result_ext_sel, exog_predictions = exog_data_new, exog_fill_method = "ets")
 
     base_df <- plot(base_fc, grepl_variables = "EmiCO2ElecHeat", return.data = TRUE)
     scen_df <- plot(scen_fc, grepl_variables = "EmiCO2ElecHeat", return.data = TRUE)
@@ -594,8 +609,9 @@ for(country in all_countries){
       bind_cols(scen_df %>%
                   select(scen = values)) %>%
       mutate(diff = base - scen) %>%
-      summarise(sum(base, na.rm = TRUE),
-                sum(diff, na.rm = TRUE))
+      summarise(base = sum(base, na.rm = TRUE),
+                diff= sum(diff, na.rm = TRUE)) %>%
+      mutate(diff_rel = diff/base)
   }
   # Diagnostic change in inventories ----------------------------------------
   # variables of interest (not modelled, summarised as DInventories in our model):
@@ -679,6 +695,7 @@ for(country in all_countries){
   }
 
 
+  if(exists("insample")){rm(insample)}
 
 }
 

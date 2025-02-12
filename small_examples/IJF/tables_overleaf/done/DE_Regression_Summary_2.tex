@@ -4,49 +4,45 @@
 \caption{Final OSEM Model result for each module for Germany. Part 2.}
 \centering
 \fontsize{8}{10}\selectfont
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
 \toprule
-  & log(CapFormHH) & log(DFGDP) & log(VAService) & log(VAGov)\\
+  & log(VAService) & log(VAGov) & log(VAIndustry) & log(VARetail) & log(VARealEstate)\\
 \midrule
-ar1 & \num{0.382}*** & \num{0.523}*** & \num{0.814}*** & \\
- & (\num{0.077}) & (\num{0.058}) & (\num{0.052}) & \\
-ar2 &  & \num{0.349}*** &  & \\
- &  & (\num{0.053}) &  & \\
-ar4 &  &  &  & \num{0.408}***\\
- &  &  &  & \vphantom{1} (\num{0.058})\\
-mconst & \num{-8.543}*** & \num{0.515}*** & \num{0.824}* & \num{-1.165}***\\
- & (\num{2.214}) & (\num{0.100}) & (\num{0.315}) & (\num{0.117})\\
-trend & \num{-0.009}*** & \num{0.000}*** & \num{0.001}*** & \\
- & (\num{0.001}) & (\num{0.000}) & (\num{0.000}) & \\
-log(BuildingPermits) & \num{0.145}*** &  &  & \\
- & (\num{0.035}) &  &  & \\
-log(ConsGov) &  &  & \num{0.281}*** & \num{0.640}***\\
- &  &  & (\num{0.051}) & (\num{0.035})\\
-L4.log(ConsGov) &  &  &  & \num{-0.208}***\\
- &  &  &  & (\num{0.058})\\
-L3.log(ConsGov) &  &  & \num{0.232}*** & \num{0.092}**\\
- &  &  & (\num{0.027}) & (\num{0.028})\\
-L1.log(ConsGov) &  &  & \num{-0.415}*** & \num{-0.062}*\\
- &  &  & (\num{0.041}) & (\num{0.026})\\
-log(ConsHH) &  &  &  & \num{0.363}***\\
- &  &  &  & (\num{0.038})\\
-L4.log(ConsHH) &  &  &  & \num{-0.072}+\\
- &  &  &  & (\num{0.040})\\
-L1.log(ConsHH) &  &  &  & \num{-0.084}*\\
- &  &  &  & (\num{0.041})\\
-L1.log(HICPlocal) & \num{0.812}** &  &  & \\
- & (\num{0.296}) &  &  & \\
-log(HousePriceIndex) & \num{0.367}*** &  &  & \\
- & (\num{0.090}) &  &  & \\
-log(IncomeHH) & \num{0.792}** &  &  & \\
- & (\num{0.250}) &  &  & \\
+ar1 & \num{0.814}*** &  &  &  & \\
+ & (\num{0.052}) &  &  &  & \\
+ar4 &  & \num{0.408}*** &  &  & \\
+ &  & (\num{0.058}) &  &  \vphantom{1} & \\
+mconst & \num{0.824}* & \num{-1.165}*** &  & \num{-2.476}*** & \num{7.340}***\\
+ & (\num{0.315}) & (\num{0.117}) &  & (\num{0.400}) & (\num{0.745})\\
+trend & \num{0.001}*** &  &  & \num{0.001}** & \num{0.008}***\\
+ & (\num{0.000}) &  &  & (\num{0.000}) & (\num{0.001})\\
+log(CapForm) &  &  & \num{0.564}*** & \num{0.199}*** & \num{-0.137}**\\
+ &  &  & (\num{0.050}) & (\num{0.022}) & (\num{0.047})\\
+log(ConsGov) & \num{0.281}*** & \num{0.640}*** &  & \num{-0.052}* & \\
+ & (\num{0.051}) & (\num{0.035}) &  & (\num{0.023}) & \\
+L4.log(ConsGov) &  & \num{-0.208}*** &  &  & \\
+ &  & (\num{0.058}) &  &  & \\
+L3.log(ConsGov) & \num{0.232}*** & \num{0.092}** &  &  & \\
+ & (\num{0.027}) & (\num{0.028}) &  &  & \\
+L1.log(ConsGov) & \num{-0.415}*** & \num{-0.062}* &  &  & \\
+ & (\num{0.041}) & (\num{0.026}) &  &  & \\
+log(ConsHH) &  & \num{0.363}*** & \num{0.418}*** & \num{0.943}*** & \num{0.410}***\\
+ &  & (\num{0.038}) & (\num{0.046}) & (\num{0.044}) & (\num{0.064})\\
+L4.log(ConsHH) &  & \num{-0.072}+ &  &  & \\
+ &  & (\num{0.040}) &  &  & \\
+L1.log(ConsHH) &  & \num{-0.084}* &  &  & \\
+ &  & (\num{0.041}) &  &  & \\
+log(HousePriceIndex) &  &  &  &  & \num{-0.260}***\\
+ &  &  &  &  & (\num{0.025})\\
+log(PriceETS) &  &  & \num{-0.003} &  & \\
+ &  &  & (\num{0.002}) &  & \\
 \midrule
-Num.Obs. & \num{75} & \num{134} & \num{132} & \num{131}\\
-AIC & \num{-314.0} & \num{-975.4} & \num{-750.5} & \num{-929.0}\\
-BIC & \num{-281.6} & \num{-937.7} & \num{-707.3} & \num{-877.2}\\
-Log.Lik. & \num{171.005} & \num{500.687} & \num{390.249} & \num{482.481}\\
+Num.Obs. & \num{132} & \num{131} & \num{79} & \num{103} & \num{79}\\
+AIC & \num{-750.5} & \num{-929.0} & \num{-410.0} & \num{-636.7} & \num{-516.7}\\
+BIC & \num{-707.3} & \num{-877.2} & \num{-379.2} & \num{-602.5} & \num{-478.8}\\
+Log.Lik. & \num{390.249} & \num{482.481} & \num{217.995} & \num{331.357} & \num{274.369}\\
 \bottomrule
-\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
-\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}

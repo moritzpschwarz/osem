@@ -6,47 +6,33 @@
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
 \toprule
-  & log(VAIndustry) & log(VARetail) & log(VARealEstate) & log(Flights)\\
+  & log(Flights) & log(EmiCO2Residential) & log(ElectrCons) & log(EmiCH4EntericFerment)\\
 \midrule
-ar1 & \num{0.353}*** & \num{0.693}*** & \num{0.806}*** & \\
- & (\num{0.052}) & (\num{0.039}) & (\num{0.018}) & \\
-ar3 &  & \num{-0.145}*** &  & \\
- &  & (\num{0.033}) &  & \\
-ar4 &  & \num{0.303}*** &  & \\
- &  & (\num{0.039}) &  & \\
-mconst & \num{15.030}*** & \num{-0.504}*** & \num{1.310}*** & \num{-5.664}*\\
- & (\num{1.316}) & (\num{0.094}) & (\num{0.321}) & (\num{2.792})\\
-trend & \num{0.006}*** &  & \num{0.001}*** & \num{-0.013}***\\
- & (\num{0.001}) &  & (\num{0.000}) & (\num{0.001})\\
-log(CapForm) & \num{0.337}*** &  & \num{0.055}*** & \\
- & (\num{0.039}) &  & (\num{0.014}) & \\
-L4.log(CapForm) &  & \num{-0.226}*** &  & \\
- &  & (\num{0.025}) &  & \\
-L3.log(CapForm) &  & \num{0.223}*** &  & \\
- &  & (\num{0.030}) &  & \\
-L1.log(CapForm) & \num{-0.228}*** & \num{-0.066}* & \num{-0.134}*** & \\
- & (\num{0.043}) & (\num{0.030}) & (\num{0.009}) & \\
-log(ConsGov) & \num{-0.870}*** &  & \num{-0.126}*** & \\
- & (\num{0.106}) &  & (\num{0.029}) & \\
-L1.log(ConsGov) &  & \num{-0.214}*** &  & \\
- &  & (\num{0.035}) &  & \\
-log(ConsHH) &  & \num{1.015}*** & \num{0.204}*** & \\
- &  & (\num{0.048}) & (\num{0.020}) & \\
-L1.log(ConsHH) &  & \num{-0.577}*** &  & \\
- &  & (\num{0.058}) &  & \\
-log(HousePriceIndex) &  &  & \num{0.110}*** & \\
- &  &  & (\num{0.013}) & \\
-log(PriceETS) & \num{-0.004} &  &  & \\
- & (\num{0.003}) &  &  \vphantom{1} & \\
-L1.log(PriceETS) & \num{0.002} &  &  & \\
- & (\num{0.003}) &  &  & \\
-log(RealConsHH) &  &  &  & \num{1.545}***\\
- &  &  &  & (\num{0.236})\\
+ar1 &  &  &  & \num{0.971}***\\
+ &  &  &  & (\num{0.016})\\
+mconst & \num{-5.664}* & \num{10.106}*** &  & \\
+ & (\num{2.792}) & (\num{0.241}) &  & \\
+trend & \num{-0.013}*** &  & \num{-0.003}*** & \num{0.000}***\\
+ & (\num{0.001}) &  & (\num{0.000}) & (\num{0.000})\\
+asinh(CDD) &  & \num{-0.029}*** &  & \\
+ &  & (\num{0.007}) &  & \\
+log(HDD) &  & \num{0.473}*** &  & \\
+ &  & (\num{0.019}) &  & \\
+log(HICP\_Electricity) &  & \num{-0.513}*** &  & \\
+ &  & (\num{0.032}) &  & \\
+log(PriceETS) &  &  & \num{0.009}+ & \\
+ &  &  & (\num{0.005}) & \\
+log(RealConsHH) & \num{1.545}*** &  & \num{0.994}*** & \\
+ & (\num{0.236}) &  & (\num{0.006}) & \\
+L1.log(RealConsHH) &  &  &  & \num{0.030}***\\
+ &  &  &  & (\num{0.008})\\
+L1.log(Slaughter) &  &  &  & \num{-0.030}***\\
+ &  &  &  & (\num{0.007})\\
 \midrule
-Num.Obs. & \num{78} & \num{175} & \num{79} & \num{91}\\
-AIC & \num{-416.7} & \num{-1044.1} & \num{-652.1} & \num{-336.0}\\
-BIC & \num{-374.3} & \num{-990.3} & \num{-616.6} & \num{-305.9}\\
-Log.Lik. & \num{226.343} & \num{539.030} & \num{341.052} & \num{180.010}\\
+Num.Obs. & \num{91} & \num{112} & \num{67} & \num{175}\\
+AIC & \num{-336.0} & \num{-391.6} & \num{-284.5} & \num{-1386.4}\\
+BIC & \num{-305.9} & \num{-350.9} & \num{-264.7} & \num{-1329.4}\\
+Log.Lik. & \num{180.010} & \num{210.822} & \num{151.248} & \num{711.192}\\
 \bottomrule
 \multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
 \multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\

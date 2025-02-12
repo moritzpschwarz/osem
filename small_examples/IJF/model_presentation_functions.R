@@ -1,7 +1,7 @@
 
 forecasting_table_ijf <- function(forecast, selected_vars, accuracy = 2){
 
-  fc_ar$full_forecast_data %>%
+  forecast$full_forecast_data %>%
     filter(grepl(selected_vars, na_item),
            #!type %in% c("Insample Fit", "Observation", "Nowcast")) %>%
            type == "Forecast") %>%

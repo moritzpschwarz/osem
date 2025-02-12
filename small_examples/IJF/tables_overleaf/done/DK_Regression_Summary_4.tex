@@ -4,33 +4,47 @@
 \caption{Final OSEM Model result for each module for Denmark. Part 4.}
 \centering
 \fontsize{8}{10}\selectfont
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
 \toprule
-  & log(EmiCO2Residential) & log(ElectrCons) & log(EmiCH4EntericFerment) & asinh(EmiCO2CivAvi)\\
+  & asinh(EmiCO2CivAvi) & log(EmiCO2ManInd) & log(RoadFreight) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
 \midrule
-ar1 &  &  & \num{0.999}*** & \num{0.994}***\\
- &  &  & (\num{0.001}) & (\num{0.007})\\
-mconst &  & \num{9.554}*** &  & \\
- &  & (\num{0.148}) &  & \\
-trend & \num{-0.008}*** & \num{-0.002}*** &  & \\
- & (\num{0.000}) & (\num{0.000}) &  & \\
-asinh(CDD) & \num{-0.040}*** &  &  & \\
- & (\num{0.009}) &  &  & \\
-log(HDD) & \num{0.599}*** &  &  & \\
- & (\num{0.022}) &  &  & \\
-log(HICP\_Electricity) &  & \num{-0.019} &  & \\
- &  & (\num{0.027}) &  & \\
-log(PriceETS) &  & \num{0.008}+ &  & \\
- &  & (\num{0.004}) &  & \\
-log(RealConsHH) & \num{0.453}*** &  &  & \\
- & (\num{0.017}) &  &  & \\
+ar1 & \num{0.968}*** & \num{0.873}*** &  & \num{0.398}*** & \\
+ & (\num{0.025}) & (\num{0.041}) &  & (\num{0.100}) & \\
+mconst &  & \num{1.385}*** & \num{11.351}*** & \num{-19.638}*** & \num{3.338}***\\
+ &  & (\num{0.406}) & (\num{0.825}) & (\num{3.562}) & (\num{0.344})\\
+trend &  & \num{0.000}+ &  & \num{-0.011}*** & \\
+ &  & (\num{0.000}) &  & (\num{0.003}) & \\
+log(ElectrCons) &  &  &  & \num{2.158}*** & \\
+ &  &  &  & (\num{0.458}) & \\
+L1.log(ElectrCons) &  &  &  & \num{1.175}+ & \\
+ &  &  &  & (\num{0.620}) & \\
+log(Flights) & \num{-0.008} &  &  &  & \\
+ & (\num{0.015}) &  &  &  & \\
+L2.log(Flights) & \num{0.014} &  &  &  & \\
+ & (\num{0.014}) &  &  &  & \\
+L1.log(Flights) & \num{0.008} &  &  &  & \\
+ & (\num{0.016}) &  &  &  & \\
+L1.log(HICPGas) &  &  &  & \num{0.346}*** & \\
+ &  &  &  & (\num{0.085}) & \\
+log(HICPlocal) &  & \num{-0.193}** &  &  & \\
+ &  & (\num{0.071}) &  &  & \\
+log(PriceETS) &  &  &  & \num{-0.021} & \\
+ &  &  &  & (\num{0.043}) & \\
+L1.log(PriceETS) &  &  &  & \num{-0.057} & \\
+ &  &  &  & (\num{0.037}) & \\
+log(RealConsHH) &  &  & \num{-0.550}*** &  & \num{0.443}***\\
+ &  &  & (\num{0.109}) &  & (\num{0.034})\\
+log(RealVAIndustry) &  & \num{0.045} & \num{0.309}*** & \num{0.328} & \\
+ &  & (\num{0.042}) & (\num{0.072}) & (\num{0.454}) & \\
+L1.log(RealVAIndustry) &  & \num{-0.016} &  & \num{-0.885}* & \\
+ &  & (\num{0.045}) &  & (\num{0.394}) & \\
 \midrule
-Num.Obs. & \num{132} & \num{67} & \num{215} & \num{215}\\
-AIC & \num{-445.4} & \num{-338.1} & \num{-1592.2} & \num{-926.0}\\
-BIC & \num{-407.9} & \num{-313.8} & \num{-1507.9} & \num{-851.8}\\
-Log.Lik. & \num{235.684} & \num{180.043} & \num{821.099} & \num{484.986}\\
+Num.Obs. & \num{86} & \num{112} & \num{102} & \num{63} & \num{132}\\
+AIC & \num{-394.6} & \num{-600.0} & \num{-280.7} & \num{-100.3} & \num{-754.0}\\
+BIC & \num{-365.1} & \num{-559.2} & \num{-259.7} & \num{-68.1} & \num{-716.6}\\
+Log.Lik. & \num{209.289} & \num{314.990} & \num{148.370} & \num{65.147} & \num{390.021}\\
 \bottomrule
-\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
-\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}

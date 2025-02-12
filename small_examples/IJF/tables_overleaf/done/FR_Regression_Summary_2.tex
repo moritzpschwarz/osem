@@ -4,49 +4,59 @@
 \caption{Final OSEM Model result for each module for France. Part 2.}
 \centering
 \fontsize{8}{10}\selectfont
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
 \toprule
-  & log(CapFormHH) & log(DFGDP) & log(VAService) & log(VAGov)\\
+  & log(VAService) & log(VAGov) & log(VAIndustry) & log(VARetail) & log(VARealEstate)\\
 \midrule
-ar1 & \num{0.840}*** & \num{0.462}*** & \num{0.739}*** & \num{0.374}***\\
- & (\num{0.035}) & (\num{0.054}) & (\num{0.060}) & (\num{0.048})\\
-ar2 &  & \num{0.385}*** & \num{-0.228}*** & \\
- &  & (\num{0.059}) & (\num{0.056}) & \\
-ar3 &  & \num{-0.143}* & \num{0.107}** & \\
- &  & (\num{0.056}) & (\num{0.037}) & \\
-ar4 &  & \num{0.292}*** & \num{0.369}*** & \num{0.633}***\\
- &  & (\num{0.054}) & (\num{0.053}) & (\num{0.046})\\
-mconst &  & \num{0.061}* &  & \num{-0.358}***\\
- &  & (\num{0.024}) &  & (\num{0.100})\\
-trend &  &  &  & \num{0.000}***\\
- &  &  &  & (\num{0.000})\\
-log(BuildingPermits) & \num{0.091}*** &  &  & \\
- & (\num{0.020}) &  &  & \\
-log(ConsGov) &  &  & \num{0.375}*** & \num{0.877}***\\
- &  &  & (\num{0.084}) & (\num{0.025})\\
-L4.log(ConsGov) &  &  & \num{0.273}*** & \num{-0.604}***\\
- &  &  & (\num{0.061}) & (\num{0.053})\\
-L2.log(ConsGov) &  &  & \num{0.200}* & \\
- &  &  & (\num{0.081}) & \\
-L1.log(ConsGov) &  &  & \num{-0.806}*** & \num{-0.286}***\\
- &  &  & (\num{0.083}) & (\num{0.045})\\
-log(ConsHH) &  &  & \num{0.916}*** & \num{0.081}***\\
- &  &  & (\num{0.049}) & (\num{0.014})\\
-L4.log(ConsHH) &  &  & \num{-0.525}*** & \\
- &  &  & (\num{0.060}) & \\
-L3.log(ConsHH) &  &  &  & \num{-0.041}**\\
- &  &  &  & (\num{0.013})\\
-L1.log(ConsHH) &  &  & \num{-0.421}*** & \\
- &  &  & (\num{0.044}) & \\
-log(IncomeHH) & \num{0.090}*** &  &  & \\
- & (\num{0.025}) &  &  & \\
+ar1 & \num{0.739}*** & \num{0.374}*** & \num{0.353}*** & \num{0.693}*** & \num{0.806}***\\
+ & (\num{0.060}) & (\num{0.048}) & (\num{0.052}) & (\num{0.039}) & (\num{0.018})\\
+ar2 & \num{-0.228}*** &  &  &  & \\
+ & (\num{0.056}) &  &  &  & \\
+ar3 & \num{0.107}** &  &  & \num{-0.145}*** & \\
+ & (\num{0.037}) &  &  & (\num{0.033}) & \\
+ar4 & \num{0.369}*** & \num{0.633}*** &  & \num{0.303}*** & \\
+ & (\num{0.053}) & (\num{0.046}) &  & (\num{0.039}) & \\
+mconst &  & \num{-0.358}*** & \num{15.030}*** & \num{-0.504}*** & \num{1.310}***\\
+ &  & (\num{0.100}) & (\num{1.316}) & (\num{0.094}) & (\num{0.321})\\
+trend &  & \num{0.000}*** & \num{0.006}*** &  & \num{0.001}***\\
+ &  & (\num{0.000}) & (\num{0.001}) &  & (\num{0.000})\\
+log(CapForm) &  &  & \num{0.337}*** &  & \num{0.055}***\\
+ &  &  & (\num{0.039}) &  & (\num{0.014})\\
+L4.log(CapForm) &  &  &  & \num{-0.226}*** & \\
+ &  &  &  & (\num{0.025}) & \\
+L3.log(CapForm) &  &  &  & \num{0.223}*** & \\
+ &  &  &  & (\num{0.030}) & \\
+L1.log(CapForm) &  &  & \num{-0.228}*** & \num{-0.066}* & \num{-0.134}***\\
+ &  &  & (\num{0.043}) & (\num{0.030}) & (\num{0.009})\\
+log(ConsGov) & \num{0.375}*** & \num{0.877}*** & \num{-0.870}*** &  & \num{-0.126}***\\
+ & (\num{0.084}) & (\num{0.025}) & (\num{0.106}) &  & (\num{0.029})\\
+L4.log(ConsGov) & \num{0.273}*** & \num{-0.604}*** &  &  & \\
+ & (\num{0.061}) & (\num{0.053}) &  &  & \\
+L2.log(ConsGov) & \num{0.200}* &  &  &  & \\
+ & (\num{0.081}) &  &  &  & \\
+L1.log(ConsGov) & \num{-0.806}*** & \num{-0.286}*** &  & \num{-0.214}*** & \\
+ & (\num{0.083}) & (\num{0.045}) &  & (\num{0.035}) & \\
+log(ConsHH) & \num{0.916}*** & \num{0.081}*** &  & \num{1.015}*** & \num{0.204}***\\
+ & (\num{0.049}) & (\num{0.014}) &  & (\num{0.048}) & (\num{0.020})\\
+L4.log(ConsHH) & \num{-0.525}*** &  &  &  & \\
+ & (\num{0.060}) &  &  &  & \\
+L3.log(ConsHH) &  & \num{-0.041}** &  &  & \\
+ &  & (\num{0.013}) &  &  & \\
+L1.log(ConsHH) & \num{-0.421}*** &  &  & \num{-0.577}*** & \\
+ & (\num{0.044}) &  &  & (\num{0.058}) & \\
+log(HousePriceIndex) &  &  &  &  & \num{0.110}***\\
+ &  &  &  &  & (\num{0.013})\\
+log(PriceETS) &  &  & \num{-0.004} &  & \\
+ &  &  & (\num{0.003}) &  \vphantom{1} & \\
+L1.log(PriceETS) &  &  & \num{0.002} &  & \\
+ &  &  & (\num{0.003}) &  & \\
 \midrule
-Num.Obs. & \num{120} & \num{176} & \num{175} & \num{175}\\
-AIC & \num{-506.1} & \num{-1236.7} & \num{-1018.7} & \num{-1351.8}\\
-BIC & \num{-475.4} & \num{-1179.6} & \num{-958.5} & \num{-1294.8}\\
-Log.Lik. & \num{264.029} & \num{636.356} & \num{528.331} & \num{693.880}\\
+Num.Obs. & \num{175} & \num{175} & \num{78} & \num{175} & \num{79}\\
+AIC & \num{-1018.7} & \num{-1351.8} & \num{-416.7} & \num{-1044.1} & \num{-652.1}\\
+BIC & \num{-958.5} & \num{-1294.8} & \num{-374.3} & \num{-990.3} & \num{-616.6}\\
+Log.Lik. & \num{528.331} & \num{693.880} & \num{226.343} & \num{539.030} & \num{341.052}\\
 \bottomrule
-\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
-\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}

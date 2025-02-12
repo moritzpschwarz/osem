@@ -41,24 +41,22 @@ Model & Type & Dependent & Independent\\
 27 & Identity & RealCapForm & CapForm / DFCapForm * 100\\
 28 & Identity & RealCapFormHH & CapFormHH / DFCapForm * 100\\
 29 & Identity & RealConsHH & ConsHH / DFConsHH * 100\\
-30 & Estimated & DFGDP & f()\\
+30 & Estimated & HICPlocal & f(PriceOil, PriceImports, LabourProd, EfExchange)\\
 \addlinespace
-31 & Estimated & HICPlocal & f(PriceOil, PriceImports, LabourProd, EfExchange)\\
-32 & Estimated & Inflation & f(URate, PriceOil)\\
-33 & Estimated & EmiCO2ManInd & f(RealVAIndustry, HICPlocal)\\
-34 & Estimated & Flights & f(RealConsHH, FinWealthHH,  HICP\_AviaInt)\\
-35 & Estimated & EmiCO2CivAvi & f(HICPlocal, RealConsHH, RealVAService, Flights)\\
+31 & Estimated & EmiCO2ManInd & f(RealVAIndustry, HICPlocal)\\
+32 & Estimated & Flights & f(RealConsHH, FinWealthHH,  HICP\_AviaInt)\\
+33 & Estimated & EmiCO2CivAvi & f(HICPlocal, RealConsHH, RealVAService, Flights)\\
+34 & Estimated & RoadFreight & f(RealConsHH, HICPlocal, RealVAService, PriceOil, HICPDiesel, HICPPetrol, RealVAIndustry)\\
+35 & Estimated & EmiCO2RoaTra & f(RoadFreight, RealConsHH, HICPlocal, PriceOil, HICPDiesel, HICPPetrol)\\
 \addlinespace
-36 & Estimated & RoadFreight & f(RealConsHH, HICPlocal, RealVAService)\\
-37 & Estimated & EmiCO2RoaTra & f(RoadFreight, RealConsHH, HICPlocal)\\
-38 & Estimated & EmiCO2Residential & f(RealConsHH, HICP\_Electricity, CDD, HDD)\\
-39 & Estimated & ElectrCons & f(RealConsHH, HICP\_Electricity, PriceETS)\\
-40 & Estimated & EmiCO2ElecHeat & f(ElectrCons, RealVAIndustry, RealCapFormHH, PriceETS, CDD, HDD)\\
+36 & Estimated & EmiCO2Residential & f(RealConsHH, HICP\_Electricity, CDD, HDD)\\
+37 & Estimated & ElectrCons & f(RealConsHH, HICP\_Electricity, PriceETS)\\
+38 & Estimated & EmiCO2ElecHeat & f(ElectrCons, RealVAIndustry, RealCapFormHH, PriceETS, CDD, HDD, HICPGas)\\
+39 & Identity & EmiCO2Total & EmiCO2ElecHeat + EmiCO2RoaTra + EmiCO2ManInd + EmiCO2OilandGas + EmiCO2PetrRef + EmiCO2WatNav + EmiCO2CivAvi + EmiCO2GlassProd + EmiCO2LimeProd + EmiCO2OthTransp + EmiCO2Rail + EmiCO2Residential + EmiCO2SolidFuel + EmiCO2OthCarb + EmiCO2CemPro + EmiCO2ChemInd + EmiCO2Liming + EmiCO2MetalInd + EmiCO2NonEnergProd + EmiCO2UreaApp + EmiCO2Waste\\
+40 & Identity & EmiCH4Total & EmiCH4ElecHeat + EmiCH4PetrRef + EmiCH4ManInd + EmiCH4CivAvi + EmiCH4RoaTra + EmiCH4Rail + EmiCH4WatNav + EmiCH4OthTransp + EmiCH4Residential + EmiCH4SolidFuel + EmiCH4OilandGas + EmiCH4ChemInd + EmiCH4MetalInd + EmiCH4EntericFerment + EmiCH4ManureMgmt + EmiCH4BiomassBurn + EmiCH4SolidWaste + EmiCH4BioWasteTreat + EmiCH4Waste + EmiCH4Wastewater\\
 \addlinespace
-41 & Identity & EmiCO2Total & EmiCO2ElecHeat + EmiCO2RoaTra + EmiCO2ManInd + EmiCO2OilandGas + EmiCO2PetrRef + EmiCO2WatNav + EmiCO2CivAvi + EmiCO2GlassProd + EmiCO2LimeProd + EmiCO2OthTransp + EmiCO2Rail + EmiCO2Residential + EmiCO2SolidFuel + EmiCO2OthCarb + EmiCO2CemPro + EmiCO2ChemInd + EmiCO2Liming + EmiCO2MetalInd + EmiCO2NonEnergProd + EmiCO2UreaApp + EmiCO2Waste\\
-42 & Identity & EmiCH4Total & EmiCH4ElecHeat + EmiCH4PetrRef + EmiCH4ManInd + EmiCH4CivAvi + EmiCH4RoaTra + EmiCH4Rail + EmiCH4WatNav + EmiCH4OthTransp + EmiCH4Residential + EmiCH4SolidFuel + EmiCH4OilandGas + EmiCH4ChemInd + EmiCH4MetalInd + EmiCH4EntericFerment + EmiCH4ManureMgmt + EmiCH4BiomassBurn + EmiCH4SolidWaste + EmiCH4BioWasteTreat + EmiCH4Waste + EmiCH4Wastewater\\
-43 & Identity & EmiCH4Livestock & EmiCH4EntericFerment + EmiCH4ManureMgmt\\
-44 & Estimated & EmiCH4EntericFerment & f(Slaughter, RealConsHH, RealVAAgriculture)\\
+41 & Identity & EmiCH4Livestock & EmiCH4EntericFerment + EmiCH4ManureMgmt\\
+42 & Estimated & EmiCH4EntericFerment & f(Slaughter, RealConsHH, RealVAAgriculture)\\
 \bottomrule
 \end{tabular}
 \end{table}
