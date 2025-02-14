@@ -6,7 +6,7 @@ devtools::load_all()
 
 vars_to_grab <- "ElectrCons|EmiCO2RoaTra|EmiCO2ManInd|EmiCO2ElecHeat|RealVAIndustry|RealConsHH"
 vars_for_spec_table <- paste0(vars_to_grab, "|VAIndustry|HICP|CapForm|CapFormHH")
-no_modles_in_one_table <- 5
+no_models_in_one_table <- 5
 
 # define the main country to leave out of the appendix
 main_country <- "DE"
@@ -33,33 +33,25 @@ for(country in all_countries){
 
   # Loading the model -------------------------------------------------------
 
+  load(paste0("./small_examples/IJF/", country, "/model.RData"))
+
+  model_result_nosel <- model_result_ext
+
   load(paste0("./small_examples/IJF/", country, "/model_sel.RData"))
 
   model_result_ext <- model_result_ext_sel
+
+  rm(model_result_ext_sel)
+
 
   country_long <- case_when(country == "DE" ~ "Germany",
                             country == "DK" ~ "Denmark",
                             country == "AT" ~ "Austria",
                             country == "FR" ~ "France")
 
-  # create inflation from HICP module
-  hicp <- model_result_ext$full_data %>%
-    filter(na_item == "HICPlocal.hat") %>%
-    select(time, values) %>%
-    rename(HICP.hat = values) %>%
-    arrange(time) %>%
-    mutate(values = (HICP.hat - lag(HICP.hat, 1)) / lag(HICP.hat, 1) * 100) %>%
-    mutate(na_item = "Inflation.hat") %>%
-    select(time, na_item, values)
-  inf <- model_result_ext$full_data %>%
-    filter(na_item == "HICPlocal") %>%
-    select(time, values) %>%
-    rename(HICP = values) %>%
-    arrange(time) %>%
-    mutate(values = (HICP - lag(HICP, 1)) / lag(HICP, 1) * 100) %>%
-    mutate(na_item = "Inflation") %>%
-    select(time, na_item, values)
-  model_result_ext$full_data <- bind_rows(model_result_ext$full_data, hicp, inf)
+  model_result_ext <- create_inflation(model_result_ext)
+  model_result_nosel <- create_inflation(model_result_nosel)
+
 
   # Specification Table -----------------------------------------------------
 
@@ -100,6 +92,54 @@ for(country in all_countries){
 
 
 
+  # Variable Table ----------------------------------------------------------
+  if(!file.exists(paste0("small_examples/IJF/tables_overleaf/general/variable_table.tex"))){
+    model_result_ext$processed_input_data %>%
+      distinct(na_item) %>%
+      pull(na_item) -> all_vars
+
+    model_result_ext$dictionary %>%
+      filter(model_varname %in% all_vars) %>%
+      filter(!model_varname %in% c("Factor")) %>%
+      select(model_varname, full_name, database, unit) %>%
+
+      mutate(unit = case_when(unit == "CP_MEUR" ~ "Mio. € (current prices)",
+                              unit == "MIO_EUR" ~ "Mio. €",
+                              unit == "THS_T" ~ "Kilotonnes",
+                              unit == "MIO_TKM" ~ "Mio. tonne-kilometre",
+                              unit == "I15" ~ "Index (2015 = 100)",
+                              unit == "I10" ~ "Index (2010 = 100)",
+                              unit == "I15_Q" ~ "Quarterly Index (2015 = 100)",
+                              unit == "PD15_EUR" ~ "Price index (implicit deflator), 2015 = 100 (€)",
+                              unit == "NR" ~ "Number",
+                              unit == "FLIGHT" ~ "Number of Flights",
+
+                              full_name == "Consumption of electricity - GWh" ~ "GWh",
+                              full_name == "Average EU ETS Price, Nominal" ~ "€",
+                              full_name == "Average Crude Brent Oil Price in EUR, Nominal" ~ "€",
+                              full_name == "Harmonised Index of Consumer Prices, All Goods" ~ "Price index (implicit deflator), 2015 = 100 (€)",
+                              full_name == "Import Price Index" ~ "Price index (implicit deflator), 2015 = 100 (€)",
+                              full_name == "Harmonised Index of Consumer Prices, Diesel" ~ "Price index (implicit deflator), 2015 = 100 (€)",
+                              full_name == "Harmonised Index of Consumer Prices, Petrol" ~ "Price index (implicit deflator), 2015 = 100 (€)",
+                              full_name == "Harmonised Index of Consumer Prices, Gas" ~"Price index (implicit deflator), 2015 = 100 (€)",
+
+                              database == "edgar" ~ "Kilotonnes",
+
+                              TRUE ~ unit)) %>%
+      arrange(model_varname) %>%
+      kable(col.names = c("Variable", "Description", "Source", "Unit"), booktabs = TRUE, longtable = TRUE,
+            caption = "Description of Variables used in the Model",
+            label = "variable_table",
+            format = "latex") %>%
+
+      column_spec(1, width = "3.5cm") %>%
+      column_spec(2, width = "5.5cm") %>%
+      column_spec(3, width = "2cm") %>%
+      column_spec(4, width = "4cm") %>%
+      kable_styling(font_size = 8) %>%
+
+      writeLines("small_examples/IJF/tables_overleaf/general/variable_table.tex")
+  }
 
 
   # Model plots -------------------------------------------------------------
@@ -240,42 +280,6 @@ for(country in all_countries){
 
   }
 
-  # # table for forecasts
-  # fc$forecast %>%
-  #   filter(grepl(vars_to_grab, dep_var)) %>%
-  #   select(dep_var, central.estimate) %>%
-  #   unnest(central.estimate) %>%
-  #   select(-dep_var) %>%
-  #   pivot_longer(-c(time)) %>%
-  #   drop_na %>%
-  #   pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
-  #   rename(Forecast = time) %>%
-  #
-  #   kable(format = "latex",
-  #         booktabs = TRUE, label = paste0("tab:forecast_",country),
-  #         caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
-  #   kable_styling() %>%
-  #   table_change(label = paste0("tab:forecast_",country)) %>%
-  #   writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast.tex"))
-  #
-  # # table for forecasts
-  # fc_ets$forecast %>%
-  #   filter(grepl(vars_to_grab, dep_var)) %>%
-  #   select(dep_var, central.estimate) %>%
-  #   unnest(central.estimate) %>%
-  #   select(-dep_var) %>%
-  #   pivot_longer(-c(time)) %>%
-  #   drop_na %>%
-  #   pivot_wider(id_cols = c(time), names_from = name, values_from = value) %>%
-  #   rename(Forecast = time) %>%
-  #
-  #   kable(format = "latex",
-  #         booktabs = TRUE, label = paste0("tab:forecast_",country),
-  #         caption = paste0("Forecast for selected modules for ", country_long, ".")) %>%
-  #   kable_styling() %>%
-  #   table_change(label = paste0("tab:forecast_",country)) %>%
-  #   writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_ets.tex"))
-
   forecasting_table_ijf(fc_ets, selected_vars = vars_to_grab, accuracy = 3) %>%
     table_change(label = paste0("tab:forecast_",country)) %>%
     writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_ets.tex"))
@@ -288,45 +292,38 @@ for(country in all_countries){
       set.seed(8899)
       insample <- forecast_insample(model_result_ext, sample_share = .9, exog_fill_method = c("auto", "ets"))
       save(insample, file = paste0("small_examples/IJF/", country, "/insample.RData"))
-      }
+    }
   } else {
     load(paste0("small_examples/IJF/", country, "/insample.RData"))
   }
   if(exists("insample")){
     # Insample Forecasting Plots ----------------------------------------------------
 
-    plot(insample, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
+    plot(insample, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth,
+         first_date_insample_model = "2021-01-01") %>%
       ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample",".pdf"), width = 10, height = 10)
 
     # Insample Forecasting Plots with selected variables ----------------------------------------------------
 
-    plot(insample, grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
+    plot(insample, grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long),
+         linewidth = lwidth, first_date_insample_model = "2021-01-01") %>%
       ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected",".pdf"), width = 7, height = 5)
 
     # Insample Forecasting Plots with selected variables ----------------------------------------------------
 
-    plot(insample, first_date = "2015-01-01", grepl_variables = vars_to_grab, title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth) %>%
+    plot(insample, first_date = "2015-01-01", grepl_variables = vars_to_grab,
+         title = paste0("Insample Forecasting for ",country_long), linewidth = lwidth,
+         first_date_insample_model = "2021-01-01") %>%
       ggsave(.,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Insample_Selected_2015",".pdf"), width = 7, height = 5)
 
 
   }
-  # # table for RMSFE
-  # insample$rmsfe %>%
-  #   filter(grepl(vars_to_grab, na_item)) %>%
-  #   pivot_wider(id_cols = start, names_from = na_item, values_from = rmsfe) %>%
-  #
-  #   kable(format = "latex",
-  #         booktabs = TRUE, label = paste0("tab:RMSFE_",country),
-  #         caption = paste0("Root Mean Squared Forecast Error for each module for ", country_long, ".")) %>%
-  #   kable_styling() %>%
-  #   writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_RMSFE.tex"))
-
 
   # Insample Forecast Comparison --------------------------------------------
   if(run_fc_comparison & exists("insample")){
 
-
-    fc_comparison_base <- insample$all_models[length(insample$all_models) - 7][[1]]
+    fc_comparison_base <- insample$all_models[11][[1]]
+    #fc_comparison_base <- insample$all_models[length(insample$all_models) - 7][[1]]
     set.seed(8899)
     naive_ar <- forecast_comparison(model = fc_comparison_base, n.ahead = 8, forecast_type = "AR")
     set.seed(8899)
@@ -402,15 +399,19 @@ for(country in all_countries){
 
       mutate(comparison = rmsfe/base) %>%
       pivot_wider(id_cols = na_item, names_from = type, values_from = comparison) %>%
+      rename(Module = na_item) %>%
 
-      kable(format = "latex",digits = 3,
+      kable(format = "latex",
+            digits = 3,
             booktabs = TRUE, label = paste0("rmsfe_",country),
-            caption = paste0("Root Mean Squared Forecast Error for selected modules for ", country_long, ". The values are relative to a naive AR forecast and calculated insample for the last 8 quarters.")) %>%
+            col.names = c("Module", "Auto", "ETS", "AR", "Random Walk", "ETS", "Auto"),
+            caption = paste0("Root Mean Squared Forecast Error for selected modules for ", country_long, ". The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.")) %>%
+      add_header_above(c(" " = 1, "OSEM Forecasts" = 2, "Naive Univariate Forecasts" = 4)) %>%
       table_change(label = NULL) %>%
       writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_rmsfe.tex"))
 
-      # summarise(across(-na_item, list(mean = ~mean(.x, na.rm = TRUE),
-      #                                 median = ~median(.x, na.rm = TRUE))))
+    # summarise(across(-na_item, list(mean = ~mean(.x, na.rm = TRUE),
+    #                                 median = ~median(.x, na.rm = TRUE))))
 
 
     # create a ggplot with the observational record from insample$hist_data
@@ -440,91 +441,21 @@ for(country in all_countries){
   }
   # Regression Summary ------------------------------------------------------
 
-  # remove NULL results
-  model_list <- model_result_ext$module_collection$model[!sapply(model_result_ext$module_collection$model, is.null)]
+  create_regression_table_ijf(model = model_result_ext,
+                              grepl_selected = vars_to_grab,
+                              no_models_in_one_table = no_models_in_one_table,
+                              country = country)
 
-  model_list <- lapply(model_list, function(x){if(!is.null(x)){gets::as.lm(x)}})
+  create_regression_table_ijf(model = model_result_ext,
+                              grepl_selected = NULL,
+                              no_models_in_one_table = no_models_in_one_table,
+                              country = country)
 
-  names(model_list) <- model_result_ext$module_order$dependent[!sapply(model_result_ext$module_collection$model, is.null)]
-
-  # ensure the correct order of the table
-  lapply(model_list, broom::tidy) %>%
-    bind_rows() %>%
-    distinct(term) %>%
-    filter(!str_detect(term, "iis|sis|q_[0-9]+")) %>%
-    mutate(base = gsub("L[0-9]+\\.","",term)) %>%
-    mutate(base_num = case_when(base == "mconst" ~ 2,
-                                base == "trend" ~ 3,
-                                grepl("ar[0-9]+",base) ~ 1,
-                                TRUE ~ 4)) %>%
-    arrange(base_num, base, desc(term)) %>%
-    pull(term) -> coef_order
-
-  # extract transformations
-  # technically, the transformation of the same var could differ across modules because of different samples
-  # need to ensure first the transformations are the same (otherwise cannot be same row in output latex table)
-  trafo <- bind_rows(model_result_ext$opts_df %>% pull(log_opts))
-  trafo <- trafo %>%
-    reframe(across(everything(), ~ na.omit(unique(.x))))
-  stopifnot(NROW(trafo) == 1L) # then can use same transformation in all tables
-  trafo <- trafo %>% pivot_longer(everything(), names_to = "variable", values_to = "trafo")
-
-  coef_renamed <- sapply(coef_order, trafo_fun)
-  names(coef_renamed) <- coef_order # names should already be set but to be sure
-
-  ## Regression Tables -------------------------------------------------------
-
-  ## All variables -----------------------------------------------------------
-  # To disable `siunitx` and prevent `modelsummary` from wrapping numeric entries in `\num{}`, call:
-  #   options("modelsummary_format_numeric_latex" = "plain")
-  no_of_tables <- ceiling(length(model_list)/no_modles_in_one_table)
-
-  for(i in 1:no_of_tables){
-    # i = 1
-    model_list[cut(1:length(model_list), breaks = no_of_tables, labels = FALSE) == i] -> model_list_temp
-    models_renamed <- sapply(names(model_list_temp), function(x) paste0(trafo %>% filter(variable == x) %>% pull(trafo), "(", x, ")"))
-    names(model_list_temp) <- models_renamed
-
-    table_output <- modelsummary::modelsummary(
-      model_list_temp,
-      #coef_omit = "iis|sis|q_[0-9]+",
-      coef_map = coef_renamed,
-      gof_omit = "R",
-      output = "latex",
-      title = paste0("Final OSEM Model result for each module for ",country_long, ". Part ",i,"."),
-      notes = "Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.",
-      stars = TRUE
-    )%>%
-      kable_styling(font_size = 8)
-
-    # this output can go straight into the latex
-    table_change(table_output, label = paste0("tab:regression_summary",country,"_",i)) %>%
-      writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Regression_Summary_",i,".tex"))
-  }
-
-
-  ## selected variables ------------------------------------------------------
-
-  model_list[grepl(vars_to_grab, names(model_list))] -> model_list_temp
-  models_renamed <- sapply(names(model_list_temp), function(x) paste0(trafo %>% filter(variable == x) %>% pull(trafo), "(", x, ")"))
-  names(model_list_temp) <- models_renamed
-
-  table_output <- modelsummary::modelsummary(
-    model_list_temp,
-    #coef_omit = "iis|sis|q_[0-9]+",
-    coef_map = coef_renamed,
-    gof_omit = "R",
-    output = "latex",
-    title = paste0("Final OSEM Model result for selected modules for ",country_long, "."),
-    notes = "Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.",
-    stars = TRUE
-  ) %>%
-    kable_styling(font_size = 8)
-
-  # this output can go straight into the latex
-  table_change(table_output, label = paste0("tab:regression_summary",country,"_",i)) %>%
-    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Regression_Summary_selected.tex"))
-
+  create_regression_table_ijf(model = model_result_nosel,
+                              grepl_selected = vars_to_grab,
+                              no_models_in_one_table = no_models_in_one_table,
+                              label_add = "_nosel",
+                              country = country)
 
   # Diagnostics ------------------------------------------------------------
 
@@ -590,9 +521,8 @@ for(country in all_countries){
     #base_fc <- forecast_model(model_result_ext_sel, exog_fill_method = "AR")
 
     base_fc$exog_data_nowcast %>%
-      mutate(PriceETS = PriceETS + 100,
-             HICP_AviaInt = HICP_AviaInt * 1.1,
-             HICP_Electricity = HICP_Electricity * 1.1) -> exog_data_new
+      mutate(PriceETS = PriceETS + 100
+      ) -> exog_data_new
 
 
     scen_fc <- forecast_model(model_result_ext_sel, exog_predictions = exog_data_new, exog_fill_method = "ets")
@@ -612,6 +542,27 @@ for(country in all_countries){
       summarise(base = sum(base, na.rm = TRUE),
                 diff= sum(diff, na.rm = TRUE)) %>%
       mutate(diff_rel = diff/base)
+
+
+
+    base_fc$exog_data_nowcast %>%
+      mutate(PriceETS = PriceETS + 100,
+             HICP_AviaInt = HICP_AviaInt * 1.1,
+             HICP_Electricity = HICP_Electricity * 1.1,
+             PriceOil = PriceOil * 1.1,
+      ) -> exog_data_new_2
+
+
+    scen_fc2 <- forecast_model(model_result_ext_sel, exog_predictions = exog_data_new_2, exog_fill_method = "ets")
+
+    base_df <- plot(base_fc, grepl_variables = "EmiCO2ElecHeat", return.data = TRUE)
+    scen_df <- plot(scen_fc, grepl_variables = "EmiCO2ElecHeat", return.data = TRUE)
+
+    plot(base_fc, grepl_variables = "EmiCO2ElecHeat")
+    plot(scen_fc2, grepl_variables = "EmiCO2ElecHeat")
+
+    scen_df <- plot(scen_fc, grepl_variables = "EmiCO2ElecHeat", return.data = TRUE)
+
   }
   # Diagnostic change in inventories ----------------------------------------
   # variables of interest (not modelled, summarised as DInventories in our model):

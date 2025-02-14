@@ -93,15 +93,135 @@ extract_central_forecasts <- function(forecast){
 }
 
 
-trafo_fun <- function(x) {
-  stopifnot(length(x) == 1L)
-  if (grepl("ln\\.", x)) {
-    var <- sub(".*\\.", "", x)
-    tr <- trafo %>% filter(variable == var) %>% pull(trafo)
-    xtrans <- paste0(str_replace(x, "ln\\.", paste0(tr, "(")), ")")
-    return(xtrans)
-  } else {
-    return(x)
-  }
+
+
+
+create_inflation <- function(model){
+
+  # create inflation from HICP module
+  hicp <- model$full_data %>%
+    filter(na_item == "HICPlocal.hat") %>%
+    select(time, values) %>%
+    rename(HICP.hat = values) %>%
+    arrange(time) %>%
+    mutate(values = (HICP.hat - lag(HICP.hat, 1)) / lag(HICP.hat, 1) * 100) %>%
+    mutate(na_item = "Inflation.hat") %>%
+    select(time, na_item, values)
+  inf <- model$full_data %>%
+    filter(na_item == "HICPlocal") %>%
+    select(time, values) %>%
+    rename(HICP = values) %>%
+    arrange(time) %>%
+    mutate(values = (HICP - lag(HICP, 1)) / lag(HICP, 1) * 100) %>%
+    mutate(na_item = "Inflation") %>%
+    select(time, na_item, values)
+  model$full_data <- bind_rows(model$full_data, hicp, inf)
+  return(model)
 }
 
+
+
+create_regression_table_ijf <- function(model, grepl_selected = NULL, country = "DE", label_add = "", no_models_in_one_table = 5){
+  # To disable `siunitx` and prevent `modelsummary` from wrapping numeric entries in `\num{}`, call:
+  #   options("modelsummary_format_numeric_latex" = "plain")
+
+  # remove NULL results
+  model_list <- model$module_collection$model[!sapply(model$module_collection$model, is.null)]
+
+  model_list <- lapply(model_list, function(x){if(!is.null(x)){gets::as.lm(x)}})
+
+  names(model_list) <- model$module_order$dependent[!sapply(model$module_collection$model, is.null)]
+
+  # ensure the correct order of the table
+  lapply(model_list, broom::tidy) %>%
+    bind_rows() %>%
+    distinct(term) %>%
+    filter(!str_detect(term, "iis|sis|q_[0-9]+")) %>%
+    mutate(base = gsub("L[0-9]+\\.","",term)) %>%
+    mutate(base_num = case_when(base == "mconst" ~ 2,
+                                base == "trend" ~ 3,
+                                grepl("ar[0-9]+",base) ~ 1,
+                                TRUE ~ 4)) %>%
+    arrange(base_num, base, desc(term)) %>%
+    pull(term) -> coef_order
+
+  trafo_fun <- function(x) {
+    stopifnot(length(x) == 1L)
+    if (grepl("ln\\.", x)) {
+      var <- sub(".*\\.", "", x)
+      tr <- trafo %>% filter(variable == var) %>% pull(trafo)
+      xtrans <- paste0(str_replace(x, "ln\\.", paste0(tr, "(")), ")")
+      return(xtrans)
+    } else {
+      return(x)
+    }
+  }
+
+
+  # extract transformations
+  # technically, the transformation of the same var could differ across modules because of different samples
+  # need to ensure first the transformations are the same (otherwise cannot be same row in output latex table)
+  trafo <- bind_rows(model$opts_df %>% pull(log_opts))
+  trafo <- trafo %>%
+    reframe(across(everything(), ~ na.omit(unique(.x))))
+  stopifnot(NROW(trafo) == 1L) # then can use same transformation in all tables
+  trafo <- trafo %>% pivot_longer(everything(), names_to = "variable", values_to = "trafo")
+
+  coef_renamed <- sapply(coef_order, trafo_fun)
+  names(coef_renamed) <- coef_order # names should already be set but to be sure
+
+
+  if(is.null(grepl_selected)){
+
+    no_of_tables <- ceiling(length(model_list)/no_models_in_one_table)
+
+    for(i in 1:no_of_tables){
+      # i = 1
+      model_list[cut(1:length(model_list), breaks = no_of_tables, labels = FALSE) == i] -> model_list_temp
+      models_renamed <- sapply(names(model_list_temp), function(x) paste0(trafo %>% filter(variable == x) %>% pull(trafo), "(", x, ")"))
+      names(model_list_temp) <- models_renamed
+
+      table_output <- modelsummary::modelsummary(
+        model_list_temp,
+        #coef_omit = "iis|sis|q_[0-9]+",
+        coef_map = coef_renamed,
+        gof_omit = "R",
+        output = "latex",
+        title = paste0("Final OSEM Model result for each module for ",country_long, ". Part ",i,"."),
+        notes = "Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.",
+        stars = TRUE
+      )%>%
+        kable_styling(font_size = 8)
+
+      # this output can go straight into the latex
+      table_change(table_output, label = paste0("tab:regression_summary",country,"_",i, label_add)) %>%
+        writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Regression_Summary_",i,label_add,".tex"))
+
+    }
+  }
+  if(!is.null(grepl_selected)){
+
+    ## selected variables ------------------------------------------------------
+
+    model_list[grepl(vars_to_grab, names(model_list))] -> model_list_temp
+    models_renamed <- sapply(names(model_list_temp), function(x) paste0(trafo %>% filter(variable == x) %>% pull(trafo), "(", x, ")"))
+    names(model_list_temp) <- models_renamed
+
+    table_output <- modelsummary::modelsummary(
+      model_list_temp,
+      #coef_omit = "iis|sis|q_[0-9]+",
+      coef_map = coef_renamed,
+      gof_omit = "R",
+      output = "latex",
+      title = paste0("Final OSEM Model result for selected modules for ",country_long, "."),
+      notes = "Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.",
+      stars = TRUE
+    ) %>%
+      kable_styling(font_size = 8)
+  }
+  # this output can go straight into the latex
+  table_change(table_output, label = paste0("tab:regression_summary_selected",country, label_add)) %>%
+    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Regression_Summary_selected",label_add,".tex"))
+
+
+}

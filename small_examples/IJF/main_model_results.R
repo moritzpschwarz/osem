@@ -90,8 +90,6 @@ dictionary <- dplyr::bind_rows(dict_identities, dict_eurostat, dict_edgar, dict_
 
 for(country in c("DE","AT","FR", "DK")){
 
-  #if(file.exists(paste0("./small_examples/IJF/", country, "/model_sel.RData"))){next}
-
   # country = "DE"
 
   # jobs to do:
@@ -273,41 +271,47 @@ for(country in c("DE","AT","FR", "DK")){
   write_csv(inf, file = paste0("./small_examples/IJF/",country,"/inflation.csv"))
 
   # Run the model -----------------------------------------------------------
+  if(file.exists(paste0("./small_examples/IJF/", country, "/model.RData"))){next} else {
 
-  # model_result_ext <- run_model(
-  #   specification = spec_extended,
-  #   dictionary = dictionary %>%
-  #     mutate(geo = country),
-  #   inputdata_directory = paste0("./small_examples/IJF/", country),
-  #   save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
-  #   primary_source = "local",
-  #   trend = TRUE,
-  #   saturation.tpval = 0.01,
-  #   gets_selection = FALSE,
-  #   constrain.to.minimum.sample = FALSE,
-  #   plot = FALSE,
-  # )
-  #
-  # save(model_result_ext, file = paste0("./small_examples/IJF/", country, "/model.RData"))
 
-  model_result_ext_sel <- run_model(
-    specification = spec_extended,
-    dictionary = dictionary %>%
-      mutate(geo = country),
-    inputdata_directory = paste0("./small_examples/IJF/", country),
-    save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
-    primary_source = "local",
-    trend = TRUE,
-    saturation.tpval = 0.001,
-    gets_selection = TRUE,
-    constrain.to.minimum.sample = FALSE,
-    pretest_steps = TRUE,
-    plot = FALSE,
-    keep = "PriceETS|RealVAIndustry|ElectrCons|Flights"
-  )
+    model_result_ext <- run_model(
+      specification = spec_extended,
+      dictionary = dictionary %>%
+        mutate(geo = country),
+      inputdata_directory = paste0("./small_examples/IJF/", country),
+      save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
+      primary_source = "local",
+      trend = TRUE,
+      saturation.tpval = 0.001,
+      gets_selection = FALSE,
+      constrain.to.minimum.sample = FALSE,
+      pretest_steps = TRUE,
+      plot = FALSE,
+    )
 
-  save(model_result_ext_sel, file = paste0("./small_examples/IJF/", country, "/model_sel.RData"))
+    save(model_result_ext, file = paste0("./small_examples/IJF/", country, "/model.RData"))
+  }
 
+
+  if(file.exists(paste0("./small_examples/IJF/", country, "/model_sel.RData"))){next} else {
+    model_result_ext_sel <- run_model(
+      specification = spec_extended,
+      dictionary = dictionary %>%
+        mutate(geo = country),
+      inputdata_directory = paste0("./small_examples/IJF/", country),
+      save_to_disk = paste0("./small_examples/IJF/", country, "/data.csv"),
+      primary_source = "local",
+      trend = TRUE,
+      saturation.tpval = 0.001,
+      gets_selection = TRUE,
+      constrain.to.minimum.sample = FALSE,
+      pretest_steps = TRUE,
+      plot = FALSE,
+      keep = "PriceETS|RealVAIndustry|ElectrCons|Flights"
+    )
+
+    save(model_result_ext_sel, file = paste0("./small_examples/IJF/", country, "/model_sel.RData"))
+  }
 
   # model_result_ext_sel_notrend <- run_model(
   #   specification = spec_extended,

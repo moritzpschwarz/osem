@@ -1,44 +1,58 @@
 \begin{table}
-\label{tab:regression_summaryFR_4}
+\label{tab:regression_summary_selectedFR}
 \centering\centering
-\caption{Final OSEM Model result for selected modules for France.}
+\caption{Final OSEM Model result for each module for France. Part 4.}
 \centering
 \fontsize{8}{10}\selectfont
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
 \toprule
-  & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
+  & log(EmiCO2CivAvi) & log(EmiCO2ManInd) & log(RoadFreight) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
 \midrule
-ar1 &  & \num{0.999}*** &  & \num{0.941}***\\
- &  & (\num{0.008}) &  & (\num{0.016})\\
-trend & \num{-0.003}*** &  &  & \\
- & (\num{0.000}) &  &  & \\
-log(ElectrCons) &  &  & \num{2.105}*** & \\
- &  &  & (\num{0.211}) & \\
-L1.log(HICPDiesel) &  &  &  & \num{-0.048}***\\
- &  &  &  & (\num{0.013})\\
-L1.log(HICPPetrol) &  &  &  & \num{0.064}***\\
- &  &  &  & (\num{0.018})\\
-L1.log(HICPlocal) &  &  &  & \num{-0.071}**\\
- &  &  &  & (\num{0.026})\\
-log(PriceETS) & \num{0.009}+ &  & \num{-0.121}*** & \\
- & (\num{0.005}) &  & (\num{0.024}) & \\
-log(RealCapFormHH) &  &  & \num{1.759}*** & \\
- &  &  & (\num{0.321}) & \\
-log(RealConsHH) & \num{0.994}*** &  &  & \\
- & (\num{0.006}) &  &  & \\
-L1.log(RealConsHH) &  &  &  & \num{0.062}**\\
- &  &  &  & (\num{0.021})\\
-log(RealVAIndustry) &  & \num{0.021} & \num{-2.986}*** & \\
- &  & (\num{0.028}) & (\num{0.440}) & \\
-L1.log(RealVAIndustry) &  & \num{-0.016} &  & \\
- &  & (\num{0.028}) &  & \\
+ar1 & \num{0.965}*** & \num{0.999}*** &  &  & \num{0.941}***\\
+ & (\num{0.022}) & (\num{0.008}) &  &  & (\num{0.016})\\
+mconst &  &  & \num{2.811}* &  & \\
+ &  &  & (\num{1.084}) &  & \\
+trend & \num{0.000}+ &  &  &  & \\
+ & (\num{0.000}) &  &  &  & \\
+log(ElectrCons) &  &  &  & \num{2.105}*** & \\
+ &  &  &  & (\num{0.211}) & \\
+log(Flights) & \num{0.017} &  &  &  & \\
+ & (\num{0.010}) &  &  &  & \\
+L1.log(Flights) & \num{0.000} &  &  &  & \\
+ & (\num{0.008}) &  &  &  & \\
+log(HICPDiesel) &  &  & \num{0.296}*** &  & \\
+ &  &  & (\num{0.073}) &  & \\
+L1.log(HICPDiesel) &  &  &  &  & \num{-0.048}***\\
+ &  &  &  &  & (\num{0.013})\\
+log(HICPPetrol) &  &  & \num{-0.477}*** &  & \\
+ &  &  & (\num{0.108}) &  & \\
+L1.log(HICPPetrol) &  &  &  &  & \num{0.064}***\\
+ &  &  &  &  & (\num{0.018})\\
+log(HICPlocal) &  &  & \num{-0.806}*** &  & \\
+ &  &  & (\num{0.143}) &  & \\
+L1.log(HICPlocal) & \num{-0.036} &  &  &  & \num{-0.071}**\\
+ & (\num{0.066}) &  &  &  & (\num{0.026})\\
+log(PriceETS) &  &  &  & \num{-0.121}*** & \\
+ &  &  &  & (\num{0.024}) & \\
+log(RealCapFormHH) &  &  &  & \num{1.759}*** & \\
+ &  &  &  & (\num{0.321}) & \\
+L1.log(RealConsHH) &  &  &  &  & \num{0.062}**\\
+ &  &  &  &  & (\num{0.021})\\
+log(RealVAIndustry) &  & \num{0.021} & \num{0.254}* & \num{-2.986}*** & \\
+ &  & (\num{0.028}) & (\num{0.100}) & (\num{0.440}) & \\
+L1.log(RealVAIndustry) &  & \num{-0.016} &  &  & \\
+ &  & (\num{0.028}) &  &  & \\
+log(RealVAService) & \num{-0.098} &  & \num{0.880}*** &  & \\
+ & (\num{0.083}) &  & (\num{0.127}) &  & \\
+L1.log(RealVAService) & \num{0.109} &  &  &  & \\
+ & (\num{0.083}) &  &  &  & \\
 \midrule
-Num.Obs. & \num{67} & \num{175} & \num{64} & \num{111}\\
-AIC & \num{-284.5} & \num{-978.3} & \num{-76.4} & \num{-838.3}\\
-BIC & \num{-264.7} & \num{-899.1} & \num{-61.3} & \num{-789.5}\\
-Log.Lik. & \num{151.248} & \num{514.131} & \num{45.212} & \num{437.154}\\
+Num.Obs. & \num{87} & \num{175} & \num{102} & \num{64} & \num{111}\\
+AIC & \num{-515.2} & \num{-978.3} & \num{-433.9} & \num{-76.4} & \num{-838.3}\\
+BIC & \num{-468.3} & \num{-899.1} & \num{-397.1} & \num{-61.3} & \num{-789.5}\\
+Log.Lik. & \num{276.588} & \num{514.131} & \num{230.945} & \num{45.212} & \num{437.154}\\
 \bottomrule
-\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
-\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}

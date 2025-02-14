@@ -1,26 +1,28 @@
 \begin{table}
 
 
-\caption{\label{tab:rmsfe_DE}Root Mean Squared Forecast Error for selected modules for Germany. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters.}
+\caption{\label{tab:rmsfe_DE}Root Mean Squared Forecast Error for selected modules for Germany. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.}
 \centering
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lrrrrrr}
 \toprule
-na\_item & Auto & ETS & Naive AR & Naive RW & Naive ets & Naive auto\\
+\multicolumn{1}{c}{ } & \multicolumn{2}{c}{OSEM Forecasts} & \multicolumn{4}{c}{Naive Univariate Forecasts} \\
+\cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-7}
+Module & Auto & ETS & AR & Random Walk & ETS & Auto\\
 \midrule
-CapForm & 0.737 & 1.270 & 1 & 1.349 & 0.961 & 1.002\\
-CapFormHH & 1.239 & 1.508 & 1 & 0.483 & 0.499 & 0.678\\
-ElectrCons & 0.340 & 0.452 & 1 & 0.899 & 1.291 & 1.270\\
-EmiCO2ElecHeat & 0.322 & 0.537 & 1 & 0.887 & 1.379 & 0.783\\
-EmiCO2ManInd & 0.087 & 0.087 & 1 & 2.824 & 2.386 & 1.381\\
+CapForm & 0.972 & 1.209 & 1 & 1.037 & 1.082 & 0.935\\
+CapFormHH & 1.163 & 1.261 & 1 & 1.822 & 1.906 & 0.734\\
+ElectrCons & 0.746 & 0.716 & 1 & 1.535 & 1.206 & 1.207\\
+EmiCO2ElecHeat & 1.408 & 1.607 & 1 & 1.620 & 1.152 & 1.977\\
+EmiCO2ManInd & 0.839 & 0.840 & 1 & 1.520 & 1.264 & 0.824\\
 \addlinespace
-EmiCO2RoaTra & 1.018 & 1.018 & 1 & 1.645 & 0.316 & 0.641\\
-HICPlocal & 0.757 & 0.580 & 1 & 2.407 & 2.544 & 4.113\\
-RealCapForm & 2.617 & 3.390 & 1 & 1.686 & 3.043 & 1.529\\
-RealCapFormHH & 2.553 & 2.924 & 1 & 0.663 & 1.528 & 1.120\\
-RealConsHH & 4.453 & 1.665 & 1 & 2.414 & 1.196 & 1.168\\
+EmiCO2RoaTra & 1.559 & 1.737 & 1 & 1.766 & 1.787 & 1.766\\
+HICPlocal & 0.805 & 0.820 & 1 & 1.215 & 1.009 & 0.952\\
+RealCapForm & 0.753 & 1.681 & 1 & 2.772 & 3.155 & 1.927\\
+RealCapFormHH & 1.036 & 0.991 & 1 & 0.856 & 1.306 & 1.351\\
+RealConsHH & 0.522 & 0.556 & 1 & 0.432 & 0.478 & 0.718\\
 \addlinespace
-RealVAIndustry & 1.467 & 0.527 & 1 & 1.241 & 1.189 & 1.219\\
-VAIndustry & 1.199 & 0.742 & 1 & 0.809 & 0.999 & 1.027\\
+RealVAIndustry & 1.508 & 1.844 & 1 & 1.701 & 1.356 & 1.373\\
+VAIndustry & 0.865 & 0.934 & 1 & 0.991 & 1.071 & 0.840\\
 \bottomrule
 \end{tabular}}
 \end{table}
