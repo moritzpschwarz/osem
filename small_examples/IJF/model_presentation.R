@@ -325,13 +325,13 @@ for(country in all_countries){
     fc_comparison_base <- insample$all_models[11][[1]]
     #fc_comparison_base <- insample$all_models[length(insample$all_models) - 7][[1]]
     set.seed(8899)
-    naive_ar <- forecast_comparison(model = fc_comparison_base, n.ahead = 8, forecast_type = "AR")
+    naive_ar <- forecast_comparison2(model = fc_comparison_base, n.ahead = 8, forecast_type = "AR")
     set.seed(8899)
-    naive_rw <- forecast_comparison(model = fc_comparison_base, n.ahead = 8, forecast_type = "RW")
+    naive_rw <- forecast_comparison2(model = fc_comparison_base, n.ahead = 8, forecast_type = "RW")
     set.seed(8899)
-    naive_ets <- forecast_comparison(model = fc_comparison_base, n.ahead = 8, forecast_type = "ets")
+    naive_ets <- forecast_comparison2(model = fc_comparison_base, n.ahead = 8, forecast_type = "ets")
     set.seed(8899)
-    naive_auto <- forecast_comparison(model = fc_comparison_base, n.ahead = 8, forecast_type = "auto")
+    naive_auto <- forecast_comparison2(model = fc_comparison_base, n.ahead = 8, forecast_type = "auto")
 
 
     # set.seed(8899)
