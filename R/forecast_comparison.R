@@ -185,3 +185,134 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
   return(out)
 
 }
+
+
+
+#' Creates baseline forecasts for comparison with OSEM
+#' @inheritParams forecast_comparison
+#'
+#' @return Returns a data frame with the point forecasts.
+#'
+#' @details
+#' The function first determines the maximum forecast horizon by adding the n.ahead argument to the most recent data
+#' observation across all modules. For variables whose forecast origin is before that, it creates additional forecasts
+#' up to the forecast origin. Hence, the actual number of forecasted values may differ across variables.
+#'
+#' When the forecast type is "AR", the function first transforms the variable into logs (if only positive values
+#' observed), otherwise using the asinh transformation. Reported forecast values are after conversion back to the level
+#' of the variable.
+#'
+#' In contrast to forecast_comparison(), we use the maximum available data for the univariate forecasts rather than ensuring that the same subsample is used on OSEM and the univariate models.
+
+
+forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), lags = NULL, mc = TRUE) {
+
+  # extract model info
+  lags <- if (is.null(lags)) {model$args$max.ar} else {lags}
+  modules <- model$module_collection %>% arrange(order)
+  transformations <- model$opts_df %>% select(dependent, log_opts)
+  fulldata <- model$full_data
+  maxtime <- fulldata %>% filter(!grepl("\\.hat$", na_item)) %>% drop_na() %>% pull(time) %>% max()
+  maxhorizon <- seq.Date(maxtime, by = "quarter", length.out = (n.ahead + 1))[n.ahead + 1]
+
+  # check whether forecast origin same for all
+  fulldata %>%
+    filter(!grepl("\\.hat$", na_item)) %>%
+    drop_na() %>%
+    group_by(na_item) %>%
+    summarise(maxtime = max(time)) %>%
+    pull(maxtime) %>%
+    unique() -> maxtimes
+  stopifnot(length(maxtimes) == 1L)
+
+  # set up forecast output
+  out <- data.frame()
+
+  for (i in 1:NROW(modules)) {
+
+    type <- modules[i, "type"][[1]]
+    depvar <- modules[i, "dependent"][[1]]
+    # now use all available data
+    data <- fulldata %>% filter(na_item == depvar) %>% drop_na() %>% arrange(time)
+    # model identities in levels
+    transformations_model <- if (type == "n") {
+      transformations %>% filter(dependent == depvar) %>% pull(log_opts) %>% pluck(1) %>% pull(depvar)
+    } else {
+      "level"
+    }
+    stopifnot(transformations_model %in% c("log", "asinh", "level"))
+    if (transformations_model == "log") {
+      data <- data %>% mutate(values_trans = log(values))
+    } else if (transformations_model == "asinh") {
+      data <- data %>% mutate(values_trans = asinh(values))
+    } else if (transformations_model == "level") {
+      data <- data %>% mutate(values_trans = values)
+    } else {
+      stop("unknown transformation")
+    }
+    # does variable exist for maxtime in the data?
+    stopifnot(max(data$time) == maxtime)
+    # extract y variable
+    y <- zoo(x = data$values_trans, order.by = data$time)
+
+    if (forecast_type == "AR") {
+
+      ar_model <- gets::arx(y = y, mc = mc, ar = 1:lags)
+      ar_model$call$mc <- mc
+      ar_model$call$ar <- 1:lags
+      fc <- predict(ar_model, n.ahead = n.ahead)
+      if (transformations_model == "log") {
+        fc_level <- exp(fc)
+      } else if (transformations_model == "asinh") {
+        fc_level <- sinh(fc)
+      } else {
+        fc_level <- fc
+      }
+      out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
+      out <- bind_rows(out, out_model)
+
+    } else if (forecast_type == "RW") {
+
+      fc_level <- data %>% drop_na() %>% arrange(time) %>% slice_tail(n = 1) %>% pull(values)
+      out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
+      out <- bind_rows(out, out_model)
+
+    } else if (forecast_type == "auto") {
+
+      arima_model <- forecast::auto.arima(y = as.numeric(y))
+      fc <- forecast::forecast(arima_model, h = n.ahead)
+      if (transformations_model == "log") {
+        fc_level <- exp(as.numeric(fc$mean))
+      } else if (transformations_model == "asinh") {
+        fc_level <- sinh(as.numeric(fc$mean))
+      } else {
+        fc_level <- fc$mean
+      }
+      out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
+      out <- bind_rows(out, out_model)
+
+    } else if (forecast_type == "ets"){
+
+      ets_model <- forecast::ets(y = as.numeric(y), model = "ZZZ")
+      fc <- forecast::forecast(ets_model, h = n.ahead)
+      if (transformations_model == "log") {
+        fc_level <- exp(as.numeric(fc$mean))
+      } else if (transformations_model == "asinh") {
+        fc_level <- sinh(as.numeric(fc$mean))
+      } else {
+        fc_level <- fc$mean
+      }
+      out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
+      out <- bind_rows(out, out_model)
+
+    } else {
+      stop("unknown model type")
+    }
+
+  } # end loop across modules
+
+  out$forecast_type <- forecast_type
+  rownames(out) <- NULL
+  return(out)
+
+}
