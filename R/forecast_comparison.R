@@ -253,7 +253,7 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
     # does variable exist for maxtime in the data?
     stopifnot(max(data$time) == maxtime)
     # extract y variable
-    y <- zoo(x = data$values_trans, order.by = data$time)
+    y <- zoo::zoo(x = data$values_trans, order.by = data$time)
 
     if (forecast_type == "AR") {
 

@@ -36,10 +36,11 @@ EmiCO2RoaTra & 0.128 & 0.476 & 0.010 & 2 & 1 & 42 & 0.071\\
 
 % ---- Start of AT_Forecast_ets.tex ----
 \begin{table}
-\label{tab:forecast_AT}
-\centering\begingroup\fontsize{7.5}{9.5}\selectfont
-
-\resizebox{\textwidth}{!}{\begin{tabular}{ccccc}
+\centering
+\caption{\label{tab:forecast_AT}Forecast results for Austria. Forecast were created using exponential trend smoothing forecasting for exogenous values with the central values as well as a 95\% confidence interval is displayed. A column is left empty for the actual values that will be added to this table, once published. Based on the realised actual values, at least the indicated forecast comparison metrics will be calculated. }
+\centering
+\fontsize{7}{9}\selectfont
+\begin{tabular}[t]{ccccc}
 \toprule
 Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 \midrule
@@ -116,8 +117,7 @@ Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 \hspace{1em}2027-01-01 & 21162.931 & 20330.391 - 22482.499 &  & Mincer-Zarnowitz:\\
 \hspace{1em}2027-04-01 & 20128.291 & 19137.281 - 21183.979 &  & \\
 \bottomrule
-\end{tabular}}
-\endgroup{}
+\end{tabular}
 \end{table}
 % ---- End of AT_Forecast_ets.tex ----
 
@@ -125,7 +125,7 @@ Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 \begin{table}
 \label{tab:regression_summaryAT_1}
 \centering\centering
-\caption{Final OSEM Model result for each module for Austria. Part 1.}
+\caption{Final OSEM Model result for each module for Austria with model selection enabled. Part 1.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -182,7 +182,7 @@ Log.Lik. & \num{279.027} & \num{246.129} & \num{505.329} & \num{332.774} & \num{
 \begin{table}
 \label{tab:regression_summaryAT_2}
 \centering\centering
-\caption{Final OSEM Model result for each module for Austria. Part 2.}
+\caption{Final OSEM Model result for each module for Austria with model selection enabled. Part 2.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -237,7 +237,7 @@ Log.Lik. & \num{294.556} & \num{402.863} & \num{178.062} & \num{324.740} & \num{
 \begin{table}
 \label{tab:regression_summaryAT_3}
 \centering\centering
-\caption{Final OSEM Model result for each module for Austria. Part 3.}
+\caption{Final OSEM Model result for each module for Austria with model selection enabled. Part 3.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
@@ -278,7 +278,7 @@ Log.Lik. & \num{59.807} & \num{224.186} & \num{186.565} & \num{942.730}\\
 \begin{table}
 \label{tab:regression_summaryAT_4}
 \centering\centering
-\caption{Final OSEM Model result for each module for Austria. Part 4.}
+\caption{Final OSEM Model result for each module for Austria with model selection enabled. Part 4.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -343,63 +343,79 @@ Log.Lik. & \num{274.163} & \num{420.297} & \num{91.451} & \num{47.197} & \num{16
 \begin{table}
 \label{tab:regression_summary_selectedAT}
 \centering\centering
-\caption{Final OSEM Model result for each module for Austria. Part 4.}
+\caption{Final OSEM Model result for selected modules for Austria with model selection enabled.}
 \centering
 \fontsize{8}{10}\selectfont
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
 \toprule
-  & log(EmiCO2CivAvi) & log(EmiCO2ManInd) & log(RoadFreight) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
+  & log(ConsHH) & log(VAIndustry) & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
 \midrule
-ar1 & \num{0.997}*** & \num{1.008}*** &  &  & \num{0.262}***\\
- & (\num{0.017}) & (\num{0.010}) &  &  & (\num{0.055})\\
-mconst &  &  & \num{4.205}*** &  & \num{9.742}***\\
- &  &  & (\num{0.696}) &  & (\num{0.807})\\
-trend &  &  &  & \num{-0.010}*** & \num{0.004}***\\
- &  &  &  & (\num{0.002}) & (\num{0.001})\\
-log(ElectrCons) &  &  &  & \num{0.344} & \\
- &  &  &  & (\num{0.351}) & \\
-log(Flights) & \num{0.001} &  &  &  & \\
- & (\num{0.004}) &  &  &  \vphantom{1} & \\
-L1.log(Flights) & \num{0.000} &  &  &  & \\
- & (\num{0.004}) &  &  &  & \\
-log(HDD) &  &  &  & \num{0.301}*** & \\
- &  &  &  & (\num{0.026}) & \\
-log(HICPDiesel) &  &  & \num{-0.160}*** &  & \\
- &  &  & (\num{0.035}) &  & \\
-L2.log(HICPDiesel) &  &  &  &  & \num{-0.133}**\\
- &  &  &  &  & (\num{0.041})\\
-log(HICPGas) &  &  &  & \num{-0.175}* & \\
- &  &  &  & (\num{0.078}) & \\
-L1.log(HICPPetrol) &  &  &  &  & \num{-0.271}***\\
- &  &  &  &  & (\num{0.056})\\
-L2.log(HICPlocal) &  &  &  &  & \num{-2.374}***\\
- &  &  &  &  & (\num{0.565})\\
-L1.log(HICPlocal) &  &  &  &  & \num{2.680}***\\
- &  &  &  &  & (\num{0.656})\\
-log(PriceETS) &  &  &  & \num{0.052}* & \\
- &  &  &  & (\num{0.024}) & \\
-L2.log(PriceOil) &  &  &  &  & \num{0.094}***\\
- &  &  &  &  & (\num{0.024})\\
-log(RealCapFormHH) &  &  &  & \num{-0.434}** & \\
- &  &  &  & (\num{0.157}) & \\
-log(RealConsHH) &  &  &  &  & \num{-0.216}***\\
- &  &  &  &  & (\num{0.055})\\
-L2.log(RealConsHH) &  &  &  &  & \num{-0.291}***\\
- &  &  &  &  & (\num{0.057})\\
-log(RealVAIndustry) &  & \num{-0.012} & \num{0.538}*** & \num{0.922}* & \\
- &  & (\num{0.023}) & (\num{0.079}) & (\num{0.452}) & \\
-L1.log(RealVAIndustry) &  & \num{0.014} &  &  & \\
- &  & (\num{0.022}) &  &  & \\
-L2.log(RoadFreight) &  &  &  &  & \num{0.156}**\\
- &  &  &  &  & (\num{0.042})\\
+ar1 & \num{-0.170}*** &  & \num{0.220}*** & \num{1.008}*** &  & \num{0.262}***\\
+ & (\num{0.038}) &  & (\num{0.045}) & (\num{0.010}) &  & (\num{0.055})\\
+ar4 & \num{0.807}*** &  &  &  &  & \\
+ & (\num{0.047}) &  &  &  &  \vphantom{1} & \\
+mconst & \num{3.036}*** &  & \num{6.769}*** &  &  & \num{9.742}***\\
+ & (\num{0.506}) &  & (\num{0.450}) &  &  & (\num{0.807})\\
+trend & \num{0.003}*** & \num{-0.001}*** &  &  & \num{-0.010}*** & \num{0.004}***\\
+ & (\num{0.001}) & (\num{0.000}) &  &  & (\num{0.002}) & (\num{0.001})\\
+log(CapForm) &  & \num{0.559}*** &  &  &  & \\
+ &  & (\num{0.075}) &  &  &  & \\
+log(ConsGov) &  & \num{-0.305}** &  &  &  & \\
+ &  & (\num{0.106}) &  &  &  & \\
+log(ConsHH) &  & \num{0.701}*** &  &  &  & \\
+ &  & (\num{0.094}) &  &  &  & \\
+log(ElectrCons) &  &  &  &  & \num{0.344} & \\
+ &  &  &  &  & (\num{0.351}) & \\
+log(HDD) &  &  &  &  & \num{0.301}*** & \\
+ &  &  &  &  & (\num{0.026}) & \\
+L2.log(HICPDiesel) &  &  &  &  &  & \num{-0.133}**\\
+ &  &  &  &  &  & (\num{0.041})\\
+log(HICPGas) &  &  &  &  & \num{-0.175}* & \\
+ &  &  &  &  & (\num{0.078}) & \\
+L1.log(HICPPetrol) &  &  &  &  &  & \num{-0.271}***\\
+ &  &  &  &  &  & (\num{0.056})\\
+log(HICP\_Electricity) &  &  & \num{0.158}** &  &  & \\
+ &  &  & (\num{0.055}) &  &  & \\
+log(HICPlocal) & \num{1.354}*** &  &  &  &  & \\
+ & (\num{0.251}) &  &  &  &  & \\
+L4.log(HICPlocal) & \num{-0.644}*** &  &  &  &  & \\
+ & (\num{0.110}) &  &  &  &  & \\
+L2.log(HICPlocal) &  &  &  &  &  & \num{-2.374}***\\
+ &  &  &  &  &  & (\num{0.565})\\
+L1.log(HICPlocal) & \num{-0.872}** &  &  &  &  & \num{2.680}***\\
+ & (\num{0.301}) &  &  &  &  & (\num{0.656})\\
+log(IncomeHH) & \num{0.169}*** &  &  &  &  & \\
+ & (\num{0.044}) &  &  &  &  & \\
+L4.log(IncomeHH) & \num{-0.207}*** &  &  &  &  & \\
+ & (\num{0.047}) &  &  &  &  & \\
+L1.log(IncomeHH) & \num{0.139}*** &  &  &  &  & \\
+ & (\num{0.037}) &  &  &  &  & \\
+log(PriceETS) &  & \num{-0.004} & \num{0.001} &  & \num{0.052}* & \\
+ &  & (\num{0.003}) & (\num{0.006}) &  & (\num{0.024}) & \\
+L1.log(PriceETS) &  &  & \num{-0.012}* &  &  & \\
+ &  &  & (\num{0.006}) &  &  & \\
+L2.log(PriceOil) &  &  &  &  &  & \num{0.094}***\\
+ &  &  &  &  &  & (\num{0.024})\\
+log(RealCapFormHH) &  &  &  &  & \num{-0.434}** & \\
+ &  &  &  &  & (\num{0.157}) & \\
+log(RealConsHH) &  &  &  &  &  & \num{-0.216}***\\
+ &  &  &  &  &  & (\num{0.055})\\
+L2.log(RealConsHH) &  &  &  &  &  & \num{-0.291}***\\
+ &  &  &  &  &  & (\num{0.057})\\
+log(RealVAIndustry) &  &  &  & \num{-0.012} & \num{0.922}* & \\
+ &  &  &  & (\num{0.023}) & (\num{0.452}) & \\
+L1.log(RealVAIndustry) &  &  &  & \num{0.014} &  & \\
+ &  &  &  & (\num{0.022}) &  & \\
+L2.log(RoadFreight) &  &  &  &  &  & \num{0.156}**\\
+ &  &  &  &  &  & (\num{0.042})\\
 \midrule
-Num.Obs. & \num{87} & \num{115} & \num{46} & \num{64} & \num{42}\\
-AIC & \num{-518.3} & \num{-784.6} & \num{-170.9} & \num{-76.4} & \num{-284.6}\\
-BIC & \num{-481.3} & \num{-707.7} & \num{-159.9} & \num{-57.0} & \num{-253.4}\\
-Log.Lik. & \num{274.163} & \num{420.297} & \num{91.451} & \num{47.197} & \num{160.314}\\
+Num.Obs. & \num{99} & \num{79} & \num{66} & \num{115} & \num{64} & \num{42}\\
+AIC & \num{-629.5} & \num{-332.1} & \num{-351.1} & \num{-784.6} & \num{-76.4} & \num{-284.6}\\
+BIC & \num{-582.8} & \num{-303.7} & \num{-327.0} & \num{-707.7} & \num{-57.0} & \num{-253.4}\\
+Log.Lik. & \num{332.774} & \num{178.062} & \num{186.565} & \num{420.297} & \num{47.197} & \num{160.314}\\
 \bottomrule
-\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
-\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}
 % ---- End of AT_Regression_Summary_selected.tex ----
@@ -408,87 +424,121 @@ Log.Lik. & \num{274.163} & \num{420.297} & \num{91.451} & \num{47.197} & \num{16
 \begin{table}
 \label{tab:regression_summary_selectedAT_nosel}
 \centering\centering
-\caption{Final OSEM Model result for selected modules for Austria.}
+\caption{Final OSEM Model result for selected modules for Austria without model selection.}
 \centering
 \fontsize{8}{10}\selectfont
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
 \toprule
-  & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
+  & log(ConsHH) & log(VAIndustry) & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
 \midrule
-ar1 & \num{0.322}** & \num{0.895}*** &  & \num{0.260}*\\
- & (\num{0.094}) & (\num{0.040}) &  & (\num{0.094})\\
-ar2 &  &  &  & \num{-0.273}*\\
- &  &  &  & (\num{0.108})\\
-mconst & \num{5.300}*** & \num{0.945}+ & \num{5.907} & \num{10.206}***\\
- & (\num{1.052}) & (\num{0.552}) & (\num{7.728}) & (\num{1.811})\\
-trend & \num{0.000} & \num{0.000} & \num{-0.017}*** & \num{0.005}**\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.003}) & (\num{0.001})\\
-asinh(CDD) &  &  & \num{-0.029} & \\
- &  &  & (\num{0.026}) & \\
-log(ElectrCons) &  &  & \num{-1.159} & \\
- &  &  & (\num{0.889}) & \\
-log(HDD) &  &  & \num{0.270}* & \\
- &  &  & (\num{0.103}) & \\
-log(HICPDiesel) &  &  &  & \num{0.112}\\
- &  &  &  & (\num{0.110})\\
-L2.log(HICPDiesel) &  &  &  & \num{-0.184}*\\
- &  &  &  & (\num{0.071})\\
-L1.log(HICPDiesel) &  &  &  & \num{-0.140}\\
- &  &  &  & (\num{0.098})\\
-log(HICPGas) &  &  & \num{-0.237}* & \\
- &  &  & (\num{0.102}) & \\
-log(HICPPetrol) &  &  &  & \num{-0.147}\\
- &  &  &  & (\num{0.127})\\
-L2.log(HICPPetrol) &  &  &  & \num{0.172}\\
- &  &  &  & (\num{0.123})\\
-L1.log(HICPPetrol) &  &  &  & \num{-0.380}**\\
- &  &  &  & (\num{0.122})\\
-log(HICP\_Electricity) & \num{0.202}** &  &  & \\
- & (\num{0.068}) &  &  & \\
-L1.log(HICP\_Electricity) & \num{-0.059} &  &  & \\
- & (\num{0.059}) &  &  & \\
-log(HICPlocal) &  & \num{-0.339} &  & \num{-0.574}\\
- &  & (\num{0.274}) &  & (\num{1.087})\\
-L2.log(HICPlocal) &  &  &  & \num{-3.257}***\\
- &  &  &  & (\num{0.721})\\
-L1.log(HICPlocal) &  & \num{0.243} &  & \num{3.909}*\\
- &  & (\num{0.300}) &  & (\num{1.398})\\
-log(PriceETS) & \num{-0.001} &  & \num{0.042} & \\
- & (\num{0.005}) &  & (\num{0.027}) & \\
-L1.log(PriceETS) & \num{-0.010}* &  &  & \\
- & (\num{0.005}) &  &  & \\
-log(PriceOil) &  &  &  & \num{-0.009}\\
- &  &  &  & (\num{0.028})\\
-L2.log(PriceOil) &  &  &  & \num{0.075}*\\
- &  &  &  & (\num{0.034})\\
-L1.log(PriceOil) &  &  &  & \num{0.081}+\\
- &  &  &  & (\num{0.038})\\
-log(RealCapFormHH) &  &  & \num{-0.211} & \\
- &  &  & (\num{0.361}) & \\
-log(RealConsHH) & \num{0.093} &  &  & \num{-0.125}\\
- & (\num{0.100}) &  &  & (\num{0.103})\\
-L2.log(RealConsHH) &  &  &  & \num{-0.100}\\
- &  &  &  & (\num{0.112})\\
-L1.log(RealConsHH) & \num{-0.033} &  &  & \num{0.099}\\
- & (\num{0.087}) &  &  & (\num{0.087})\\
-log(RealVAIndustry) &  & \num{0.089}+ & \num{1.800}*** & \\
- &  & (\num{0.047}) & (\num{0.484}) & \\
-L1.log(RealVAIndustry) &  & \num{-0.053} &  & \\
- &  & (\num{0.045}) &  & \\
-log(RoadFreight) &  &  &  & \num{-0.041}\\
- &  &  &  & (\num{0.063})\\
-L2.log(RoadFreight) &  &  &  & \num{0.145}*\\
- &  &  &  & (\num{0.053})\\
-L1.log(RoadFreight) &  &  &  & \num{-0.038}\\
- &  &  &  & (\num{0.047})\\
+ar1 & \num{-0.142}* &  & \num{0.322}** & \num{0.895}*** &  & \num{0.260}*\\
+ & (\num{0.064}) &  & (\num{0.094}) & (\num{0.040}) &  & (\num{0.094})\\
+ar2 & \num{0.121}+ &  &  &  &  & \num{-0.273}*\\
+ & (\num{0.061}) &  &  &  &  & (\num{0.108})\\
+ar3 & \num{0.049} &  &  &  &  & \\
+ & (\num{0.057}) &  &  &  &  \vphantom{1} & \\
+ar4 & \num{0.770}*** &  &  &  &  & \\
+ & (\num{0.068}) &  &  &  &  & \\
+mconst & \num{1.486}+ & \num{-0.500} & \num{5.300}*** & \num{0.945}+ & \num{5.907} & \num{10.206}***\\
+ & (\num{0.757}) & (\num{1.752}) & (\num{1.052}) & (\num{0.552}) & (\num{7.728}) & (\num{1.811})\\
+trend & \num{0.001} & \num{-0.002} & \num{0.000} & \num{0.000} & \num{-0.017}*** & \num{0.005}**\\
+ & (\num{0.001}) & (\num{0.002}) & (\num{0.000}) & (\num{0.000}) & (\num{0.003}) & (\num{0.001})\\
+asinh(CDD) &  &  &  &  & \num{-0.029} & \\
+ &  &  &  &  & (\num{0.026}) & \\
+log(CapForm) &  & \num{0.558}*** &  &  &  & \\
+ &  & (\num{0.080}) &  &  &  & \\
+log(ConsGov) &  & \num{-0.286}+ &  &  &  & \\
+ &  & (\num{0.155}) &  &  &  & \\
+log(ConsHH) &  & \num{0.742}*** &  &  &  & \\
+ &  & (\num{0.123}) &  &  &  & \\
+log(ElectrCons) &  &  &  &  & \num{-1.159} & \\
+ &  &  &  &  & (\num{0.889}) & \\
+log(FinWealthHH) & \num{0.134} &  &  &  &  & \\
+ & (\num{0.082}) &  &  &  &  & \\
+L4.log(FinWealthHH) & \num{0.121} &  &  &  &  & \\
+ & (\num{0.075}) &  &  &  &  & \\
+L3.log(FinWealthHH) & \num{-0.096} &  &  &  &  & \\
+ & (\num{0.099}) &  &  &  &  \vphantom{1} & \\
+L2.log(FinWealthHH) & \num{0.065} &  &  &  &  & \\
+ & (\num{0.099}) &  &  &  &  & \\
+L1.log(FinWealthHH) & \num{-0.038} &  &  &  &  & \\
+ & (\num{0.104}) &  &  &  &  & \\
+log(HDD) &  &  &  &  & \num{0.270}* & \\
+ &  &  &  &  & (\num{0.103}) & \\
+log(HICPDiesel) &  &  &  &  &  & \num{0.112}\\
+ &  &  &  &  &  & (\num{0.110})\\
+L2.log(HICPDiesel) &  &  &  &  &  & \num{-0.184}*\\
+ &  &  &  &  &  & (\num{0.071})\\
+L1.log(HICPDiesel) &  &  &  &  &  & \num{-0.140}\\
+ &  &  &  &  &  & (\num{0.098})\\
+log(HICPGas) &  &  &  &  & \num{-0.237}* & \\
+ &  &  &  &  & (\num{0.102}) & \\
+log(HICPPetrol) &  &  &  &  &  & \num{-0.147}\\
+ &  &  &  &  &  & (\num{0.127})\\
+L2.log(HICPPetrol) &  &  &  &  &  & \num{0.172}\\
+ &  &  &  &  &  & (\num{0.123})\\
+L1.log(HICPPetrol) &  &  &  &  &  & \num{-0.380}**\\
+ &  &  &  &  &  & (\num{0.122})\\
+log(HICP\_Electricity) &  &  & \num{0.202}** &  &  & \\
+ &  &  & (\num{0.068}) &  &  & \\
+L1.log(HICP\_Electricity) &  &  & \num{-0.059} &  &  & \\
+ &  &  & (\num{0.059}) &  &  & \\
+log(HICPlocal) & \num{1.321}*** &  &  & \num{-0.339} &  & \num{-0.574}\\
+ & (\num{0.308}) &  &  & (\num{0.274}) &  & (\num{1.087})\\
+L4.log(HICPlocal) & \num{-0.346} &  &  &  &  & \\
+ & (\num{0.286}) &  &  &  &  & \\
+L3.log(HICPlocal) & \num{-0.308} &  &  &  &  & \\
+ & (\num{0.448}) &  &  &  &  & \\
+L2.log(HICPlocal) & \num{0.168} &  &  &  &  & \num{-3.257}***\\
+ & (\num{0.430}) &  &  &  &  & (\num{0.721})\\
+L1.log(HICPlocal) & \num{-0.997}* &  &  & \num{0.243} &  & \num{3.909}*\\
+ & (\num{0.454}) &  &  & (\num{0.300}) &  & (\num{1.398})\\
+log(IncomeHH) & \num{0.135}* &  &  &  &  & \\
+ & (\num{0.057}) &  &  &  &  & \\
+L4.log(IncomeHH) & \num{-0.189}*** &  &  &  &  & \\
+ & (\num{0.051}) &  &  &  &  & \\
+L3.log(IncomeHH) & \num{-0.003} &  &  &  &  & \\
+ & (\num{0.046}) &  &  &  &  & \\
+L2.log(IncomeHH) & \num{-0.124}** &  &  &  &  & \\
+ & (\num{0.044}) &  &  &  &  & \\
+L1.log(IncomeHH) & \num{0.075} &  &  &  &  & \\
+ & (\num{0.045}) &  &  &  &  & \\
+log(PriceETS) &  & \num{-0.004} & \num{-0.001} &  & \num{0.042} & \\
+ &  & (\num{0.003}) & (\num{0.005}) &  & (\num{0.027}) & \\
+L1.log(PriceETS) &  &  & \num{-0.010}* &  &  & \\
+ &  &  & (\num{0.005}) &  &  & \\
+log(PriceOil) &  & \num{-0.009} &  &  &  & \num{-0.009}\\
+ &  & (\num{0.013}) &  &  &  & (\num{0.028})\\
+L2.log(PriceOil) &  &  &  &  &  & \num{0.075}*\\
+ &  &  &  &  &  & (\num{0.034})\\
+L1.log(PriceOil) &  &  &  &  &  & \num{0.081}+\\
+ &  &  &  &  &  & (\num{0.038})\\
+log(RealCapFormHH) &  &  &  &  & \num{-0.211} & \\
+ &  &  &  &  & (\num{0.361}) & \\
+log(RealConsHH) &  &  & \num{0.093} &  &  & \num{-0.125}\\
+ &  &  & (\num{0.100}) &  &  & (\num{0.103})\\
+L2.log(RealConsHH) &  &  &  &  &  & \num{-0.100}\\
+ &  &  &  &  &  & (\num{0.112})\\
+L1.log(RealConsHH) &  &  & \num{-0.033} &  &  & \num{0.099}\\
+ &  &  & (\num{0.087}) &  &  & (\num{0.087})\\
+log(RealVAIndustry) &  &  &  & \num{0.089}+ & \num{1.800}*** & \\
+ &  &  &  & (\num{0.047}) & (\num{0.484}) & \\
+L1.log(RealVAIndustry) &  &  &  & \num{-0.053} &  & \\
+ &  &  &  & (\num{0.045}) &  & \\
+log(RoadFreight) &  &  &  &  &  & \num{-0.041}\\
+ &  &  &  &  &  & (\num{0.063})\\
+L2.log(RoadFreight) &  &  &  &  &  & \num{0.145}*\\
+ &  &  &  &  &  & (\num{0.053})\\
+L1.log(RoadFreight) &  &  &  &  &  & \num{-0.038}\\
+ &  &  &  &  &  & (\num{0.047})\\
 \midrule
-Num.Obs. & \num{66} & \num{111} & \num{64} & \num{42}\\
-AIC & \num{-364.9} & \num{-621.0} & \num{-85.0} & \num{-291.4}\\
-BIC & \num{-329.9} & \num{-569.5} & \num{-54.8} & \num{-241.0}\\
-Log.Lik. & \num{198.459} & \num{329.489} & \num{56.509} & \num{174.692}\\
+Num.Obs. & \num{99} & \num{79} & \num{66} & \num{111} & \num{64} & \num{42}\\
+AIC & \num{-630.8} & \num{-328.7} & \num{-364.9} & \num{-621.0} & \num{-85.0} & \num{-291.4}\\
+BIC & \num{-552.9} & \num{-295.5} & \num{-329.9} & \num{-569.5} & \num{-54.8} & \num{-241.0}\\
+Log.Lik. & \num{345.400} & \num{178.341} & \num{198.459} & \num{329.489} & \num{56.509} & \num{174.692}\\
 \bottomrule
-\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
-\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}
 % ---- End of AT_Regression_Summary_selected_nosel.tex ----
@@ -496,31 +546,30 @@ Log.Lik. & \num{198.459} & \num{329.489} & \num{56.509} & \num{174.692}\\
 % ---- Start of AT_rmsfe.tex ----
 \begin{table}
 
-
 \caption{\label{tab:rmsfe_AT}Root Mean Squared Forecast Error for selected modules for Austria. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.}
 \centering
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lrrrrrr}
+\begin{tabular}[t]{lrrrrrr}
 \toprule
 \multicolumn{1}{c}{ } & \multicolumn{2}{c}{OSEM Forecasts} & \multicolumn{4}{c}{Naive Univariate Forecasts} \\
 \cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-7}
 Module & Auto & ETS & AR & Random Walk & ETS & Auto\\
 \midrule
-CapForm & 1.673 & 1.745 & 1 & 1.577 & 1.674 & 0.763\\
-CapFormHH & 0.637 & 0.655 & 1 & 0.903 & 0.775 & 0.576\\
+CapForm & 2.083 & 2.173 & 1 & 1.963 & 2.061 & 2.148\\
+CapFormHH & 0.746 & 0.768 & 1 & 1.059 & 0.984 & 0.647\\
 ElectrCons & 1.263 & 1.229 & 1 & 2.046 & 1.337 & 1.259\\
-EmiCO2ElecHeat & 1.443 & 2.823 & 1 & 3.624 & 3.003 & 0.920\\
-EmiCO2ManInd & 1.062 & 1.062 & 1 & 1.962 & 1.453 & 1.413\\
+EmiCO2ElecHeat & 1.309 & 2.562 & 1 & 3.289 & 2.812 & 1.296\\
+EmiCO2ManInd & 1.060 & 1.060 & 1 & 1.959 & 1.451 & 1.048\\
 \addlinespace
-EmiCO2RoaTra & 1.493 & 1.523 & 1 & 1.104 & 1.109 & 1.527\\
-HICPlocal & 0.932 & 0.887 & 1 & 1.258 & 1.050 & 0.975\\
-RealCapForm & 0.874 & 0.866 & 1 & 2.039 & 1.602 & 1.529\\
-RealCapFormHH & 0.528 & 0.501 & 1 & 1.042 & 0.899 & 0.480\\
-RealConsHH & 0.250 & 0.277 & 1 & 0.247 & 1.012 & 1.014\\
+EmiCO2RoaTra & 1.494 & 1.524 & 1 & 1.105 & 0.819 & 1.314\\
+HICPlocal & 0.929 & 0.884 & 1 & 1.254 & 1.046 & 0.971\\
+RealCapForm & 0.754 & 0.747 & 1 & 1.760 & 0.990 & 0.722\\
+RealCapFormHH & 0.614 & 0.583 & 1 & 1.212 & 0.548 & 0.646\\
+RealConsHH & 0.674 & 0.745 & 1 & 0.665 & 0.781 & 0.695\\
 \addlinespace
-RealVAIndustry & 0.223 & 0.215 & 1 & 0.121 & 1.066 & 1.067\\
-VAIndustry & 0.633 & 0.680 & 1 & 0.917 & 1.005 & 0.831\\
+RealVAIndustry & 1.861 & 1.792 & 1 & 1.008 & 1.092 & 1.008\\
+VAIndustry & 0.655 & 0.704 & 1 & 0.949 & 0.946 & 0.930\\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}
 % ---- End of AT_rmsfe.tex ----
 
@@ -682,7 +731,7 @@ HICPDiesel & Q1-2013 - Q4-2024 & 49 & 116.7 & 22.6 & 86.0 & 110.2 & 173.4\\
 \begin{table}
 \label{tab:regression_summaryDE_1}
 \centering\centering
-\caption{Final OSEM Model result for each module for Germany. Part 1.}
+\caption{Final OSEM Model result for each module for Germany with model selection enabled. Part 1.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -737,7 +786,7 @@ Log.Lik. & \num{262.299} & \num{277.340} & \num{501.169} & \num{458.317} & \num{
 \begin{table}
 \label{tab:regression_summaryDE_2}
 \centering\centering
-\caption{Final OSEM Model result for each module for Germany. Part 2.}
+\caption{Final OSEM Model result for each module for Germany with model selection enabled. Part 2.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -788,7 +837,7 @@ Log.Lik. & \num{390.249} & \num{482.481} & \num{217.995} & \num{331.357} & \num{
 \begin{table}
 \label{tab:regression_summaryDE_3}
 \centering\centering
-\caption{Final OSEM Model result for each module for Germany. Part 3.}
+\caption{Final OSEM Model result for each module for Germany with model selection enabled. Part 3.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
@@ -835,7 +884,7 @@ Log.Lik. & \num{80.822} & \num{202.201} & \num{170.427} & \num{557.901}\\
 \begin{table}
 \label{tab:regression_summaryDE_4}
 \centering\centering
-\caption{Final OSEM Model result for each module for Germany. Part 4.}
+\caption{Final OSEM Model result for each module for Germany with model selection enabled. Part 4.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -924,10 +973,11 @@ EmiCO2RoaTra & 0.000 & 0.000 & 0.022 & 0 & 8 & 132 & 0.061\\
 
 % ---- Start of DK_Forecast_ets.tex ----
 \begin{table}
-\label{tab:forecast_DK}
-\centering\begingroup\fontsize{7.5}{9.5}\selectfont
-
-\resizebox{\textwidth}{!}{\begin{tabular}{ccccc}
+\centering
+\caption{\label{tab:forecast_DK}Forecast results for Denmark. Forecast were created using exponential trend smoothing forecasting for exogenous values with the central values as well as a 95\% confidence interval is displayed. A column is left empty for the actual values that will be added to this table, once published. Based on the realised actual values, at least the indicated forecast comparison metrics will be calculated. }
+\centering
+\fontsize{7}{9}\selectfont
+\begin{tabular}[t]{ccccc}
 \toprule
 Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 \midrule
@@ -1004,8 +1054,7 @@ Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 \hspace{1em}2027-01-01 & 17473.489 & 16753.044 - 18589.424 &  & Mincer-Zarnowitz:\\
 \hspace{1em}2027-04-01 & 17820.038 & 16975.481 - 18857.705 &  & \\
 \bottomrule
-\end{tabular}}
-\endgroup{}
+\end{tabular}
 \end{table}
 % ---- End of DK_Forecast_ets.tex ----
 
@@ -1013,7 +1062,7 @@ Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 \begin{table}
 \label{tab:regression_summaryDK_1}
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark. Part 1.}
+\caption{Final OSEM Model result for each module for Denmark with model selection enabled. Part 1.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1058,7 +1107,7 @@ Log.Lik. & \num{252.238} & \num{255.452} & \num{502.019} & \num{311.553} & \num{
 \begin{table}
 \label{tab:regression_summaryDK_2}
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark. Part 2.}
+\caption{Final OSEM Model result for each module for Denmark with model selection enabled. Part 2.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1103,7 +1152,7 @@ Log.Lik. & \num{253.051} & \num{457.622} & \num{168.506} & \num{221.930} & \num{
 \begin{table}
 \label{tab:regression_summaryDK_3}
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark. Part 3.}
+\caption{Final OSEM Model result for each module for Denmark with model selection enabled. Part 3.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
@@ -1148,7 +1197,7 @@ Log.Lik. & \num{96.088} & \num{235.684} & \num{180.043} & \num{821.099}\\
 \begin{table}
 \label{tab:regression_summaryDK_4}
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark. Part 4.}
+\caption{Final OSEM Model result for each module for Denmark with model selection enabled. Part 4.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1201,51 +1250,55 @@ Log.Lik. & \num{209.289} & \num{314.990} & \num{148.370} & \num{65.147} & \num{3
 \begin{table}
 \label{tab:regression_summary_selectedDK}
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark. Part 4.}
+\caption{Final OSEM Model result for selected modules for Denmark with model selection enabled.}
 \centering
 \fontsize{8}{10}\selectfont
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
 \toprule
-  & asinh(EmiCO2CivAvi) & log(EmiCO2ManInd) & log(RoadFreight) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
+  & log(ConsHH) & log(VAIndustry) & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
 \midrule
-ar1 & \num{0.968}*** & \num{0.873}*** &  & \num{0.398}*** & \\
- & (\num{0.025}) & (\num{0.041}) &  & (\num{0.100}) & \\
-mconst &  & \num{1.385}*** & \num{11.351}*** & \num{-19.638}*** & \num{3.338}***\\
- &  & (\num{0.406}) & (\num{0.825}) & (\num{3.562}) & (\num{0.344})\\
-trend &  & \num{0.000}+ &  & \num{-0.011}*** & \\
- &  & (\num{0.000}) &  & (\num{0.003}) & \\
-log(ElectrCons) &  &  &  & \num{2.158}*** & \\
- &  &  &  & (\num{0.458}) & \\
-L1.log(ElectrCons) &  &  &  & \num{1.175}+ & \\
- &  &  &  & (\num{0.620}) & \\
-log(Flights) & \num{-0.008} &  &  &  & \\
- & (\num{0.015}) &  &  &  & \\
-L2.log(Flights) & \num{0.014} &  &  &  & \\
- & (\num{0.014}) &  &  &  & \\
-L1.log(Flights) & \num{0.008} &  &  &  & \\
- & (\num{0.016}) &  &  &  & \\
-L1.log(HICPGas) &  &  &  & \num{0.346}*** & \\
- &  &  &  & (\num{0.085}) & \\
-log(HICPlocal) &  & \num{-0.193}** &  &  & \\
- &  & (\num{0.071}) &  &  & \\
-log(PriceETS) &  &  &  & \num{-0.021} & \\
- &  &  &  & (\num{0.043}) & \\
-L1.log(PriceETS) &  &  &  & \num{-0.057} & \\
- &  &  &  & (\num{0.037}) & \\
-log(RealConsHH) &  &  & \num{-0.550}*** &  & \num{0.443}***\\
- &  &  & (\num{0.109}) &  & (\num{0.034})\\
-log(RealVAIndustry) &  & \num{0.045} & \num{0.309}*** & \num{0.328} & \\
- &  & (\num{0.042}) & (\num{0.072}) & (\num{0.454}) & \\
-L1.log(RealVAIndustry) &  & \num{-0.016} &  & \num{-0.885}* & \\
- &  & (\num{0.045}) &  & (\num{0.394}) & \\
+ar1 &  &  &  & \num{0.873}*** & \num{0.398}*** & \\
+ &  &  &  & (\num{0.041}) & (\num{0.100}) & \\
+mconst & \num{7.681}*** & \num{3.840}*** & \num{9.554}*** & \num{1.385}*** & \num{-19.638}*** & \num{3.338}***\\
+ & (\num{0.444}) & (\num{1.108}) & (\num{0.148}) & (\num{0.406}) & (\num{3.562}) & (\num{0.344})\\
+trend & \num{0.007}*** & \num{0.003}*** & \num{-0.002}*** & \num{0.000}+ & \num{-0.011}*** & \\
+ & (\num{0.001}) & (\num{0.001}) & (\num{0.000}) & (\num{0.000}) & (\num{0.003}) & \\
+log(ConsGov) &  & \num{-0.443}*** &  &  &  & \\
+ &  & (\num{0.128}) &  &  &  & \\
+log(ConsHH) &  & \num{0.869}*** &  &  &  & \\
+ &  & (\num{0.141}) &  &  &  & \\
+log(ElectrCons) &  &  &  &  & \num{2.158}*** & \\
+ &  &  &  &  & (\num{0.458}) & \\
+L1.log(ElectrCons) &  &  &  &  & \num{1.175}+ & \\
+ &  &  &  &  & (\num{0.620}) & \\
+log(FinWealthHH) & \num{0.058}* &  &  &  &  & \\
+ & (\num{0.023}) &  &  &  &  & \\
+L1.log(HICPGas) &  &  &  &  & \num{0.346}*** & \\
+ &  &  &  &  & (\num{0.085}) & \\
+log(HICP\_Electricity) &  &  & \num{-0.019} &  &  & \\
+ &  &  & (\num{0.027}) &  &  & \\
+log(HICPlocal) & \num{0.167}* &  &  & \num{-0.193}** &  & \\
+ & (\num{0.079}) &  &  & (\num{0.071}) &  & \\
+log(PriceETS) &  & \num{0.003} & \num{0.008}+ &  & \num{-0.021} & \\
+ &  & (\num{0.003}) & (\num{0.004}) &  & (\num{0.043}) & \\
+L1.log(PriceETS) &  &  &  &  & \num{-0.057} & \\
+ &  &  &  &  & (\num{0.037}) & \\
+log(PriceOil) &  & \num{0.053}*** &  &  &  & \\
+ &  & (\num{0.015}) &  &  &  & \\
+log(RealConsHH) &  &  &  &  &  & \num{0.443}***\\
+ &  &  &  &  &  & (\num{0.034})\\
+log(RealVAIndustry) &  &  &  & \num{0.045} & \num{0.328} & \\
+ &  &  &  & (\num{0.042}) & (\num{0.454}) & \\
+L1.log(RealVAIndustry) &  &  &  & \num{-0.016} & \num{-0.885}* & \\
+ &  &  &  & (\num{0.045}) & (\num{0.394}) & \\
 \midrule
-Num.Obs. & \num{86} & \num{112} & \num{102} & \num{63} & \num{132}\\
-AIC & \num{-394.6} & \num{-600.0} & \num{-280.7} & \num{-100.3} & \num{-754.0}\\
-BIC & \num{-365.1} & \num{-559.2} & \num{-259.7} & \num{-68.1} & \num{-716.6}\\
-Log.Lik. & \num{209.289} & \num{314.990} & \num{148.370} & \num{65.147} & \num{390.021}\\
+Num.Obs. & \num{103} & \num{79} & \num{67} & \num{112} & \num{63} & \num{132}\\
+AIC & \num{-595.1} & \num{-317.0} & \num{-338.1} & \num{-600.0} & \num{-100.3} & \num{-754.0}\\
+BIC & \num{-558.2} & \num{-293.3} & \num{-313.8} & \num{-559.2} & \num{-68.1} & \num{-716.6}\\
+Log.Lik. & \num{311.553} & \num{168.506} & \num{180.043} & \num{314.990} & \num{65.147} & \num{390.021}\\
 \bottomrule
-\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
-\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}
 % ---- End of DK_Regression_Summary_selected.tex ----
@@ -1254,71 +1307,81 @@ Log.Lik. & \num{209.289} & \num{314.990} & \num{148.370} & \num{65.147} & \num{3
 \begin{table}
 \label{tab:regression_summary_selectedDK_nosel}
 \centering\centering
-\caption{Final OSEM Model result for selected modules for Denmark.}
+\caption{Final OSEM Model result for selected modules for Denmark without model selection.}
 \centering
 \fontsize{8}{10}\selectfont
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
 \toprule
-  & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
+  & log(ConsHH) & log(VAIndustry) & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
 \midrule
-ar1 &  & \num{0.848}*** & \num{0.355}** & \\
- &  & (\num{0.053}) & (\num{0.110}) & \\
-mconst & \num{8.516}*** & \num{1.989}*** & \num{-15.971}* & \num{5.615}***\\
- & (\num{0.936}) & (\num{0.531}) & (\num{7.093}) & (\num{1.061})\\
-trend & \num{-0.002}*** & \num{0.001}** & \num{-0.011}** & \num{-0.001}\\
- & (\num{0.000}) & (\num{0.000}) & (\num{0.004}) & (\num{0.001})\\
-asinh(CDD) &  &  & \num{0.013} & \\
- &  &  & (\num{0.030}) & \\
-L1.asinh(CDD) &  &  & \num{0.038} & \\
- &  &  & (\num{0.029}) & \\
-log(ElectrCons) &  &  & \num{2.001}* & \\
- &  &  & (\num{0.748}) & \\
-L1.log(ElectrCons) &  &  & \num{1.020} & \\
- &  &  & (\num{0.716}) & \\
-log(HDD) &  &  & \num{-0.142} & \\
- &  &  & (\num{0.086}) & \\
-L1.log(HDD) &  &  & \num{0.025} & \\
- &  &  & (\num{0.094}) & \\
-log(HICPDiesel) &  &  &  & \num{-0.022}\\
- &  &  &  & (\num{0.068})\\
-log(HICPGas) &  &  & \num{-0.069} & \\
- &  &  & (\num{0.174}) & \\
-L1.log(HICPGas) &  &  & \num{0.345}+ & \\
- &  &  & (\num{0.202}) & \\
-log(HICPPetrol) &  &  &  & \num{-0.129}\\
- &  &  &  & (\num{0.102})\\
-log(HICP\_Electricity) & \num{-0.143}*** &  &  & \\
- & (\num{0.022}) &  &  & \\
-log(HICPlocal) &  & \num{-0.237} &  & \num{0.236}+\\
- &  & (\num{0.340}) &  & (\num{0.137})\\
-L1.log(HICPlocal) &  & \num{-0.044} &  & \\
- &  & (\num{0.356}) &  & \\
-log(PriceETS) & \num{-0.001} &  & \num{-0.029} & \\
- & (\num{0.004}) &  & (\num{0.058}) & \\
-L1.log(PriceETS) &  &  & \num{-0.050} & \\
- &  &  & (\num{0.042}) & \\
-log(PriceOil) &  &  &  & \num{0.036}\\
- &  &  &  & (\num{0.030})\\
-log(RealCapFormHH) &  &  & \num{-0.198} & \\
- &  &  & (\num{0.276}) & \\
-L1.log(RealCapFormHH) &  &  & \num{0.237} & \\
- &  &  & (\num{0.247}) & \\
-log(RealConsHH) & \num{0.174}+ &  &  & \num{0.197}*\\
- & (\num{0.092}) &  &  & (\num{0.088})\\
-log(RealVAIndustry) &  & \num{0.128}** & \num{0.488} & \\
- &  & (\num{0.047}) & (\num{0.485}) & \\
-L1.log(RealVAIndustry) &  & \num{-0.108}* & \num{-0.992}* & \\
- &  & (\num{0.049}) & (\num{0.418}) & \\
-log(RoadFreight) &  &  &  & \num{-0.010}\\
- &  &  &  & (\num{0.028})\\
+ar1 &  &  &  & \num{0.848}*** & \num{0.355}** & \\
+ &  &  &  & (\num{0.053}) & (\num{0.110}) & \\
+mconst & \num{5.866}*** & \num{4.603}* & \num{8.516}*** & \num{1.989}*** & \num{-15.971}* & \num{5.615}***\\
+ & (\num{0.440}) & (\num{2.123}) & (\num{0.936}) & (\num{0.531}) & (\num{7.093}) & (\num{1.061})\\
+trend & \num{0.005}*** & \num{0.004}** & \num{-0.002}*** & \num{0.001}** & \num{-0.011}** & \num{-0.001}\\
+ & (\num{0.001}) & (\num{0.002}) & (\num{0.000}) & (\num{0.000}) & (\num{0.004}) & (\num{0.001})\\
+asinh(CDD) &  &  &  &  & \num{0.013} & \\
+ &  &  &  &  & (\num{0.030}) & \\
+L1.asinh(CDD) &  &  &  &  & \num{0.038} & \\
+ &  &  &  &  & (\num{0.029}) & \\
+log(CapForm) &  & \num{-0.003} &  &  &  & \\
+ &  & (\num{0.085}) &  &  &  & \\
+log(ConsGov) &  & \num{-0.413}** &  &  &  & \\
+ &  & (\num{0.138}) &  &  &  & \\
+log(ConsHH) &  & \num{0.758}** &  &  &  & \\
+ &  & (\num{0.261}) &  &  &  & \\
+log(ElectrCons) &  &  &  &  & \num{2.001}* & \\
+ &  &  &  &  & (\num{0.748}) & \\
+L1.log(ElectrCons) &  &  &  &  & \num{1.020} & \\
+ &  &  &  &  & (\num{0.716}) & \\
+log(FinWealthHH) & \num{0.131}*** &  &  &  &  & \\
+ & (\num{0.018}) &  &  &  &  & \\
+log(HDD) &  &  &  &  & \num{-0.142} & \\
+ &  &  &  &  & (\num{0.086}) & \\
+L1.log(HDD) &  &  &  &  & \num{0.025} & \\
+ &  &  &  &  & (\num{0.094}) & \\
+log(HICPDiesel) &  &  &  &  &  & \num{-0.022}\\
+ &  &  &  &  &  & (\num{0.068})\\
+log(HICPGas) &  &  &  &  & \num{-0.069} & \\
+ &  &  &  &  & (\num{0.174}) & \\
+L1.log(HICPGas) &  &  &  &  & \num{0.345}+ & \\
+ &  &  &  &  & (\num{0.202}) & \\
+log(HICPPetrol) &  &  &  &  &  & \num{-0.129}\\
+ &  &  &  &  &  & (\num{0.102})\\
+log(HICP\_Electricity) &  &  & \num{-0.143}*** &  &  & \\
+ &  &  & (\num{0.022}) &  &  & \\
+log(HICPlocal) & \num{0.290}*** &  &  & \num{-0.237} &  & \num{0.236}+\\
+ & (\num{0.073}) &  &  & (\num{0.340}) &  & (\num{0.137})\\
+L1.log(HICPlocal) &  &  &  & \num{-0.044} &  & \\
+ &  &  &  & (\num{0.356}) &  & \\
+log(IncomeHH) & \num{0.063} &  &  &  &  & \\
+ & (\num{0.040}) &  &  &  &  & \\
+log(PriceETS) &  & \num{0.003} & \num{-0.001} &  & \num{-0.029} & \\
+ &  & (\num{0.003}) & (\num{0.004}) &  & (\num{0.058}) & \\
+L1.log(PriceETS) &  &  &  &  & \num{-0.050} & \\
+ &  &  &  &  & (\num{0.042}) & \\
+log(PriceOil) &  & \num{0.060}** &  &  &  & \num{0.036}\\
+ &  & (\num{0.019}) &  &  &  & (\num{0.030})\\
+log(RealCapFormHH) &  &  &  &  & \num{-0.198} & \\
+ &  &  &  &  & (\num{0.276}) & \\
+L1.log(RealCapFormHH) &  &  &  &  & \num{0.237} & \\
+ &  &  &  &  & (\num{0.247}) & \\
+log(RealConsHH) &  &  & \num{0.174}+ &  &  & \num{0.197}*\\
+ &  &  & (\num{0.092}) &  &  & (\num{0.088})\\
+log(RealVAIndustry) &  &  &  & \num{0.128}** & \num{0.488} & \\
+ &  &  &  & (\num{0.047}) & (\num{0.485}) & \\
+L1.log(RealVAIndustry) &  &  &  & \num{-0.108}* & \num{-0.992}* & \\
+ &  &  &  & (\num{0.049}) & (\num{0.418}) & \\
+log(RoadFreight) &  &  &  &  &  & \num{-0.010}\\
+ &  &  &  &  &  & (\num{0.028})\\
 \midrule
-Num.Obs. & \num{67} & \num{111} & \num{63} & \num{56}\\
-AIC & \num{-339.5} & \num{-556.3} & \num{-95.7} & \num{-336.7}\\
-BIC & \num{-313.1} & \num{-515.7} & \num{-48.5} & \num{-306.3}\\
-Log.Lik. & \num{181.753} & \num{293.169} & \num{69.848} & \num{183.356}\\
+Num.Obs. & \num{103} & \num{79} & \num{67} & \num{111} & \num{63} & \num{56}\\
+AIC & \num{-586.8} & \num{-310.7} & \num{-339.5} & \num{-556.3} & \num{-95.7} & \num{-336.7}\\
+BIC & \num{-547.3} & \num{-277.6} & \num{-313.1} & \num{-515.7} & \num{-48.5} & \num{-306.3}\\
+Log.Lik. & \num{308.417} & \num{169.371} & \num{181.753} & \num{293.169} & \num{69.848} & \num{183.356}\\
 \bottomrule
-\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
-\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}
 % ---- End of DK_Regression_Summary_selected_nosel.tex ----
@@ -1326,31 +1389,30 @@ Log.Lik. & \num{181.753} & \num{293.169} & \num{69.848} & \num{183.356}\\
 % ---- Start of DK_rmsfe.tex ----
 \begin{table}
 
-
 \caption{\label{tab:rmsfe_DK}Root Mean Squared Forecast Error for selected modules for Denmark. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.}
 \centering
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lrrrrrr}
+\begin{tabular}[t]{lrrrrrr}
 \toprule
 \multicolumn{1}{c}{ } & \multicolumn{2}{c}{OSEM Forecasts} & \multicolumn{4}{c}{Naive Univariate Forecasts} \\
 \cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-7}
 Module & Auto & ETS & AR & Random Walk & ETS & Auto\\
 \midrule
-CapForm & 1.167 & 1.089 & 1 & 1.204 & 1.262 & 0.971\\
-CapFormHH & 0.798 & 0.737 & 1 & 0.536 & 0.525 & 0.468\\
+CapForm & 1.212 & 1.132 & 1 & 1.250 & 1.253 & 1.123\\
+CapFormHH & 0.848 & 0.783 & 1 & 0.570 & 0.547 & 0.944\\
 ElectrCons & 1.115 & 1.115 & 1 & 2.620 & 1.458 & 1.282\\
-EmiCO2ElecHeat & 0.940 & 0.928 & 1 & 3.503 & 2.848 & 3.503\\
-EmiCO2ManInd & 1.765 & 1.789 & 1 & 1.425 & 1.194 & 1.558\\
+EmiCO2ElecHeat & 0.895 & 0.883 & 1 & 3.335 & 2.769 & 1.691\\
+EmiCO2ManInd & 1.486 & 1.506 & 1 & 1.200 & 1.420 & 1.188\\
 \addlinespace
 EmiCO2RoaTra & 2.610 & 2.610 & 1 & 2.849 & 3.182 & 1.765\\
-HICPlocal & 0.754 & 0.843 & 1 & 1.098 & 0.912 & 0.902\\
-RealCapForm & 0.792 & 0.970 & 1 & 1.177 & 1.443 & 0.964\\
-RealCapFormHH & 0.715 & 0.705 & 1 & 1.059 & 2.359 & 1.758\\
-RealConsHH & 1.065 & 1.127 & 1 & 0.555 & 1.020 & 0.968\\
+HICPlocal & 0.756 & 0.845 & 1 & 1.101 & 0.916 & 0.905\\
+RealCapForm & 0.828 & 1.016 & 1 & 1.232 & 1.442 & 0.945\\
+RealCapFormHH & 0.916 & 0.903 & 1 & 1.356 & 1.157 & 0.690\\
+RealConsHH & 3.943 & 4.174 & 1 & 2.054 & 0.928 & 1.894\\
 \addlinespace
-RealVAIndustry & 0.401 & 0.407 & 1 & 0.415 & 0.954 & 0.960\\
-VAIndustry & 0.276 & 0.286 & 1 & 0.798 & 1.027 & 1.111\\
+RealVAIndustry & 0.620 & 0.630 & 1 & 0.641 & 1.044 & 0.732\\
+VAIndustry & 0.260 & 0.270 & 1 & 0.752 & 0.938 & 0.913\\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}
 % ---- End of DK_rmsfe.tex ----
 
@@ -1546,10 +1608,11 @@ EmiCO2RoaTra & 0.091 & 0.866 & 0.143 & 5 & 4 & 111 & 0.081\\
 
 % ---- Start of FR_Forecast_ets.tex ----
 \begin{table}
-\label{tab:forecast_FR}
-\centering\begingroup\fontsize{7.5}{9.5}\selectfont
-
-\resizebox{\textwidth}{!}{\begin{tabular}{ccccc}
+\centering
+\caption{\label{tab:forecast_FR}Forecast results for France. Forecast were created using exponential trend smoothing forecasting for exogenous values with the central values as well as a 95\% confidence interval is displayed. A column is left empty for the actual values that will be added to this table, once published. Based on the realised actual values, at least the indicated forecast comparison metrics will be calculated. }
+\centering
+\fontsize{7}{9}\selectfont
+\begin{tabular}[t]{ccccc}
 \toprule
 Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 \midrule
@@ -1626,8 +1689,7 @@ Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 \hspace{1em}2027-04-01 & 63127.686 & 61251.082 - 65124.397 &  & Mincer-Zarnowitz:\\
 \hspace{1em}2027-07-01 & 57380.838 & 55476.467 - 59033.55 &  & \\
 \bottomrule
-\end{tabular}}
-\endgroup{}
+\end{tabular}
 \end{table}
 % ---- End of FR_Forecast_ets.tex ----
 
@@ -1635,7 +1697,7 @@ Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 \begin{table}
 \label{tab:regression_summaryFR_1}
 \centering\centering
-\caption{Final OSEM Model result for each module for France. Part 1.}
+\caption{Final OSEM Model result for each module for France with model selection enabled. Part 1.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1688,7 +1750,7 @@ Log.Lik. & \num{293.594} & \num{264.963} & \num{531.878} & \num{367.895} & \num{
 \begin{table}
 \label{tab:regression_summaryFR_2}
 \centering\centering
-\caption{Final OSEM Model result for each module for France. Part 2.}
+\caption{Final OSEM Model result for each module for France with model selection enabled. Part 2.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1753,7 +1815,7 @@ Log.Lik. & \num{528.331} & \num{693.880} & \num{226.343} & \num{539.030} & \num{
 \begin{table}
 \label{tab:regression_summaryFR_3}
 \centering\centering
-\caption{Final OSEM Model result for each module for France. Part 3.}
+\caption{Final OSEM Model result for each module for France with model selection enabled. Part 3.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
@@ -1796,7 +1858,7 @@ Log.Lik. & \num{180.010} & \num{210.822} & \num{151.248} & \num{711.192}\\
 \begin{table}
 \label{tab:regression_summaryFR_4}
 \centering\centering
-\caption{Final OSEM Model result for each module for France. Part 4.}
+\caption{Final OSEM Model result for each module for France with model selection enabled. Part 4.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1857,59 +1919,65 @@ Log.Lik. & \num{276.588} & \num{514.131} & \num{230.945} & \num{45.212} & \num{4
 \begin{table}
 \label{tab:regression_summary_selectedFR}
 \centering\centering
-\caption{Final OSEM Model result for each module for France. Part 4.}
+\caption{Final OSEM Model result for selected modules for France with model selection enabled.}
 \centering
 \fontsize{8}{10}\selectfont
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
 \toprule
-  & log(EmiCO2CivAvi) & log(EmiCO2ManInd) & log(RoadFreight) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
+  & log(ConsHH) & log(VAIndustry) & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
 \midrule
-ar1 & \num{0.965}*** & \num{0.999}*** &  &  & \num{0.941}***\\
- & (\num{0.022}) & (\num{0.008}) &  &  & (\num{0.016})\\
-mconst &  &  & \num{2.811}* &  & \\
- &  &  & (\num{1.084}) &  & \\
-trend & \num{0.000}+ &  &  &  & \\
- & (\num{0.000}) &  &  &  & \\
-log(ElectrCons) &  &  &  & \num{2.105}*** & \\
- &  &  &  & (\num{0.211}) & \\
-log(Flights) & \num{0.017} &  &  &  & \\
- & (\num{0.010}) &  &  &  & \\
-L1.log(Flights) & \num{0.000} &  &  &  & \\
- & (\num{0.008}) &  &  &  & \\
-log(HICPDiesel) &  &  & \num{0.296}*** &  & \\
- &  &  & (\num{0.073}) &  & \\
-L1.log(HICPDiesel) &  &  &  &  & \num{-0.048}***\\
- &  &  &  &  & (\num{0.013})\\
-log(HICPPetrol) &  &  & \num{-0.477}*** &  & \\
- &  &  & (\num{0.108}) &  & \\
-L1.log(HICPPetrol) &  &  &  &  & \num{0.064}***\\
- &  &  &  &  & (\num{0.018})\\
-log(HICPlocal) &  &  & \num{-0.806}*** &  & \\
- &  &  & (\num{0.143}) &  & \\
-L1.log(HICPlocal) & \num{-0.036} &  &  &  & \num{-0.071}**\\
- & (\num{0.066}) &  &  &  & (\num{0.026})\\
-log(PriceETS) &  &  &  & \num{-0.121}*** & \\
- &  &  &  & (\num{0.024}) & \\
-log(RealCapFormHH) &  &  &  & \num{1.759}*** & \\
- &  &  &  & (\num{0.321}) & \\
-L1.log(RealConsHH) &  &  &  &  & \num{0.062}**\\
- &  &  &  &  & (\num{0.021})\\
-log(RealVAIndustry) &  & \num{0.021} & \num{0.254}* & \num{-2.986}*** & \\
- &  & (\num{0.028}) & (\num{0.100}) & (\num{0.440}) & \\
-L1.log(RealVAIndustry) &  & \num{-0.016} &  &  & \\
- &  & (\num{0.028}) &  &  & \\
-log(RealVAService) & \num{-0.098} &  & \num{0.880}*** &  & \\
- & (\num{0.083}) &  & (\num{0.127}) &  & \\
-L1.log(RealVAService) & \num{0.109} &  &  &  & \\
- & (\num{0.083}) &  &  &  & \\
+ar1 & \num{0.396}*** & \num{0.353}*** &  & \num{0.999}*** &  & \num{0.941}***\\
+ & (\num{0.047}) & (\num{0.052}) &  & (\num{0.008}) &  & (\num{0.016})\\
+ar2 & \num{0.086}** &  &  &  &  & \\
+ & (\num{0.029}) &  &  &  &  & \\
+mconst &  & \num{15.030}*** &  &  &  & \\
+ &  & (\num{1.316}) &  &  &  & \\
+trend & \num{0.000}* & \num{0.006}*** & \num{-0.003}*** &  &  & \\
+ & (\num{0.000}) & (\num{0.001}) & (\num{0.000}) &  &  & \\
+log(CapForm) &  & \num{0.337}*** &  &  &  & \\
+ &  & (\num{0.039}) &  &  &  & \\
+L1.log(CapForm) &  & \num{-0.228}*** &  &  &  & \\
+ &  & (\num{0.043}) &  &  &  & \\
+log(ConsGov) &  & \num{-0.870}*** &  &  &  & \\
+ &  & (\num{0.106}) &  &  &  & \\
+log(ElectrCons) &  &  &  &  & \num{2.105}*** & \\
+ &  &  &  &  & (\num{0.211}) & \\
+log(FinWealthHH) & \num{0.078}*** &  &  &  &  & \\
+ & (\num{0.011}) &  &  &  &  & \\
+L1.log(HICPDiesel) &  &  &  &  &  & \num{-0.048}***\\
+ &  &  &  &  &  & (\num{0.013})\\
+L1.log(HICPPetrol) &  &  &  &  &  & \num{0.064}***\\
+ &  &  &  &  &  & (\num{0.018})\\
+log(HICPlocal) & \num{0.592}*** &  &  &  &  & \\
+ & (\num{0.146}) &  &  &  &  & \\
+L2.log(HICPlocal) & \num{-0.504}*** &  &  &  &  & \\
+ & (\num{0.120}) &  &  &  &  & \\
+L1.log(HICPlocal) &  &  &  &  &  & \num{-0.071}**\\
+ &  &  &  &  &  & (\num{0.026})\\
+L1.log(IncomeHH) & \num{0.393}*** &  &  &  &  & \\
+ & (\num{0.043}) &  &  &  &  & \\
+log(PriceETS) &  & \num{-0.004} & \num{0.009}+ &  & \num{-0.121}*** & \\
+ &  & (\num{0.003}) & (\num{0.005}) &  & (\num{0.024}) & \\
+L1.log(PriceETS) &  & \num{0.002} &  &  &  & \\
+ &  & (\num{0.003}) &  &  &  & \\
+log(RealCapFormHH) &  &  &  &  & \num{1.759}*** & \\
+ &  &  &  &  & (\num{0.321}) & \\
+log(RealConsHH) &  &  & \num{0.994}*** &  &  & \\
+ &  &  & (\num{0.006}) &  &  & \\
+L1.log(RealConsHH) &  &  &  &  &  & \num{0.062}**\\
+ &  &  &  &  &  & (\num{0.021})\\
+log(RealVAIndustry) &  &  &  & \num{0.021} & \num{-2.986}*** & \\
+ &  &  &  & (\num{0.028}) & (\num{0.440}) & \\
+L1.log(RealVAIndustry) &  &  &  & \num{-0.016} &  & \\
+ &  &  &  & (\num{0.028}) &  & \\
 \midrule
-Num.Obs. & \num{87} & \num{175} & \num{102} & \num{64} & \num{111}\\
-AIC & \num{-515.2} & \num{-978.3} & \num{-433.9} & \num{-76.4} & \num{-838.3}\\
-BIC & \num{-468.3} & \num{-899.1} & \num{-397.1} & \num{-61.3} & \num{-789.5}\\
-Log.Lik. & \num{276.588} & \num{514.131} & \num{230.945} & \num{45.212} & \num{437.154}\\
+Num.Obs. & \num{103} & \num{78} & \num{67} & \num{175} & \num{64} & \num{111}\\
+AIC & \num{-705.8} & \num{-416.7} & \num{-284.5} & \num{-978.3} & \num{-76.4} & \num{-838.3}\\
+BIC & \num{-666.3} & \num{-374.3} & \num{-264.7} & \num{-899.1} & \num{-61.3} & \num{-789.5}\\
+Log.Lik. & \num{367.895} & \num{226.343} & \num{151.248} & \num{514.131} & \num{45.212} & \num{437.154}\\
 \bottomrule
-\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
-\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}
 % ---- End of FR_Regression_Summary_selected.tex ----
@@ -1918,69 +1986,99 @@ Log.Lik. & \num{276.588} & \num{514.131} & \num{230.945} & \num{45.212} & \num{4
 \begin{table}
 \label{tab:regression_summary_selectedFR_nosel}
 \centering\centering
-\caption{Final OSEM Model result for selected modules for France.}
+\caption{Final OSEM Model result for selected modules for France without model selection.}
 \centering
 \fontsize{8}{10}\selectfont
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
 \toprule
-  & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
+  & log(ConsHH) & log(VAIndustry) & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
 \midrule
-ar1 &  & \num{0.942}*** &  & \num{0.904}***\\
- &  & (\num{0.036}) &  & (\num{0.043})\\
-mconst & \num{3.838}* & \num{-0.311} & \num{1.677} & \num{0.639}\\
- & (\num{1.769}) & (\num{0.591}) & (\num{6.699}) & (\num{0.752})\\
-trend & \num{-0.003}* & \num{-0.001} & \num{-0.003} & \num{0.000}\\
- & (\num{0.001}) & (\num{0.000}) & (\num{0.002}) & (\num{0.000})\\
-asinh(CDD) &  &  & \num{0.077}* & \\
- &  &  & (\num{0.035}) & \\
-log(ElectrCons) &  &  & \num{1.711}** & \\
- &  &  & (\num{0.497}) & \\
-log(HDD) &  &  & \num{-0.072} & \\
- &  &  & (\num{0.074}) & \\
-log(HICPDiesel) &  &  &  & \num{0.006}\\
- &  &  &  & (\num{0.033})\\
-L1.log(HICPDiesel) &  &  &  & \num{-0.042}\\
- &  &  &  & (\num{0.030})\\
-log(HICPGas) &  &  & \num{-0.151} & \\
- &  &  & (\num{0.127}) & \\
-log(HICPPetrol) &  &  &  & \num{0.004}\\
- &  &  &  & (\num{0.038})\\
-L1.log(HICPPetrol) &  &  &  & \num{0.075}*\\
- &  &  &  & (\num{0.037})\\
-log(HICP\_Electricity) & \num{0.016} &  &  & \\
- & (\num{0.119}) &  &  & \\
-log(HICPlocal) &  & \num{-0.772} &  & \num{-0.049}\\
- &  & (\num{0.562}) &  & (\num{0.281})\\
-L1.log(HICPlocal) &  & \num{0.830} &  & \num{-0.096}\\
- &  & (\num{0.563}) &  & (\num{0.270})\\
-log(PriceETS) & \num{0.009}+ &  & \num{-0.086}** & \\
- & (\num{0.005}) &  & (\num{0.030}) & \\
-log(PriceOil) &  &  &  & \num{-0.003}\\
- &  &  &  & (\num{0.011})\\
-L1.log(PriceOil) &  &  &  & \num{-0.001}\\
- &  &  &  & (\num{0.010})\\
-log(RealCapFormHH) &  &  & \num{1.615}*** & \\
- &  &  & (\num{0.361}) & \\
-log(RealConsHH) & \num{0.676}*** &  &  & \num{-0.001}\\
- & (\num{0.142}) &  &  & (\num{0.047})\\
-L1.log(RealConsHH) &  &  &  & \num{0.061}\\
- &  &  &  & (\num{0.046})\\
-log(RealVAIndustry) &  & \num{0.043} & \num{-2.436}*** & \\
- &  & (\num{0.062}) & (\num{0.551}) & \\
-L1.log(RealVAIndustry) &  & \num{0.027} &  & \\
- &  & (\num{0.062}) &  & \\
-log(RoadFreight) &  &  &  & \num{0.018}\\
- &  &  &  & \vphantom{1} (\num{0.020})\\
-L1.log(RoadFreight) &  &  &  & \num{-0.019}\\
- &  &  &  & (\num{0.020})\\
+ar1 & \num{0.289}*** & \num{0.392}*** &  & \num{0.942}*** &  & \num{0.904}***\\
+ & (\num{0.073}) & (\num{0.067}) &  & (\num{0.036}) &  & (\num{0.043})\\
+ar2 & \num{0.079} &  &  &  &  & \\
+ & (\num{0.053}) &  &  &  &  & \\
+mconst & \num{-0.013} & \num{14.195}*** & \num{3.838}* & \num{-0.311} & \num{1.677} & \num{0.639}\\
+ & (\num{0.374}) & (\num{2.638}) & (\num{1.769}) & (\num{0.591}) & (\num{6.699}) & (\num{0.752})\\
+trend & \num{-0.001}+ & \num{0.006}*** & \num{-0.003}* & \num{-0.001} & \num{-0.003} & \num{0.000}\\
+ & (\num{0.000}) & (\num{0.001}) & (\num{0.001}) & (\num{0.000}) & (\num{0.002}) & (\num{0.000})\\
+asinh(CDD) &  &  &  &  & \num{0.077}* & \\
+ &  &  &  &  & (\num{0.035}) & \\
+log(CapForm) &  & \num{0.583}*** &  &  &  & \\
+ &  & (\num{0.117}) &  &  &  & \\
+L1.log(CapForm) &  & \num{-0.460}*** &  &  &  & \\
+ &  & (\num{0.118}) &  &  &  & \\
+log(ConsGov) &  & \num{-0.896}*** &  &  &  & \\
+ &  & (\num{0.255}) &  &  &  & \\
+L1.log(ConsGov) &  & \num{0.090} &  &  &  & \\
+ &  & (\num{0.277}) &  &  &  & \\
+log(ConsHH) &  & \num{-0.101} &  &  &  & \\
+ &  & (\num{0.147}) &  &  &  & \\
+L1.log(ConsHH) &  & \num{0.057} &  &  &  & \\
+ &  & (\num{0.133}) &  &  &  & \\
+log(ElectrCons) &  &  &  &  & \num{1.711}** & \\
+ &  &  &  &  & (\num{0.497}) & \\
+log(FinWealthHH) & \num{0.118}*** &  &  &  &  & \\
+ & (\num{0.031}) &  &  &  &  \vphantom{1} & \\
+L2.log(FinWealthHH) & \num{0.055}+ &  &  &  &  & \\
+ & (\num{0.031}) &  &  &  &  & \\
+L1.log(FinWealthHH) & \num{-0.083}* &  &  &  &  & \\
+ & (\num{0.042}) &  &  &  &  & \\
+log(HDD) &  &  &  &  & \num{-0.072} & \\
+ &  &  &  &  & (\num{0.074}) & \\
+log(HICPDiesel) &  &  &  &  &  & \num{0.006}\\
+ &  &  &  &  &  & (\num{0.033})\\
+L1.log(HICPDiesel) &  &  &  &  &  & \num{-0.042}\\
+ &  &  &  &  &  & (\num{0.030})\\
+log(HICPGas) &  &  &  &  & \num{-0.151} & \\
+ &  &  &  &  & (\num{0.127}) & \\
+log(HICPPetrol) &  &  &  &  &  & \num{0.004}\\
+ &  &  &  &  &  & (\num{0.038})\\
+L1.log(HICPPetrol) &  &  &  &  &  & \num{0.075}*\\
+ &  &  &  &  &  & (\num{0.037})\\
+log(HICP\_Electricity) &  &  & \num{0.016} &  &  & \\
+ &  &  & (\num{0.119}) &  &  & \\
+log(HICPlocal) & \num{0.696}** &  &  & \num{-0.772} &  & \num{-0.049}\\
+ & (\num{0.254}) &  &  & (\num{0.562}) &  & (\num{0.281})\\
+L2.log(HICPlocal) & \num{-0.351} &  &  &  &  & \\
+ & (\num{0.241}) &  &  &  &  & \\
+L1.log(HICPlocal) & \num{-0.184} &  &  & \num{0.830} &  & \num{-0.096}\\
+ & (\num{0.389}) &  &  & (\num{0.563}) &  & (\num{0.270})\\
+log(IncomeHH) & \num{0.082} &  &  &  &  & \\
+ & (\num{0.054}) &  &  &  &  & \\
+L2.log(IncomeHH) & \num{0.068} &  &  &  &  & \\
+ & (\num{0.058}) &  &  &  &  & \\
+L1.log(IncomeHH) & \num{0.321}*** &  &  &  &  & \\
+ & (\num{0.051}) &  &  &  &  & \\
+log(PriceETS) &  & \num{-0.004} & \num{0.009}+ &  & \num{-0.086}** & \\
+ &  & (\num{0.004}) & (\num{0.005}) &  & (\num{0.030}) & \\
+L1.log(PriceETS) &  & \num{0.003} &  &  &  & \\
+ &  & (\num{0.004}) &  &  &  & \\
+log(PriceOil) &  & \num{0.008} &  &  &  & \num{-0.003}\\
+ &  & (\num{0.019}) &  &  &  & (\num{0.011})\\
+L1.log(PriceOil) &  & \num{0.012} &  &  &  & \num{-0.001}\\
+ &  & (\num{0.019}) &  &  &  & (\num{0.010})\\
+log(RealCapFormHH) &  &  &  &  & \num{1.615}*** & \\
+ &  &  &  &  & (\num{0.361}) & \\
+log(RealConsHH) &  &  & \num{0.676}*** &  &  & \num{-0.001}\\
+ &  &  & (\num{0.142}) &  &  & (\num{0.047})\\
+L1.log(RealConsHH) &  &  &  &  &  & \num{0.061}\\
+ &  &  &  &  &  & (\num{0.046})\\
+log(RealVAIndustry) &  &  &  & \num{0.043} & \num{-2.436}*** & \\
+ &  &  &  & (\num{0.062}) & (\num{0.551}) & \\
+L1.log(RealVAIndustry) &  &  &  & \num{0.027} &  & \\
+ &  &  &  & (\num{0.062}) &  & \\
+log(RoadFreight) &  &  &  &  &  & \num{0.018}\\
+ &  &  &  &  &  & \vphantom{1} (\num{0.020})\\
+L1.log(RoadFreight) &  &  &  &  &  & \num{-0.019}\\
+ &  &  &  &  &  & (\num{0.020})\\
 \midrule
-Num.Obs. & \num{67} & \num{111} & \num{64} & \num{99}\\
-AIC & \num{-286.2} & \num{-547.2} & \num{-77.2} & \num{-704.0}\\
-BIC & \num{-261.9} & \num{-498.4} & \num{-49.1} & \num{-641.7}\\
-Log.Lik. & \num{154.095} & \num{291.586} & \num{51.583} & \num{376.016}\\
+Num.Obs. & \num{101} & \num{78} & \num{67} & \num{111} & \num{64} & \num{99}\\
+AIC & \num{-690.0} & \num{-389.7} & \num{-286.2} & \num{-547.2} & \num{-77.2} & \num{-704.0}\\
+BIC & \num{-632.5} & \num{-337.9} & \num{-261.9} & \num{-498.4} & \num{-49.1} & \num{-641.7}\\
+Log.Lik. & \num{367.015} & \num{216.858} & \num{154.095} & \num{291.586} & \num{51.583} & \num{376.016}\\
 \bottomrule
-\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
-\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
 \end{tabular}}
 \end{table}
 % ---- End of FR_Regression_Summary_selected_nosel.tex ----
@@ -1988,31 +2086,30 @@ Log.Lik. & \num{154.095} & \num{291.586} & \num{51.583} & \num{376.016}\\
 % ---- Start of FR_rmsfe.tex ----
 \begin{table}
 
-
 \caption{\label{tab:rmsfe_FR}Root Mean Squared Forecast Error for selected modules for France. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.}
 \centering
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lrrrrrr}
+\begin{tabular}[t]{lrrrrrr}
 \toprule
 \multicolumn{1}{c}{ } & \multicolumn{2}{c}{OSEM Forecasts} & \multicolumn{4}{c}{Naive Univariate Forecasts} \\
 \cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-7}
 Module & Auto & ETS & AR & Random Walk & ETS & Auto\\
 \midrule
-CapForm & 1.051 & 1.206 & 1 & 1.931 & 1.598 & 1.605\\
-CapFormHH & 1.062 & 0.996 & 1 & 0.935 & 1.221 & 1.014\\
+CapForm & 1.166 & 1.338 & 1 & 2.143 & 1.781 & 1.761\\
+CapFormHH & 1.270 & 1.191 & 1 & 1.119 & 1.172 & 1.181\\
 ElectrCons & 1.808 & 1.676 & 1 & 3.554 & 2.486 & 3.554\\
-EmiCO2ElecHeat & 1.056 & 1.047 & 1 & 2.280 & 2.141 & 1.850\\
-EmiCO2ManInd & 0.688 & 0.688 & 1 & 0.880 & 0.949 & 1.151\\
+EmiCO2ElecHeat & 1.084 & 1.075 & 1 & 2.340 & 1.958 & 1.788\\
+EmiCO2ManInd & 0.688 & 0.688 & 1 & 0.879 & 0.922 & 1.165\\
 \addlinespace
-EmiCO2RoaTra & 0.510 & 0.589 & 1 & 0.810 & 1.139 & 0.900\\
-HICPlocal & 0.881 & 0.873 & 1 & 1.202 & 0.928 & 0.928\\
-RealCapForm & 1.227 & 1.435 & 1 & 2.203 & 2.326 & 1.997\\
-RealCapFormHH & 1.572 & 1.532 & 1 & 1.048 & 0.903 & 0.909\\
-RealConsHH & 0.393 & 0.329 & 1 & 0.170 & 1.052 & 1.042\\
+EmiCO2RoaTra & 0.562 & 0.648 & 1 & 0.891 & 2.568 & 0.987\\
+HICPlocal & 0.879 & 0.872 & 1 & 1.200 & 0.923 & 0.923\\
+RealCapForm & 0.951 & 1.113 & 1 & 1.709 & 1.481 & 1.365\\
+RealCapFormHH & 1.101 & 1.073 & 1 & 0.734 & 1.004 & 0.757\\
+RealConsHH & 1.756 & 1.467 & 1 & 0.759 & 2.203 & 1.128\\
 \addlinespace
-RealVAIndustry & 1.061 & 1.159 & 1 & 1.206 & 1.133 & 1.142\\
-VAIndustry & 1.044 & 0.953 & 1 & 1.157 & 1.042 & 0.990\\
+RealVAIndustry & 0.807 & 0.881 & 1 & 0.916 & 0.810 & 1.150\\
+VAIndustry & 1.132 & 1.034 & 1 & 1.254 & 1.101 & 0.847\\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}
 % ---- End of FR_rmsfe.tex ----
 

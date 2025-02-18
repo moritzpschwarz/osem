@@ -10,7 +10,9 @@ no_models_in_one_table <- 5
 
 # define the main country to leave out of the appendix
 main_country <- "DE"
-all_countries <- c("DE","AT","FR","DK")
+all_countries <- c("DE","AT","DK", "FR")
+all_countries_long <- c("Germany","Austria","Denmark","France")
+
 
 # control what to run right now
 run_modelplots <- TRUE
@@ -68,26 +70,38 @@ for(country in all_countries){
       relocate(Model) %>%
       rename_with(str_to_title) -> full_table
 
+    full_table %>%
+      filter(grepl(vars_for_spec_table, Dependent)) %>% pull(Model) -> bold
 
     full_table %>%
-      kable(format = "latex", booktabs = TRUE, label = "spec_full",
-            caption = "Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models.") %>%
-      kable_styling(font_size = 8) %>%
+      filter(grepl(vars_to_grab, Dependent)) %>% pull(Model) -> bold_sel
+
+
+    full_table %>%
+      kable(format = "latex",
+            booktabs = TRUE, label = "spec_full",
+            caption = paste0("Specification of individual modules and their linkages. ",
+                             "All equations are specified to potentially also include autoregressive lags. ",
+                             "Functions specified as f() are AR Models.",
+                             "Equations marked in bold are highlighted due to their significance for the presented results, while equations in bold and italics will be shown in the subsequent plots.")) %>%
+      kable_styling(font_size = 7) %>%
+      row_spec(bold, bold = TRUE) %>%
+      row_spec(bold_sel, italic = TRUE) %>%
       column_spec(4, width = "10cm") %>%
       writeLines(paste0("small_examples/IJF/tables_overleaf/general/Specification_all_countries.tex"))
 
 
-    full_table %>%
-      filter(grepl(vars_for_spec_table, Dependent)) %>%
-
-
-      kable(format = "latex", booktabs = TRUE, label = "spec_subset",
-            caption = "Selected specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models. The full model specification table is available in the Appendix.") %>%
-      kable_styling() %>%
-      kable_styling(font_size = 8) %>%
-      column_spec(4, width = "10cm") %>%
-      #table_change(label = "spec_subset") %>%
-      writeLines(paste0("small_examples/IJF/tables_overleaf/general/Specification_selected.tex"))
+    # full_table %>%
+    #   filter(grepl(vars_for_spec_table, Dependent)) %>%
+    #
+    #
+    #   kable(format = "latex", booktabs = TRUE, label = "spec_subset",
+    #         caption = "Selected specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models. The full model specification table is available in the Appendix.") %>%
+    #   kable_styling() %>%
+    #   kable_styling(font_size = 8) %>%
+    #   column_spec(4, width = "10cm") %>%
+    #   #table_change(label = "spec_subset") %>%
+    #   writeLines(paste0("small_examples/IJF/tables_overleaf/general/Specification_selected.tex"))
   }
 
 
@@ -280,8 +294,11 @@ for(country in all_countries){
 
   }
 
-  forecasting_table_ijf(fc_ets, selected_vars = vars_to_grab, accuracy = 3) %>%
-    table_change(label = paste0("tab:forecast_",country)) %>%
+  forecasting_table_ijf(fc_ets, selected_vars = vars_to_grab, accuracy = 3,
+                        label = paste0("forecast_",country),
+                        caption = paste0("Forecast results for ", country_long,". Forecast were created using exponential trend smoothing forecasting for exogenous values with the central values as well as a 95\\% confidence interval is displayed. ",
+                                         "A column is left empty for the actual values that will be added to this table, once published. ",
+                                         "Based on the realised actual values, at least the indicated forecast comparison metrics will be calculated. ")) %>%
     writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_ets.tex"))
 
 
@@ -407,12 +424,8 @@ for(country in all_countries){
             col.names = c("Module", "Auto", "ETS", "AR", "Random Walk", "ETS", "Auto"),
             caption = paste0("Root Mean Squared Forecast Error for selected modules for ", country_long, ". The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.")) %>%
       add_header_above(c(" " = 1, "OSEM Forecasts" = 2, "Naive Univariate Forecasts" = 4)) %>%
-      table_change(label = NULL) %>%
+      #table_change(label = NULL) %>%
       writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_rmsfe.tex"))
-
-    # summarise(across(-na_item, list(mean = ~mean(.x, na.rm = TRUE),
-    #                                 median = ~median(.x, na.rm = TRUE))))
-
 
     # create a ggplot with the observational record from insample$hist_data
     # and all forecasts from naive_ar and naive_rw, fc_comparison_auto, fc_comparison_ets and fc_comparison_AR
@@ -444,17 +457,20 @@ for(country in all_countries){
   create_regression_table_ijf(model = model_result_ext,
                               grepl_selected = vars_to_grab,
                               no_models_in_one_table = no_models_in_one_table,
+                              caption_add = " with model selection enabled",
                               country = country)
 
   create_regression_table_ijf(model = model_result_ext,
                               grepl_selected = NULL,
                               no_models_in_one_table = no_models_in_one_table,
+                              caption_add = " with model selection enabled",
                               country = country)
 
   create_regression_table_ijf(model = model_result_nosel,
                               grepl_selected = vars_to_grab,
                               no_models_in_one_table = no_models_in_one_table,
                               label_add = "_nosel",
+                              caption_add = " without model selection",
                               country = country)
 
   # Diagnostics ------------------------------------------------------------
@@ -651,8 +667,100 @@ for(country in all_countries){
 }
 
 
+# Joint Forecasting Figure ------------------------------------------------------------
+
+# Create a joint figure with all the forecast_graphs
+fc_list <- list()
+for (country in all_countries) {
+
+  # country = "DE"
+
+  load(paste0("./small_examples/IJF/", country, "/model_sel.RData"))
+
+  model_result_ext <- model_result_ext_sel
+
+  rm(model_result_ext_sel)
 
 
+  country_long <- case_when(country == "DE" ~ "Germany",
+                            country == "DK" ~ "Denmark",
+                            country == "AT" ~ "Austria",
+                            country == "FR" ~ "France")
+
+  model_result_ext <- create_inflation(model_result_ext)
+
+  # ets
+  if(!file.exists(paste0("small_examples/IJF/", country, "/forecast_ets.RData"))){
+    set.seed(8899)
+    fc_ets <- forecast_model(model_result_ext, exog_fill_method = "ets")
+    save(fc_ets, file = paste0("small_examples/IJF/", country, "/forecast_ets.RData"))
+  } else {
+    load(paste0("small_examples/IJF/", country, "/forecast_ets.RData"))
+  }
+
+  # create inflation from HICP module
+  hicp <- fc_ets$full_forecast_data %>%
+    filter(na_item == "HICPlocal") %>%
+    select(time, values, type)
+  # the last observation also exists as forecast to connect lines
+  # can therefore use group_by and this will then create first inflation forecast from first "real" HICP forecats and last obs
+  hicp <- hicp %>%
+    arrange(type, time) %>%
+    group_by(type) %>%
+    mutate(Inflation = (values - lag(values, 1)) / lag(values, 1) * 100) %>%
+    ungroup() %>%
+    filter(!(type == "Forecast" & is.na(Inflation)))
+  # to connect lines, need to add latest observation as a labelled forecast
+  most_recent <- hicp %>%
+    filter(type == "Observation") %>%
+    slice_max(time, n = 1) %>%
+    mutate(type = "Forecast")
+  hicp <- bind_rows(hicp, most_recent) %>%
+    select(time, Inflation, type) %>%
+    rename(values = Inflation) %>%
+    mutate(na_item = "Inflation") %>%
+    select(time, na_item, values, type)
+  # add inflation data to $full_forecastdata
+  fc_ets$full_forecast_data <- bind_rows(fc_ets$full_forecast_data, hicp) # (leaves quaniles NA)
+  # add inflation data to $forecast
+  central_tibble <- hicp %>%
+    filter(type == "Forecast") %>%
+    select(time, values) %>%
+    rename(Inflation = values) %>%
+    filter(time != most_recent$time) # they do not contain most recent observation as forecast
+  fc_ets$forecast <- fc_ets$forecast %>% add_row(dep_var = "Inflation", central.estimate = list(central_tibble))
+  # add inflation options to $orig_model$opts_df
+  fc_ets$orig_model$opts_df <- fc_ets$orig_model$opts_df %>% add_row(dependent = "Inflation", log_opts = list(tibble(Inflation = "none")))
+
+  plt <- plot(fc_ets, grepl_variables = vars_to_grab, first_date = "2015-01-01", title = NULL)
+  # add plt to fc_list
+  fc_list[[country]] <- plt
+
+}
+
+
+library(cowplot)
+
+ggplot() +
+  labs(title = "OSEM Forecasts for all Countries",
+       subtitle = "Showing the <span style = color:#440154FF>Observed</span>, <span style = color:#FDE725FF>Fitted</span>, <span style = color:#35B779FF>Nowcasted</span>, and <span style = color:#3B528BFF>Forecasted</span> values.") +
+  theme_void() +
+  theme(plot.subtitle = element_markdown(),
+        plot.background = element_blank(),
+        theme(plot.margin = margin(0, 0, 0, 0))
+  ) -> joint_title
+
+
+
+plot_grid(plotlist = list(joint_title, NULL, NULL, NULL,
+                          fc_list[[1]] + facet_wrap(~na_item, ncol = 1, scales = "free_y") + labs(title = all_countries_long[1]) + theme(plot.margin = margin(t = -0.7, unit = "cm")),
+                          fc_list[[2]] + facet_wrap(~na_item, ncol = 1, scales = "free_y") + labs(title = all_countries_long[2]) + theme(plot.margin = margin(t = -0.7, unit = "cm")),
+                          fc_list[[3]] + facet_wrap(~na_item, ncol = 1, scales = "free_y") + labs(title = all_countries_long[3]) + theme(plot.margin = margin(t = -0.7, unit = "cm")),
+                          fc_list[[4]] + facet_wrap(~na_item, ncol = 1, scales = "free_y") + labs(title = all_countries_long[4]) + theme(plot.margin = margin(t = -0.7, unit = "cm"))),
+          ncol = 4, nrow = 2, align = "v", rel_heights = c(0.1, 1)) -> joint_plt
+
+
+ggsave(joint_plt, filename = "small_examples/IJF/figures_overleaf/joint_forecast.pdf", width = 10, height = 12)
 
 
 # Combine all tex files ---------------------------------------------------
@@ -752,7 +860,7 @@ for (country in all_countries[!grepl(main_country, all_countries)]) {
 \\begin{figure}
     \\centering
     \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Forecast_ets.pdf}
-    \\caption{Forecast for ",country," for selected variables using an AR(4) Forecast with Indicator Saturation.}
+    \\caption{Forecast for ",country," for selected variables using exponential trend smooting.}
     \\label{fig:", country, "_entire_forecast_ets}
 \\end{figure}
 

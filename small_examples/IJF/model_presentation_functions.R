@@ -1,5 +1,5 @@
 
-forecasting_table_ijf <- function(forecast, selected_vars, accuracy = 2){
+forecasting_table_ijf <- function(forecast, selected_vars, accuracy = 2, label = "", caption = ""){
 
   forecast$full_forecast_data %>%
     filter(grepl(selected_vars, na_item),
@@ -32,8 +32,11 @@ forecasting_table_ijf <- function(forecast, selected_vars, accuracy = 2){
     bind_cols(fc_metric) %>%
     mutate(`Actual Value` = NA, .after = Range) %>%
     select(-na_item) %>%
-    kable("latex", escape = TRUE, align = "c", col.names = c("Forecast Period", "Central", "95% Range","Actual Value", "Forecast Metrics"), booktabs = TRUE) %>%
-    kable_styling(font_size = 7.5) %>%
+    kable("latex", escape = TRUE, align = "c",
+          col.names = c("Forecast Period", "Central", "95% Range","Actual Value", "Forecast Metrics"),
+          booktabs = TRUE, label = label,
+          caption = caption) %>%
+    kable_styling(font_size = 7) %>%
     #column_spec(4, width = "5cm") %>%
     pack_rows(index = table(forecast_df$na_item))
 }
@@ -121,7 +124,7 @@ create_inflation <- function(model){
 
 
 
-create_regression_table_ijf <- function(model, grepl_selected = NULL, country = "DE", label_add = "", no_models_in_one_table = 5){
+create_regression_table_ijf <- function(model, grepl_selected = NULL, country = "DE", label_add = "", no_models_in_one_table = 5, caption_add = ""){
   # To disable `siunitx` and prevent `modelsummary` from wrapping numeric entries in `\num{}`, call:
   #   options("modelsummary_format_numeric_latex" = "plain")
 
@@ -187,7 +190,7 @@ create_regression_table_ijf <- function(model, grepl_selected = NULL, country = 
         coef_map = coef_renamed,
         gof_omit = "R",
         output = "latex",
-        title = paste0("Final OSEM Model result for each module for ",country_long, ". Part ",i,"."),
+        title = paste0("Final OSEM Model result for each module for ",country_long, caption_add, ". Part ",i,"."),
         notes = "Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.",
         stars = TRUE
       )%>%
@@ -203,7 +206,7 @@ create_regression_table_ijf <- function(model, grepl_selected = NULL, country = 
 
     ## selected variables ------------------------------------------------------
 
-    model_list[grepl(vars_to_grab, names(model_list))] -> model_list_temp
+    model_list[grepl(gsub("Real","",vars_to_grab), names(model_list))] -> model_list_temp
     models_renamed <- sapply(names(model_list_temp), function(x) paste0(trafo %>% filter(variable == x) %>% pull(trafo), "(", x, ")"))
     names(model_list_temp) <- models_renamed
 
@@ -213,15 +216,15 @@ create_regression_table_ijf <- function(model, grepl_selected = NULL, country = 
       coef_map = coef_renamed,
       gof_omit = "R",
       output = "latex",
-      title = paste0("Final OSEM Model result for selected modules for ",country_long, "."),
+      title = paste0("Final OSEM Model result for selected modules for ",country_long, caption_add, "."),
       notes = "Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.",
       stars = TRUE
     ) %>%
       kable_styling(font_size = 8)
+
+    # this output can go straight into the latex
+    table_change(table_output, label = paste0("tab:regression_summary_selected",country, label_add)) %>%
+      writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Regression_Summary_selected",label_add,".tex"))
+
   }
-  # this output can go straight into the latex
-  table_change(table_output, label = paste0("tab:regression_summary_selected",country, label_add)) %>%
-    writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Regression_Summary_selected",label_add,".tex"))
-
-
 }

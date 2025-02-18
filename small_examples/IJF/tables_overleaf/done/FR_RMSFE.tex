@@ -1,28 +1,27 @@
 \begin{table}
 
-
 \caption{\label{tab:rmsfe_FR}Root Mean Squared Forecast Error for selected modules for France. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.}
 \centering
-\resizebox{\textwidth}{!}{\begin{tabular}[t]{lrrrrrr}
+\begin{tabular}[t]{lrrrrrr}
 \toprule
 \multicolumn{1}{c}{ } & \multicolumn{2}{c}{OSEM Forecasts} & \multicolumn{4}{c}{Naive Univariate Forecasts} \\
 \cmidrule(l{3pt}r{3pt}){2-3} \cmidrule(l{3pt}r{3pt}){4-7}
 Module & Auto & ETS & AR & Random Walk & ETS & Auto\\
 \midrule
-CapForm & 1.051 & 1.206 & 1 & 1.931 & 1.598 & 1.605\\
-CapFormHH & 1.062 & 0.996 & 1 & 0.935 & 1.221 & 1.014\\
+CapForm & 1.166 & 1.338 & 1 & 2.143 & 1.781 & 1.761\\
+CapFormHH & 1.270 & 1.191 & 1 & 1.119 & 1.172 & 1.181\\
 ElectrCons & 1.808 & 1.676 & 1 & 3.554 & 2.486 & 3.554\\
-EmiCO2ElecHeat & 1.056 & 1.047 & 1 & 2.280 & 2.141 & 1.850\\
-EmiCO2ManInd & 0.688 & 0.688 & 1 & 0.880 & 0.949 & 1.151\\
+EmiCO2ElecHeat & 1.084 & 1.075 & 1 & 2.340 & 1.958 & 1.788\\
+EmiCO2ManInd & 0.688 & 0.688 & 1 & 0.879 & 0.922 & 1.165\\
 \addlinespace
-EmiCO2RoaTra & 0.510 & 0.589 & 1 & 0.810 & 1.139 & 0.900\\
-HICPlocal & 0.881 & 0.873 & 1 & 1.202 & 0.928 & 0.928\\
-RealCapForm & 1.227 & 1.435 & 1 & 2.203 & 2.326 & 1.997\\
-RealCapFormHH & 1.572 & 1.532 & 1 & 1.048 & 0.903 & 0.909\\
-RealConsHH & 0.393 & 0.329 & 1 & 0.170 & 1.052 & 1.042\\
+EmiCO2RoaTra & 0.562 & 0.648 & 1 & 0.891 & 2.568 & 0.987\\
+HICPlocal & 0.879 & 0.872 & 1 & 1.200 & 0.923 & 0.923\\
+RealCapForm & 0.951 & 1.113 & 1 & 1.709 & 1.481 & 1.365\\
+RealCapFormHH & 1.101 & 1.073 & 1 & 0.734 & 1.004 & 0.757\\
+RealConsHH & 1.756 & 1.467 & 1 & 0.759 & 2.203 & 1.128\\
 \addlinespace
-RealVAIndustry & 1.061 & 1.159 & 1 & 1.206 & 1.133 & 1.142\\
-VAIndustry & 1.044 & 0.953 & 1 & 1.157 & 1.042 & 0.990\\
+RealVAIndustry & 0.807 & 0.881 & 1 & 0.916 & 0.810 & 1.150\\
+VAIndustry & 1.132 & 1.034 & 1 & 1.254 & 1.101 & 0.847\\
 \bottomrule
-\end{tabular}}
+\end{tabular}
 \end{table}
