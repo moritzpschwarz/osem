@@ -30,7 +30,7 @@ forecasting_table_ijf <- function(forecast, selected_vars, accuracy = 2, label =
 
   forecast_df %>%
     bind_cols(fc_metric) %>%
-    mutate(`Actual Value` = NA, .after = Range) %>%
+    mutate(`Actual Value` = "", .after = Range) %>%
     select(-na_item) %>%
     kable("latex", escape = TRUE, align = "c",
           col.names = c("Forecast Period", "Central", "95% Range","Actual Value", "Forecast Metrics"),
@@ -197,7 +197,8 @@ create_regression_table_ijf <- function(model, grepl_selected = NULL, country = 
         kable_styling(font_size = 8)
 
       # this output can go straight into the latex
-      table_change(table_output, label = paste0("tab:regression_summary",country,"_",i, label_add)) %>%
+      table_change(table_output, label = NULL) %>%
+        gsub("\\caption{",paste0("\\caption{\\label{",paste0("tab:regression_summary",country,"_",i, label_add),"}"), ., fixed = TRUE) %>%
         writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Regression_Summary_",i,label_add,".tex"))
 
     }
@@ -223,7 +224,8 @@ create_regression_table_ijf <- function(model, grepl_selected = NULL, country = 
       kable_styling(font_size = 8)
 
     # this output can go straight into the latex
-    table_change(table_output, label = paste0("tab:regression_summary_selected",country, label_add)) %>%
+    table_change(table_output, label = NULL) %>%
+      gsub("\\caption{",paste0("\\caption{\\label{",paste0("tab:regression_summary_selected",country, label_add),"}"), ., fixed = TRUE) %>%
       writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Regression_Summary_selected",label_add,".tex"))
 
   }

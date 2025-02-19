@@ -2,6 +2,7 @@ library(tidyverse)
 library(kableExtra)
 library(ggtext)
 library(modelsummary)
+library(cowplot)
 devtools::load_all()
 
 vars_to_grab <- "ElectrCons|EmiCO2RoaTra|EmiCO2ManInd|EmiCO2ElecHeat|RealVAIndustry|RealConsHH"
@@ -73,8 +74,8 @@ for(country in all_countries){
     full_table %>%
       filter(grepl(vars_for_spec_table, Dependent)) %>% pull(Model) -> bold
 
-    full_table %>%
-      filter(grepl(vars_to_grab, Dependent)) %>% pull(Model) -> bold_sel
+    # full_table %>%
+    #   filter(grepl(vars_to_grab, Dependent)) %>% pull(Model) -> bold_sel
 
 
     full_table %>%
@@ -82,11 +83,11 @@ for(country in all_countries){
             booktabs = TRUE, label = "spec_full",
             caption = paste0("Specification of individual modules and their linkages. ",
                              "All equations are specified to potentially also include autoregressive lags. ",
-                             "Functions specified as f() are AR Models.",
-                             "Equations marked in bold are highlighted due to their significance for the presented results, while equations in bold and italics will be shown in the subsequent plots.")) %>%
+                             "Functions specified as f() are AR models. ",
+                             "Equations marked in bold correspond to the simplified model in equation \\ref{eq:svar}.")) %>%
       kable_styling(font_size = 7) %>%
       row_spec(bold, bold = TRUE) %>%
-      row_spec(bold_sel, italic = TRUE) %>%
+      #row_spec(bold_sel, italic = TRUE) %>%
       column_spec(4, width = "10cm") %>%
       writeLines(paste0("small_examples/IJF/tables_overleaf/general/Specification_all_countries.tex"))
 
@@ -252,7 +253,7 @@ for(country in all_countries){
   fc_ets$orig_model$opts_df <- fc_ets$orig_model$opts_df %>% add_row(dependent = "Inflation", log_opts = list(tibble(Inflation = "none")))
 
   if(plot_forecasts){
-    # Forecast Plot -----------------------------------------------------------
+    ## Forecast Plot -----------------------------------------------------------
 
     plot(fc, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
       labs(subtitle = fc_subtitle) +
@@ -272,7 +273,7 @@ for(country in all_countries){
     ggsave(p,filename = paste0("small_examples/IJF/figures_overleaf/", country, "_Forecast_Selected_2015",".pdf"), width = 7, height = 5)
 
 
-    ## ETS Plots -----------
+    ### ETS Plots -----------
 
 
     plot(fc_ets, title = paste0("Forecast for ",country_long), linewidth = lwidth) +
@@ -294,11 +295,12 @@ for(country in all_countries){
 
   }
 
+  ## Forecast Table -----
   forecasting_table_ijf(fc_ets, selected_vars = vars_to_grab, accuracy = 3,
                         label = paste0("forecast_",country),
-                        caption = paste0("Forecast results for ", country_long,". Forecast were created using exponential trend smoothing forecasting for exogenous values with the central values as well as a 95\\% confidence interval is displayed. ",
+                        caption = paste0("Forecast results for ", country_long,". Exogenous variables were forecast using exponential trend smoothing. The central values as well as a 95\\% confidence interval is displayed. ",
                                          "A column is left empty for the actual values that will be added to this table, once published. ",
-                                         "Based on the realised actual values, at least the indicated forecast comparison metrics will be calculated. ")) %>%
+                                         "Based on the realised actual values, the indicated forecast comparison metrics will be calculated. ")) %>%
     writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Forecast_ets.tex"))
 
 
@@ -336,7 +338,7 @@ for(country in all_countries){
 
   }
 
-  # Insample Forecast Comparison --------------------------------------------
+  # RMSFE Insample Forecast Comparison --------------------------------------------
   if(run_fc_comparison & exists("insample")){
 
     fc_comparison_base <- insample$all_models[11][[1]]
@@ -422,7 +424,10 @@ for(country in all_countries){
             digits = 3,
             booktabs = TRUE, label = paste0("rmsfe_",country),
             col.names = c("Module", "Auto", "ETS", "AR", "Random Walk", "ETS", "Auto"),
-            caption = paste0("Root Mean Squared Forecast Error for selected modules for ", country_long, ". The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.")) %>%
+            caption = paste0("Root Mean Squared Forecast Error comparison relative to AR(4) forecast for selected modules for ", country_long,". ",
+            "The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q1 of 2022 to Q4 of 2023). ",
+            "The 'OSEM Forecasts' show the forecasts derived from our model. For those forecasts, the exogenous variables were forecast using exponential trend smoothing (column ETS) or ARIMA models (column Auto). ",
+            "The naive forecasts are univariate forecasts for each variable created without OSEM.")) %>%
       add_header_above(c(" " = 1, "OSEM Forecasts" = 2, "Naive Univariate Forecasts" = 4)) %>%
       #table_change(label = NULL) %>%
       writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_rmsfe.tex"))
@@ -480,7 +485,7 @@ for(country in all_countries){
     rename(Module = module) %>%
 
     kable(format = "latex", booktabs = TRUE, digits = 3, label = paste0(country,"_diagnostics"),
-          caption = paste0("Diagnostic results for each estimated module for ", country_long, ".")) %>%
+          caption = paste0("Diagnostic results for each estimated module for ", country_long, ". Columns showing the results for AR, ARCH, and Super Exogeneity are p-values while IIS, SIS, and n show the number of Impulse- and Step-Indicators as well as the number of observations respectively. The column Share of Indicators is the share of indicators compared to n.")) %>%
     kable_styling() %>%
     writeLines(paste0("small_examples/IJF/tables_overleaf/", country, "_Diagnostics.tex"))
 
@@ -739,8 +744,6 @@ for (country in all_countries) {
 }
 
 
-library(cowplot)
-
 ggplot() +
   labs(title = "OSEM Forecasts for all Countries",
        subtitle = "Showing the <span style = color:#440154FF>Observed</span>, <span style = color:#FDE725FF>Fitted</span>, <span style = color:#35B779FF>Nowcasted</span>, and <span style = color:#3B528BFF>Forecasted</span> values.") +
@@ -831,14 +834,14 @@ for (country in all_countries[!grepl(main_country, all_countries)]) {
 \\begin{figure}
     \\centering
     \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Model.pdf}
-    \\caption{In-sample model fit for ",country,".}
+    \\caption{Estimated OSEM model for ",country,". Purple represents actual observations and yellow represents fitted values from the model.}
     \\label{fig:", country, "_entire_model}
 \\end{figure}
 
 \\begin{figure}
     \\centering
     \\includegraphics[width = \\textwidth]{figures/figures_Jan25/", country, "_Model_Selected.pdf}
-    \\caption{In-sample model fit for ",country," for selected variables.}
+    \\caption{Estimated OSEM model for selected variables for ",country,". Purple represents actual observations and yellow represents fitted values from the model.}
     \\label{fig:", country, "_selected_model}
 \\end{figure}
 

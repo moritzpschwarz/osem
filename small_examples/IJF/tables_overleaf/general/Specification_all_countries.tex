@@ -1,6 +1,6 @@
 \begin{table}
 \centering
-\caption{\label{tab:spec_full}Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR Models.Equations marked in bold are highlighted due to their significance for the presented results, while equations in bold and italics will be shown in the subsequent plots.}
+\caption{\label{tab:spec_full}Specification of individual modules and their linkages. All equations are specified to potentially also include autoregressive lags. Functions specified as f() are AR models. Equations marked in bold correspond to the simplified model in equation \ref{eq:svar}.}
 \centering
 \fontsize{7}{9}\selectfont
 \begin{tabular}[t]{rll>{\raggedright\arraybackslash}p{10cm}}
@@ -27,7 +27,7 @@ Model & Type & Dependent & Independent\\
 \addlinespace
 16 & Estimated & Exports & f(REER)\\
 17 & Identity & RealVAAgriculture & VAAgriculture / DFVAAgriculture * 100\\
-\em{\textbf{18}} & \em{\textbf{Identity}} & \em{\textbf{RealVAIndustry}} & \em{\textbf{VAIndustry / DFVAIndustry * 100}}\\
+\textbf{18} & \textbf{Identity} & \textbf{RealVAIndustry} & \textbf{VAIndustry / DFVAIndustry * 100}\\
 19 & Identity & RealVAConstruction & VAConstruction / DFVAConstruction * 100\\
 20 & Identity & RealVARetail & VARetail / DFVARetail * 100\\
 \addlinespace
@@ -40,18 +40,18 @@ Model & Type & Dependent & Independent\\
 26 & Identity & RealVAOther & VAOther / DFVAOther * 100\\
 \textbf{27} & \textbf{Identity} & \textbf{RealCapForm} & \textbf{CapForm / DFCapForm * 100}\\
 \textbf{28} & \textbf{Identity} & \textbf{RealCapFormHH} & \textbf{CapFormHH / DFCapForm * 100}\\
-\em{\textbf{29}} & \em{\textbf{Identity}} & \em{\textbf{RealConsHH}} & \em{\textbf{ConsHH / DFConsHH * 100}}\\
+\textbf{29} & \textbf{Identity} & \textbf{RealConsHH} & \textbf{ConsHH / DFConsHH * 100}\\
 \textbf{30} & \textbf{Estimated} & \textbf{HICPlocal} & \textbf{f(PriceOil, PriceImports, LabourProd, EfExchange)}\\
 \addlinespace
-\em{\textbf{31}} & \em{\textbf{Estimated}} & \em{\textbf{EmiCO2ManInd}} & \em{\textbf{f(RealVAIndustry, HICPlocal)}}\\
+\textbf{31} & \textbf{Estimated} & \textbf{EmiCO2ManInd} & \textbf{f(RealVAIndustry, HICPlocal)}\\
 32 & Estimated & Flights & f(RealConsHH, FinWealthHH,  HICP\_AviaInt)\\
 33 & Estimated & EmiCO2CivAvi & f(HICPlocal, RealConsHH, RealVAService, Flights)\\
 34 & Estimated & RoadFreight & f(RealConsHH, HICPlocal, RealVAService, PriceOil, HICPDiesel, HICPPetrol, RealVAIndustry)\\
-\em{\textbf{35}} & \em{\textbf{Estimated}} & \em{\textbf{EmiCO2RoaTra}} & \em{\textbf{f(RoadFreight, RealConsHH, HICPlocal, PriceOil, HICPDiesel, HICPPetrol)}}\\
+\textbf{35} & \textbf{Estimated} & \textbf{EmiCO2RoaTra} & \textbf{f(RoadFreight, RealConsHH, HICPlocal, PriceOil, HICPDiesel, HICPPetrol)}\\
 \addlinespace
 36 & Estimated & EmiCO2Residential & f(RealConsHH, HICP\_Electricity, CDD, HDD)\\
-\em{\textbf{37}} & \em{\textbf{Estimated}} & \em{\textbf{ElectrCons}} & \em{\textbf{f(RealConsHH, HICP\_Electricity, PriceETS)}}\\
-\em{\textbf{38}} & \em{\textbf{Estimated}} & \em{\textbf{EmiCO2ElecHeat}} & \em{\textbf{f(ElectrCons, RealVAIndustry, RealCapFormHH, PriceETS, CDD, HDD, HICPGas)}}\\
+\textbf{37} & \textbf{Estimated} & \textbf{ElectrCons} & \textbf{f(RealConsHH, HICP\_Electricity, PriceETS)}\\
+\textbf{38} & \textbf{Estimated} & \textbf{EmiCO2ElecHeat} & \textbf{f(ElectrCons, RealVAIndustry, RealCapFormHH, PriceETS, CDD, HDD, HICPGas)}\\
 39 & Identity & EmiCO2Total & EmiCO2ElecHeat + EmiCO2RoaTra + EmiCO2ManInd + EmiCO2OilandGas + EmiCO2PetrRef + EmiCO2WatNav + EmiCO2CivAvi + EmiCO2GlassProd + EmiCO2LimeProd + EmiCO2OthTransp + EmiCO2Rail + EmiCO2Residential + EmiCO2SolidFuel + EmiCO2OthCarb + EmiCO2CemPro + EmiCO2ChemInd + EmiCO2Liming + EmiCO2MetalInd + EmiCO2NonEnergProd + EmiCO2UreaApp + EmiCO2Waste\\
 40 & Identity & EmiCH4Total & EmiCH4ElecHeat + EmiCH4PetrRef + EmiCH4ManInd + EmiCH4CivAvi + EmiCH4RoaTra + EmiCH4Rail + EmiCH4WatNav + EmiCH4OthTransp + EmiCH4Residential + EmiCH4SolidFuel + EmiCH4OilandGas + EmiCH4ChemInd + EmiCH4MetalInd + EmiCH4EntericFerment + EmiCH4ManureMgmt + EmiCH4BiomassBurn + EmiCH4SolidWaste + EmiCH4BioWasteTreat + EmiCH4Waste + EmiCH4Wastewater\\
 \addlinespace

@@ -1,7 +1,7 @@
 % ---- Start of AT_Diagnostics.tex ----
 \begin{table}
 \centering
-\caption{\label{tab:AT_diagnostics}Diagnostic results for each estimated module for Austria.}
+\caption{\label{tab:AT_diagnostics}Diagnostic results for each estimated module for Austria. Columns showing the results for AR, ARCH, and Super Exogeneity are p-values while IIS, SIS, and n show the number of Impulse- and Step-Indicators as well as the number of observations respectively. The column Share of Indicators is the share of indicators compared to n.}
 \centering
 \begin{tabular}[t]{lrrrrrrr}
 \toprule
@@ -37,7 +37,7 @@ EmiCO2RoaTra & 0.128 & 0.476 & 0.010 & 2 & 1 & 42 & 0.071\\
 % ---- Start of AT_Forecast_ets.tex ----
 \begin{table}
 \centering
-\caption{\label{tab:forecast_AT}Forecast results for Austria. Forecast were created using exponential trend smoothing forecasting for exogenous values with the central values as well as a 95\% confidence interval is displayed. A column is left empty for the actual values that will be added to this table, once published. Based on the realised actual values, at least the indicated forecast comparison metrics will be calculated. }
+\caption{\label{tab:forecast_AT}Forecast results for Austria. Exogenous variables were forecast using exponential trend smoothing. The central values as well as a 95\% confidence interval is displayed. A column is left empty for the actual values that will be added to this table, once published. Based on the realised actual values, the indicated forecast comparison metrics will be calculated. }
 \centering
 \fontsize{7}{9}\selectfont
 \begin{tabular}[t]{ccccc}
@@ -123,9 +123,9 @@ Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 
 % ---- Start of AT_Regression_Summary_1.tex ----
 \begin{table}
-\label{tab:regression_summaryAT_1}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Austria with model selection enabled. Part 1.}
+\caption{\label{tab:regression_summaryAT_1}Final OSEM Model result for each module for Austria with model selection enabled. Part 1.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -180,9 +180,9 @@ Log.Lik. & \num{279.027} & \num{246.129} & \num{505.329} & \num{332.774} & \num{
 
 % ---- Start of AT_Regression_Summary_2.tex ----
 \begin{table}
-\label{tab:regression_summaryAT_2}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Austria with model selection enabled. Part 2.}
+\caption{\label{tab:regression_summaryAT_2}Final OSEM Model result for each module for Austria with model selection enabled. Part 2.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -235,9 +235,9 @@ Log.Lik. & \num{294.556} & \num{402.863} & \num{178.062} & \num{324.740} & \num{
 
 % ---- Start of AT_Regression_Summary_3.tex ----
 \begin{table}
-\label{tab:regression_summaryAT_3}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Austria with model selection enabled. Part 3.}
+\caption{\label{tab:regression_summaryAT_3}Final OSEM Model result for each module for Austria with model selection enabled. Part 3.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
@@ -276,9 +276,9 @@ Log.Lik. & \num{59.807} & \num{224.186} & \num{186.565} & \num{942.730}\\
 
 % ---- Start of AT_Regression_Summary_4.tex ----
 \begin{table}
-\label{tab:regression_summaryAT_4}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Austria with model selection enabled. Part 4.}
+\caption{\label{tab:regression_summaryAT_4}Final OSEM Model result for each module for Austria with model selection enabled. Part 4.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -341,9 +341,9 @@ Log.Lik. & \num{274.163} & \num{420.297} & \num{91.451} & \num{47.197} & \num{16
 
 % ---- Start of AT_Regression_Summary_selected.tex ----
 \begin{table}
-\label{tab:regression_summary_selectedAT}
+
 \centering\centering
-\caption{Final OSEM Model result for selected modules for Austria with model selection enabled.}
+\caption{\label{tab:regression_summary_selectedAT}Final OSEM Model result for selected modules for Austria with model selection enabled.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
@@ -422,9 +422,9 @@ Log.Lik. & \num{332.774} & \num{178.062} & \num{186.565} & \num{420.297} & \num{
 
 % ---- Start of AT_Regression_Summary_selected_nosel.tex ----
 \begin{table}
-\label{tab:regression_summary_selectedAT_nosel}
+
 \centering\centering
-\caption{Final OSEM Model result for selected modules for Austria without model selection.}
+\caption{\label{tab:regression_summary_selectedAT_nosel}Final OSEM Model result for selected modules for Austria without model selection.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
@@ -546,7 +546,7 @@ Log.Lik. & \num{345.400} & \num{178.341} & \num{198.459} & \num{329.489} & \num{
 % ---- Start of AT_rmsfe.tex ----
 \begin{table}
 
-\caption{\label{tab:rmsfe_AT}Root Mean Squared Forecast Error for selected modules for Austria. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.}
+\caption{\label{tab:rmsfe_AT}Root Mean Squared Forecast Error comparison relative to AR(4) forecast for selected modules for Austria. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q1 of 2022 to Q4 of 2023). The 'OSEM Forecasts' show the forecasts derived from our model. For those forecasts, the exogenous variables were forecast using exponential trend smoothing (column ETS) or ARIMA models (column Auto). The naive forecasts are univariate forecasts for each variable created without OSEM.}
 \centering
 \begin{tabular}[t]{lrrrrrr}
 \toprule
@@ -729,9 +729,9 @@ HICPDiesel & Q1-2013 - Q4-2024 & 49 & 116.7 & 22.6 & 86.0 & 110.2 & 173.4\\
 
 % ---- Start of DE_Regression_Summary_1.tex ----
 \begin{table}
-\label{tab:regression_summaryDE_1}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Germany with model selection enabled. Part 1.}
+\caption{\label{tab:regression_summaryDE_1}Final OSEM Model result for each module for Germany with model selection enabled. Part 1.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -784,9 +784,9 @@ Log.Lik. & \num{262.299} & \num{277.340} & \num{501.169} & \num{458.317} & \num{
 
 % ---- Start of DE_Regression_Summary_2.tex ----
 \begin{table}
-\label{tab:regression_summaryDE_2}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Germany with model selection enabled. Part 2.}
+\caption{\label{tab:regression_summaryDE_2}Final OSEM Model result for each module for Germany with model selection enabled. Part 2.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -835,9 +835,9 @@ Log.Lik. & \num{390.249} & \num{482.481} & \num{217.995} & \num{331.357} & \num{
 
 % ---- Start of DE_Regression_Summary_3.tex ----
 \begin{table}
-\label{tab:regression_summaryDE_3}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Germany with model selection enabled. Part 3.}
+\caption{\label{tab:regression_summaryDE_3}Final OSEM Model result for each module for Germany with model selection enabled. Part 3.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
@@ -882,9 +882,9 @@ Log.Lik. & \num{80.822} & \num{202.201} & \num{170.427} & \num{557.901}\\
 
 % ---- Start of DE_Regression_Summary_4.tex ----
 \begin{table}
-\label{tab:regression_summaryDE_4}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Germany with model selection enabled. Part 4.}
+\caption{\label{tab:regression_summaryDE_4}Final OSEM Model result for each module for Germany with model selection enabled. Part 4.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -938,7 +938,7 @@ Log.Lik. & \num{307.575} & \num{496.824} & \num{107.170} & \num{123.959} & \num{
 % ---- Start of DK_Diagnostics.tex ----
 \begin{table}
 \centering
-\caption{\label{tab:DK_diagnostics}Diagnostic results for each estimated module for Denmark.}
+\caption{\label{tab:DK_diagnostics}Diagnostic results for each estimated module for Denmark. Columns showing the results for AR, ARCH, and Super Exogeneity are p-values while IIS, SIS, and n show the number of Impulse- and Step-Indicators as well as the number of observations respectively. The column Share of Indicators is the share of indicators compared to n.}
 \centering
 \begin{tabular}[t]{lrrrrrrr}
 \toprule
@@ -974,7 +974,7 @@ EmiCO2RoaTra & 0.000 & 0.000 & 0.022 & 0 & 8 & 132 & 0.061\\
 % ---- Start of DK_Forecast_ets.tex ----
 \begin{table}
 \centering
-\caption{\label{tab:forecast_DK}Forecast results for Denmark. Forecast were created using exponential trend smoothing forecasting for exogenous values with the central values as well as a 95\% confidence interval is displayed. A column is left empty for the actual values that will be added to this table, once published. Based on the realised actual values, at least the indicated forecast comparison metrics will be calculated. }
+\caption{\label{tab:forecast_DK}Forecast results for Denmark. Exogenous variables were forecast using exponential trend smoothing. The central values as well as a 95\% confidence interval is displayed. A column is left empty for the actual values that will be added to this table, once published. Based on the realised actual values, the indicated forecast comparison metrics will be calculated. }
 \centering
 \fontsize{7}{9}\selectfont
 \begin{tabular}[t]{ccccc}
@@ -1060,9 +1060,9 @@ Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 
 % ---- Start of DK_Regression_Summary_1.tex ----
 \begin{table}
-\label{tab:regression_summaryDK_1}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark with model selection enabled. Part 1.}
+\caption{\label{tab:regression_summaryDK_1}Final OSEM Model result for each module for Denmark with model selection enabled. Part 1.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1105,9 +1105,9 @@ Log.Lik. & \num{252.238} & \num{255.452} & \num{502.019} & \num{311.553} & \num{
 
 % ---- Start of DK_Regression_Summary_2.tex ----
 \begin{table}
-\label{tab:regression_summaryDK_2}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark with model selection enabled. Part 2.}
+\caption{\label{tab:regression_summaryDK_2}Final OSEM Model result for each module for Denmark with model selection enabled. Part 2.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1150,9 +1150,9 @@ Log.Lik. & \num{253.051} & \num{457.622} & \num{168.506} & \num{221.930} & \num{
 
 % ---- Start of DK_Regression_Summary_3.tex ----
 \begin{table}
-\label{tab:regression_summaryDK_3}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark with model selection enabled. Part 3.}
+\caption{\label{tab:regression_summaryDK_3}Final OSEM Model result for each module for Denmark with model selection enabled. Part 3.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
@@ -1195,9 +1195,9 @@ Log.Lik. & \num{96.088} & \num{235.684} & \num{180.043} & \num{821.099}\\
 
 % ---- Start of DK_Regression_Summary_4.tex ----
 \begin{table}
-\label{tab:regression_summaryDK_4}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for Denmark with model selection enabled. Part 4.}
+\caption{\label{tab:regression_summaryDK_4}Final OSEM Model result for each module for Denmark with model selection enabled. Part 4.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1248,9 +1248,9 @@ Log.Lik. & \num{209.289} & \num{314.990} & \num{148.370} & \num{65.147} & \num{3
 
 % ---- Start of DK_Regression_Summary_selected.tex ----
 \begin{table}
-\label{tab:regression_summary_selectedDK}
+
 \centering\centering
-\caption{Final OSEM Model result for selected modules for Denmark with model selection enabled.}
+\caption{\label{tab:regression_summary_selectedDK}Final OSEM Model result for selected modules for Denmark with model selection enabled.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
@@ -1305,9 +1305,9 @@ Log.Lik. & \num{311.553} & \num{168.506} & \num{180.043} & \num{314.990} & \num{
 
 % ---- Start of DK_Regression_Summary_selected_nosel.tex ----
 \begin{table}
-\label{tab:regression_summary_selectedDK_nosel}
+
 \centering\centering
-\caption{Final OSEM Model result for selected modules for Denmark without model selection.}
+\caption{\label{tab:regression_summary_selectedDK_nosel}Final OSEM Model result for selected modules for Denmark without model selection.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
@@ -1389,7 +1389,7 @@ Log.Lik. & \num{308.417} & \num{169.371} & \num{181.753} & \num{293.169} & \num{
 % ---- Start of DK_rmsfe.tex ----
 \begin{table}
 
-\caption{\label{tab:rmsfe_DK}Root Mean Squared Forecast Error for selected modules for Denmark. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.}
+\caption{\label{tab:rmsfe_DK}Root Mean Squared Forecast Error comparison relative to AR(4) forecast for selected modules for Denmark. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q1 of 2022 to Q4 of 2023). The 'OSEM Forecasts' show the forecasts derived from our model. For those forecasts, the exogenous variables were forecast using exponential trend smoothing (column ETS) or ARIMA models (column Auto). The naive forecasts are univariate forecasts for each variable created without OSEM.}
 \centering
 \begin{tabular}[t]{lrrrrrr}
 \toprule
@@ -1573,7 +1573,7 @@ HICPDiesel & Q1-2010 - Q4-2024 & 59 & 115.3 & 18.5 & 87.6 & 111.4 & 166.1\\
 % ---- Start of FR_Diagnostics.tex ----
 \begin{table}
 \centering
-\caption{\label{tab:FR_diagnostics}Diagnostic results for each estimated module for France.}
+\caption{\label{tab:FR_diagnostics}Diagnostic results for each estimated module for France. Columns showing the results for AR, ARCH, and Super Exogeneity are p-values while IIS, SIS, and n show the number of Impulse- and Step-Indicators as well as the number of observations respectively. The column Share of Indicators is the share of indicators compared to n.}
 \centering
 \begin{tabular}[t]{lrrrrrrr}
 \toprule
@@ -1609,7 +1609,7 @@ EmiCO2RoaTra & 0.091 & 0.866 & 0.143 & 5 & 4 & 111 & 0.081\\
 % ---- Start of FR_Forecast_ets.tex ----
 \begin{table}
 \centering
-\caption{\label{tab:forecast_FR}Forecast results for France. Forecast were created using exponential trend smoothing forecasting for exogenous values with the central values as well as a 95\% confidence interval is displayed. A column is left empty for the actual values that will be added to this table, once published. Based on the realised actual values, at least the indicated forecast comparison metrics will be calculated. }
+\caption{\label{tab:forecast_FR}Forecast results for France. Exogenous variables were forecast using exponential trend smoothing. The central values as well as a 95\% confidence interval is displayed. A column is left empty for the actual values that will be added to this table, once published. Based on the realised actual values, the indicated forecast comparison metrics will be calculated. }
 \centering
 \fontsize{7}{9}\selectfont
 \begin{tabular}[t]{ccccc}
@@ -1695,9 +1695,9 @@ Forecast Period & Central & 95\% Range & Actual Value & Forecast Metrics\\
 
 % ---- Start of FR_Regression_Summary_1.tex ----
 \begin{table}
-\label{tab:regression_summaryFR_1}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for France with model selection enabled. Part 1.}
+\caption{\label{tab:regression_summaryFR_1}Final OSEM Model result for each module for France with model selection enabled. Part 1.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1748,9 +1748,9 @@ Log.Lik. & \num{293.594} & \num{264.963} & \num{531.878} & \num{367.895} & \num{
 
 % ---- Start of FR_Regression_Summary_2.tex ----
 \begin{table}
-\label{tab:regression_summaryFR_2}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for France with model selection enabled. Part 2.}
+\caption{\label{tab:regression_summaryFR_2}Final OSEM Model result for each module for France with model selection enabled. Part 2.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1813,9 +1813,9 @@ Log.Lik. & \num{528.331} & \num{693.880} & \num{226.343} & \num{539.030} & \num{
 
 % ---- Start of FR_Regression_Summary_3.tex ----
 \begin{table}
-\label{tab:regression_summaryFR_3}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for France with model selection enabled. Part 3.}
+\caption{\label{tab:regression_summaryFR_3}Final OSEM Model result for each module for France with model selection enabled. Part 3.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
@@ -1856,9 +1856,9 @@ Log.Lik. & \num{180.010} & \num{210.822} & \num{151.248} & \num{711.192}\\
 
 % ---- Start of FR_Regression_Summary_4.tex ----
 \begin{table}
-\label{tab:regression_summaryFR_4}
+
 \centering\centering
-\caption{Final OSEM Model result for each module for France with model selection enabled. Part 4.}
+\caption{\label{tab:regression_summaryFR_4}Final OSEM Model result for each module for France with model selection enabled. Part 4.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
@@ -1917,9 +1917,9 @@ Log.Lik. & \num{276.588} & \num{514.131} & \num{230.945} & \num{45.212} & \num{4
 
 % ---- Start of FR_Regression_Summary_selected.tex ----
 \begin{table}
-\label{tab:regression_summary_selectedFR}
+
 \centering\centering
-\caption{Final OSEM Model result for selected modules for France with model selection enabled.}
+\caption{\label{tab:regression_summary_selectedFR}Final OSEM Model result for selected modules for France with model selection enabled.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
@@ -1984,9 +1984,9 @@ Log.Lik. & \num{367.895} & \num{226.343} & \num{151.248} & \num{514.131} & \num{
 
 % ---- Start of FR_Regression_Summary_selected_nosel.tex ----
 \begin{table}
-\label{tab:regression_summary_selectedFR_nosel}
+
 \centering\centering
-\caption{Final OSEM Model result for selected modules for France without model selection.}
+\caption{\label{tab:regression_summary_selectedFR_nosel}Final OSEM Model result for selected modules for France without model selection.}
 \centering
 \fontsize{8}{10}\selectfont
 \resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
@@ -2086,7 +2086,7 @@ Log.Lik. & \num{367.015} & \num{216.858} & \num{154.095} & \num{291.586} & \num{
 % ---- Start of FR_rmsfe.tex ----
 \begin{table}
 
-\caption{\label{tab:rmsfe_FR}Root Mean Squared Forecast Error for selected modules for France. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q12022 - Q42023). The 'OSEM Forecasts' show the forecasts derived in each module. For those forecasts, only the exogenous variables were forecast by the ETS or auto.arima functions. The naive forecasts are univariate forecasts for all variables -- here the OSEM structure is not used.}
+\caption{\label{tab:rmsfe_FR}Root Mean Squared Forecast Error comparison relative to AR(4) forecast for selected modules for France. The values are relative to a naive AR forecast and calculated insample for the last 8 quarters that are available for all modules (Q1 of 2022 to Q4 of 2023). The 'OSEM Forecasts' show the forecasts derived from our model. For those forecasts, the exogenous variables were forecast using exponential trend smoothing (column ETS) or ARIMA models (column Auto). The naive forecasts are univariate forecasts for each variable created without OSEM.}
 \centering
 \begin{tabular}[t]{lrrrrrr}
 \toprule
