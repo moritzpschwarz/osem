@@ -37,7 +37,7 @@ options(timeout=1000)
 save_png <- function(code, width = 400, height = 400) {
   path <- tempfile(fileext = ".png")
 
-  if(ggplot2::is.ggplot(code)){
+  if(ggplot2::is_ggplot(code)){
     ggplot2::ggsave(filename = path, plot = code, width = 7, height = 5)
   } else {
     png(path, width = width, height = height)
