@@ -52,7 +52,7 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
     if(!is.character(first_date)){
       stop("first_date must be a character string.")
     }
-    if(!is.Date(as.Date(first_date))){
+    if(!lubridate::is.Date(as.Date(first_date))){
       stop("first_date must be a valid date.")
     }
   }
@@ -61,7 +61,7 @@ plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
     if(!is.character(first_date_insample_model)){
       stop("first_date_insample_model must be a character string.")
     }
-    if(!is.Date(as.Date(first_date_insample_model))){
+    if(!lubridate::is.Date(as.Date(first_date_insample_model))){
       stop("first_date_insample_model must be a valid date.")
     }
   }

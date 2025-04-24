@@ -22,10 +22,10 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
 
   # extract model info
   lags <- if (is.null(lags)) {model$args$max.ar} else {lags}
-  modules <- model$module_collection %>% arrange(order)
-  transformations <- model$opts_df %>% select(dependent, log_opts)
+  modules <- model$module_collection %>% dplyr::arrange(order)
+  transformations <- model$opts_df %>% dplyr::select("dependent", "log_opts")
   fulldata <- model$full_data
-  maxtime <- fulldata %>% filter(!grepl("\\.hat$", na_item)) %>% drop_na() %>% pull(time) %>% max()
+  maxtime <- fulldata %>% dplyr::filter(!grepl("\\.hat$", .data$na_item)) %>% tidyr::drop_na() %>% dplyr::pull("time") %>% max()
   maxhorizon <- seq.Date(maxtime, by = "quarter", length.out = (n.ahead + 1))[n.ahead + 1]
 
   # set up forecast output
@@ -46,8 +46,8 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
         ar_model <- gets::arx(y = data, mc = mc, ar = 1:lags)
         ar_model$call$mc <- mc
         ar_model$call$ar <- 1:lags
-        fc <- predict(ar_model, n.ahead = n.ahead_model)
-        transformations_model <- transformations %>% filter(dependent == depvar) %>% pull(log_opts) %>% pluck(1) %>% pull(depvar)
+        fc <- gets::predict.arx(ar_model, n.ahead = n.ahead_model)
+        transformations_model <- transformations %>% dplyr::filter(.data$dependent == depvar) %>% dplyr::pull("log_opts") %>% purrr::pluck(1) %>% dplyr::pull("depvar")
         stopifnot(transformations_model %in% c("log", "asinh", "level"))
         if (transformations_model == "log") {
           fc_level <- exp(fc)
@@ -57,38 +57,38 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
           fc_level <- fc
         }
       } else if (type == "d") { # do model object to extract data from
-        mintime_model <- fulldata %>% filter(na_item == paste0(depvar, ".hat")) %>% drop_na() %>% pull(time) %>% min() # first model value
-        data <- fulldata %>% filter(na_item == depvar) %>% filter(time >= mintime_model)
-        maxtime_model <- data %>% drop_na() %>%  pull(time) %>% max()
+        mintime_model <- fulldata %>% dplyr::filter(.data$na_item == paste0(depvar, ".hat")) %>% tidyr::drop_na() %>% dplyr::pull("time") %>% min() # first model value
+        data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% dplyr::filter(.data$time >= mintime_model)
+        maxtime_model <- data %>% tidyr::drop_na() %>% dplyr::pull("time") %>% max()
         n.ahead_model <- length(seq.Date(maxtime_model, maxhorizon, by = "quarter")) - 1
         if (any(data$values <= 0, na.rm = TRUE)) {
-          data <- data %>% mutate(values_trans = asinh(values))
+          data <- data %>% dplyr::mutate(values_trans = asinh(.data$values))
           ar_model <- gets::arx(y = data$values_trans, mc = mc, ar = 1:lags)
           ar_model$call$mc <- mc
           ar_model$call$ar <- 1:lags
-          fc <- predict(ar_model, n.ahead = n.ahead_model)
+          fc <- gets::predict.arx(ar_model, n.ahead = n.ahead_model)
           fc_level <- sinh(fc)
         } else {
-          data <- data %>% mutate(values_trans = log(values))
+          data <- data %>% dplyr::mutate(values_trans = log(.data$values))
           ar_model <- gets::arx(y = data$values_trans, mc = mc, ar = 1:lags)
           ar_model$call$mc <- mc
           ar_model$call$ar <- 1:lags
-          fc <- predict(ar_model, n.ahead = n.ahead_model)
+          fc <- gets::predict.arx(ar_model, n.ahead = n.ahead_model)
           fc_level <- exp(fc)
         }
       } else {
         stop("type not recognized")
       }
       out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- bind_rows(out, out_model)
+      out <- dplyr::bind_rows(out, out_model)
 
     } else if (forecast_type == "RW") {
 
-      data <- fulldata %>% filter(na_item == depvar) %>% drop_na() %>% arrange(time) %>% slice_tail(n = 1)
-      maxtime_model <- data %>% pull(time)
+      data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% tidyr::drop_na() %>% dplyr::arrange("time") %>% dplyr::slice_tail(n = 1)
+      maxtime_model <- data %>% dplyr::pull("time")
       n.ahead_model <- length(seq.Date(maxtime_model, maxhorizon, by = "quarter")) - 1
       out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1], values = data$values)
-      out <- bind_rows(out, out_model)
+      out <- dplyr::bind_rows(out, out_model)
 
     } else if (forecast_type == "auto"){
 
@@ -101,7 +101,7 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
         arima_model <- forecast::auto.arima(data)
         fc <- forecast::forecast(arima_model, h = n.ahead_model)
 
-        transformations_model <- transformations %>% filter(dependent == depvar) %>% pull(log_opts) %>% pluck(1) %>% pull(depvar)
+        transformations_model <- transformations %>% dplyr::filter(.data$dependent == depvar) %>% dplyr::pull("log_opts") %>% purrr::pluck(1) %>% dplyr::pull("depvar")
         stopifnot(transformations_model %in% c("log", "asinh", "level"))
         if (transformations_model == "log") {
           fc_level <- exp(as.numeric(fc$mean))
@@ -111,17 +111,17 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
           fc_level <- fc
         }
       } else if (type == "d") { # do model object to extract data from
-        mintime_model <- fulldata %>% filter(na_item == paste0(depvar, ".hat")) %>% drop_na() %>% pull(time) %>% min() # first model value
-        data <- fulldata %>% filter(na_item == depvar) %>% filter(time >= mintime_model)
-        maxtime_model <- data %>% drop_na() %>%  pull(time) %>% max()
+        mintime_model <- fulldata %>% dplyr::filter(.data$na_item == paste0(depvar, ".hat")) %>% tidyr::drop_na() %>% dplyr::pull("time") %>% min() # first model value
+        data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% dplyr::filter(.data$time >= mintime_model)
+        maxtime_model <- data %>% tidyr::drop_na() %>% dplyr::pull("time") %>% max()
         n.ahead_model <- length(seq.Date(maxtime_model, maxhorizon, by = "quarter")) - 1
         if (any(data$values <= 0, na.rm = TRUE)) {
-          data <- data %>% mutate(values_trans = asinh(values))
+          data <- data %>% dplyr::mutate(values_trans = asinh(.data$values))
           arima_model <- forecast::auto.arima(data$values_trans)
           fc <- forecast::forecast(arima_model, h = n.ahead_model)
           fc_level <- sinh(as.numeric(fc$mean))
         } else {
-          data <- data %>% mutate(values_trans = log(values))
+          data <- data %>% dplyr::mutate(values_trans = log(.data$values))
           arima_model <- forecast::auto.arima(data$values_trans)
           fc <- forecast::forecast(arima_model, h = n.ahead_model)
           fc_level <- exp(as.numeric(fc$mean))
@@ -130,7 +130,7 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
         stop("type not recognized")
       }
       out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- bind_rows(out, out_model)
+      out <- dplyr::bind_rows(out, out_model)
 
     } else if (forecast_type == "ets"){
 
@@ -143,7 +143,7 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
         arima_model <- forecast::ets(data, model = "ZZZ")
         fc <- forecast::forecast(arima_model, h = n.ahead_model)
 
-        transformations_model <- transformations %>% filter(dependent == depvar) %>% pull(log_opts) %>% pluck(1) %>% pull(depvar)
+        transformations_model <- transformations %>% dplyr::filter(.data$dependent == depvar) %>% dplyr::pull("log_opts") %>% purrr::pluck(1) %>% dplyr::pull("depvar")
         stopifnot(transformations_model %in% c("log", "asinh", "level"))
         if (transformations_model == "log") {
           fc_level <- exp(as.numeric(fc$mean))
@@ -153,17 +153,17 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
           fc_level <- fc
         }
       } else if (type == "d") { # do model object to extract data from
-        mintime_model <- fulldata %>% filter(na_item == paste0(depvar, ".hat")) %>% drop_na() %>% pull(time) %>% min() # first model value
-        data <- fulldata %>% filter(na_item == depvar) %>% filter(time >= mintime_model)
-        maxtime_model <- data %>% drop_na() %>%  pull(time) %>% max()
+        mintime_model <- fulldata %>% dplyr::filter(.data$na_item == paste0(depvar, ".hat")) %>% tidyr::drop_na() %>% dplyr::pull("time") %>% min() # first model value
+        data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% dplyr::filter(.data$time >= mintime_model)
+        maxtime_model <- data %>% tidyr::drop_na() %>% dplyr::pull("time") %>% max()
         n.ahead_model <- length(seq.Date(maxtime_model, maxhorizon, by = "quarter")) - 1
         if (any(data$values <= 0, na.rm = TRUE)) {
-          data <- data %>% mutate(values_trans = asinh(values))
+          data <- data %>% dplyr::mutate(values_trans = asinh(.data$values))
           arima_model <- forecast::ets(data$values_trans, model = "ZZZ")
           fc <- forecast::forecast(arima_model, h = n.ahead_model)
           fc_level <- sinh(as.numeric(fc$mean))
         } else {
-          data <- data %>% mutate(values_trans = log(values))
+          data <- data %>% dplyr::mutate(values_trans = log(.data$values))
           arima_model <- forecast::ets(data$values_trans, model = "ZZZ")
           fc <- forecast::forecast(arima_model, h = n.ahead_model)
           fc_level <- exp(as.numeric(fc$mean))
@@ -172,7 +172,7 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
         stop("type not recognized")
       }
       out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- bind_rows(out, out_model)
+      out <- dplyr::bind_rows(out, out_model)
 
     } else {
       stop("unknown model type")
@@ -209,19 +209,19 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
 
   # extract model info
   lags <- if (is.null(lags)) {model$args$max.ar} else {lags}
-  modules <- model$module_collection %>% arrange(order)
-  transformations <- model$opts_df %>% select(dependent, log_opts)
+  modules <- model$module_collection %>% dplyr::arrange(.data$order)
+  transformations <- model$opts_df %>% dplyr::select("dependent", "log_opts")
   fulldata <- model$full_data
-  maxtime <- fulldata %>% filter(!grepl("\\.hat$", na_item)) %>% drop_na() %>% pull(time) %>% max()
+  maxtime <- fulldata %>% dplyr::filter(!grepl("\\.hat$", .data$na_item)) %>% tidyr::drop_na() %>% dplyr::pull("time") %>% max()
   maxhorizon <- seq.Date(maxtime, by = "quarter", length.out = (n.ahead + 1))[n.ahead + 1]
 
   # check whether forecast origin same for all
   fulldata %>%
-    filter(!grepl("\\.hat$", na_item)) %>%
-    drop_na() %>%
-    group_by(na_item) %>%
-    summarise(maxtime = max(time)) %>%
-    pull(maxtime) %>%
+    dplyr::filter(!grepl("\\.hat$", .data$na_item)) %>%
+    tidyr::drop_na() %>%
+    dplyr::group_by(.data$na_item) %>%
+    dplyr::summarise(maxtime = max(.data$time)) %>%
+    dplyr::pull("maxtime") %>%
     unique() -> maxtimes
   stopifnot(length(maxtimes) == 1L)
 
@@ -233,20 +233,20 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
     type <- modules[i, "type"][[1]]
     depvar <- modules[i, "dependent"][[1]]
     # now use all available data
-    data <- fulldata %>% filter(na_item == depvar) %>% drop_na() %>% arrange(time)
+    data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% tidyr::drop_na() %>% dplyr::arrange("time")
     # model identities in levels
     transformations_model <- if (type == "n") {
-      transformations %>% filter(dependent == depvar) %>% pull(log_opts) %>% pluck(1) %>% pull(depvar)
+      transformations %>% dplyr::filter(.data$dependent == depvar) %>% dplyr::pull("log_opts") %>% purrr::pluck(1) %>% dplyr::pull("depvar")
     } else {
       "level"
     }
     stopifnot(transformations_model %in% c("log", "asinh", "level"))
     if (transformations_model == "log") {
-      data <- data %>% mutate(values_trans = log(values))
+      data <- data %>% dplyr::mutate(values_trans = log(.data$values))
     } else if (transformations_model == "asinh") {
-      data <- data %>% mutate(values_trans = asinh(values))
+      data <- data %>% dplyr::mutate(values_trans = asinh(.data$values))
     } else if (transformations_model == "level") {
-      data <- data %>% mutate(values_trans = values)
+      data <- data %>% dplyr::mutate(values_trans = .data$values)
     } else {
       stop("unknown transformation")
     }
@@ -260,7 +260,7 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
       ar_model <- gets::arx(y = y, mc = mc, ar = 1:lags)
       ar_model$call$mc <- mc
       ar_model$call$ar <- 1:lags
-      fc <- predict(ar_model, n.ahead = n.ahead)
+      fc <- gets::predict.arx(ar_model, n.ahead = n.ahead)
       if (transformations_model == "log") {
         fc_level <- exp(fc)
       } else if (transformations_model == "asinh") {
@@ -269,13 +269,13 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
         fc_level <- fc
       }
       out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- bind_rows(out, out_model)
+      out <- dplyr::bind_rows(out, out_model)
 
     } else if (forecast_type == "RW") {
 
-      fc_level <- data %>% drop_na() %>% arrange(time) %>% slice_tail(n = 1) %>% pull(values)
+      fc_level <- data %>% tidyr::drop_na() %>% dplyr::arrange("time") %>% dplyr::slice_tail(n = 1) %>% dplyr::pull("values")
       out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- bind_rows(out, out_model)
+      out <- dplyr::bind_rows(out, out_model)
 
     } else if (forecast_type == "auto") {
 
@@ -289,7 +289,7 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
         fc_level <- fc$mean
       }
       out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- bind_rows(out, out_model)
+      out <- dplyr::bind_rows(out, out_model)
 
     } else if (forecast_type == "ets"){
 
@@ -303,7 +303,7 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
         fc_level <- fc$mean
       }
       out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- bind_rows(out, out_model)
+      out <- dplyr::bind_rows(out, out_model)
 
     } else {
       stop("unknown model type")

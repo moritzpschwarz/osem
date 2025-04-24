@@ -63,8 +63,9 @@ test_that("Testing model_table function",{
   expect_s3_class(model_table(mod, output = "data.frame"), "data.frame")
   # expect whether this would be html code
   expect_s3_class(model_table(mod,output = "html"), "kableExtra")
-  # expect latex
-  expect_warning(model_table(mod, output = "latex"))
+  # expect latex (this will, if run for the first time, create )
+  #expect_warning(model_table(mod, output = "latex"))
+  options("modelsummary_format_numeric_latex" = "plain")
   expect_s3_class(model_table(mod, output = "latex"), "modelsummary_string")
 })
 

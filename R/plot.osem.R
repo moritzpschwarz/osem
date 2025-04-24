@@ -79,7 +79,7 @@ plot.osem <- function(x,
 
     dplyr::mutate(fit = dplyr::case_when(fit == "TRUE" ~ "Insample Fit",
                                          fit == "FALSE" ~ "Observation"),
-                  fit = factor(fit, levels = c("Observation","Insample Fit"))) %>%
+                  fit = factor(.data$fit, levels = c("Observation","Insample Fit"))) %>%
 
     {if(order.as.run){
       dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$module_order$dependent)) %>%
@@ -121,10 +121,10 @@ plot.osem <- function(x,
     # prepare a nice dataset to be spit out
     plotting_df_ready %>%
       dplyr::select(-"var") %>%
-      dplyr::mutate(fit = dplyr::case_when(fit == "forecast" ~ "Endogenous Forecast",
-                                           fit == "TRUE" ~ "Insample Fit",
-                                           fit == "FALSE" ~ "Observation",
-                                           TRUE ~ fit)) %>%
+      dplyr::mutate(fit = dplyr::case_when(.data$fit == "forecast" ~ "Endogenous Forecast",
+                                           .data$fit == "TRUE" ~ "Insample Fit",
+                                           .data$fit == "FALSE" ~ "Observation",
+                                           TRUE ~ .data$fit)) %>%
       dplyr::rename(type = "fit") %>%
       dplyr::arrange(dplyr::desc(.data$time), .data$na_item, .data$type) %>%
       return()

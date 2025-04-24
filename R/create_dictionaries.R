@@ -47,9 +47,9 @@ create_dictionaries <- function(single_df = FALSE){
   # Identities --------------------------------------------------------------
 
 
-  dict_identities <- tibble::tibble(model_varname = character(),
-                                    full_name = character(),
-                                    variable_code = character()) %>%
+  dict_identities <- dplyr::tibble(model_varname = character(),
+                                   full_name = character(),
+                                   variable_code = character()) %>%
     dplyr::add_row(model_varname = "Supply", full_name = "Total Supply", variable_code = NA) %>%
     dplyr::add_row(model_varname = "Demand", full_name = "Total Demand", variable_code = NA) %>%
     dplyr::add_row(model_varname = "GDPOutput", full_name = "GDP Output Approach", variable_code = NA) %>%
@@ -61,7 +61,7 @@ create_dictionaries <- function(single_df = FALSE){
 
   # EDGAR -------------------------------------------------------------------
 
-  dict_edgar <- tibble::tibble(
+  dict_edgar <- dplyr::tibble(
     ipcc_sector = character(),
     full_name = character(),
     model_varname = character(),
@@ -126,28 +126,28 @@ create_dictionaries <- function(single_df = FALSE){
   # create dictionary for Eurostat
   # generate_dictionary_script(dict_eurostat %>% janitor::remove_empty("cols"))
 
-  dict_eurostat <- tibble::tibble(model_varname = character(),
-                                  full_name = character(),
-                                  database = character(),
-                                  variable_code = character(),
-                                  dataset_id = character(),
-                                  var_col = character(),
-                                  freq = character(),
-                                  geo = character(),
-                                  unit = character(),
-                                  s_adj = character(),
-                                  nace_r2 = character(),
-                                  cpa2_1 = character(),
-                                  sector = character(),
-                                  direct = character(),
-                                  age = character(),
-                                  partner = character(),
-                                  finpos = character(),
-                                  p_adj = character(),
-                                  meat = character(),
-                                  citizen = character(),
-                                  wstatus = character(),
-                                  tra_oper = character()) %>%
+  dict_eurostat <- dplyr::tibble(model_varname = character(),
+                                 full_name = character(),
+                                 database = character(),
+                                 variable_code = character(),
+                                 dataset_id = character(),
+                                 var_col = character(),
+                                 freq = character(),
+                                 geo = character(),
+                                 unit = character(),
+                                 s_adj = character(),
+                                 nace_r2 = character(),
+                                 cpa2_1 = character(),
+                                 sector = character(),
+                                 direct = character(),
+                                 age = character(),
+                                 partner = character(),
+                                 finpos = character(),
+                                 p_adj = character(),
+                                 meat = character(),
+                                 citizen = character(),
+                                 wstatus = character(),
+                                 tra_oper = character()) %>%
     dplyr::add_row(model_varname = "ATaxesA", full_name = "Product Taxes", database = "eurostat", variable_code = "D21", dataset_id = "nama_10_gdp", var_col = "na_item", freq = "a", geo = "DE", unit = "CP_MEUR", s_adj = NA, nace_r2 = NA, cpa2_1 = NA, sector = NA, direct = NA, age = NA, partner = NA, finpos = NA, p_adj = NA, meat = NA, citizen = NA, wstatus = NA, tra_oper = NA) %>%
     dplyr::add_row(model_varname = "ASubsidiesA", full_name = "Product Subsidies", database = "eurostat", variable_code = "D31", dataset_id = "nama_10_gdp", var_col = "na_item", freq = "a", geo = "DE", unit = "CP_MEUR", s_adj = NA, nace_r2 = NA, cpa2_1 = NA, sector = NA, direct = NA, age = NA, partner = NA, finpos = NA, p_adj = NA, meat = NA, citizen = NA, wstatus = NA, tra_oper = NA) %>%
     dplyr::add_row(model_varname = "CO2Agriculture", full_name = "CO2 Emissions Agriculture in Tonnes", database = "eurostat", variable_code = "CO2", dataset_id = "env_ac_ainah_r2", var_col = "airpol", freq = "a", geo = "DE", unit = "T", s_adj = NA, nace_r2 = "A", cpa2_1 = NA, sector = NA, direct = NA, age = NA, partner = NA, finpos = NA, p_adj = NA, meat = NA, citizen = NA, wstatus = NA, tra_oper = NA) %>%
@@ -322,18 +322,18 @@ create_dictionaries <- function(single_df = FALSE){
 
   # generate_dictionary_script(dict_statcan %>% janitor::remove_empty("cols"))
 
-  dict_statcan <- tibble::tibble(model_varname = character(),
-                                 full_name = character(),
-                                 database = character(),
-                                 dataset_id = character(),
-                                 freq = character(),
-                                 GEO = character(),
-                                 `Seasonal adjustment` = character(),
-                                 `North American Industry Classification System (NAICS)` = character(),
-                                 `North American Product Classification System (NAPCS)` = character(),
-                                 Prices = character(),
-                                 `Type of fuel` = character(),
-                                 `Products and product groups` = character()) %>%
+  dict_statcan <- dplyr::tibble(model_varname = character(),
+                                full_name = character(),
+                                database = character(),
+                                dataset_id = character(),
+                                freq = character(),
+                                GEO = character(),
+                                `Seasonal adjustment` = character(),
+                                `North American Industry Classification System (NAICS)` = character(),
+                                `North American Product Classification System (NAPCS)` = character(),
+                                Prices = character(),
+                                `Type of fuel` = character(),
+                                `Products and product groups` = character()) %>%
     dplyr::add_row(model_varname = "FISH", full_name = "Harmonised Index of Consumer Prices, Energy, index 100 = 2002", database = "statcan", dataset_id = "18-10-0004-01", freq = "m", GEO = "Canada", `Seasonal adjustment` = NA, `North American Industry Classification System (NAICS)` = NA, `North American Product Classification System (NAPCS)` = NA, Prices = NA, `Type of fuel` = NA, `Products and product groups` = "Energy") %>%
     dplyr::add_row(model_varname = "GAS", full_name = "Monthly Average Retail Price for gas", database = "statcan", dataset_id = "18-10-0001-01", freq = "m", GEO = "Canada", `Seasonal adjustment` = NA, `North American Industry Classification System (NAICS)` = NA, `North American Product Classification System (NAPCS)` = NA, Prices = NA, `Type of fuel` = "Regular unleaded gasoline at self service filling stations", `Products and product groups` = NA) %>%
     dplyr::add_row(model_varname = "HICP_Energy", full_name = "Harmonised Index of Consumer Prices, Energy, index 100 = 2002", database = "statcan", dataset_id = "18-10-0004-01", freq = "m", GEO = "Canada", `Seasonal adjustment` = NA, `North American Industry Classification System (NAICS)` = NA, `North American Product Classification System (NAPCS)` = NA, Prices = NA, `Type of fuel` = NA, `Products and product groups` = "Energy") %>%
@@ -345,14 +345,14 @@ create_dictionaries <- function(single_df = FALSE){
 
   # generate_dictionary_script(dict_imf %>% janitor::remove_empty("cols"))
 
-  dict_imf <- tibble::tibble(model_varname = character(),
-                             full_name = character(),
-                             database = character(),
-                             dataset_id = character(),
-                             freq = character(),
-                             ref_area = character(),
-                             commodity = character(),
-                             unit_measure = character()) %>%
+  dict_imf <- dplyr::tibble(model_varname = character(),
+                            full_name = character(),
+                            database = character(),
+                            dataset_id = character(),
+                            freq = character(),
+                            ref_area = character(),
+                            commodity = character(),
+                            unit_measure = character()) %>%
     dplyr::add_row(model_varname = "WORLD_OIL", full_name = "World Oil Price USD", database = "imf", dataset_id = "PCPS", freq = "M", ref_area = "W00", commodity = "POILAPSP", unit_measure = "USD")
 
 
@@ -388,6 +388,10 @@ create_dictionaries <- function(single_df = FALSE){
   #
   # dict_imf <- dicts$dict_imf
   # usethis::use_data(dict_imf, overwrite = TRUE)
+
+  # Create the overall dict
+  # dicts <- create_dictionaries(single_df = TRUE)
+  # usethis::use_data(dict, overwrite = TRUE)
 
 }
 
