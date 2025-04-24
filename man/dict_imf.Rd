@@ -24,6 +24,11 @@ Data retrieved from IMF, available at \url{https://www.imf.org/en/Data}.
 dict_imf
 }
 \description{
-A dataset containing IMF model variable names and metadata for data retrieval.
+A dataset containing IMF model variable names and metadata for data retrieval. For details see \link{create_dictionaries}.
+}
+\note{
+Should new filters be necessary, users can simply add additional columns to the dictionary with names
+that exactly match how they appear in the imf.data package. For example, if an imf.data query returns a column
+with a specific name, that exact name should be used as a column in this dictionary.
 }
 \keyword{datasets}
