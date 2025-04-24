@@ -32,7 +32,7 @@ run_isat <- function(yvar,
     } else {maxblocksize <- max.block.size}
 
     if(maxblocksize < 1){
-      stop(paste0("Specification not valid - the sample for estimating the module with the dependent variable ",dep_var_basename," is not extensive enough to be estimated with lag ",i,".\n Specification skipped."))
+      stop(paste0("Specification not valid - the sample for estimating the module with the dependent variable ",y.name," is not extensive enough to be estimated with lag ",ar,".\n Specification skipped."))
     }
   } else {
     maxblocksize <- max.block.size
@@ -72,7 +72,7 @@ run_isat <- function(yvar,
       dplyr::tibble(time = clean_data$time) %>%
         dplyr::mutate(index = 1:dplyr::n()) %>%
         dplyr::filter(.data$time %in% gets::isatdates(init_sis_mod)$sis$date) %>%
-        dplyr::pull(index) -> sis_dates_index
+        dplyr::pull("index") -> sis_dates_index
 
       if(!identical(sis_dates_index, integer(0))){
         add_steps <- gets::sim(length(yvar),
@@ -150,6 +150,7 @@ run_isat <- function(yvar,
       tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
       t.pval = saturation.tpval,
       max.block.size = maxblocksize,
+      include.gum = FALSE,
     ), silent = TRUE)
   }
 
