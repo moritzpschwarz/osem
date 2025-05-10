@@ -212,7 +212,7 @@ Essentially, we need to add our new variable to our dictionary by simply adding 
 ```{r}
 dict %>% 
   bind_rows(tibble(
-    model_varname = "IndProd", # this is free to choose but must be unique
+    model_varname = "IndProdIdx", # this is free to choose but must be unique
     full_name = "An index of Industrial Production",
     database  = "eurostat",
     variable_code = "PRD", # in this case use the bt_indicator information here
@@ -235,10 +235,10 @@ new_dict %>%
 
 ## Quickly run a small model to check if it works:
 
-We can now put this to the test in an extremely small model. We construct a model of the CO[2] Emissions in Industry as a function of Gas and Electricity Prices as well as our new measure for Industrial Production:
+We can now put this to the test in an extremely small model. We construct a model of the CO[2] Process Emissions in Industry as a function of Gas and Electricity Prices as well as our new measure for Industrial Production:
 
 $$
-EmiCO2Industry = HICP_{Gas} + HICP_{Electricity} + IndProd
+EmiCO2IndustryProcess = HICP_{Gas} + HICP_{Electricity} + IndProdIdx
 $$
 
 This is then the specification that we will run - with the type being `n` that denotes a Definition and will therefore be estimated: 
@@ -249,10 +249,10 @@ specification <- dplyr::tibble(
     "n"
   ),
   dependent = c(
-    "EmiCO2Industry"
+    "EmiCO2IndustryProcess"
   ),
   independent = c(
-    "HICP_Gas + HICP_Electricity + IndProd"
+    "HICP_Gas + HICP_Electricity + IndProdIdx"
   )
 )
 specification
