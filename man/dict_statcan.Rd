@@ -5,7 +5,7 @@
 \alias{dict_statcan}
 \title{Dictionary for translating StatCan model variable names}
 \format{
-A tibble with 6 rows and 12 variables:
+A tibble with 5 rows and 12 variables:
 \describe{
 \item{model_varname}{Unique variable name used in model equations}
 \item{full_name}{Full description of the variable}

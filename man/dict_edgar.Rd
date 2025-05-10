@@ -8,7 +8,7 @@
 A tibble with 45 rows and 7 variables:
 \describe{
 \item{ipcc_sector}{EDGAR IPCC National Greenhouse Gas Inventories sector code,
-see \url{https://www.ipcc-nggip.iges.or.jp/public/2006gl/index.html}}
+see \url{https://www.ipcc-nggip.iges.or.jp/efdb/find_ef.php?reset=} and \url{https://www.ipcc-nggip.iges.or.jp/public/2006gl/index.html}}
 \item{full_name}{Full name/description of the emission source}
 \item{model_varname}{Variable name in the model equations, must be unique}
 \item{dataset_id}{URL link to the dataset file on the web}
@@ -26,6 +26,9 @@ dict_edgar
 \description{
 A dataset containing EDGAR (Emissions Database for Global Atmospheric Research) model variable names
 and all information required for obtaining emissions data. For details see \link{create_dictionaries}.
+}
+\details{
+To see all details on IPCC sectors see \url{https://www.ipcc-nggip.iges.or.jp/efdb/find_ef.php?reset=} and \url{https://www.ipcc-nggip.iges.or.jp/public/2006gl/index.html}
 }
 \note{
 Should new filters be necessary, users can simply add additional columns to the dictionary with names
