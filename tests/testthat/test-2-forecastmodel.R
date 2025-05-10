@@ -139,7 +139,7 @@ test_that("Testing nowcasting and dealing with ragged edges works with fixed dat
       "TOTS",
       "Import",
       "EmiCO2Combustion",
-      "EmiCO2Industry",
+      "EmiCO2IndustryProcess",
       "EmiGHGTotal",
       "GValueAddIndus"
     ),
@@ -148,7 +148,7 @@ test_that("Testing nowcasting and dealing with ragged edges works with fixed dat
       "FinConsExpHH + GCapitalForm",
       "HDD + HICP_Gas + HICP_Electricity + GValueAdd",
       "HICP_Gas + HICP_Electricity + GValueAddIndus",
-      "EmiCO2Combustion + EmiCO2Industry + EmiCH4Livestock + EmiN2OTotal",
+      "EmiCO2Combustion + EmiCO2IndustryProcess + EmiCH4Livestock + EmiN2OTotal",
       "HICP_Gas + HICP_Electricity + Export + TOTS"
     )
   )
