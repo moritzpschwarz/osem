@@ -156,12 +156,7 @@ test_that("no errors when running a slightly more complicated model", {
     )
   )
 
-  fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR", varcolumn = "na_item")
-  fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR", varcolumn = "na_item")
-  fc <- list(geo = "AT", unit = "THS_T", nace_r2 = "TOTAL_HH", varcolumn = "airpol")
-  filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa, "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa, "GHG" = fc, "B1GQ" = fa)
-
-  # Execute the first time to get the data
+    # Execute the first time to get the data
   # b <- run_model(
   #   specification = spec,
   #   dictionary = NULL,
