@@ -109,9 +109,10 @@ run_model <- function(specification,
                       constrain.to.minimum.sample = TRUE,
                       keep = NULL,
 
-                      #manual_models = NULL,
+                      manual_models = NULL,
 
                       pretest_steps = FALSE,
+                      saturation_only_post_selection = FALSE,
 
                       present = FALSE,
                       quiet = FALSE,
@@ -264,7 +265,9 @@ run_model <- function(specification,
       opts_df = opts_df,
       keep = keep,
       pretest_steps = pretest_steps,
-      quiet = quiet
+      manual_models = manual_models,
+      quiet = quiet,
+      saturation_only_post_selection = saturation_only_post_selection
     )
 
     opts_df <- module_estimate$opts_df

@@ -39,7 +39,9 @@ run_module <- function(
     selection.tpval = 0.01,
     opts_df,
     keep,
+    manual_models,
     pretest_steps,
+    saturation_only_post_selection,
     quiet) {
 
   raw_data <- identify_module_data(module, classification, data)
@@ -89,6 +91,8 @@ run_module <- function(
                                         selection.tpval = selection.tpval,
                                         keep = keep,
                                         pretest_steps = pretest_steps,
+                                        manual_models = manual_models,
+                                        saturation_only_post_selection = saturation_only_post_selection,
                                         quiet = quiet)
 
     moduledata <- add_to_original_data(clean_data = clean_df,

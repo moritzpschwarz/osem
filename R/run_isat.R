@@ -150,6 +150,7 @@ run_isat <- function(yvar,
       tis = ifelse("TIS" %in% saturation, TRUE, FALSE),
       t.pval = saturation.tpval,
       max.block.size = maxblocksize,
+      include.gum = FALSE,
     ), silent = TRUE)
   }
 

@@ -55,6 +55,8 @@ estimate_module <- function(clean_data,
                             selection.tpval = 0.01,
                             keep,
                             pretest_steps,
+                            saturation_only_post_selection,
+                            manual_models,
                             quiet = FALSE) {
   # Set-up ------------------------------------------------------------------
   log_opts <- use_logs
@@ -66,7 +68,9 @@ estimate_module <- function(clean_data,
   isat_list <- dplyr::tibble(
     ar = 0:max.ar,
     BIC = 0,
-    isat_object = list(NA_complex_)
+    isat_object = list(NA_complex_),
+    AR = NA,
+    ARCH = NA
   )
   for (i in 0:max.dl) {
     if (ardl_or_ecm == "ardl") {
@@ -94,13 +98,14 @@ estimate_module <- function(clean_data,
       }
 
       yvar <- clean_data %>%
+        dplyr::arrange("time") %>%
         dplyr::select(dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename))) %>%
         dplyr::pull()
 
       y.name <- paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename)
 
       xvars <- clean_data %>%
-
+        dplyr::arrange("time") %>%
         dplyr::select(
           if(trend){dplyr::all_of("trend")}else{NULL},
           if(!identical(x_vars_basename,character(0))){dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_basename))}else{NULL},
@@ -119,6 +124,7 @@ estimate_module <- function(clean_data,
     }
     if (ardl_or_ecm == "ecm") {
       yvar <- clean_data %>%
+        dplyr::arrange("time") %>%
         dplyr::select(dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename))) %>%
         dplyr::pull()
 
@@ -135,6 +141,7 @@ estimate_module <- function(clean_data,
       }
 
       xvars <- clean_data %>%
+        dplyr::arrange("time") %>%
         dplyr::select(
           dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "L1.ln.", "L1."), dep_var_basename)),
           if(!identical(x_vars_basename, character(0))){dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "x"), "L1.ln.", "L1."), x_vars_basename))}else{NULL},
@@ -151,8 +158,37 @@ estimate_module <- function(clean_data,
       }
     }
 
+    # Check for pre-specified models ------------------------------------------
+    if(dep_var_basename %in% names(manual_models)){
+      # check that manual_models[[dep_var_basename]] is either an isat or arx object
+      # if not show a stop message explaining which manual model caused the error
+      if(!inherits(manual_models[[dep_var_basename]], c("isat","arx"))){
+        stop(paste0("The manual model for ",dep_var_basename," is not an 'isat' or 'arx' object."))
+      }
+
+      var_names_manual_mod <- manual_models[[dep_var_basename]]$aux$mXnames
+      var_basenames_manual_mod <- gsub("^L[0-9]+\\.|ln\\.|D\\.","",grep("mconst|trend|ar[0-9]+|q_[0-9]+|^iis[0-9]+|^sis[0-9]+", var_names_manual_mod, value = TRUE, invert = TRUE))
+      # check that all necessary variables are present in the specification for this module
+      if(!all(var_basenames_manual_mod %in% x_vars_basename)){
+        stop(paste0("The manual model for ",dep_var_basename," is missing the variable(s) in the specification for this module. Please add those to the specification, even if providing a manual model.\nMissing: ",var_basenames_manual_mod[!var_basenames_manual_mod %in% x_vars_basename],"\n"))
+      }
+
+      intermed.model <- manual_models[[dep_var_basename]]
+
+      if(exists("intermed.model")){
+        diagnostic_names <- names(intermed.model$diagnostics[,"p-value", drop = TRUE])
+        diagnostic_pvalues <- intermed.model$diagnostics[,"p-value", drop = TRUE]
+      }
+
+      isat_list[i + 1, "AR"] <- if(exists("intermed.model")){diagnostic_pvalues[grepl("Ljung-Box AR\\([0-9]+\\)",diagnostic_names)]}else{NA}
+      isat_list[i + 1, "ARCH"] <- if(exists("intermed.model")){diagnostic_pvalues[grepl("Ljung-Box ARCH\\([0-9]+\\)",diagnostic_names)]}else{NA}
+      isat_list[i + 1, "BIC"] <- if(exists("intermed.model")){stats::BIC(intermed.model)}else{NA}
+      isat_list[i + 1, "isat_object"] <- if(exists("intermed.model")){dplyr::tibble(isat_object = list(intermed.model))}else{NA}
+    }
+
+
     # ISAT modelling ----------------------------------------------------------
-    if (!is.null(saturation)) {
+    if (!dep_var_basename %in% names(manual_models) & !is.null(saturation) & !saturation_only_post_selection) {
       try(
         intermed.model <- run_isat(ar = if(i != 0){1:i} else {NULL},
                                    yvar = yvar,
@@ -166,7 +202,7 @@ estimate_module <- function(clean_data,
                                    pretest_steps = pretest_steps,
                                    determine.blocksize = TRUE)
         , silent = TRUE)
-    } else {
+    } else if(!dep_var_basename %in% names(manual_models) ){
 
       # ARX Modelling -----------------------------------------------------------
       # Save original arx mc warning setting and disable it here
@@ -178,7 +214,7 @@ estimate_module <- function(clean_data,
       xvar_opts <- if(nrow(zoo::zoo(xvars, order.by = clean_data$time))>0){
         zoo::zoo(xvars, order.by = clean_data$time)
       } else {NULL}
-      intermed.model <- gets::arx(
+      suppressWarnings(try(intermed.model <- gets::arx(
         y = zoo::zoo(yvar, order.by = clean_data$time),
         mxreg = xvar_opts,
         ar = if (i != 0) {
@@ -186,15 +222,24 @@ estimate_module <- function(clean_data,
         } else {
           NULL
         },
+        singular.ok = TRUE,
         plot = FALSE
-      )
+      ), silent = TRUE))
 
-      colnames(intermed.model$aux$mX) <- intermed.model$aux$mXnames
-      intermed.model$aux$args <- if(i != 0){list(ar = 1:i)} else {list(ar = NULL)}
-      intermed.model$aux$y.name <- y.name
+      if(exists("intermed.model")){
+        colnames(intermed.model$aux$mX) <- intermed.model$aux$mXnames
+        intermed.model$aux$args <- if(i != 0){list(ar = 1:i)} else {list(ar = NULL)}
+        intermed.model$aux$y.name <- y.name
+      }
     }
 
+    if(exists("intermed.model")){
+      diagnostic_names <- names(intermed.model$diagnostics[,"p-value", drop = TRUE])
+      diagnostic_pvalues <- intermed.model$diagnostics[,"p-value", drop = TRUE]
+    }
 
+    isat_list[i + 1, "AR"] <- if(exists("intermed.model")){diagnostic_pvalues[grepl("Ljung-Box AR\\([0-9]+\\)",diagnostic_names)]}else{NA}
+    isat_list[i + 1, "ARCH"] <- if(exists("intermed.model")){diagnostic_pvalues[grepl("Ljung-Box ARCH\\([0-9]+\\)",diagnostic_names)]}else{NA}
     isat_list[i + 1, "BIC"] <- if(exists("intermed.model")){stats::BIC(intermed.model)}else{NA}
     isat_list[i + 1, "isat_object"] <- if(exists("intermed.model")){dplyr::tibble(isat_object = list(intermed.model))}else{NA}
     if(exists("intermed.model")){rm(intermed.model)}
@@ -220,14 +265,37 @@ estimate_module <- function(clean_data,
                 "For debugging, a plot for this module has been produced - check if there are enough overlapping sample periods."))
   }
 
+  # only choose between models where diagnostics are ok
   best_isat_model <- isat_list %>%
-    dplyr::filter(BIC == min(isat_list$BIC, na.rm = TRUE)) %>%
-    dplyr::pull(dplyr::all_of("isat_object")) %>%
-    dplyr::first()
+    dplyr::filter(.data$AR > 0.05 & .data$ARCH > 0.05) %>%
+    {if(nrow(.) > 0){
+      dplyr::filter(.,BIC == min(.data$BIC, na.rm = TRUE)) %>%
+        dplyr::pull(dplyr::all_of("isat_object")) %>%
+        dplyr::first()
+    } else {NULL}}
 
+
+  # if none remain, focus on AR
+  if(is.null(best_isat_model)){
+    best_isat_model <- isat_list %>%
+      dplyr::filter(.data$AR > 0.05) %>%
+      {if(nrow(.) > 0){
+        dplyr::filter(.,BIC == min(.data$BIC, na.rm = TRUE)) %>%
+          dplyr::pull(dplyr::all_of("isat_object")) %>%
+          dplyr::first()
+      } else {NULL}}
+  }
+
+  # if none remain, choose with BIC
+  if(is.null(best_isat_model)){
+    best_isat_model <- isat_list %>%
+      dplyr::filter(BIC == min(.data$BIC, na.rm = TRUE)) %>%
+      dplyr::pull(dplyr::all_of("isat_object")) %>%
+      dplyr::first()
+  }
 
   # gets selection on the best model ----------------------------------------
-  if(gets_selection){
+  if(gets_selection & !dep_var_basename %in% names(manual_models)){
     if(!is.null(keep)){keep_num <- which(grepl(keep, row.names(best_isat_model$mean.results)))} else {keep_num <- NULL}
 
     try(best_isat_model.selected <- gets::gets(best_isat_model,
@@ -262,7 +330,7 @@ estimate_module <- function(clean_data,
         zoo::zoo(retained.xvars, order.by = clean_data$time)
       }} else {NULL}
 
-    if (!is.null(saturation)) {
+    if (!is.null(saturation) | saturation_only_post_selection) {
       best_isat_model.selected.isat <- run_isat(yvar = yvar,
                                                 y.name = y.name,
                                                 xvars  = retained.xvars,
@@ -293,6 +361,9 @@ estimate_module <- function(clean_data,
       if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$call$tis <- best_isat_model.selected.isat$aux$args$tis}
       if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$aux$y.name <- y.name}
     }
+  } else if(dep_var_basename %in% names(manual_models)){
+    best_isat_model.selected <- manual_models[[dep_var_basename]]
+    best_isat_model.selected.isat <- NULL
   }
 
 
@@ -307,7 +378,7 @@ estimate_module <- function(clean_data,
   }
 
   # Super Exogeneity Testing ------------------------------------------------
-  try(superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet))
+  suppressWarnings(try(superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet)))
   if(!exists("superex_test")){superex_test <- NA}
 
   # Output ------------------------------------------------------------------
