@@ -55,13 +55,22 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       setNames(mvar_euname)
 
     ## Get earlier data for all estimates --------------
+
     prediction_list %>%
       dplyr::filter(.data$index == mvar_model_index) %>%
       dplyr::pull("all.estimates") %>%
-      .[[1]] %>%
-      dplyr::mutate(dplyr::across(-"time", ~dplyr::case_when(mvar_log == "log" ~ exp(.),
-                                                             mvar_log == "asinh" ~ sinh(.),
-                                                             mvar_log == "none" ~ .)))-> prediction_list.mvar.all
+      .[[1]] -> prediction_list.mvar.all_intermed
+
+      {if(!is.null(prediction_list.mvar.all_intermed)){
+        dplyr::mutate(prediction_list.mvar.all_intermed,
+                      dplyr::across(-"time", ~dplyr::case_when(mvar_log == "log" ~ exp(.),
+                                                               mvar_log == "asinh" ~ sinh(.),
+                                                               mvar_log == "none" ~ .))) -> prediction_list.mvar.all
+        rm(prediction_list.mvar.all_intermed)
+      } else {
+        NULL -> prediction_list.mvar.all
+        rm(prediction_list.mvar.all_intermed)
+      }}
 
     # if the all estimates are not yet stored, use the central estimate
     if(!is.null(prediction_list.mvar.all)){

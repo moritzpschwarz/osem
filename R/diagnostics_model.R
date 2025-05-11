@@ -38,15 +38,17 @@ diagnostics_model <- function(model) {
 
     # extract module and check that it is an isat object
     module <- models[[i]]
-    stopifnot(inherits(module, "isat"))
+    stopifnot(inherits(module, c("isat","gets", "arx")))
 
     # record diagnostics
-    d <- module$diagnostics
+    if(inherits(module, c("isat","arx"))) {d <- module$diagnostics}
+    if(inherits(module, c("gets"))) {d <- module$specific.diagnostics}
     # usually, first entry is AR and second is ARCH but could be different (e.g. when add other tests or not OLS)
     # so be a bit more careful how to select the columns
     ar_where <- grepl(pattern = "^Ljung-Box AR\\(", x = rownames(d))
     arch_where <- grepl(pattern = "^Ljung-Box ARCH\\(", x = rownames(d))
     # sanity check that were uniquely identified
+
     stopifnot(sum(ar_where) == 1)
     stopifnot(sum(arch_where) == 1)
     # populate with p-values
