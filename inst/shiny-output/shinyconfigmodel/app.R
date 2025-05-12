@@ -642,15 +642,15 @@ server <- function(input, output, session) {
   })
 
   # Load data from disk -------------
-  load("model.RData")
+  # to pre-specify a model for the app, the model can be saved to disk and loaded here
+  # uncomment the following lines to use this functionality
+  # load("model.RData")
   # check if rv$model_output is NULL
   # if it is null, then take the object that is called "model" and insert it into rv$model_output
   # make sure this is done in accordance with Shiny requirements
   # if it is not null, then do nothing
-  # if it is null, then take the object that is called "model" and insert it into rv$model_output
-
   observe({
-    if (is.null(rv$model_output)) {
+    if (is.null(rv$model_output) & exists("model")) {
 
       rv$table_output <- NULL
       rv$model_output <- NULL # needed for progress indicator package to work
