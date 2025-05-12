@@ -5,7 +5,15 @@
 #'
 #' @return A dataset containing the set of forecasted exogenous values.
 
-forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_fill_method, ar.fill.max, n.ahead, quiet){
+forecast_exogenous_values <- function(model, exog_vars,
+                                      exog_predictions,
+                                      exog_fill_method,
+                                      ar.fill.max,
+                                      n.ahead,
+                                      quiet,
+                                      window,
+                                      lag,
+                                      trend){
 
   frequency <- model$full_data %>%
     dplyr::arrange(.data$na_item, .data$time) %>%
@@ -216,11 +224,13 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       dplyr::arrange(.data$time) -> exog_df_ready
   }
 
-  if (is.null(exog_predictions) & exog_fill_method == "auto") {
+  if (is.null(exog_predictions) &
+      (exog_fill_method == "auto" || exog_fill_method == "clements_hendry"
+       || exog_fill_method == "martinez_castle_hendry" || exog_fill_method == "martinez_castle_hendry_rw"))
+  {
     if(!quiet){
-      message(paste0("No exogenous values provided. Model will forecast the exogenous values with the auto.arima()."))
+      message(paste0("No exogenous values provided. Model will forecast the exogenous values with the auto.arima() or specified forecasting method."))
     }
-
     exog_df_intermed <- model$full_data %>%
       dplyr::filter(.data$na_item %in% exog_vars) %>%
       dplyr::group_by(.data$na_item) %>%
@@ -268,11 +278,46 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
         tidyr::drop_na(2) %>%
         dplyr::pull(2) -> y_ar_predict
 
-      arima_model <- forecast::auto.arima(y_ar_predict)
-      pred_values <- forecast::forecast(y_ar_predict, h = length(time_to_forecast))
+      if (exog_fill_method == "auto") {
+        arima_model <- forecast::auto.arima(y_ar_predict)
+        pred_values <- forecast::forecast(y_ar_predict, h = length(time_to_forecast))
+        pred_values <- pred_values$mean #get the data from the forecast
+
+      }
+
+      else { #if not set to auto then we go into the if-else block containing our own robust forecasting routines
+        if (is.na(lag) || is.na(trend) || is.na(window) ||
+            (!is.logical(trend)) ||
+            (!is.numeric(lag) || lag < 0 || lag != as.integer(lag)) ||
+            (!is.numeric(window) || window < 1 || window != as.integer(window))) {
+          # Actions to take if any condition is true
+          if(!quiet){
+            message(paste0("Invalid input: Ensure that lag, trend, and window meet the required conditions."))
+          }
+          stop()
+        }
+
+        data_ar_predict <- to_ar_predict %>%
+          dplyr::select("time", dplyr::all_of(col_to_forecast)) %>%
+          tidyr::drop_na(2)
+
+        if (exog_fill_method == "clements_hendry") {
+          pred_values <- clements_hendry_forecasting(data_ar_predict,lag = lag, trend = trend, window = window, H = length(time_to_forecast))
+        }
+
+        if (exog_fill_method == "martinez_castle_hendry") {
+          pred_values <- martinez_castle_hendry_forecasting(data_ar_predict,lag = lag, trend = trend, window = window, H = length(time_to_forecast))
+        }
+
+        if (exog_fill_method == "martinez_castle_hendry_rw") {
+          pred_values <- martinez_castle_hendry_rw_forecasting(data_ar_predict,lag = lag, window = window, H = length(time_to_forecast))
+
+        }
+
+      } #end of if-else block
 
       dplyr::tibble(time = time_to_forecast,
-                    data = pred_values$mean) %>%
+                    data = pred_values) %>%
         setNames(c("time",names(exog_df_intermed)[col_to_forecast])) %>%
         dplyr::full_join(exog_df_forecast, by = "time") -> exog_df_forecast
     }
