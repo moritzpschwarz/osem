@@ -112,11 +112,8 @@ and to obtain an F-Stat statistic to determine whether the shocks detected in th
 <span class="r-in"><span>  sis <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
 <span class="r-in"><span>  t.pval <span class="op">=</span> <span class="fl">0.01</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> NOTE: quantmod::as.zoo.data.frame() is deprecated</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   Use as.zoo(x, order.by = as.Date(rownames(x))) instead.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   This note is printed once. To see it for every call, set</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>   options(quantmod.deprecate.as.zoo.data.frame = TRUE)</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>quantmod::as.zoo.data.frame() is deprecated and will be removed in a future version</span>
+<span class="r-wrn co"><span class="r-pr">#&gt;</span>   Use zoo(x, order.by = as.Date(rownames(x))) instead.</span>
 <span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in charToDate(x):</span> character string is not in a standard unambiguous format</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">super.exogeneity</span><span class="op">(</span><span class="va">is.model</span><span class="op">)</span></span></span>
@@ -132,7 +129,7 @@ and to obtain an F-Stat statistic to determine whether the shocks detected in th
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
 </div>
 
     </footer></div>
