@@ -225,6 +225,12 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     if(!is.null(grepl_variables)){all_forecasts_processed_q <- dplyr::filter(all_forecasts_processed_q, grepl(grepl_variables,.data$na_item))}
   }
 
+  all_forecasts_processed_q <- all_forecasts_processed_q %>%
+    {if(order.as.run){
+      dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$orig_model$module_order$dependent)) %>%
+        tidyr::drop_na("na_item") %>%
+        dplyr::arrange(.data$time, .data$na_item)} else {.}}
+
 
   ## Nowcasts ----
   nowcast_processed %>%

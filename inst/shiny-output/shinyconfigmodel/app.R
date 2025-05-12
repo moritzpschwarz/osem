@@ -1,8 +1,11 @@
-# devtools::load_all()
+#devtools::load_all()
+library(osem)
 library(shiny)
 library(DT)
 # library(bslib)
 library(shinycssloaders) # possibly still a good idea to pass through more specific info along the steps of the estimation
+library(ggraph)
+
 
 # Define UI for app
 ui <- fluidPage(
@@ -638,6 +641,76 @@ server <- function(input, output, session) {
     }
   })
 
+  # Load data from disk -------------
+  # to pre-specify a model for the app, the model can be saved to disk and loaded here
+  # uncomment the following lines to use this functionality
+  # load("model.RData")
+  # check if rv$model_output is NULL
+  # if it is null, then take the object that is called "model" and insert it into rv$model_output
+  # make sure this is done in accordance with Shiny requirements
+  # if it is not null, then do nothing
+  observe({
+    if (is.null(rv$model_output) & exists("model")) {
+
+      rv$table_output <- NULL
+      rv$model_output <- NULL # needed for progress indicator package to work
+
+      updateTabsetPanel(session, "OutputTab",
+                        selected = "results") # only updates after the whole function ran, with final values. Can this be paced manually?
+      rv$model_output <- model
+
+      rv$model_list <- lapply(rv$model_output$module_collection$model, function(x){
+        if(!is.null(x)) {
+          as.lm.custom(x)
+        } else{
+          NULL # if it is an identity in the specification, it shows as NULL in the collection; thus, no lm conversion can take place
+        }})
+
+      # removing NULLs, which are identity equations in the specification, so only estimated models are put out in the table
+      which_to_keep <- -which(sapply(rv$model_list, is.null))
+      if(identical(which_to_keep, integer(0))){
+        which_to_keep <- rep(TRUE, length(rv$model_list))
+      }
+      rv$model_list <- rv$model_list[which_to_keep]
+
+      # ensure the correct order of the table
+      lapply(rv$model_list, broom::tidy) %>%
+        dplyr::bind_rows() %>%
+        dplyr::distinct(term) %>%
+        dplyr::filter(!stringr::str_detect(term, "iis|sis|q_[0-9]+")) %>%
+        dplyr::mutate(base = gsub("L[0-9]+\\.","",term)) %>%
+        dplyr::mutate(base_num = dplyr::case_when(base == "mconst" ~ 2,
+                                                  base == "trend" ~ 3,
+                                                  grepl("ar[0-9]+",base) ~ 1,
+                                                  TRUE ~ 4)) %>%
+        dplyr::arrange(base_num, base, desc(term)) %>%
+        dplyr::pull(term) -> coef_order
+
+      # converts the list of results from run_model to a data.frame of estimates and coefficients
+      rv$table_output <- modelsummary::modelsummary(
+        rv$model_list,
+        coef_map = coef_order,
+        coef_omit = "iis|sis",
+        gof_omit = "R",
+        title = "Final models run for each sub-module.",
+        notes = "Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.", # depending on settings
+        stars = TRUE,
+        output = "data.frame"
+      )
+
+      # this removes the variable name for rows with std errors for better-looking display
+      rv$table_output[rv$table_output$statistic == "std.error",]$term <- ""
+
+      # this removes the columns not necessary for display
+      rv$table_output <- rv$table_output[,setdiff(names(rv$table_output), c("part", "statistic"))]
+
+      # figure out the specification
+      rv$specification <- rv$model_output$args$specification
+      rv$dictionary <- rv$model_output$dictionary
+      rv$inputdata <- rv$model_output$processed_input_data
+      rv$model_plot <- plot(rv$model_output)
+    }
+  })
 
 
   # When "Run Model" button is clicked ----
