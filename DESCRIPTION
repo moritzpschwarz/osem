@@ -1,7 +1,7 @@
 Package: osem
 Title: An Open-Source Macro-Econometric Model to forecast and study Climate Policies
-Version: 0.0.2
-Date: 2024-06-28
+Version: 0.0.3
+Date: 2025-02-05
 Authors@R: c(
     person("Jonas", "Kurle", role = c("aut"), comment = c(ORCID = "0000-0003-2197-2012")),
     person("Moritz", "Schwarz", , "moritz.schwarz@scmo.eu", role = c("aut", "cre"),
@@ -52,3 +52,4 @@ Suggests:
     broom
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+Remotes: gsucarrat/gets/gets#70

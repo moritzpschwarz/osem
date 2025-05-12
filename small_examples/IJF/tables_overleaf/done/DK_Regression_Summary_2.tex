@@ -1,0 +1,42 @@
+\begin{table}
+
+\centering\centering
+\caption{\label{tab:regression_summaryDK_2}Final OSEM Model result for each module for Denmark with model selection enabled. Part 2.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lccccc}
+\toprule
+  & log(VAService) & log(VAGov) & log(VAIndustry) & log(VARetail) & log(VARealEstate)\\
+\midrule
+ar1 & \num{0.323}*** & \num{0.247}*** &  & \num{0.608}*** & \\
+ & (\num{0.069}) & (\num{0.064}) &  & (\num{0.053}) & \\
+mconst & \num{-4.347}*** & \num{0.683}*** & \num{3.840}*** &  & \num{8.345}***\\
+ & (\num{0.463}) & (\num{0.178}) & (\num{1.108}) &  & (\num{0.417})\\
+trend &  & \num{0.000}** & \num{0.003}*** & \num{0.001}*** & \num{0.011}***\\
+ &  & (\num{0.000}) & (\num{0.001}) & (\num{0.000}) & (\num{0.000})\\
+log(CapForm) &  &  &  &  & \num{-0.082}***\\
+ &  &  &  &  & (\num{0.019})\\
+L1.log(CapForm) &  &  &  & \num{-0.115}** & \\
+ &  &  &  & (\num{0.041}) & \\
+log(ConsGov) & \num{0.296}*** & \num{0.435}*** & \num{-0.443}*** &  & \num{-0.092}+\\
+ & (\num{0.086}) & (\num{0.038}) & (\num{0.128}) &  & (\num{0.046})\\
+L1.log(ConsGov) &  & \num{0.185}*** &  & \num{-0.300}*** & \\
+ &  & (\num{0.047}) &  & (\num{0.082}) & \\
+log(ConsHH) & \num{0.687}*** & \num{0.171}*** & \num{0.869}*** & \num{0.724}*** & \\
+ & (\num{0.108}) & (\num{0.032}) & (\num{0.141}) & (\num{0.102}) & \\
+L1.log(ConsHH) &  & \num{-0.137}*** &  &  & \\
+ &  & (\num{0.031}) &  &  & \\
+log(PriceETS) &  &  & \num{0.003} &  & \\
+ &  &  & (\num{0.003}) &  & \\
+log(PriceOil) &  &  & \num{0.053}*** &  & \\
+ &  &  & (\num{0.015}) &  & \\
+\midrule
+Num.Obs. & \num{134} & \num{134} & \num{79} & \num{102} & \num{103}\\
+AIC & \num{-486.1} & \num{-895.2} & \num{-317.0} & \num{-417.9} & \num{-523.3}\\
+BIC & \num{-457.1} & \num{-866.3} & \num{-293.3} & \num{-383.7} & \num{-496.9}\\
+Log.Lik. & \num{253.051} & \num{457.622} & \num{168.506} & \num{221.930} & \num{271.626}\\
+\bottomrule
+\multicolumn{6}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{6}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

@@ -157,8 +157,19 @@ dictionary <- dictionary %>%
   add_dict_entry("DFConsHH", "Deflator ConsHH", "eurostat", "P31_S14_S15", "namq_10_gdp", "na_item", "Q", "DE", "PD15_EUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("DFCapForm", "Deflator CapForm", "eurostat", "P51G", "namq_10_gdp", "na_item", "Q", "DE", "PD15_EUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
   add_dict_entry("DFGDP", "Deflator GDP", "eurostat", "B1GQ", "namq_10_gdp", "na_item", "Q", "DE", "PD15_EUR", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA) %>%
-  add_dict_entry("URate", "Total Unemployment Rate Labour Force", "eurostat", "T", "une_rt_q", "sex", "Q", "DE", "PC_ACT", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, "Y15-74", NA, NA)
-
+  add_dict_entry("URate", "Total Unemployment Rate Labour Force", "eurostat", "T", "une_rt_q", "sex", "Q", "DE", "PC_ACT", "NSA", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, "Y15-74", NA, NA) %>%
+  add_dict_entry("LabourProd", "Real Labour Productivity per Person", "eurostat", "RLPR_PER", "namq_10_lp_ulc", "na_item", "Q", "DE",
+                 unit = "I15", s_adj = "NSA", nace_r2 = NA, ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA,
+                 tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA,
+                 partner = NA, finpos = NA) %>%
+  add_dict_entry("EfExchange", "Effective Exchange Rate", "eurostat", "NEER_IC42", "ert_eff_ic_q", "exch_rt", "Q", "DE",
+                 unit = "I15", s_adj = NA, nace_r2 = NA, ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA,
+                 tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA,
+                 partner = NA, finpos = NA) %>%
+  add_dict_entry("LabourCI", "Labour Cost Index", "eurostat", "D1_D4_MD5", "teilm140", "lcstruct", "Q", "DE",
+                 unit = "I20", s_adj = "SCA", nace_r2 = "B-S", ipcc_sector = NA, cpa2_1 = NA, siec = NA, sector = NA,
+                 tax = NA, currency = NA, direct = NA, co_nco = NA, train = NA, vehicle = NA, age = NA,
+                 partner = NA, finpos = NA)
 
 
 

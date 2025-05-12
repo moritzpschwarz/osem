@@ -37,7 +37,7 @@ options(timeout=1000)
 save_png <- function(code, width = 400, height = 400) {
   path <- tempfile(fileext = ".png")
 
-  if(ggplot2::is.ggplot(code)){
+  if(ggplot2::is_ggplot(code)){
     ggplot2::ggsave(filename = path, plot = code, width = 7, height = 5)
   } else {
     png(path, width = width, height = height)
@@ -139,7 +139,7 @@ test_that("Testing nowcasting and dealing with ragged edges works with fixed dat
       "TOTS",
       "Import",
       "EmiCO2Combustion",
-      "EmiCO2Industry",
+      "EmiCO2IndustryProcess",
       "EmiGHGTotal",
       "GValueAddIndus"
     ),
@@ -148,7 +148,7 @@ test_that("Testing nowcasting and dealing with ragged edges works with fixed dat
       "FinConsExpHH + GCapitalForm",
       "HDD + HICP_Gas + HICP_Electricity + GValueAdd",
       "HICP_Gas + HICP_Electricity + GValueAddIndus",
-      "EmiCO2Combustion + EmiCO2Industry + EmiCH4Livestock + EmiN2OTotal",
+      "EmiCO2Combustion + EmiCO2IndustryProcess + EmiCH4Livestock + EmiN2OTotal",
       "HICP_Gas + HICP_Electricity + Export + TOTS"
     )
   )

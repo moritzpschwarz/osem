@@ -1,0 +1,78 @@
+\begin{table}
+
+\centering\centering
+\caption{\label{tab:regression_summary_selectedAT}Final OSEM Model result for selected modules for Austria with model selection enabled.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
+\toprule
+  & log(ConsHH) & log(VAIndustry) & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
+\midrule
+ar1 & \num{-0.170}*** &  & \num{0.220}*** & \num{1.008}*** &  & \num{0.262}***\\
+ & (\num{0.038}) &  & (\num{0.045}) & (\num{0.010}) &  & (\num{0.055})\\
+ar4 & \num{0.807}*** &  &  &  &  & \\
+ & (\num{0.047}) &  &  &  &  \vphantom{1} & \\
+mconst & \num{3.036}*** &  & \num{6.769}*** &  &  & \num{9.742}***\\
+ & (\num{0.506}) &  & (\num{0.450}) &  &  & (\num{0.807})\\
+trend & \num{0.003}*** & \num{-0.001}*** &  &  & \num{-0.010}*** & \num{0.004}***\\
+ & (\num{0.001}) & (\num{0.000}) &  &  & (\num{0.002}) & (\num{0.001})\\
+log(CapForm) &  & \num{0.559}*** &  &  &  & \\
+ &  & (\num{0.075}) &  &  &  & \\
+log(ConsGov) &  & \num{-0.305}** &  &  &  & \\
+ &  & (\num{0.106}) &  &  &  & \\
+log(ConsHH) &  & \num{0.701}*** &  &  &  & \\
+ &  & (\num{0.094}) &  &  &  & \\
+log(ElectrCons) &  &  &  &  & \num{0.344} & \\
+ &  &  &  &  & (\num{0.351}) & \\
+log(HDD) &  &  &  &  & \num{0.301}*** & \\
+ &  &  &  &  & (\num{0.026}) & \\
+L2.log(HICPDiesel) &  &  &  &  &  & \num{-0.133}**\\
+ &  &  &  &  &  & (\num{0.041})\\
+log(HICPGas) &  &  &  &  & \num{-0.175}* & \\
+ &  &  &  &  & (\num{0.078}) & \\
+L1.log(HICPPetrol) &  &  &  &  &  & \num{-0.271}***\\
+ &  &  &  &  &  & (\num{0.056})\\
+log(HICP\_Electricity) &  &  & \num{0.158}** &  &  & \\
+ &  &  & (\num{0.055}) &  &  & \\
+log(HICPlocal) & \num{1.354}*** &  &  &  &  & \\
+ & (\num{0.251}) &  &  &  &  & \\
+L4.log(HICPlocal) & \num{-0.644}*** &  &  &  &  & \\
+ & (\num{0.110}) &  &  &  &  & \\
+L2.log(HICPlocal) &  &  &  &  &  & \num{-2.374}***\\
+ &  &  &  &  &  & (\num{0.565})\\
+L1.log(HICPlocal) & \num{-0.872}** &  &  &  &  & \num{2.680}***\\
+ & (\num{0.301}) &  &  &  &  & (\num{0.656})\\
+log(IncomeHH) & \num{0.169}*** &  &  &  &  & \\
+ & (\num{0.044}) &  &  &  &  & \\
+L4.log(IncomeHH) & \num{-0.207}*** &  &  &  &  & \\
+ & (\num{0.047}) &  &  &  &  & \\
+L1.log(IncomeHH) & \num{0.139}*** &  &  &  &  & \\
+ & (\num{0.037}) &  &  &  &  & \\
+log(PriceETS) &  & \num{-0.004} & \num{0.001} &  & \num{0.052}* & \\
+ &  & (\num{0.003}) & (\num{0.006}) &  & (\num{0.024}) & \\
+L1.log(PriceETS) &  &  & \num{-0.012}* &  &  & \\
+ &  &  & (\num{0.006}) &  &  & \\
+L2.log(PriceOil) &  &  &  &  &  & \num{0.094}***\\
+ &  &  &  &  &  & (\num{0.024})\\
+log(RealCapFormHH) &  &  &  &  & \num{-0.434}** & \\
+ &  &  &  &  & (\num{0.157}) & \\
+log(RealConsHH) &  &  &  &  &  & \num{-0.216}***\\
+ &  &  &  &  &  & (\num{0.055})\\
+L2.log(RealConsHH) &  &  &  &  &  & \num{-0.291}***\\
+ &  &  &  &  &  & (\num{0.057})\\
+log(RealVAIndustry) &  &  &  & \num{-0.012} & \num{0.922}* & \\
+ &  &  &  & (\num{0.023}) & (\num{0.452}) & \\
+L1.log(RealVAIndustry) &  &  &  & \num{0.014} &  & \\
+ &  &  &  & (\num{0.022}) &  & \\
+L2.log(RoadFreight) &  &  &  &  &  & \num{0.156}**\\
+ &  &  &  &  &  & (\num{0.042})\\
+\midrule
+Num.Obs. & \num{99} & \num{79} & \num{66} & \num{115} & \num{64} & \num{42}\\
+AIC & \num{-629.5} & \num{-332.1} & \num{-351.1} & \num{-784.6} & \num{-76.4} & \num{-284.6}\\
+BIC & \num{-582.8} & \num{-303.7} & \num{-327.0} & \num{-707.7} & \num{-57.0} & \num{-253.4}\\
+Log.Lik. & \num{332.774} & \num{178.062} & \num{186.565} & \num{420.297} & \num{47.197} & \num{160.314}\\
+\bottomrule
+\multicolumn{7}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

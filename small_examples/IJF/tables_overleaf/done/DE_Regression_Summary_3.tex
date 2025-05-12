@@ -1,0 +1,44 @@
+\begin{table}
+
+\centering\centering
+\caption{\label{tab:regression_summaryDE_3}Final OSEM Model result for each module for Germany with model selection enabled. Part 3.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccc}
+\toprule
+  & asinh(Flights) & log(EmiCO2Residential) & log(ElectrCons) & log(EmiCH4EntericFerment)\\
+\midrule
+ar1 &  &  & \num{0.388}*** & \num{0.995}***\\
+ &  &  & (\num{0.081}) & (\num{0.013})\\
+mconst & \num{7.987}*** & \num{15.871}*** & \num{3.665}** & \num{0.606}**\\
+ & (\num{0.794}) & (\num{1.147}) & (\num{1.212}) & (\num{0.191})\\
+log(HDD) &  & \num{0.488}*** &  & \\
+ &  & (\num{0.021}) &  & \\
+log(HICP\_AviaInt) & \num{0.651}*** &  &  & \\
+ & (\num{0.139}) &  &  & \\
+log(HICP\_Electricity) &  &  & \num{-0.220}*** & \\
+ &  &  & (\num{0.039}) & \\
+log(PriceETS) &  &  & \num{0.026}** & \\
+ &  &  & (\num{0.008}) & \\
+L1.log(PriceETS) &  &  & \num{-0.023}** & \\
+ &  &  & (\num{0.007}) & \\
+log(RealConsHH) &  & \num{-0.642}*** & \num{0.370}*** & \\
+ &  & (\num{0.087}) & (\num{0.100}) & \\
+L1.log(RealConsHH) &  &  &  & \num{-0.038}***\\
+ &  &  &  & (\num{0.010})\\
+log(RealVAAgriculture) &  &  &  & \num{0.052}***\\
+ &  &  &  & \vphantom{1} (\num{0.007})\\
+L1.log(RealVAAgriculture) &  &  &  & \num{-0.050}***\\
+ &  &  &  & (\num{0.007})\\
+L1.log(Slaughter) &  &  &  & \num{-0.019}***\\
+ &  &  &  & (\num{0.005})\\
+\midrule
+Num.Obs. & \num{38} & \num{132} & \num{66} & \num{131}\\
+AIC & \num{-133.6} & \num{-384.4} & \num{-316.9} & \num{-1073.8}\\
+BIC & \num{-110.7} & \num{-355.6} & \num{-290.6} & \num{-1013.4}\\
+Log.Lik. & \num{80.822} & \num{202.201} & \num{170.427} & \num{557.901}\\
+\bottomrule
+\multicolumn{5}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{5}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

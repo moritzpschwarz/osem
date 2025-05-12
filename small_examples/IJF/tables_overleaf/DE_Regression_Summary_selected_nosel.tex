@@ -1,0 +1,88 @@
+\begin{table}
+
+\centering\centering
+\caption{\label{tab:regression_summary_selectedDE_nosel}Final OSEM Model result for selected modules for Germany without model selection.}
+\centering
+\fontsize{8}{10}\selectfont
+\resizebox{\textwidth}{!}{\begin{tabular}[t]{lcccccc}
+\toprule
+  & log(ConsHH) & log(VAIndustry) & log(ElectrCons) & log(EmiCO2ManInd) & log(EmiCO2ElecHeat) & log(EmiCO2RoaTra)\\
+\midrule
+ar1 & \num{0.727}*** &  & \num{0.404}*** & \num{0.901}*** & \num{0.362}*** & \\
+ & (\num{0.047}) &  & (\num{0.092}) & (\num{0.036}) & (\num{0.097}) & \\
+mconst & \num{0.708}*** & \num{-0.280} & \num{3.997}* & \num{1.178}+ & \num{12.944}*** & \num{12.967}***\\
+ & (\num{0.205}) & (\num{1.383}) & (\num{1.555}) & (\num{0.634}) & (\num{3.057}) & (\num{1.292})\\
+trend & \num{0.000}* & \num{-0.001} & \num{0.000} & \num{0.000} & \num{-0.005}** & \num{0.008}***\\
+ & (\num{0.000}) & (\num{0.001}) & (\num{0.001}) & (\num{0.000}) & (\num{0.001}) & (\num{0.001})\\
+asinh(CDD) &  &  &  &  & \num{0.017}+ & \\
+ &  &  &  &  & (\num{0.009}) \vphantom{1} & \\
+L1.asinh(CDD) &  &  &  &  & \num{0.017}+ & \\
+ &  &  &  &  & (\num{0.009}) & \\
+log(CapForm) &  & \num{0.677}*** &  &  &  & \\
+ &  & (\num{0.072}) &  &  &  & \\
+log(ConsGov) &  & \num{-0.050} &  &  &  & \\
+ &  & (\num{0.109}) &  &  &  & \\
+log(ConsHH) &  & \num{0.394}*** &  &  &  & \\
+ &  & (\num{0.082}) &  &  &  & \\
+log(ElectrCons) &  &  &  &  & \num{0.195} & \\
+ &  &  &  &  & (\num{0.244}) & \\
+L1.log(ElectrCons) &  &  &  &  & \num{-0.202} & \\
+ &  &  &  &  & (\num{0.235}) & \\
+log(FinWealthHH) & \num{0.017} &  &  &  &  & \\
+ & (\num{0.019}) &  &  &  &  & \\
+L1.log(FinWealthHH) & \num{-0.020} &  &  &  &  & \\
+ & (\num{0.018}) &  &  &  &  & \\
+log(HDD) &  &  &  &  & \num{-0.072}* & \\
+ &  &  &  &  & (\num{0.029}) \vphantom{1} & \\
+L1.log(HDD) &  &  &  &  & \num{-0.046} & \\
+ &  &  &  &  & (\num{0.029}) & \\
+log(HICPDiesel) &  &  &  &  &  & \num{0.270}***\\
+ &  &  &  &  &  & (\num{0.053})\\
+log(HICPGas) &  &  &  &  & \num{0.703}** & \\
+ &  &  &  &  & (\num{0.216}) & \\
+L1.log(HICPGas) &  &  &  &  & \num{-0.968}*** & \\
+ &  &  &  &  & (\num{0.228}) & \\
+log(HICPPetrol) &  &  &  &  &  & \num{-0.113}\\
+ &  &  &  &  &  & (\num{0.072})\\
+log(HICP\_Electricity) &  &  & \num{-0.116} &  &  & \\
+ &  &  & (\num{0.121}) &  &  & \\
+L1.log(HICP\_Electricity) &  &  & \num{-0.088} &  &  & \\
+ &  &  & (\num{0.123}) &  &  & \\
+log(HICPlocal) & \num{0.029} &  &  & \num{-0.058} &  & \num{-0.917}***\\
+ & (\num{0.076}) &  &  & (\num{0.191}) &  & (\num{0.121})\\
+L1.log(HICPlocal) & \num{-0.023} &  &  & \num{-0.042} &  & \\
+ & (\num{0.073}) &  &  & (\num{0.205}) &  & \\
+log(IncomeHH) & \num{0.813}*** &  &  &  &  & \\
+ & (\num{0.041}) &  &  &  &  & \\
+L1.log(IncomeHH) & \num{-0.606}*** &  &  &  &  & \\
+ & (\num{0.055}) &  &  &  &  & \\
+log(PriceETS) &  & \num{-0.003} & \num{0.025}** &  & \num{-0.065}** & \\
+ &  & (\num{0.002}) & (\num{0.008}) &  & (\num{0.023}) & \\
+L1.log(PriceETS) &  &  & \num{-0.023}** &  & \num{-0.045}* & \\
+ &  &  & (\num{0.008}) &  & (\num{0.019}) & \\
+log(PriceOil) &  & \num{-0.006} &  &  &  & \num{-0.025}\\
+ &  & (\num{0.009}) &  &  &  & (\num{0.026})\\
+log(RealCapFormHH) &  &  &  &  & \num{-0.413}* & \\
+ &  &  &  &  & (\num{0.200}) & \\
+L1.log(RealCapFormHH) &  &  &  &  & \num{-0.094} & \\
+ &  &  &  &  & (\num{0.217}) & \\
+log(RealConsHH) &  &  & \num{0.448}*** &  &  & \num{-0.046}\\
+ &  &  & (\num{0.127}) &  &  & (\num{0.106})\\
+L1.log(RealConsHH) &  &  & \num{-0.125} &  &  & \\
+ &  &  & (\num{0.136}) &  &  & \\
+log(RealVAIndustry) &  &  &  & \num{0.020} & \num{0.061} & \\
+ &  &  &  & (\num{0.037}) & (\num{0.197}) & \\
+L1.log(RealVAIndustry) &  &  &  & \num{0.007} & \num{0.181} & \\
+ &  &  &  & (\num{0.037}) & (\num{0.188}) & \\
+log(RoadFreight) &  &  &  &  &  & \num{0.029}\\
+ &  &  &  &  &  & (\num{0.095})\\
+\midrule
+Num.Obs. & \num{102} & \num{79} & \num{66} & \num{111} & \num{63} & \num{36}\\
+AIC & \num{-847.5} & \num{-405.8} & \num{-312.8} & \num{-670.5} & \num{-203.8} & \num{-226.8}\\
+BIC & \num{-789.7} & \num{-370.3} & \num{-279.9} & \num{-619.0} & \num{-156.6} & \num{-203.0}\\
+Log.Lik. & \num{445.738} & \num{217.911} & \num{171.393} & \num{354.240} & \num{123.877} & \num{128.394}\\
+\bottomrule
+\multicolumn{7}{l}{\rule{0pt}{1em}+ p $<$ 0.1, * p $<$ 0.05, ** p $<$ 0.01, *** p $<$ 0.001}\\
+\multicolumn{7}{l}{\rule{0pt}{1em}Quarterly Dummies, Impulse (IIS) and Step Indicators (SIS) are not shown individually but were activated for all models.}\\
+\end{tabular}}
+\end{table}

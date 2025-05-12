@@ -54,6 +54,9 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
         saturation.tpval = model$args$saturation.tpval,
         gets_selection = model$args$gets_selection,
         selection.tpval = model$args$selection.tpval,
+        constrain.to.minimum.sample = model$args$constrain.to.minimum.sample,
+
+        pretest_steps = model$args$pretest_steps,
 
         present = FALSE,
         quiet = TRUE,
@@ -199,8 +202,8 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
         {if(nrow(.) > 0){
           dplyr::mutate(.,value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
-                                                                .data$log_opt == "asinh" ~ sinh(.data$value),
-                                                                .data$log_opt == "none" ~ .data$value))} else {.}} %>%
+                                                   .data$log_opt == "asinh" ~ sinh(.data$value),
+                                                   .data$log_opt == "none" ~ .data$value))} else {.}} %>%
         dplyr::select(-"log_opt") -> alls
 
       dplyr::bind_rows(overall_to_plot_central, centrals %>% dplyr::mutate(method = forecast_method)) -> overall_to_plot_central
@@ -237,6 +240,8 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
                    model = model,
                    exog_fill_method = exog_fill_method)
 
+  out$all_models <- all_models
+  out$forecasted_unknownexogvalues <- forecasted_unknownexogvalues
 
   class(out) <- "osem.forecast.insample"
 

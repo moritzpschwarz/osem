@@ -18,6 +18,8 @@ network <- function(model, layout = "kk") {
     stop("Package 'tidygraph' required for network visualization.")
   }
 
+
+
   # stores the dependencies between the modules
   dependency <- model$module_collection
 
@@ -27,7 +29,7 @@ network <- function(model, layout = "kk") {
   # create the union of all variables used in the OSEM model
   dep_raw <- dependency$dependent
   indep_raw <- dependency$independent
-  indep <- strsplits(indep_raw, splits = c("\\+", "\\-"))
+  indep <- strsplits(indep_raw, splits = c("\\+", "\\-", "\\*", "\\/"))
   indep <- gsub(" ", "", indep)
   vars <- union(dep_raw, indep)
 
@@ -43,7 +45,7 @@ network <- function(model, layout = "kk") {
     if (from == "") { # means that is only AR
       from <- to
     }
-    from <- strsplits(from, splits = c("\\+", "\\-"))
+    from <- strsplits(from, splits = c("\\+", "\\-", "\\*", "\\/"))
     from <- gsub(" ", "", from)
     stopifnot(length(to) == 1L)
     adj[from, to] <- 1
@@ -95,11 +97,21 @@ network <- function(model, layout = "kk") {
     tidygraph::activate(!!as.symbol("nodes")) %>%
     dplyr::inner_join(y = class, by = c("name" = "var"))
 
+  if(model$args[["gets_selection"]]){
+    selection_legend <- ggraph::scale_edge_linetype_manual(name = "Selection",
+                                                           values = c("1" = 1, "2" = 2),
+                                                           labels = c("retained", "dropped"))
+  } else {
+    selection_legend <- ggraph::scale_edge_linetype_manual(name = "Selection",
+                                                           values = c("1" = 1, "2" = 2),
+                                                           labels = c("retained", "dropped"), guide = "none")
+  }
+
   out <- ggraph::ggraph(graph_df, layout = layout) +
     ggraph::geom_node_point(ggplot2::aes(color = class), size = 3) +
     ggraph::geom_edge_link(ggplot2::aes(edge_linetype = as.factor(.data$weight)),
                            arrow = ggplot2::arrow(length = ggplot2::unit(2, 'mm')),
-                           end_cap = ggraph::circle(4, 'mm')) +
+                           end_cap = ggraph::circle(4, 'mm'), show.legend = model$args[["gets_selection"]]) +
     ggraph::geom_edge_loop(ggplot2::aes(edge_linetype = as.factor(.data$weight),
                                         end_cap = ggraph::circle(1, 'mm'),
                                         span = 120,
@@ -108,10 +120,10 @@ network <- function(model, layout = "kk") {
                            position = "jitter") +
     ggraph::geom_node_text(ggplot2::aes(label = .data$name), repel = TRUE, size = 3) +
     ggplot2::scale_color_discrete(name = "Type of Variable",
-                                  labels = c("definition/identity", "endogenous", "exogenous")) +
-    ggraph::scale_edge_linetype_manual(name = "Selection",
-                                       values = c("1" = 1, "2" = 2),
-                                       labels = c("retained", "dropped")) +
+                                  labels = c("Definition/Identity", "Endogenous", "Exogenous")) +
+
+    selection_legend +
+
     ggplot2::theme(legend.position = "bottom")
 
   return(out)

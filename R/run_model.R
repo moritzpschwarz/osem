@@ -25,6 +25,16 @@
 #' and data retrieval process.
 #' @param constrain.to.minimum.sample Logical. Should all data series be
 #' constrained to the minimum data series? Default is \code{TRUE}.
+#' @param keep Character. A string that will be used as regex (in \code{grepl()})
+#' when selection is carried out. This argument therefore requires \code{gets_selection = TRUE}.
+#' Variables that match this character will not be selected over (see \code{\link[gets]{getsm}} for details).
+#' @param pretest_steps Logical. Default is \code{FALSE}. This argument controls
+#' whether isat should first be run for SIS in isolation before other saturation
+#' methods are added (IIS, TIS). This can lead to better results if there are many
+#' IIS identified at the end of the estimation sample/forecast origin. If \code{TRUE}
+#' then \code{\link[gets]{isat}} is first carried out just for SIS (if activated using 'sis = TRUE'),
+#' then the SIS breaks are pre-entered to another \code{\link[gets]{isat}} estimation but not selected over.
+#' After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
 #' @param plot Logical with default = TRUE. Should plots be displayed?
@@ -97,6 +107,11 @@ run_model <- function(specification,
                       gets_selection = TRUE,
                       selection.tpval = 0.01,
                       constrain.to.minimum.sample = TRUE,
+                      keep = NULL,
+
+                      #manual_models = NULL,
+
+                      pretest_steps = FALSE,
 
                       present = FALSE,
                       quiet = FALSE,
@@ -135,6 +150,12 @@ run_model <- function(specification,
   if(!is.logical(gets_selection)){stop("'gets_selection' must be logical  (so either TRUE or FALSE).")}
   if(!is.null(saturation) & !all(saturation %in% c("IIS","SIS","TIS"))){stop("'saturation' must be either NULL to disable Indicator Saturation or a character vector that can take the values 'IIS', 'SIS', or 'TIS'. These can also be combined e.g. c('IIS', 'TIS').")}
 
+  # check the keep argument. it can only be NULL or a character vector
+  if(!is.null(keep) & !is.character(keep)){stop("The argument 'keep' must be a character vector.")}
+  # raise an error when the keep argument is specified but gets_selection is FALSE
+  if(!is.null(keep) & !gets_selection){stop("The argument 'keep' can only be specified when 'gets_selection' is TRUE.")}
+  if(!is.null(keep) & length(keep) > 1){stop("The argument 'keep' can only be a character - not a vector.")}
+
   if(!is.numeric(saturation.tpval) & !is.null(saturation.tpval)){stop("'saturation.tpval' must be either NULL or numeric between 0 and 1.")}
   if(is.numeric(saturation.tpval) & (saturation.tpval > 1 | saturation.tpval < 0 )){stop("'saturation.tpval' must be either NULL or numeric between 0 and 1.")}
   if(!is.numeric(selection.tpval) & !is.null(selection.tpval)){stop("'selection.tpval' must be either NULL or numeric between 0 and 1.")}
@@ -147,12 +168,18 @@ run_model <- function(specification,
   #if(length(ardl_or_ecm) > 1 | !is.character(ardl_or_ecm) | !all(use_logs %in% c("y","x","both","none"))){stop("The argument 'use_logs' must be a character vector and can only be one of 'both', 'y', 'x', or 'none'.")}
   if(is.null(ardl_or_ecm) | (!identical(ardl_or_ecm, "ardl") & !identical(ardl_or_ecm, "ecm"))){stop("The argument 'ardl_or_ecm' must be a character vector and can only be one of 'ardl' or 'ecm'.")}
 
+  # # check that manual_models is either a named list or NULL
+  # if(!is.null(manual_models) & !is.list(manual_models)){stop("The argument 'manual_models' must be a named list.")}
+  # # check that the names of the list are the same as the dependent variables in the specification
+  # if(!is.null(manual_models) & !all(names(manual_models) %in% specification$dependent)){stop("The names of the list in 'manual_models' must be the same as the dependent variables in the specification.")}
+  # # check that the list contains only model objects of type "arx", "getsm", or "isat"
+  # if(!is.null(manual_models) & !all(sapply(manual_models, function(x) class(x) %in% c("arx","getsm","isat")))){stop("The list in 'manual_models' must contain only model objects of class 'arx', 'getsm', or 'isat'.")}
+
+
+  # start of OSEM model -----------------------------------------------------
+
   # check whether OSEM model is well-specified
   module_order <- check_config_table(specification)
-
-  # add columns that translate dependent and independent variables into Eurostat codes
-  # module_order_eurostatvars <- translate_variables(specification = module_order,
-  #                                                  dictionary = dictionary)
 
   # download or locally load the data necessary for the whole OSEM model
   loaded_data <- load_or_download_variables(specification = module_order,
@@ -235,6 +262,8 @@ run_model <- function(specification,
       gets_selection = gets_selection,
       selection.tpval = selection.tpval,
       opts_df = opts_df,
+      keep = keep,
+      pretest_steps = pretest_steps,
       quiet = quiet
     )
 
@@ -267,7 +296,8 @@ run_model <- function(specification,
                    max.block.size = max.block.size,
                    gets_selection = gets_selection,
                    selection.tpval = selection.tpval,
-                   constrain.to.minimum.sample = constrain.to.minimum.sample)
+                   constrain.to.minimum.sample = constrain.to.minimum.sample,
+                   pretest_steps = pretest_steps)
 
   out$module_order <- module_order
   out$module_collection <- module_collection
