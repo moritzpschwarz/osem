@@ -77,6 +77,7 @@ super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FAL
                sis = TRUE,
                plot = FALSE,
                print.searchinfo = FALSE,
+               include.gum = FALSE,
                t.pval = saturation.tpval) -> isat_test
 
     # add isat_test to the list that is called "marginal.models" as a new element (append it to the back)
@@ -125,9 +126,9 @@ super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FAL
     fstat <- b %*% vcov_matrix %*% t(t(b))/2
 
     fstat_pvalue <- stats::pf(fstat,
-                       df1 = nrow(as.data.frame(testmodel$coefficients[varnames_to_test])),
-                       df2 = nrow(as.data.frame(testmodel$coefficients)) - nrow(as.data.frame(testmodel$coefficients[varnames_to_test])),
-                       lower.tail = FALSE)
+                              df1 = nrow(as.data.frame(testmodel$coefficients[varnames_to_test])),
+                              df2 = nrow(as.data.frame(testmodel$coefficients)) - nrow(as.data.frame(testmodel$coefficients[varnames_to_test])),
+                              lower.tail = FALSE)
 
     chisq_pvalue <- 1 - stats::pchisq(fstat*2, nrow(as.data.frame(initial.model$coefficients[varnames_to_test])))
 

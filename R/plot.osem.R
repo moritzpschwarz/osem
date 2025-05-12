@@ -7,6 +7,7 @@
 #' @param interactive Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).
 #' @param first_date Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
 #' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.
+#' @param linewidth Numeric. Linewidth argument for the plot. Default is 1.
 #' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
 #' @param ... Additional arguments passed to the plotting function.
 #'
@@ -42,6 +43,7 @@ plot.osem <- function(x,
                       interactive = FALSE,
                       first_date = NULL,
                       grepl_variables = NULL,
+                      linewidth = 1,
                       return.data = FALSE,
                       ...){
 
@@ -75,6 +77,10 @@ plot.osem <- function(x,
 
   plotting_df_ready <- plot_df %>%
 
+    dplyr::mutate(fit = dplyr::case_when(fit == "TRUE" ~ "Insample Fit",
+                                         fit == "FALSE" ~ "Observation"),
+                  fit = factor(.data$fit, levels = c("Observation","Insample Fit"))) %>%
+
     {if(order.as.run){
       dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$module_order$dependent)) %>%
         tidyr::drop_na("na_item") %>%
@@ -84,10 +90,16 @@ plot.osem <- function(x,
 
     {if(!is.null(grepl_variables)){dplyr::filter(., grepl(grepl_variables,.data$na_item))} else {.}}
 
+  colors <- c(
+    "Insample Fit" = "#FDE725FF",
+    "Observation" = "#440154FF"
+  )
+
   plotting_df_ready %>%
+
     ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$values, color = .data$fit)) +
 
-    ggplot2::geom_line(linewidth = 1, na.rm = TRUE) +
+    ggplot2::geom_line(linewidth = linewidth, na.rm = TRUE) +
 
     # ggplot_options +
 
@@ -96,7 +108,8 @@ plot.osem <- function(x,
     ggplot2::labs(x = NULL, y = NULL, title = title) +
 
     ggplot2::scale_y_continuous(labels = scales::label_comma()) +
-    ggplot2::scale_color_viridis_d() +
+    #ggplot2::scale_color_viridis_d() +
+    ggplot2::scale_color_manual(values = colors) +
 
     ggplot2::theme_minimal() +
     ggplot2::theme(legend.position = "none",
@@ -108,10 +121,10 @@ plot.osem <- function(x,
     # prepare a nice dataset to be spit out
     plotting_df_ready %>%
       dplyr::select(-"var") %>%
-      dplyr::mutate(fit = dplyr::case_when(fit == "forecast" ~ "Endogenous Forecast",
-                                           fit == "TRUE" ~ "Insample Fit",
-                                           fit == "FALSE" ~ "Observation",
-                                           TRUE ~ fit)) %>%
+      dplyr::mutate(fit = dplyr::case_when(.data$fit == "forecast" ~ "Endogenous Forecast",
+                                           .data$fit == "TRUE" ~ "Insample Fit",
+                                           .data$fit == "FALSE" ~ "Observation",
+                                           TRUE ~ .data$fit)) %>%
       dplyr::rename(type = "fit") %>%
       dplyr::arrange(dplyr::desc(.data$time), .data$na_item, .data$type) %>%
       return()

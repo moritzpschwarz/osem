@@ -10,6 +10,7 @@
 #' @param opts_df Internal object containing detailed options and information on individual modules.
 #' @inheritParams run_module
 #' @inheritParams run_model
+#' @inheritParams estimate_module
 #'
 #' @return A tibble with the cleaned data.
 #'

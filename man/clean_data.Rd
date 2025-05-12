@@ -30,7 +30,8 @@ variables. Needs to have a column called 'time', which is of class
 
 \item{module}{A row of the specification table.}
 
-\item{use_logs}{To decide whether to log any variables. Must be one of 'both', 'y', 'x', or 'none'. Default is 'both'.}
+\item{use_logs}{To decide whether to log any variables. Must be one of
+'both', 'y', 'x', or 'none'. Default is 'both'.}
 }
 \value{
 A tibble with the cleaned data.

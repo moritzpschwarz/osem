@@ -5,14 +5,14 @@
 \alias{dict_statcan}
 \title{Dictionary for translating StatCan model variable names}
 \format{
-A tibble with 6 rows and 12 variables:
+A tibble with 5 rows and 12 variables:
 \describe{
 \item{model_varname}{Unique variable name used in model equations}
 \item{full_name}{Full description of the variable}
 \item{database}{Name of the data source, here \code{"statcan"}}
 \item{dataset_id}{Identifier of the StatCan dataset}
 \item{freq}{Frequency of the data, with \code{"m"} for monthly}
-\item{geo}{Geographical location, typically \code{"Canada"}}
+\item{GEO}{Geographical location, typically \code{"Canada"}}
 \item{Seasonal adjustment}{Indicates if data is seasonally adjusted, where applicable}
 \item{North American Industry Classification System (NAICS)}{Classification of industries, based on NAICS}
 \item{North American Product Classification System (NAPCS)}{Product classification system}
@@ -28,6 +28,11 @@ Data retrieved from StatCan, available at \url{https://www.statcan.gc.ca/}.
 dict_statcan
 }
 \description{
-A dataset containing StatCan model variable names and metadata for data retrieval.
+A dataset containing StatCan model variable names and metadata for data retrieval. For details see \link{create_dictionaries}.
+}
+\note{
+Should new filters be necessary, users can simply add additional columns to the dictionary with names
+that exactly match how they appear in the statcanR package. For example, if a statcanR query returns a column
+called \code{Socio-economic objectives}, users should add that exact column name (including all spaces and other characters) to the dictionary.
 }
 \keyword{datasets}
