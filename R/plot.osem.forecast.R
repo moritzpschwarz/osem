@@ -235,6 +235,12 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                                                                        p25 =  .data$values, .by = "time", .data$na_item) %>%
                                                         dplyr::mutate(fit = "Forecast Uncertainty"))}else{.}} -> all_forecasts_processed_q
 
+  all_forecasts_processed_q <- all_forecasts_processed_q %>%
+    {if(order.as.run){
+      dplyr::mutate(.,na_item = factor(.data$na_item, levels = x$orig_model$module_order$dependent)) %>%
+        tidyr::drop_na("na_item") %>%
+        dplyr::arrange(.data$time, .data$na_item)} else {.}}
+
 
   ## Nowcasts ----
   nowcast_processed %>%
