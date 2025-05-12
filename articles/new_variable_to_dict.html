@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">osem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,6 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/example-workflow.html">Example Workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/modelling-with-statcan-workflow.html">modelling-with-statcan-workflow</a></li>
     <li><a class="dropdown-item" href="../articles/new_variable_to_dict.html">Adding a new variable to the Dictionary</a></li>
   </ul>
 </li>
@@ -108,21 +107,26 @@ download.</p>
 <p>Let’s take a look at the dictionary:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dict</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">as_tibble</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/slice.html" class="external-link">slice</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 14</span></span></span>
-<span><span class="co">#&gt;    model_varname full_name database variable_code dataset_id var_col freq  geo  </span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> TOTS          Total Su… <span style="color: #BB0000;">NA</span>       TOTS          <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> GDP           Gross do… eurostat B1GQ          namq_10_g… na_item q     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> GValueAdd     Value ad… eurostat B1G           namq_10_a… na_item q     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> Export        Exports … eurostat P6            namq_10_g… na_item q     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> Import        Imports … eurostat P7            namq_10_g… na_item q     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> GCapitalForm  Gross ca… eurostat P5G           namq_10_g… na_item q     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> FinConsExp    Final co… eurostat P3            namq_10_g… na_item q     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> FinConsExpGov Final co… eurostat P3_S13        namq_10_g… na_item q     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> FinConsExpHH  Househol… eurostat P31_S14_S15   namq_10_g… na_item q     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> StatDiscrep   Statisti… eurostat YA0           namq_10_g… na_item q     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: unit &lt;chr&gt;, s_adj &lt;chr&gt;, nace_r2 &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ipcc_sector &lt;chr&gt;, cpa2_1 &lt;chr&gt;, siec &lt;lgl&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 10 × 33</span></span></span>
+<span><span class="co">#&gt;    model_varname full_name variable_code database dataset_id var_col freq  geo  </span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> Supply        Total Su… <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> Demand        Total De… <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> GDPOutput     GDP Outp… <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> GDPExpenditu… GDP Expe… <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> CO2Industry   Co2 Emis… <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> TOTS          Total Su… TOTS          <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> DomDemand     Domestic… DomDemand     <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>      <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> ATaxesA       Product … D21           eurostat nama_10_g… na_item a     DE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> ASubsidiesA   Product … D31           eurostat nama_10_g… na_item a     DE   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> CO2Agricultu… CO2 Emis… CO2           eurostat env_ac_ai… airpol  a     DE   </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 25 more variables: unit &lt;chr&gt;, s_adj &lt;chr&gt;, nace_r2 &lt;chr&gt;, cpa2_1 &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   sector &lt;chr&gt;, direct &lt;chr&gt;, age &lt;chr&gt;, partner &lt;chr&gt;, finpos &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   p_adj &lt;chr&gt;, meat &lt;chr&gt;, citizen &lt;chr&gt;, wstatus &lt;chr&gt;, tra_oper &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   ipcc_sector &lt;chr&gt;, GEO &lt;chr&gt;, `Seasonal adjustment` &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `North American Industry Classification System (NAICS)` &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `North American Product Classification System (NAPCS)` &lt;chr&gt;, Prices &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `Type of fuel` &lt;chr&gt;, `Products and product groups` &lt;chr&gt;, …</span></span></span></code></pre></div>
 <p>A few words about the variables/columns in the dictionary: There are
 a few crucial columns that will nearly always be needed/useful. These
 are:</p>
@@ -316,10 +320,39 @@ is what we want to add, we can add this to the dictionary. For this, we
 consider the column names of the dictionary again.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dict</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> <span class="va">names</span></span>
-<span><span class="co">#&gt;  [1] "model_varname" "full_name"     "database"      "variable_code"</span></span>
-<span><span class="co">#&gt;  [5] "dataset_id"    "var_col"       "freq"          "geo"          </span></span>
-<span><span class="co">#&gt;  [9] "unit"          "s_adj"         "nace_r2"       "ipcc_sector"  </span></span>
-<span><span class="co">#&gt; [13] "cpa2_1"        "siec"</span></span></code></pre></div>
+<span><span class="co">#&gt;  [1] "model_varname"                                        </span></span>
+<span><span class="co">#&gt;  [2] "full_name"                                            </span></span>
+<span><span class="co">#&gt;  [3] "variable_code"                                        </span></span>
+<span><span class="co">#&gt;  [4] "database"                                             </span></span>
+<span><span class="co">#&gt;  [5] "dataset_id"                                           </span></span>
+<span><span class="co">#&gt;  [6] "var_col"                                              </span></span>
+<span><span class="co">#&gt;  [7] "freq"                                                 </span></span>
+<span><span class="co">#&gt;  [8] "geo"                                                  </span></span>
+<span><span class="co">#&gt;  [9] "unit"                                                 </span></span>
+<span><span class="co">#&gt; [10] "s_adj"                                                </span></span>
+<span><span class="co">#&gt; [11] "nace_r2"                                              </span></span>
+<span><span class="co">#&gt; [12] "cpa2_1"                                               </span></span>
+<span><span class="co">#&gt; [13] "sector"                                               </span></span>
+<span><span class="co">#&gt; [14] "direct"                                               </span></span>
+<span><span class="co">#&gt; [15] "age"                                                  </span></span>
+<span><span class="co">#&gt; [16] "partner"                                              </span></span>
+<span><span class="co">#&gt; [17] "finpos"                                               </span></span>
+<span><span class="co">#&gt; [18] "p_adj"                                                </span></span>
+<span><span class="co">#&gt; [19] "meat"                                                 </span></span>
+<span><span class="co">#&gt; [20] "citizen"                                              </span></span>
+<span><span class="co">#&gt; [21] "wstatus"                                              </span></span>
+<span><span class="co">#&gt; [22] "tra_oper"                                             </span></span>
+<span><span class="co">#&gt; [23] "ipcc_sector"                                          </span></span>
+<span><span class="co">#&gt; [24] "GEO"                                                  </span></span>
+<span><span class="co">#&gt; [25] "Seasonal adjustment"                                  </span></span>
+<span><span class="co">#&gt; [26] "North American Industry Classification System (NAICS)"</span></span>
+<span><span class="co">#&gt; [27] "North American Product Classification System (NAPCS)" </span></span>
+<span><span class="co">#&gt; [28] "Prices"                                               </span></span>
+<span><span class="co">#&gt; [29] "Type of fuel"                                         </span></span>
+<span><span class="co">#&gt; [30] "Products and product groups"                          </span></span>
+<span><span class="co">#&gt; [31] "ref_area"                                             </span></span>
+<span><span class="co">#&gt; [32] "commodity"                                            </span></span>
+<span><span class="co">#&gt; [33] "unit_measure"</span></span></code></pre></div>
 <p>And of course checking the documentation of dict again:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">?</span><span class="va">dict</span></span></code></pre></div>
@@ -331,7 +364,7 @@ possible. For our example this means:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dict</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
-<span>    model_varname <span class="op">=</span> <span class="st">"IndProd"</span>, <span class="co"># this is free to choose but must be unique</span></span>
+<span>    model_varname <span class="op">=</span> <span class="st">"IndProdIdx"</span>, <span class="co"># this is free to choose but must be unique</span></span>
 <span>    full_name <span class="op">=</span> <span class="st">"An index of Industrial Production"</span>,</span>
 <span>    database  <span class="op">=</span> <span class="st">"eurostat"</span>,</span>
 <span>    variable_code <span class="op">=</span> <span class="st">"PRD"</span>, <span class="co"># in this case use the bt_indicator information here</span></span>
@@ -347,27 +380,32 @@ possible. For our example this means:</p>
 <code class="sourceCode R"><span><span class="va">new_dict</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://tibble.tidyverse.org/reference/as_tibble.html" class="external-link">as_tibble</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="va">tail</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 14</span></span></span>
-<span><span class="co">#&gt;   model_varname  full_name database variable_code dataset_id var_col freq  geo  </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> CDD            Cooling … eurostat CDD           nrg_chdd_m indic_… m     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> EmiCH4Livesto… Methane … edgar    <span style="color: #BB0000;">NA</span>            https://j… <span style="color: #BB0000;">NA</span>      m     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> EmiCO2Industry Carbon E… edgar    <span style="color: #BB0000;">NA</span>            https://j… <span style="color: #BB0000;">NA</span>      m     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> EmiCO2Combust… Carbon E… edgar    <span style="color: #BB0000;">NA</span>            https://j… <span style="color: #BB0000;">NA</span>      m     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> EmiN2OTotal    Nitrous … edgar    <span style="color: #BB0000;">NA</span>            https://j… <span style="color: #BB0000;">NA</span>      m     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> IndProd        An index… eurostat PRD           sts_inpr_q indic_… q     AT   </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 6 more variables: unit &lt;chr&gt;, s_adj &lt;chr&gt;, nace_r2 &lt;chr&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   ipcc_sector &lt;chr&gt;, cpa2_1 &lt;chr&gt;, siec &lt;lgl&gt;</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 33</span></span></span>
+<span><span class="co">#&gt;   model_varname  full_name variable_code database dataset_id var_col freq  geo  </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> CPI_Energy     Consumer… <span style="color: #BB0000;">NA</span>            statcan  18-10-000… <span style="color: #BB0000;">NA</span>      m     <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> CPI_Gasoline   Consumer… <span style="color: #BB0000;">NA</span>            statcan  18-10-000… <span style="color: #BB0000;">NA</span>      m     <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> IndProdPriceI… Total, I… <span style="color: #BB0000;">NA</span>            statcan  18-10-026… <span style="color: #BB0000;">NA</span>      m     <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> IndProdGDP     Industri… <span style="color: #BB0000;">NA</span>            statcan  36-10-043… <span style="color: #BB0000;">NA</span>      m     <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> WORLD_OIL      World Oi… <span style="color: #BB0000;">NA</span>            imf      PCPS       <span style="color: #BB0000;">NA</span>      M     <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> IndProdIdx     An index… PRD           eurostat sts_inpr_q indic_… q     AT   </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 25 more variables: unit &lt;chr&gt;, s_adj &lt;chr&gt;, nace_r2 &lt;chr&gt;, cpa2_1 &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   sector &lt;chr&gt;, direct &lt;chr&gt;, age &lt;chr&gt;, partner &lt;chr&gt;, finpos &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   p_adj &lt;chr&gt;, meat &lt;chr&gt;, citizen &lt;chr&gt;, wstatus &lt;chr&gt;, tra_oper &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   ipcc_sector &lt;chr&gt;, GEO &lt;chr&gt;, `Seasonal adjustment` &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `North American Industry Classification System (NAICS)` &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `North American Product Classification System (NAPCS)` &lt;chr&gt;, Prices &lt;chr&gt;,</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;">#   `Type of fuel` &lt;chr&gt;, `Products and product groups` &lt;chr&gt;, …</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="quickly-run-a-small-model-to-check-if-it-works">Quickly run a small model to check if it works:<a class="anchor" aria-label="anchor" href="#quickly-run-a-small-model-to-check-if-it-works"></a>
 </h3>
 <p>We can now put this to the test in an extremely small model. We
-construct a model of the CO[2] Emissions in Industry as a function of
-Gas and Electricity Prices as well as our new measure for Industrial
-Production:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mi>m</mi><mi>i</mi><mi>C</mi><mi>O</mi><mn>2</mn><mi>I</mi><mi>n</mi><mi>d</mi><mi>u</mi><mi>s</mi><mi>t</mi><mi>r</mi><mi>y</mi><mo>=</mo><mi>H</mi><mi>I</mi><mi>C</mi><msub><mi>P</mi><mrow><mi>G</mi><mi>a</mi><mi>s</mi></mrow></msub><mo>+</mo><mi>H</mi><mi>I</mi><mi>C</mi><msub><mi>P</mi><mrow><mi>E</mi><mi>l</mi><mi>e</mi><mi>c</mi><mi>t</mi><mi>r</mi><mi>i</mi><mi>c</mi><mi>i</mi><mi>t</mi><mi>y</mi></mrow></msub><mo>+</mo><mi>I</mi><mi>n</mi><mi>d</mi><mi>P</mi><mi>r</mi><mi>o</mi><mi>d</mi></mrow><annotation encoding="application/x-tex">
-EmiCO2Industry = HICP_{Gas} + HICP_{Electricity} + IndProd
+construct a model of the CO[2] Process Emissions in Industry as a
+function of Gas and Electricity Prices as well as our new measure for
+Industrial Production:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>E</mi><mi>m</mi><mi>i</mi><mi>C</mi><mi>O</mi><mn>2</mn><mi>I</mi><mi>n</mi><mi>d</mi><mi>u</mi><mi>s</mi><mi>t</mi><mi>r</mi><mi>y</mi><mi>P</mi><mi>r</mi><mi>o</mi><mi>c</mi><mi>e</mi><mi>s</mi><mi>s</mi><mo>=</mo><mi>H</mi><mi>I</mi><mi>C</mi><msub><mi>P</mi><mrow><mi>G</mi><mi>a</mi><mi>s</mi></mrow></msub><mo>+</mo><mi>H</mi><mi>I</mi><mi>C</mi><msub><mi>P</mi><mrow><mi>E</mi><mi>l</mi><mi>e</mi><mi>c</mi><mi>t</mi><mi>r</mi><mi>i</mi><mi>c</mi><mi>i</mi><mi>t</mi><mi>y</mi></mrow></msub><mo>+</mo><mi>I</mi><mi>n</mi><mi>d</mi><mi>P</mi><mi>r</mi><mi>o</mi><mi>d</mi><mi>I</mi><mi>d</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">
+EmiCO2IndustryProcess = HICP_{Gas} + HICP_{Electricity} + IndProdIdx
 </annotation></semantics></math></p>
 <p>This is then the specification that we will run - with the type being
 <code>n</code> that denotes a Definition and will therefore be
@@ -378,17 +416,17 @@ estimated:</p>
 <span>    <span class="st">"n"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  dependent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"EmiCO2Industry"</span></span>
+<span>    <span class="st">"EmiCO2IndustryProcess"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  independent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"HICP_Gas + HICP_Electricity + IndProd"</span></span>
+<span>    <span class="st">"HICP_Gas + HICP_Electricity + IndProdIdx"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">specification</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 3</span></span></span>
-<span><span class="co">#&gt;   type  dependent      independent                          </span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> n     EmiCO2Industry HICP_Gas + HICP_Electricity + IndProd</span></span></code></pre></div>
+<span><span class="co">#&gt;   type  dependent             independent                             </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> n     EmiCO2IndustryProcess HICP_Gas + HICP_Electricity + IndProdIdx</span></span></code></pre></div>
 <p>With that specification set up, we now run the model using the
 <code>new_dict</code> that we constructed earlier.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">

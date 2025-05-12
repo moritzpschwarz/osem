@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">osem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,7 +19,6 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/example-workflow.html">Example Workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/modelling-with-statcan-workflow.html">modelling-with-statcan-workflow</a></li>
     <li><a class="dropdown-item" href="../articles/new_variable_to_dict.html">Adding a new variable to the Dictionary</a></li>
   </ul></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -84,6 +83,12 @@
         <dd>Prepare the clean dataframe for modelling</dd>
       </dl><dl><dt>
 
+          <code><a href="create_dictionaries.html">create_dictionaries()</a></code>
+
+        </dt>
+        <dd>Internal function to create the dictionaries This script contains a separate function called generate_dictionary_script. This can be used to read in a modified dictionary and will then give out the code to insert into this function.</dd>
+      </dl><dl><dt>
+
           <code><a href="determine_datacodes.html">determine_datacodes()</a></code>
 
         </dt>
@@ -112,6 +117,24 @@
 
         </dt>
         <dd>Dictionary for translating model variable names</dd>
+      </dl><dl><dt>
+
+          <code><a href="dict_edgar.html">dict_edgar</a></code>
+
+        </dt>
+        <dd>Dictionary for translating EDGAR model variable names</dd>
+      </dl><dl><dt>
+
+          <code><a href="dict_eurostat.html">dict_eurostat</a></code>
+
+        </dt>
+        <dd>Dictionary for translating Eurostat model variable names</dd>
+      </dl><dl><dt>
+
+          <code><a href="dict_identities.html">dict_identities</a></code>
+
+        </dt>
+        <dd>Dictionary for economic model identities</dd>
       </dl><dl><dt>
 
           <code><a href="dict_imf.html">dict_imf</a></code>
@@ -154,6 +177,18 @@
 
         </dt>
         <dd>Estimate the specific module using indicator saturation</dd>
+      </dl><dl><dt>
+
+          <code><a href="forecast_comparison.html">forecast_comparison()</a></code>
+
+        </dt>
+        <dd>Creates baseline forecasts for comparison with OSEM</dd>
+      </dl><dl><dt>
+
+          <code><a href="forecast_comparison2.html">forecast_comparison2()</a></code>
+
+        </dt>
+        <dd>Creates baseline forecasts for comparison with OSEM</dd>
       </dl><dl><dt>
 
           <code><a href="forecast_exogenous_values.html">forecast_exogenous_values()</a></code>
@@ -304,6 +339,12 @@
 
         </dt>
         <dd>Root Mean Squared Forecast Error</dd>
+      </dl><dl><dt>
+
+          <code><a href="run_isat.html">run_isat()</a></code>
+
+        </dt>
+        <dd>Internal function to run and prepare isat estimation</dd>
       </dl><dl><dt>
 
           <code><a href="run_model.html">run_model()</a></code>

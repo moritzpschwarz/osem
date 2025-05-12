@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">osem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,6 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/example-workflow.html">Example Workflow</a></li>
-    <li><a class="dropdown-item" href="../articles/modelling-with-statcan-workflow.html">modelling-with-statcan-workflow</a></li>
     <li><a class="dropdown-item" href="../articles/new_variable_to_dict.html">Adding a new variable to the Dictionary</a></li>
   </ul>
 </li>
@@ -81,37 +80,27 @@ available from <code>dict</code>.</p>
 <code class="sourceCode R"><span><span class="va">dict</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">model_varname</span>, <span class="va">database</span>, <span class="va">dataset_id</span>, <span class="va">variable_code</span>, <span class="va">freq</span>, <span class="va">geo</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   model_varname database  dataset_id variable_code freq  geo</span></span>
-<span><span class="co">#&gt; 1          TOTS     &lt;NA&gt;        &lt;NA&gt;          TOTS &lt;NA&gt; &lt;NA&gt;</span></span>
-<span><span class="co">#&gt; 2           GDP eurostat namq_10_gdp          B1GQ    q   AT</span></span>
-<span><span class="co">#&gt; 3     GValueAdd eurostat namq_10_a10           B1G    q   AT</span></span>
-<span><span class="co">#&gt; 4        Export eurostat namq_10_gdp            P6    q   AT</span></span>
-<span><span class="co">#&gt; 5        Import eurostat namq_10_gdp            P7    q   AT</span></span>
-<span><span class="co">#&gt; 6  GCapitalForm eurostat namq_10_gdp           P5G    q   AT</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
+<span><span class="co">#&gt;   model_varname  database dataset_id variable_code freq  geo  </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Supply         <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Demand         <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> GDPOutput      <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> GDPExpenditure <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> CO2Industry    <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         <span style="color: #BB0000;">NA</span>            <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> TOTS           <span style="color: #BB0000;">NA</span>       <span style="color: #BB0000;">NA</span>         TOTS          <span style="color: #BB0000;">NA</span>    <span style="color: #BB0000;">NA</span></span></span>
 <span><span class="va">dict</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">model_varname</span>, <span class="va">database</span>, <span class="va">dataset_id</span>, <span class="va">variable_code</span>, <span class="va">freq</span>, <span class="va">geo</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       model_varname database</span></span>
-<span><span class="co">#&gt; 35              HDD eurostat</span></span>
-<span><span class="co">#&gt; 36              CDD eurostat</span></span>
-<span><span class="co">#&gt; 37  EmiCH4Livestock    edgar</span></span>
-<span><span class="co">#&gt; 38   EmiCO2Industry    edgar</span></span>
-<span><span class="co">#&gt; 39 EmiCO2Combustion    edgar</span></span>
-<span><span class="co">#&gt; 40      EmiN2OTotal    edgar</span></span>
-<span><span class="co">#&gt;                                                                                                      dataset_id</span></span>
-<span><span class="co">#&gt; 35                                                                                                   nrg_chdd_m</span></span>
-<span><span class="co">#&gt; 36                                                                                                   nrg_chdd_m</span></span>
-<span><span class="co">#&gt; 37     https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v80_FT2022_GHG/EDGAR_CH4_m_1970_2022.zip</span></span>
-<span><span class="co">#&gt; 38 https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v80_FT2022_GHG/IEA_EDGAR_CO2_m_1970_2022.zip</span></span>
-<span><span class="co">#&gt; 39 https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v80_FT2022_GHG/IEA_EDGAR_CO2_m_1970_2022.zip</span></span>
-<span><span class="co">#&gt; 40     https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v80_FT2022_GHG/EDGAR_N2O_m_1970_2022.zip</span></span>
-<span><span class="co">#&gt;    variable_code freq geo</span></span>
-<span><span class="co">#&gt; 35           HDD    m  AT</span></span>
-<span><span class="co">#&gt; 36           CDD    m  AT</span></span>
-<span><span class="co">#&gt; 37          &lt;NA&gt;    m  AT</span></span>
-<span><span class="co">#&gt; 38          &lt;NA&gt;    m  AT</span></span>
-<span><span class="co">#&gt; 39          &lt;NA&gt;    m  AT</span></span>
-<span><span class="co">#&gt; 40          &lt;NA&gt;    m  AT</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
+<span><span class="co">#&gt;   model_varname     database dataset_id    variable_code freq  geo  </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Gasoline_price    statcan  18-10-0001-01 <span style="color: #BB0000;">NA</span>            m     <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> CPI_Energy        statcan  18-10-0004-01 <span style="color: #BB0000;">NA</span>            m     <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> CPI_Gasoline      statcan  18-10-0004-01 <span style="color: #BB0000;">NA</span>            m     <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> IndProdPriceIndex statcan  18-10-0266-01 <span style="color: #BB0000;">NA</span>            m     <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> IndProdGDP        statcan  36-10-0434-01 <span style="color: #BB0000;">NA</span>            m     <span style="color: #BB0000;">NA</span>   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> WORLD_OIL         imf      PCPS          <span style="color: #BB0000;">NA</span>            M     <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="specification">Specification<a class="anchor" aria-label="anchor" href="#specification"></a>
@@ -308,7 +297,7 @@ emissions from combustion activities:</p>
 <span><span class="co"># inspect the estimated equation</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">co2module</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: Mon May 12 13:10:28 2025 </span></span>
+<span><span class="co">#&gt; Date: Mon May 12 19:49:18 2025 </span></span>
 <span><span class="co">#&gt; Dependent var.: ln.EmiCO2Combustion </span></span>
 <span><span class="co">#&gt; Method: Ordinary Least Squares (OLS)</span></span>
 <span><span class="co">#&gt; Variance-Covariance: Ordinary </span></span>
@@ -318,26 +307,27 @@ emissions from combustion activities:</p>
 <span><span class="co">#&gt; SPECIFIC mean equation:</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                      coef   std.error   t-stat   p-value    </span></span>
-<span><span class="co">#&gt; trend         -0.00322559  0.00020565 -15.6849 &lt; 2.2e-16 ***</span></span>
-<span><span class="co">#&gt; ln.HDD         0.10450406  0.02482748   4.2092 6.656e-05 ***</span></span>
-<span><span class="co">#&gt; ln.GValueAdd   0.85736637  0.01703621  50.3261 &lt; 2.2e-16 ***</span></span>
-<span><span class="co">#&gt; q_2           -0.23478792  0.03004824  -7.8137 1.872e-11 ***</span></span>
-<span><span class="co">#&gt; q_3           -0.26095168  0.05205030  -5.0135 3.148e-06 ***</span></span>
-<span><span class="co">#&gt; q_4           -0.05901959  0.01165269  -5.0649 2.567e-06 ***</span></span>
-<span><span class="co">#&gt; sis2001-10-01  0.07333773  0.02040965   3.5933 0.0005625 ***</span></span>
-<span><span class="co">#&gt; sis2003-01-01  0.07123316  0.01766340   4.0328 0.0001251 ***</span></span>
+<span><span class="co">#&gt; trend         -0.00279543  0.00025658 -10.8948 &lt; 2.2e-16 ***</span></span>
+<span><span class="co">#&gt; ln.HDD         0.11219083  0.02412364   4.6507 1.308e-05 ***</span></span>
+<span><span class="co">#&gt; ln.GValueAdd   0.85197644  0.01655856  51.4523 &lt; 2.2e-16 ***</span></span>
+<span><span class="co">#&gt; q_2           -0.22643973  0.02915504  -7.7667 2.479e-11 ***</span></span>
+<span><span class="co">#&gt; q_3           -0.24593894  0.05052612  -4.8676 5.678e-06 ***</span></span>
+<span><span class="co">#&gt; q_4           -0.05688031  0.01126887  -5.0476 2.803e-06 ***</span></span>
+<span><span class="co">#&gt; sis2001-10-01  0.07072137  0.01971129   3.5879 0.0005762 ***</span></span>
+<span><span class="co">#&gt; sis2003-01-01  0.06154706  0.01742715   3.5317 0.0006927 ***</span></span>
+<span><span class="co">#&gt; sis2018-10-01 -0.03575627  0.01352811  -2.6431 0.0099029 ** </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Diagnostics and fit:</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                    Chi-sq df p-value</span></span>
-<span><span class="co">#&gt; Ljung-Box AR(1)   2.24465  1  0.1341</span></span>
-<span><span class="co">#&gt; Ljung-Box ARCH(1) 0.73654  1  0.3908</span></span>
+<span><span class="co">#&gt; Ljung-Box AR(1)   0.89374  1  0.3445</span></span>
+<span><span class="co">#&gt; Ljung-Box ARCH(1) 0.44011  1  0.5071</span></span>
 <span><span class="co">#&gt;                           </span></span>
-<span><span class="co">#&gt; SE of regression   0.03461</span></span>
-<span><span class="co">#&gt; R-squared          0.97376</span></span>
-<span><span class="co">#&gt; Log-lik.(n=88)   175.14024</span></span></code></pre></div>
+<span><span class="co">#&gt; SE of regression   0.03338</span></span>
+<span><span class="co">#&gt; R-squared          0.97589</span></span>
+<span><span class="co">#&gt; Log-lik.(n=88)   178.81520</span></span></code></pre></div>
 <p>We find that the number of heating degree days (<code>HDD</code>) and
 gross value added (<code>GValueAdd</code>) are significant, while gets
 model selection dropped the harmonised consumer price index for energy.
@@ -403,7 +393,7 @@ manually.</p>
 <span><span class="co">#&gt;   module     AR  ARCH `Super Exogeneity`   IIS   SIS     n `Share of Indicators`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Import  0.344 0.304           0.000<span style="text-decoration: underline;">538</span>     5     0    87                0.057<span style="text-decoration: underline;">5</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> EmiCO2… 0.134 0.391           0.006<span style="text-decoration: underline;">83</span>      0     2    88                0.022<span style="text-decoration: underline;">7</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> EmiCO2… 0.344 0.507           0.044<span style="text-decoration: underline;">2</span>       0     3    88                0.034<span style="text-decoration: underline;">1</span></span></span></code></pre></div>
 <p>The diagnostics pass for both modules: we neither have evidence for
 autocorrelated errors nor for autoregressive conditional
 heteroskedasticity.</p>
