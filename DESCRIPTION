@@ -1,0 +1,55 @@
+Package: osem
+Title: An Open-Source Macro-Econometric Model to forecast and study Climate Policies
+Version: 0.0.3
+Date: 2025-02-05
+Authors@R: c(
+    person("Jonas", "Kurle", role = c("aut"), comment = c(ORCID = "0000-0003-2197-2012")),
+    person("Moritz", "Schwarz", , "moritz.schwarz@scmo.eu", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0003-0340-3780"))
+           )
+Description: This package provides the Open Source Empirical Macro (OSEM) Model to forecast macro-economic variables and study climate policies. 
+License: AGPL (>= 3)
+Encoding: UTF-8
+URL: http://moritzschwarz.org/osem/
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends: 
+    R (>= 3.5)
+Imports: 
+    gets (>= 0.37),
+    dplyr,
+    tidyr,
+    countrycode,
+    eurostat,
+    fastDummies,
+    lubridate,
+    rlang,
+    magrittr,
+    stringr,
+    utils,
+    ggplot2,
+    scales,
+    zoo
+LazyData: true
+Suggests: 
+    shiny,
+    readxl,
+    readr,
+    writexl,
+    DT,
+    ggraph,
+    testthat (>= 3.0.0),
+    tidygraph,
+    igraph,
+    plotly,
+    purrr,
+    forecast,
+    knitr,
+    rmarkdown,
+    statcanR,
+    imf.data,
+    modelsummary,
+    broom
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+Remotes: gsucarrat/gets/gets#70

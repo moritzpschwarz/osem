@@ -1,0 +1,200 @@
+---
+output: github_document
+always_allow_html: true
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%",
+  fig.width = 7,
+  fig.height = 5,
+  dev = "png",
+  dpi = 600
+)
+```
+
+# osem - Open Source Empirical Macro Model
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/moritzpschwarz/osem/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/moritzpschwarz/osem/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/moritzpschwarz/osem/branch/main/graph/badge.svg)](https://app.codecov.io/gh/moritzpschwarz/osem?branch=main)
+<!-- badges: end -->
+
+The goal of the {osem} Package is to implement and operationalise the Open Source Empirical Macro (OSEM) Model, developed by Moritz Schwarz, Jonas Kurle, Felix Pretis, and Andrew Martinez. This is an adaptation of the [Norwegian Aggregate Model](https://normetrics.no/nam/), developed by Gunnar Bardsen and Ragnar Nymoen. 
+
+## Installation
+
+You can install the development version of {osem} from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("moritzpschwarz/osem")
+```
+
+## Basic Workflow
+
+This is an example which shows you how to run the model:
+
+First we load the package:
+
+```{r, include=FALSE}
+library(tidyverse)
+```
+
+
+```{r loading}
+library(osem)
+```
+
+### Specify the model
+
+The we calibrate the model specification and save this in a tibble. 
+Here the column names and the structure of the specification table must follow the basic structure below.
+
+```{r set-up}
+spec <- dplyr::tibble(
+  type = c(
+    "n",
+    "n",
+    "n",
+    "n",
+    "d",
+    "n",
+    "n",
+    "n",
+    "n"
+  ),
+  dependent = c(
+    "Import",
+    "FinConsExpHH",
+    "GCapitalForm",
+    "Emissions",
+    "GDP",
+    "GValueAddGov", # as in NAM, technical relationship
+    "GValueAddManuf", # more complicated in NAM, see 2.3.3 and 6.3.1
+    "GValueAddConstr" ,
+    "GValueAddWholesaletrade"
+  ),
+  independent = c(
+    "FinConsExpHH + GCapitalForm",
+    "",
+    "FinConsExpGov + FinConsExpHH",
+    "GDP + Export + GValueAddIndus",
+    "GValueAddGov + GValueAddAgri + GValueAddIndus + GValueAddConstr + GValueAddWholesaletrade + GValueAddInfocom + GValueAddFinance + GValueAddRealest + GValueAddResearch + GValueAddArts",
+    "FinConsExpGov", # as in NAM, technical relationship
+    "Export + LabCostManuf", # NAM uses 'export market indicator' not exports - unclear what this is, NAM uses unit labour cost in NOR manufacturing relative to the foreign price level - here is just total labour cost
+    "LabCostConstr + BuildingPermits", # in NAM some form of YFP2J = 0.3JBOL + 0.2JF P N + 0.3JO + 0.3JOIL. Unclear what this is. Using Building Permits instead
+    "Export + LabCostService"
+  ))
+```
+
+To summarise this, we can print out the specification table: 
+
+```{r, include=FALSE}
+library(kableExtra, verbose = FALSE)
+```
+
+
+
+```{r, results='asis', echo=FALSE}
+kable(spec) %>% 
+  kable_styling() %>% 
+  kable_paper()
+```
+
+
+In order to run this model, we also need a dictionary that translates our model variables to EUROSTAT codes so that the download process can be automated. You can either pass a new dictionary to the model function, or you can use the built in dictionary `osem::dict` (here the first few rows):
+
+
+```{r, results='asis', echo=FALSE}
+osem::dict %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling() %>% 
+  kable_paper()
+```
+
+<!-- The last step in specifying the model is to create a filter list that determines the country that we want to estimate this for and also which unit we need for each variable. This, for the moment, is quite tedious, but this will be improved in the future: -->
+
+<!-- ```{r} -->
+<!-- fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR") -->
+<!-- fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR") -->
+<!-- fc <- list(geo = "AT", unit = "THS_T") -->
+<!-- fd <- list(geo = "AT", s_adj = "SCA") -->
+<!-- fe <- list(geo = "AT", s_adj = "SCA", unit = "I15") -->
+<!-- ff <- list(geo = "AT", s_adj = "SCA", unit = "I16") -->
+
+<!-- filter_list <- list( -->
+<!-- "P7" = fa, -->
+<!-- "YA0" = fb, -->
+<!-- "P31_S14_S15" = fa, -->
+<!-- "P5G" = fa, -->
+<!-- "B1G" = fa, -->
+<!-- "P3_S13" = fa, -->
+<!-- "P6" = fa, -->
+<!-- "GHG" = fc, -->
+<!-- "B1GQ" = fa, -->
+<!-- "PSQM" = fe, -->
+<!-- "LM-LCI-TOT" = ff -->
+<!-- ) -->
+<!-- ``` -->
+
+
+### Running the model
+
+Now we are ready to run the model with the `run_model()` function:
+
+```{r}
+model_result <- run_model(
+  specification = spec,
+  save_to_disk = "inst/extdata/InputData.xlsx",
+  primary_source = "download",
+  trend = TRUE,
+  saturation.tpval = 0.01,
+  plot = FALSE
+)
+```
+
+```{r}
+model_result
+```
+
+
+The first time that we run this, all data will be downloaded and saved in the folder `data/use/InputData.xlsx`. 
+
+The next time that we run the same model, we can save some time and just load the data from our earlier run: 
+```{r, eval=FALSE}
+model_result <- run_model(
+  specification = spec,
+  primary_source = "local",
+  inputdata_directory = "inst/extdata",
+  trend = TRUE,
+  saturation.tpval = 0.01
+)
+```
+
+
+### Forecasting the model
+
+Now that we have run the model, we can forecast the model (here using an AR process for the exogenous values and for 10 time periods):
+
+```{r}
+model_forecast <- forecast_model(model_result, n.ahead = 10, exog_fill_method = "AR", plot = FALSE)
+```
+
+Once we are done, we can plot the forecast: 
+
+```{r}
+plot(model_forecast, order.as.run = TRUE)
+```
+
+
+
+
+
+
