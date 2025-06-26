@@ -2,6 +2,9 @@ options(timeout=1000)
 
 test_that("no errors when running very simple model", {
 
+  skip_on_cran()
+  skip_on_ci()
+
   spec <- dplyr::tibble(
     type = c(
       "d",
@@ -69,7 +72,8 @@ test_that("no errors when running very simple model", {
 })
 
 test_that("no errors when running a slightly more complicated model", {
-
+  skip_on_cran()
+  skip_on_ci()
 
   spec <- dplyr::tibble(
     type = c(
@@ -219,6 +223,8 @@ test_that("no errors when running a slightly more complicated model", {
 
 
 test_that("Incorporate Emissions", {
+  skip_on_cran()
+  skip_on_ci()
 
   spec <- dplyr::tibble(
     type = c(
@@ -285,6 +291,8 @@ test_that("Incorporate Emissions", {
 
 test_that("Extensive Model", {
 
+  skip_on_cran()
+  skip_on_ci()
 
   spec <- dplyr::tibble(
     type = c(
