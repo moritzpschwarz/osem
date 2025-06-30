@@ -73,7 +73,7 @@
 #'     "FinConsExpHH + GCapitalForm"
 #'   )
 #' )
-#' \dontrun{
+#' \donttest{
 #' run_model(specification = spec)
 #' }
 

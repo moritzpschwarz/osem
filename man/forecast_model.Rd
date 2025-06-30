@@ -70,7 +70,7 @@ spec <- dplyr::tibble(
   )
 )
 
-\dontrun{
+\donttest{
 a <- run_model(specification = spec)
 forecast_model(a)
 }

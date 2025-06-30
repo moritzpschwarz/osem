@@ -144,7 +144,7 @@ spec <- dplyr::tibble(
     "FinConsExpHH + GCapitalForm"
   )
 )
-\dontrun{
+\donttest{
 run_model(specification = spec)
 }
 }

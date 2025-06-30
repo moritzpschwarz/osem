@@ -37,7 +37,7 @@ spec <- dplyr::tibble(
     "FinConsExpHH + GCapitalForm"
   )
 )
-\dontrun{
+\donttest{
 a <- run_model(specification = spec)
 model_table(a)
 }
