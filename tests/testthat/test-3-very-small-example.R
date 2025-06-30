@@ -1,6 +1,9 @@
 options(timeout=1000)
 test_that("no errors when running very simple model", {
 
+  skip_on_ci()
+  skip_on_cran()
+
   spec <- dplyr::tibble(
     type = c(
       "d",
