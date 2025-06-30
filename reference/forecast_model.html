@@ -97,8 +97,32 @@
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>An object of class osem.forecast</p>
-    </div>
+    <p>A list of class 'osem.forecast' with the following elements:</p><dl><dt>forecast</dt>
+<dd><p>A tibble with the forecasted values for each module.</p></dd>
+
+<dt>orig_model</dt>
+<dd><p>The original model object of class 'osem'.</p></dd>
+
+<dt>dictionary</dt>
+<dd><p>The dictionary used for the model.</p></dd>
+
+<dt>exog_data</dt>
+<dd><p>A tibble with the exogenous data used for the forecast.</p></dd>
+
+<dt>exog_data_nowcast</dt>
+<dd><p>A tibble with the exogenous data used for the nowcasting.</p></dd>
+
+<dt>nowcast_data</dt>
+<dd><p>A tibble with the nowcasted data.</p></dd>
+
+<dt>args</dt>
+<dd><p>A list with the arguments used for the forecast.</p></dd>
+
+<dt>full_forecast_data</dt>
+<dd><p>A tibble with the full forecast data, if available.</p></dd>
+
+
+</dl></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
@@ -120,16 +144,45 @@
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">fa</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>geo <span class="op">=</span> <span class="st">"AT"</span>, s_adj <span class="op">=</span> <span class="st">"SCA"</span>, unit <span class="op">=</span> <span class="st">"CLV05_MEUR"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">fb</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>geo <span class="op">=</span> <span class="st">"AT"</span>, s_adj <span class="op">=</span> <span class="st">"SCA"</span>, unit <span class="op">=</span> <span class="st">"CP_MEUR"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">filter_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"P7"</span> <span class="op">=</span> <span class="va">fa</span>, <span class="st">"YA0"</span> <span class="op">=</span> <span class="va">fb</span>, <span class="st">"P31_S14_S15"</span> <span class="op">=</span> <span class="va">fa</span>,</span></span>
-<span class="r-in"><span><span class="st">"P5G"</span> <span class="op">=</span> <span class="va">fa</span>, <span class="st">"B1G"</span> <span class="op">=</span> <span class="va">fa</span>, <span class="st">"P3_S13"</span> <span class="op">=</span> <span class="va">fa</span>, <span class="st">"P6"</span> <span class="op">=</span> <span class="va">fa</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">spec</span>, dictionary <span class="op">=</span> <span class="cn">NULL</span>,</span></span>
-<span class="r-in"><span>inputdata_directory <span class="op">=</span> <span class="cn">NULL</span>, filter_list <span class="op">=</span> <span class="va">filter_list</span>,</span></span>
-<span class="r-in"><span>download <span class="op">=</span> <span class="cn">TRUE</span>, save_to_disk <span class="op">=</span> <span class="cn">NULL</span>, present <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">forecast</span><span class="op">(</span><span class="va">a</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">spec</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Table namq_10_a10 cached at /tmp/RtmpN90QV6/eurostat/b1a6002baab7fb27796d86df4c53dad9.rds</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Table namq_10_gdp cached at /tmp/RtmpN90QV6/eurostat/c6c39fa9ea0f07bf8f64918ffb8ff05f.rds</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> --- Estimation begins ---</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Estimating Import = FinConsExpHH + GCapitalForm </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing TOTS = GValueAdd + Import </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing StatDiscrep = TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export </span>
+<span class="r-plt img"><img src="forecast_model-1.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="fu">forecast_model</span><span class="op">(</span><span class="va">a</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No exogenous values provided. Model will forecast the exogenous values with an AR4 process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> Alternative is exog_fill_method = 'last'.</span>
+<span class="r-plt img"><img src="forecast_model-2.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="forecast_model-3.png" alt="" width="700" height="433"></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> OSEM Model Forecast Output</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -----------------------</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Forecast Overview:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Forecast Horizon: 2022-04-01 to 2024-07-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Forecast Method: AR Model (Outlier and Step Shift Corrected)</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Max AR Length: 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Central Forecast Estimates: </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 10 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Date        Import     TOTS StatDiscrep</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2022-04-01 <span style="text-decoration: underline;">319</span>475.  <span style="text-decoration: underline;">977</span>166.     -<span style="color: #BB0000; text-decoration: underline;">66</span><span style="color: #BB0000;">441.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2022-07-01 <span style="text-decoration: underline;">327</span>867.  <span style="text-decoration: underline;">987</span>988.     -<span style="color: #BB0000; text-decoration: underline;">64</span><span style="color: #BB0000;">115.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2022-10-01 <span style="text-decoration: underline;">336</span>773.  <span style="text-decoration: underline;">998</span>887.     -<span style="color: #BB0000; text-decoration: underline;">63</span><span style="color: #BB0000;">027.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2023-01-01 <span style="text-decoration: underline;">345</span>730. 1<span style="text-decoration: underline;">009</span>511.     -<span style="color: #BB0000; text-decoration: underline;">61</span><span style="color: #BB0000;">281.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2023-04-01 <span style="text-decoration: underline;">355</span>711. 1<span style="text-decoration: underline;">022</span>435.     -<span style="color: #BB0000; text-decoration: underline;">58</span><span style="color: #BB0000;">539.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2023-07-01 <span style="text-decoration: underline;">364</span>916. 1<span style="text-decoration: underline;">033</span>919.     -<span style="color: #BB0000; text-decoration: underline;">55</span><span style="color: #BB0000;">441.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2023-10-01 <span style="text-decoration: underline;">374</span>874. 1<span style="text-decoration: underline;">045</span>876.     -<span style="color: #BB0000; text-decoration: underline;">53</span><span style="color: #BB0000;">352.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2024-01-01 <span style="text-decoration: underline;">384</span>809. 1<span style="text-decoration: underline;">057</span>423.     -<span style="color: #BB0000; text-decoration: underline;">50</span><span style="color: #BB0000;">562.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2024-04-01 <span style="text-decoration: underline;">395</span>808. 1<span style="text-decoration: underline;">071</span>344.     -<span style="color: #BB0000; text-decoration: underline;">46</span><span style="color: #BB0000;">592.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2024-07-01 <span style="text-decoration: underline;">405</span>887. 1<span style="text-decoration: underline;">083</span>701.     -<span style="color: #BB0000; text-decoration: underline;">42</span><span style="color: #BB0000;">401.</span></span>
+<span class="r-plt img"><img src="forecast_model-4.png" alt="" width="700" height="433"></span>
+<span class="r-plt img"><img src="forecast_model-5.png" alt="" width="700" height="433"></span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
