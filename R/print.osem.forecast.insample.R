@@ -5,6 +5,8 @@
 #' @param full_names Logical. Default = \code{FALSE}. Should the full names of the variables from the dictionary be printed?
 #' @param ... Further arguments.
 #'
+#' @return A printed summary of the insample forecast output, including RMSFE and forecast within uncertainty statistics.
+#'
 #' @export
 
 print.osem.forecast.insample <- function(x, plot = TRUE, full_names = FALSE, ...){

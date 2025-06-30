@@ -1,3 +1,5 @@
+#' Plot OSEM Model
+#'
 #' Plot the estimated OSEM Model
 #'
 #' @param x An object of class osem, which is the output from the \link{run_model} function.
@@ -10,6 +12,8 @@
 #' @param linewidth Numeric. Linewidth argument for the plot. Default is 1.
 #' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
 #' @param ... Additional arguments passed to the plotting function.
+#'
+#' @return A ggplot object or a tibble/data.frame with the data used for plotting, depending on the value of `return.data`.
 #'
 #' @examples
 #' spec <- dplyr::tibble(

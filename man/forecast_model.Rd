@@ -36,7 +36,17 @@ forecast_model(
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }
 \value{
-An object of class osem.forecast
+A list of class 'osem.forecast' with the following elements:
+\describe{
+\item{forecast}{A tibble with the forecasted values for each module.}
+\item{orig_model}{The original model object of class 'osem'.}
+\item{dictionary}{The dictionary used for the model.}
+\item{exog_data}{A tibble with the exogenous data used for the forecast.}
+\item{exog_data_nowcast}{A tibble with the exogenous data used for the nowcasting.}
+\item{nowcast_data}{A tibble with the nowcasted data.}
+\item{args}{A list with the arguments used for the forecast.}
+\item{full_forecast_data}{A tibble with the full forecast data, if available.}
+}
 }
 \description{
 Forecast OSEM model
@@ -60,14 +70,8 @@ spec <- dplyr::tibble(
   )
 )
 
-fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR")
-fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR")
-filter_list <- list("P7" = fa, "YA0" = fb, "P31_S14_S15" = fa,
-"P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
 \dontrun{
-a <- run_model(specification = spec, dictionary = NULL,
-inputdata_directory = NULL, filter_list = filter_list,
-download = TRUE, save_to_disk = NULL, present = FALSE)
-forecast(a)
+a <- run_model(specification = spec)
+forecast_model(a)
 }
 }
