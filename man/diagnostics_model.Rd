@@ -2,12 +2,12 @@
 % Please edit documentation in R/diagnostics_model.R
 \name{diagnostics_model}
 \alias{diagnostics_model}
-\title{Creates a Summary of the Diagnostics of the OSEM Model}
+\title{OSEM Diagnostics}
 \usage{
 diagnostics_model(model)
 }
 \arguments{
-\item{model}{An model of class 'osem'}
+\item{model}{A model of class 'osem' (to be returned by \code{\link{run_model}}).}
 }
 \value{
 Returns a data.frame with the p-values of the AR and ARCH

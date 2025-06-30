@@ -5,6 +5,8 @@
 #' @param full_names Logical. Default = \code{FALSE}. Should the full names of the variables from the dictionary be printed?
 #' @param ... Further arguments.
 #'
+#' @return A printed summary of the OSEM forecast output, including the forecast horizon, method, and central estimates.
+#'
 #' @export
 
 print.osem.forecast <- function(x, plot = TRUE, full_names = FALSE, ...){

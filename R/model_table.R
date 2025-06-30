@@ -1,21 +1,46 @@
+#' OSEM Model Table
+#'
 #' Show the final regression equations estimated by the OSEM Model
 #'
 #' @param model An OSEM model object or class \code{osem}, created by the \code{run_model} function.
 #' @param output Character. Either "default", "html", "data.frame", or "latex". Default is "default" (which is the default in the \code{\link[modelsummary]{modelsummary}} function.
 #' @param title Character. The title of the table. Default is "OSEM Model Results".
 #'
-#' @return Either an html or a text (latex) table with the regression results.
+#' @return A table summarizing the regression results of the OSEM model (either an html or a text (latex) table).
+#'
+#' @examples
+#' spec <- dplyr::tibble(
+#'   type = c(
+#'     "d",
+#'     "d",
+#'     "n"
+#'   ),
+#'   dependent = c(
+#'     "StatDiscrep",
+#'     "TOTS",
+#'     "Import"
+#'   ),
+#'   independent = c(
+#'     "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+#'     "GValueAdd + Import",
+#'     "FinConsExpHH + GCapitalForm"
+#'   )
+#' )
+#' \donttest{
+#' a <- run_model(specification = spec)
+#' model_table(a)
+#' }
+#'
 #' @export
 #'
 model_table <- function(model,
                         output = "default",
                         title = "OSEM Model Results"){
 
-  model_list <- lapply(model$module_collection$model, gets::as.lm)
-
+  model_list <- lapply(model$module_collection$model, function(x){if(is.null(x)){NULL} else {gets::as.lm(x)}})
   names(model_list) <- model$module_order$dependent
-
-
+  # exclude all NULL elements from the list
+  model_list <- model_list[!sapply(model_list, is.null)]
 
   # ensure the correct order of the table
   lapply(model_list, broom::tidy) %>%

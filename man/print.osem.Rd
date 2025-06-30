@@ -15,6 +15,9 @@
 
 \item{...}{Further arguments.}
 }
+\value{
+A printed summary of the OSEM model output, including estimation options, relationships considered, and diagnostics.
+}
 \description{
 Print output of an OSEM Model
 }

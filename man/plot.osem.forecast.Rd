@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.osem.forecast.R
 \name{plot.osem.forecast}
 \alias{plot.osem.forecast}
-\title{Plot a Forecast Object of the OSEM Model}
+\title{Plot OSEM Forecast}
 \usage{
 \method{plot}{osem.forecast}(
   x,
@@ -38,8 +38,11 @@
 
 \item{...}{Additional arguments passed to the plotting function.}
 }
+\value{
+A ggplot2 object or a plotly object if interactive is TRUE. If return.data is TRUE, a tibble with the data used for plotting.
+}
 \description{
-Plot a Forecast Object of the OSEM Model
+Plot a forecast object of the OSEM Model
 }
 \examples{
 spec <- dplyr::tibble(

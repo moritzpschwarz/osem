@@ -15,6 +15,9 @@
 
 \item{...}{Further arguments.}
 }
+\value{
+A printed summary of the OSEM forecast output, including the forecast horizon, method, and central estimates.
+}
 \description{
 Print output of an OSEM Forecast
 }

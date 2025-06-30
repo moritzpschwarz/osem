@@ -1,9 +1,14 @@
-#' Forecast model insample to evaluate forecasting performance
+#' Forecast OSEM Insample
+#'
+#' This function runs the OSEM model insample and can be used to evaluate the historical forecast performance. In doing so, the function determines the share of the sample that should be used for the insample forecasting.
+#' The function then runs the model up to the last time point of the sample and forecasts the values for all dependent variables. The function also reports diagnostics for those forecasts, such as the RMSFE and the forecast failures (share of forecasts outside of the uncertainty bands).
+#'
 #' @param sample_share Share of the sample that should be used for the insample forecasting. Must be a numeric and must be either 1 or smaller but larger than 0.
 #' @param exog_fill_method Character vector that contains the methods to fill the exogenous variables. Default is "AR" but can also contain multiple methods, e.g. c("AR","auto").
 #' @inheritParams forecast_model
 #'
 #' @return An object (list) with the class \code{osem.forecast.insample}. This object contains the central estimates and the uncertainty estimates of the forecasted values as well as the original data.
+#'
 #' @export
 #'
 #'
