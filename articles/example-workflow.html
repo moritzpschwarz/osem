@@ -229,35 +229,18 @@ calling <code><a href="../reference/run_model.html">run_model()</a></code>.</p>
 <p>We are now ready to run the model and obtain an <code>"osem"</code>
 object.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">specification</span>,</span>
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">specification</span>,</span>
 <span>                   dictionary <span class="op">=</span> <span class="va">dict</span>,</span>
-<span>                   inputdata_directory <span class="op">=</span> <span class="st">"."</span>,</span>
+<span>                   inputdata_directory <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                   primary_source <span class="op">=</span> <span class="st">"local"</span>,</span>
-<span>                   save_to_disk <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                   save_to_disk <span class="op">=</span> <span class="st">"./Downloaded_Input.xlsx"</span>,</span>
 <span>                   present <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>                   quiet <span class="op">=</span> <span class="cn">FALSE</span>, </span>
 <span>                   plot <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Local files are used.</span></span>
-<span><span class="co">#&gt; The following files are opened and scanned for relevant data for the model.</span></span>
-<span><span class="co">#&gt; example-workflow-data.rds</span></span>
-<span><span class="co">#&gt; Note: If these include non-data files (with a likely different structure and hence likely errors), it is recommended to move all data files to a dedicated directory or to save them there using the 'save_to_disk' argument in the first place:</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; You can quiet this message with quiet = TRUE.</span></span>
-<span><span class="co">#&gt; Warning in load_or_download_variables(specification = module_order, dictionary</span></span>
-<span><span class="co">#&gt; = dictionary, : Unbalanced panel, will lose more than 20\% of data when making</span></span>
-<span><span class="co">#&gt; balanced</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; --- Estimation begins ---</span></span>
-<span><span class="co">#&gt; Estimating Import = FinConsExpHH + GCapitalForm </span></span>
-<span><span class="co">#&gt; Estimating EmiCO2Combustion = HDD + HICP_Energy + GValueAdd </span></span>
-<span><span class="co">#&gt; Constructing TOTS = GValueAdd + Import </span></span>
-<span><span class="co">#&gt; Constructing StatDiscrep = TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] "osem"</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
-<p><img src="example-workflow_files/figure-html/unnamed-chunk-2-1.png" width="672"></p>
+<p><img src="example-workflow_files/figure-html/unnamed-chunk-3-1.png" width="672"></p>
 <p>We did not <code>quiet</code> the output, so we get some information
 about the estimation.</p>
 <p>We are told that local files are used, namely the file
@@ -297,37 +280,38 @@ emissions from combustion activities:</p>
 <span><span class="co"># inspect the estimated equation</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">co2module</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: Thu Jun 26 10:13:33 2025 </span></span>
+<span><span class="co">#&gt; Date: Mon Jun 30 11:49:51 2025 </span></span>
 <span><span class="co">#&gt; Dependent var.: ln.EmiCO2Combustion </span></span>
 <span><span class="co">#&gt; Method: Ordinary Least Squares (OLS)</span></span>
 <span><span class="co">#&gt; Variance-Covariance: Ordinary </span></span>
-<span><span class="co">#&gt; No. of observations (mean eq.): 88 </span></span>
-<span><span class="co">#&gt; Sample: 2000-01-01 to 2021-10-01 </span></span>
+<span><span class="co">#&gt; No. of observations (mean eq.): 105 </span></span>
+<span><span class="co">#&gt; Sample: 1996-01-01 to 2022-01-01 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; SPECIFIC mean equation:</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;                      coef   std.error   t-stat   p-value    </span></span>
-<span><span class="co">#&gt; trend         -0.00279543  0.00025658 -10.8948 &lt; 2.2e-16 ***</span></span>
-<span><span class="co">#&gt; ln.HDD         0.11219083  0.02412364   4.6507 1.308e-05 ***</span></span>
-<span><span class="co">#&gt; ln.GValueAdd   0.85197644  0.01655856  51.4523 &lt; 2.2e-16 ***</span></span>
-<span><span class="co">#&gt; q_2           -0.22643973  0.02915504  -7.7667 2.479e-11 ***</span></span>
-<span><span class="co">#&gt; q_3           -0.24593894  0.05052612  -4.8676 5.678e-06 ***</span></span>
-<span><span class="co">#&gt; q_4           -0.05688031  0.01126887  -5.0476 2.803e-06 ***</span></span>
-<span><span class="co">#&gt; sis2001-10-01  0.07072137  0.01971129   3.5879 0.0005762 ***</span></span>
-<span><span class="co">#&gt; sis2003-01-01  0.06154706  0.01742715   3.5317 0.0006927 ***</span></span>
-<span><span class="co">#&gt; sis2018-10-01 -0.03575627  0.01352811  -2.6431 0.0099029 ** </span></span>
+<span><span class="co">#&gt; mconst        11.98154443  0.09154820 130.8769 &lt; 2.2e-16 ***</span></span>
+<span><span class="co">#&gt; trend         -0.00207087  0.00011991 -17.2697 &lt; 2.2e-16 ***</span></span>
+<span><span class="co">#&gt; ln.HDD         0.06430458  0.01245560   5.1627 1.295e-06 ***</span></span>
+<span><span class="co">#&gt; q_2           -0.21223350  0.01639718 -12.9433 &lt; 2.2e-16 ***</span></span>
+<span><span class="co">#&gt; q_3           -0.23504358  0.03143830  -7.4763 3.419e-11 ***</span></span>
+<span><span class="co">#&gt; q_4           -0.04575356  0.00851226  -5.3750 5.274e-07 ***</span></span>
+<span><span class="co">#&gt; sis2018-10-01 -0.07541015  0.01466713  -5.1414 1.416e-06 ***</span></span>
+<span><span class="co">#&gt; sis2020-01-01 -0.05082377  0.01647038  -3.0858  0.002646 ** </span></span>
 <span><span class="co">#&gt; ---</span></span>
 <span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Diagnostics and fit:</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;                    Chi-sq df p-value</span></span>
-<span><span class="co">#&gt; Ljung-Box AR(1)   0.89374  1  0.3445</span></span>
-<span><span class="co">#&gt; Ljung-Box ARCH(1) 0.44011  1  0.5071</span></span>
+<span><span class="co">#&gt;                     Chi-sq df p-value  </span></span>
+<span><span class="co">#&gt; Ljung-Box AR(1)   3.078307  1 0.07934 .</span></span>
+<span><span class="co">#&gt; Ljung-Box ARCH(1) 0.006605  1 0.93523  </span></span>
+<span><span class="co">#&gt; ---</span></span>
+<span><span class="co">#&gt; Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</span></span>
 <span><span class="co">#&gt;                           </span></span>
-<span><span class="co">#&gt; SE of regression   0.03338</span></span>
-<span><span class="co">#&gt; R-squared          0.97589</span></span>
-<span><span class="co">#&gt; Log-lik.(n=88)   178.81520</span></span></code></pre></div>
+<span><span class="co">#&gt; SE of regression   0.02940</span></span>
+<span><span class="co">#&gt; R-squared          0.97703</span></span>
+<span><span class="co">#&gt; Log-lik.(n=105)  225.33551</span></span></code></pre></div>
 <p>We find that the number of heating degree days (<code>HDD</code>) and
 gross value added (<code>GValueAdd</code>) are significant, while gets
 model selection dropped the harmonised consumer price index for energy.
@@ -392,8 +376,8 @@ manually.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2 × 8</span></span></span>
 <span><span class="co">#&gt;   module     AR  ARCH `Super Exogeneity`   IIS   SIS     n `Share of Indicators`</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>                 <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Import  0.344 0.304           0.000<span style="text-decoration: underline;">538</span>     5     0    87                0.057<span style="text-decoration: underline;">5</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> EmiCO2… 0.344 0.507           0.044<span style="text-decoration: underline;">2</span>       0     3    88                0.034<span style="text-decoration: underline;">1</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Import 0.309  0.258           0.000<span style="text-decoration: underline;">186</span>     3     1   102                0.039<span style="text-decoration: underline;">2</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> EmiCO… 0.079<span style="text-decoration: underline;">3</span> 0.935          <span style="color: #BB0000;">NA</span>            0     2   105                0.019<span style="text-decoration: underline;">0</span></span></span></code></pre></div>
 <p>The diagnostics pass for both modules: we neither have evidence for
 autocorrelated errors nor for autoregressive conditional
 heteroskedasticity.</p>
