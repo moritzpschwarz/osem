@@ -37,11 +37,10 @@ model_table <- function(model,
                         output = "default",
                         title = "OSEM Model Results"){
 
-  model_list <- lapply(model$module_collection$model, gets::as.lm)
-
+  model_list <- lapply(model$module_collection$model, function(x){if(is.null(x)){NULL} else {gets::as.lm(x)}})
   names(model_list) <- model$module_order$dependent
-
-
+  # exclude all NULL elements from the list
+  model_list <- model_list[!sapply(model_list, is.null)]
 
   # ensure the correct order of the table
   lapply(model_list, broom::tidy) %>%
