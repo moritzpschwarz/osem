@@ -1,5 +1,5 @@
 Package: osem
-Title: An Open-Source Macro-Econometric Model to forecast and study Climate Policies
+Title: Open-Source Empirical Macro (OSEM) Model to forecast macro-economic as well as climate and energy variables
 Version: 0.0.3
 Date: 2025-02-05
 Authors@R: c(
@@ -7,7 +7,7 @@ Authors@R: c(
     person("Moritz", "Schwarz", , "moritz.schwarz@scmo.eu", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0003-0340-3780"))
            )
-Description: This package provides the Open Source Empirical Macro (OSEM) Model to forecast macro-economic variables and study climate policies. 
+Description: This package provides the Open Source Empirical Macro (OSEM) Model to forecast macro-economic as well as climate and energy variables. 
 License: AGPL (>= 3)
 Encoding: UTF-8
 URL: http://moritzschwarz.org/osem/

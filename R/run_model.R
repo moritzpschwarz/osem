@@ -73,22 +73,10 @@
 #'     "FinConsExpHH + GCapitalForm"
 #'   )
 #' )
-#' \donttest{
-#' a <- run_model(specification = spec, dictionary = NULL,
-#' inputdata_directory = NULL, primary_source = "download",
-#' save_to_disk = NULL, present = FALSE)
+#' \dontrun{
+#' run_model(specification = spec)
 #' }
 
-# config_table_small <- dplyr::tibble(
-#   dependent = c("StatDiscrep",
-#                 "TOTS",
-#                 "Import"),
-#   independent = c("TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
-#                   "GValueAdd + Import",
-#                   "FinConsExpHH + GCapitalForm"))
-#
-#
-# specification <- config_table_small
 
 run_model <- function(specification,
                       dictionary = NULL,

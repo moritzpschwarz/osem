@@ -2,7 +2,7 @@
 % Please edit documentation in R/model_table.R
 \name{model_table}
 \alias{model_table}
-\title{Show the final regression equations estimated by the OSEM Model}
+\title{OSEM Model Table}
 \usage{
 model_table(model, output = "default", title = "OSEM Model Results")
 }
@@ -14,8 +14,32 @@ model_table(model, output = "default", title = "OSEM Model Results")
 \item{title}{Character. The title of the table. Default is "OSEM Model Results".}
 }
 \value{
-Either an html or a text (latex) table with the regression results.
+A table summarizing the regression results of the OSEM model (either an html or a text (latex) table).
 }
 \description{
 Show the final regression equations estimated by the OSEM Model
+}
+\examples{
+spec <- dplyr::tibble(
+  type = c(
+    "d",
+    "d",
+    "n"
+  ),
+  dependent = c(
+    "StatDiscrep",
+    "TOTS",
+    "Import"
+  ),
+  independent = c(
+    "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+    "GValueAdd + Import",
+    "FinConsExpHH + GCapitalForm"
+  )
+)
+\dontrun{
+a <- run_model(specification = spec)
+model_table(a)
+}
+
 }
