@@ -54,6 +54,11 @@ ggplot(data = data_uni) +
   geom_line(aes(x = time, y = V), color = "red") +
   geom_line(aes(x = time, y = W), color = "green")
 
-
+# save data
+data_cvar |>
+  select(Y, Z) |>
+  bind_cols(data_uni |> select(U, V, W)) |>
+  mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = 100)) |>
+  saveRDS(file = "./mwe/artificial_data.rds")
 
 
