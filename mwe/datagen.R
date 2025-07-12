@@ -1,6 +1,6 @@
 # generate cointegrated system: Y, Z -> X (vector)
 # setup
-nobs <- 100
+nobs <- 101 # lose 1 obs
 Sigma <- matrix(c(0.2, 0.1, 0.1, 0.1), nrow = 2, ncol = 2) # error matrix
 A <- matrix(c(0.8, 0, 0.6, 1), nrow = 2, ncol = 2) # AR matrix
 mu <- matrix(c(0.5, 0), nrow = 2, ncol = 1) # intercept
@@ -55,10 +55,16 @@ ggplot(data = data_uni) +
   geom_line(aes(x = time, y = W), color = "green")
 
 # save data
+library(tidyverse)
 data_cvar |>
-  select(Y, Z) |>
-  bind_cols(data_uni |> select(U, V, W)) |>
-  mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = 100)) |>
+  dplyr::select(Y, Z) |>
+  bind_cols(data_uni |> dplyr::select(U, V, W)) |>
+  # generate a variable based on variables from both CVAR and stationary system: Mt = 0.1Yt-1 + 0.1Ut-1
+  mutate(error = rnorm(nobs)) |>
+  mutate(M = 0.1*lag(Y) + 0.1*lag(U) + error) |>
+  dplyr::select(-error) |>
+  drop_na() |>
+  mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = nobs-1)) |>
   saveRDS(file = "./mwe/artificial_data.rds")
 
 
