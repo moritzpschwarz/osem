@@ -54,11 +54,29 @@ ggplot(data = data_uni) +
   geom_line(aes(x = time, y = V), color = "red") +
   geom_line(aes(x = time, y = W), color = "green")
 
+# generate (i) pure AR process (unconnected to rest) and (ii) process with purely exogenous regressor
+data_ar <- matrix(NA, nrow = 1, ncol = nobs)
+rownames(data_ar) <- "Q"
+data_ar[, 1] <- 1.5
+for (t in 2:nobs) {
+  # update observation Q
+  data_ar[, t] <- 1 + 0.3*data_ar[, t-1] + rnorm(1)
+}
+data_other <- data.frame(Q = t(data_ar),
+                         R = rnorm(nobs)) |>
+  mutate(S = 5*R + rnorm(nobs),
+         time = 1:nobs)
+ggplot(data = data_other) +
+  geom_line(aes(x = time, y = Q), color = "blue") +
+  geom_line(aes(x = time, y = R), color = "red") +
+  geom_line(aes(x = time, y = S), color = "orange")
+
 # save data
 library(tidyverse)
 data_cvar |>
   dplyr::select(Y, Z) |>
   bind_cols(data_uni |> dplyr::select(U, V, W)) |>
+  bind_cols(data_other |> dplyr::select(Q, R, S)) |>
   # generate a variable based on variables from both CVAR and stationary system: Mt = 0.1Yt-1 + 0.1Ut-1
   mutate(error = rnorm(nobs)) |>
   mutate(M = 0.1*lag(Y) + 0.1*lag(U) + error) |>
