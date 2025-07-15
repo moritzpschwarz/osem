@@ -29,7 +29,8 @@ Imports:
     utils,
     ggplot2,
     scales,
-    zoo
+    zoo,
+    igraph
 LazyData: true
 Suggests: 
     shiny,
@@ -38,9 +39,9 @@ Suggests:
     writexl,
     DT,
     ggraph,
+    ggforce,
     testthat (>= 3.0.0),
     tidygraph,
-    igraph,
     plotly,
     purrr,
     forecast,

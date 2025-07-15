@@ -7,10 +7,17 @@
 check_config_table(config_table)
 }
 \arguments{
-\item{config_table}{A tibble or data.frame with one column named 'dependent', containing the LHS (Y variables) and one named 'independent' containing the RHS (x variables separated by + and - ).}
+\item{config_table}{A tibble or data.frame specifying the model. It must include the following columns:
+\describe{
+\item{type}{Character specifying whether the LHS variable is given as a definition/identity ("d") or modelled endogenously ("n")}
+\item{dependent}{LHS variable.}
+\item{independent}{RHS variables separated by +, -, /, or *.}
+\item{lag}{RHS variables that should only enter as lags and not contemporaneously, separated by a comma.}
+\item{cvar}{Unique character identifiers to group LHS variables into estimation as a cointegrated vector autoregression (CVAR).}
+}}
 }
 \value{
-A tibble that gives the order of the modules to be run.
+A tibble that appends the order of the modules to be run to the input tibble/data.frame. Variable rows from the same cvar system are collapsed to a single row.
 }
 \description{
 Check the configuration of the model contained in the config table
@@ -19,8 +26,20 @@ Check the configuration of the model contained in the config table
 config_table_small <- dplyr::tibble(
   type = c("d","d","n"),
   dependent = c("JL", "TOTS", "B"),
-  independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J")
+  independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J"),
+  lag = c("", "", ""),
+  cvar = c("", "", "")
 )
 osem:::check_config_table(config_table_small)
+
+mwe <- dplyr::tibble(
+  type = c("n", "n", "n", "n", "n", "n", "d", "n", "n"),
+  dependent = c("X", "Y", "U", "V", "W", "M", "T", "Q", "S"),
+  independent = c("U", "U", "", "U + W", "U + V", "Y + U", "U + V + W", "", "R"),
+  lag = c("", "", "", "W", "", "U, Y", "", "", ""),
+  cvar = c("system1", "system1", "", "", "", "", "", "", "")
+)
+osem:::check_config_table(mwe)
+
 
 }

@@ -1,226 +1,182 @@
-
-
-# To check the errors
-
-# This has a direct endogeneity
-# config_table_small <- dplyr::tibble(
-#   type = c("d",
-#            "d",
-#            "n"),
-#   dependent = c("JL",
-#                 "TOTS",
-#                 "B"),
-#   independent = c("TOTS - CP - CO - J - A",
-#                   "YF + B",
-#                   "CP + J + B"))
-
-
-
-# This has an indirect endogeneity
-# config_table_small <- dplyr::tibble(
-#   type = c("d",
-#            "d",
-#            "n"),
-#   dependent = c("JL",
-#                 "TOTS",
-#                 "B",
-#                 "CP"),
-#   independent = c("TOTS - CP - CO - J - A",
-#                   "YF + B",
-#                   "CP + J",
-#                   "B + CO"))
-
-
-# This is the correct specification
-# config_table_small <- dplyr::tibble(
-#   dependent = c("JL",
-#                 "TOTS",
-#                 "B"),
-#   independent = c("TOTS - CP - CO - J - A",
-#                   "YF + B",
-#                   "CP + J"))
-#
-
-
-
-
-
-
 #' Check the configuration of the model contained in the config table
 #'
-#' @param config_table A tibble or data.frame with one column named 'dependent', containing the LHS (Y variables) and one named 'independent' containing the RHS (x variables separated by + and - ).
+#' @param config_table A tibble or data.frame specifying the model. It must include the following columns:
+#'  \describe{
+#'    \item{type}{Character specifying whether the LHS variable is given as a definition/identity ("d") or modelled endogenously ("n")}
+#'    \item{dependent}{LHS variable.}
+#'    \item{independent}{RHS variables separated by +, -, /, or *.}
+#'    \item{lag}{RHS variables that should only enter as lags and not contemporaneously, separated by a comma.}
+#'    \item{cvar}{Unique character identifiers to group LHS variables into estimation as a cointegrated vector autoregression (CVAR).}
+#'  }
 #'
-#' @return A tibble that gives the order of the modules to be run.
+#' @return A tibble that appends the order of the modules to be run to the input tibble/data.frame. Variable rows from the same cvar system are collapsed to a single row.
 #'
 #' @examples
 #' config_table_small <- dplyr::tibble(
-#'   type = c("d","d","n"),
+#'   type = c("d", "d", "n"),
 #'   dependent = c("JL", "TOTS", "B"),
-#'   independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J")
+#'   independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J"),
+#'   lag = c("", "", ""),
+#'   cvar = c("", "", "")
 #' )
 #' osem:::check_config_table(config_table_small)
 #'
+#' mwe <- dplyr::tibble(
+#'   type = c("n", "n", "n", "n", "n", "n", "d", "n", "n"),
+#'   dependent = c("X", "Y", "U", "V", "W", "M", "T", "Q", "S"),
+#'   independent = c("U", "U", "", "U + W", "U + V", "Y + U", "U + V + W", "", "R"),
+#'   lag = c("", "", "", "W", "", "U, Y", "", "", ""),
+#'   cvar = c("system1", "system1", "", "", "", "", "", "", "")
+#' )
+#' osem:::check_config_table(mwe)
+#'
 check_config_table <- function(config_table) {
-
-  # Define a strsplits function that is used below
-  strsplits <- function(x, splits, ...) {
-    if (identical(x, "")) {
-      return(NULL)
-    } else {
-      for (split in splits)
-      {
-        x <- unlist(strsplit(x, split, ...))
-      }
-      return(x[!x == ""]) # Remove empty values
-    }
+  if (!setequal(colnames(config_table), c("type", "dependent", "independent", "lag", "cvar"))) {
+    stop("config_table does not contain all required columns.")
   }
 
-  # check that there is no direct endogeneity (a RHS variable appears on the LHS in the same equation)
-  config_table %>%
+  # internal logic:
+  # estimate CVAR sub-systems separately
+  # allow for CVAR to have exogenous regressors in principle (despite not in urca-pkg)
+  # to check for contemporaneous simultaneity, filter out vars labelled as "lag"
+  # check whether Cholesky is possible by using graph theory
+
+  #### Part 0 - Input validation
+  # add tests that the entries for "independent", "lag", "type" are the same within the same cvar-system
+
+  #### Part 1 - check for cycles/Cholesky ordering -----------------------------
+
+  # check contemporaneous connections between nodes
+  node_edge_tbl <- config_table %>%
+    # remove potential blank spaces around LHS variables
     dplyr::mutate(independent = gsub(" ", "", .data$independent)) %>%
     dplyr::rowwise() %>%
-    # use the splitvars function to separate the specification table into individual pieces in a list
-    dplyr::mutate(splitvars = list(strsplits(
-      .data$independent,
-      c("\\-", "\\+", "/", "\\*")
-    ))) %>%
+    # extract variables that only enter as lag
+    dplyr::mutate(lag_vars = list(strsplits2(.data$lag, ","))) %>%
+    # extract RHS variables
+    dplyr::mutate(rhs_vars = list(strsplits2(.data$independent, c("\\-", "\\+", "/", "\\*")))) %>%
+    # remove vars that are only added as lags
+    dplyr::mutate(rhs_vars_contemp = list(setdiff(.data$rhs_vars, .data$lag_vars))) %>%
+    # unnest, so have one row per LHS-RHS variable
     dplyr::ungroup() %>%
+    tidyr::unnest(.data$rhs_vars_contemp, keep_empty = TRUE)
+  # result: tbl where each row is an edge: LHS and contemporaneous RHS pair per row
 
-    # create a separate row for each element
-    tidyr::unnest("splitvars", keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
-    # dplyr::group_by(dependent) %>%
-    # dplyr::rowwise() %>%
-    dplyr::mutate(direct_endog = dplyr::case_when(.data$dependent == .data$splitvars ~ TRUE,
-                                                  is.na(.data$splitvars) ~ FALSE,
-                                                  TRUE ~ FALSE)) -> direct_endog
-
-  if (any(direct_endog$direct_endog)) {
-    stop(
-      "A direct endogeneity was detected in this configuration table.
-    You seem to have included a variable on the LHS as well as the RHS.
-    Modify the config_table"
-    )
-  }
-
-  # check if there are any indirect endogeneities (i.e. a variable can only depend on another variable if that variable does not depend on the other)
-  direct_endog %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(pairs = list(sort(c(.data$dependent, .data$splitvars)))) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(duplicated(.data$pairs)) %>%
-    dplyr::pull(.data$pairs) -> indirect_endog
-
-  # if an indirect engodeneity is detected, print a detailed statement.
-  if (!identical(indirect_endog, list())) {
-    overall <- vector()
-    for (i in 1:length(indirect_endog)) {
-      intermed <- paste0(indirect_endog[[i]], collapse = " and ")
-      overall <- c(overall, intermed)
-    }
-    stop(
-      paste0(
-        "An endogeneity was detected.\nCheck the relationship between ",
-        paste0(overall, collapse = "; "),
-        "\nIn the OSEM model a variable can only depend on another variable if that variable does not depend on the other."
-      )
-    )
-  }
-
-  # create the right order for estimation
-  config_table %>%
-    dplyr::mutate(
-      index = 1:dplyr::n(), .before = 1,
-      independent = gsub(" ", "", .data$independent)
+  # extract all nodes/variables
+  # want to show all nodes and later determine order for all vars including AR models
+  all_vars <- union(node_edge_tbl$dependent, unlist(node_edge_tbl$rhs_vars))
+  # store whether variable is part of a CVAR system
+  node_tbl <- tidyr::tibble(name = all_vars) %>%
+    dplyr::mutate(exog = !(.data$name %in% config_table$dependent)) %>%
+    dplyr::left_join(
+      config_table %>%
+        dplyr::select(name = .data$dependent, .data$cvar),
+      by = "name"
     ) %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(splitvars = list(strsplits(
-      .data$independent,
-      c("\\-", "\\+", "/", "\\*")
-    ))) %>%
-    dplyr::ungroup() %>%
+    # will be NA if it is only a RHS var (purely exogenous)
+    # turn the non-subsystem vars with cvar == "" into NA too
+    dplyr::mutate(cvar = dplyr::na_if(.data$cvar, ""))
 
-    tidyr::unnest("splitvars", keep_empty = TRUE) %>% # keep_empty = TRUE to allow for AR models
-    # set endog = TRUE when one an x variable appears anywhere in the "dependent" column - this tells us whether an x-variable is ever estimated
-    dplyr::mutate(endog = ifelse(.data$splitvars %in% .data$dependent, TRUE, FALSE)) -> config_table_endog_exog
+  # focus on nodes that have incoming edges (ignore pure AR or if only lagged RHS vars)
+  edge_tbl <- node_edge_tbl %>%
+    tidyr::drop_na(.data$rhs_vars_contemp) # drop nodes without incoming edges
 
+  # create graph from edges
+  g_full <- edge_tbl %>%
+    dplyr::mutate(
+      from = .data$rhs_vars_contemp,
+      to = .data$dependent
+    ) %>%
+    dplyr::select(.data$from, .data$to) %>%
+    igraph::graph_from_data_frame(d = ., directed = TRUE, vertices = node_tbl)
 
-  # determine those relationships where all x-variables are exogenous - those can be estimated first
-  config_table_endog_exog %>%
-    dplyr::group_by(.data$dependent, .data$independent) %>%
-    dplyr::mutate(all_exog = dplyr::case_when(is.na(.data$splitvars) ~ FALSE, # this is the case for AR - means none are exog
-                                              !any(.data$endog) ~ TRUE, # if not all are endogenous there must be at least one exog
-                                              TRUE ~ FALSE)) %>%
-    dplyr::ungroup() %>%
-    dplyr::distinct(dplyr::across(c("index", "type", "dependent", "independent", "all_exog"))) %>%
-    dplyr::filter(.data$all_exog) %>%
-    dplyr::select(-"all_exog") %>%
-    #dplyr::mutate(order = if_else(condition = (dplyr::n()>0),true = (1:dplyr::n()),false = NA_integer_)) -> order_exog
-    {if (nrow(.) > 0) {dplyr::mutate(.,order = 1:dplyr::n())} else {dplyr::mutate(., order = NA_integer_)}} -> order_exog
-
-  # get the table of relationships where not all x-variables are exogenous - this is just the opposite of above
-  config_table_endog_exog %>%
-
-    dplyr::group_by(.data$dependent, .data$independent) %>%
-    dplyr::mutate(all_exog = dplyr::case_when(is.na(.data$splitvars) ~ FALSE, # this is the case for AR - means none are exog
-                                              !any(.data$endog) ~ TRUE, # if not all are endogenous there must be at least one exog
-                                              TRUE ~ FALSE)) %>%
-    dplyr::ungroup() %>%
-    dplyr::filter(!.data$all_exog) -> not_exog
-
-  # in the following part, we are reducing the not_exog table down part by part
-  while (nrow(not_exog) != 0) {
-    not_exog %>%
-
-      # if a relationship is estimated elsewhere (endog = TRUE) and the x-variable is estimated previously then set already_estimated = TRUE
-      dplyr::mutate(
-        already_estimated = dplyr::case_when(
-          .data$endog & (.data$splitvars %in% order_exog$dependent) ~ TRUE,
-          TRUE ~ FALSE)) %>%
-
-      # if a variable was earlier an endogeneous variable but has already been estimated, then we can set endog = FALSE
-      dplyr::mutate(endog = dplyr::case_when(
-          .data$endog & .data$already_estimated ~ FALSE,
-          TRUE ~ .data$endog)) %>%
-
-      dplyr::group_by(.data$index, .data$type) %>%
-      # get all relationships where no endogenous terms are left
-      dplyr::filter(!any(.data$endog)) %>%
-      dplyr::distinct(dplyr::across(c("index", "dependent", "independent"))) %>%
-
-      dplyr::ungroup() %>%
-
-      # give those relationships an order number - these should now be run after all those that are already in the order_exog tibble
-      dplyr::mutate(
-        order = 1:dplyr::n(),
-        order = order + if (is.null(order_exog$order) | identical(integer(0),order_exog$order)) {0} else {max(order_exog$order)}
-      ) -> remove_from_not_exog
-
-    dplyr::bind_rows(remove_from_not_exog, order_exog) -> order_exog
-
-    not_exog %>% dplyr::filter(!.data$index %in% remove_from_not_exog$index) -> not_exog
+  # check that there are no cycles -> is it a directed, acyclical graph?
+  if (!igraph::is_dag(g_full)) {
+    # wait for "simple_cycles()" function from igraph to tell user where cycle exists
+    stop("Contemporaneous simultaneity detected. Model cannot be identified with Cholesky ordering.")
   }
 
+  # plot the graph (if pkgs in Suggests: are installed)
+  if (requireNamespace("tidygraph") & requireNamespace("ggraph") & requireNamespace("ggforce")) {
+    g_tbl <- tidygraph::as_tbl_graph(g_full) %>%
+      dplyr::mutate(node_type = ifelse(.data$exog, "exog", "endog"))
+    ggraph::ggraph(g_tbl, layout = "sugiyama") +
+      ggraph::geom_node_circle(ggplot2::aes(r = 0.2, fill = .data$node_type), colour = "black") +
+      ggraph::geom_node_text(ggplot2::aes(label = .data$name), size = 3) +
+      ggraph::geom_edge_link(
+        arrow = ggplot2::arrow(
+          type = "closed",
+          length = ggplot2::unit(4, "pt")
+        ),
+        end_cap = ggraph::circle(0.8, "cm"),
+        start_cap = ggraph::circle(0.8, "cm"),
+        alpha = 0.6
+      ) +
+      ggforce::geom_mark_hull(ggplot2::aes(x = .data$x, y = .data$y, filter = !is.na(.data$cvar), fill = .data$cvar),
+        concavity = 5, linetype = "dashed"
+      )
+  } else {
+    message("Skipping plot of model configuration - install tidygraph, ggraph, ggforce.")
+  }
 
-  # config_table_endog_exog %>%
-  #   dplyr::group_by(dependent, independent) %>%
-  #   dplyr::mutate(all_exog = !any(endog)) %>%
-  #   dplyr::ungroup() %>%
-  #   dplyr::filter(!all_exog) %>%
-  #   dplyr::mutate(already_estimated = dplyr::case_when(endog & (splitvars %in% order_exog$dependent)~TRUE,
-  #                                        TRUE ~ FALSE),
-  #          endog = dplyr::case_when(endog & already_estimated ~ FALSE,
-  #                            TRUE ~ endog)) %>%
-  #   dplyr::group_by(index) %>%
-  #   dplyr::filter(!any(endog)) %>%
-  #   dplyr::distinct(index, dependent, independent) %>%
-  #   dplyr::mutate(order = 1:dplyr::n(),
-  #          order = order + max(order_exog$order)) %>%
-  #   dplyr::ungroup() %>%
-  #   dplyr::bind_rows(order_exog)
-  #
+  #### Part 2 - determine a possible Cholesky ordering -------------------------
 
-  order_exog %>%
+  # collapse sub-system CVAR nodes into a single node
+  # igraph needs a numeric vector of length = #nodes, same numbers get contracted
+  # step 1: vector of names: dependent if is.na(cvar), otherwise the cvar value
+  subsystems <- ifelse(is.na(igraph::V(g_full)$cvar), igraph::V(g_full)$name, igraph::V(g_full)$cvar)
+  # step 2: make numeric
+  subsystems <- as.integer(factor(subsystems))
+  # step 3: store original member name as attribute
+  igraph::V(g_full)$members <- igraph::V(g_full)$name
+  # step 4: contract the nodes of the same sub-system
+  g_sub <- igraph::contract(g_full, subsystems, vertex.attr.comb = list(
+    name = "first",
+    cvar = "first",
+    exog = "first",
+    # keep original member list
+    members = function(x) paste(x, collapse = ",")
+  )) %>%
+    igraph::simplify(remove.multiple = TRUE, remove.loops = FALSE) # remove multiple vertices from/into the cvar sub-systems
+  # step 5: rename subsystem node
+  igraph::V(g_sub)$name <- ifelse(is.na(igraph::V(g_sub)$cvar), igraph::V(g_sub)$name, igraph::V(g_sub)$cvar)
+
+  # double check but this should not have changed whether the model is a DAG
+  stopifnot(igraph::is_dag(g_sub))
+
+  # determine order
+  # topological sorting of a DAG: linear ordering of nodes s.t. each node comes before all nodes to which it has edges (sort by outgoing edges)
+  # caution: ordering may not be unique! I think this matters for the interpretation of the shock order of Cholesky ordering
+  ordering <- igraph::topo_sort(g_sub, mode = "out")
+  # remove purely exogenous variables (they are not a row in the config_table)
+  ordering_modelled <- ordering[!igraph::V(g_sub)$exog[ordering]]
+  # expand the CVAR sub-systems into their members again
+  members <- igraph::V(g_sub)$members[ordering_modelled] # elements of CVAR are separated by comma
+  members <- strsplit(members, ",")
+  # create the numeric ordering vector: increasing ordering, multiple same number for CVAR system
+  ordering_numeric <- rep(seq_along(members), times = lengths(members))
+  # create lookup table
+  ordering_lookup <- setNames(ordering_numeric, unlist(members))
+  # add ordering to config_table
+  config_table %>%
+    dplyr::mutate(order = ordering_lookup[.data$dependent]) %>%
     dplyr::arrange(.data$order) %>%
+    # code below can be taken out if want to keep separate rows for cvar system variables
+    dplyr::group_by(.data$order) %>%
+    dplyr::summarise(
+      type = dplyr::first(.data$type),
+      dependent = if (dplyr::first(.data$cvar) == "") {
+        dplyr::first(.data$dependent)
+      } else {
+        paste(.data$dependent, collapse = ",")
+      },
+      independent = dplyr::first(.data$independent),
+      lag = dplyr::first(.data$lag),
+      cvar = dplyr::first(.data$cvar),
+      order = dplyr::first(.data$order)
+    ) %>%
+    dplyr::ungroup() %>%
+    # this is from old code (wasn't explained why we need this)
     dplyr::mutate(
       independent = gsub("\\+", " + ", .data$independent),
       independent = gsub("\\-", " - ", .data$independent),
@@ -229,26 +185,3 @@ check_config_table <- function(config_table) {
     ) %>%
     return()
 }
-
-#
-# translation_table <- dplyr::tibble(
-#   eurostat = c("B1GQ", "B1G", "P6", "P7", "P5G",
-#                "P3", "P3_S13", "P31_S13", "P32_S13", "P31_S14_S15", "P31_S14",
-#                "P31_S15", "YA1", "YA0", "YA2"),
-#   aggregate_variable = c("Y",
-#                          "YF", "A", "B", "J", "CP + CO", "CO", NA, NA, "CP", NA, NA, "JL",
-#                          "JL", "JL"),
-#   full_name = c("Gross domestic product at market prices",
-#                 "Value added, gross", "Exports of goods and services", "Imports of goods and services",
-#                 "Gross capital formation", "Final consumption expenditure", "Final consumption expenditure of general government",
-#                 "Individual consumption expenditure of general government", "Collective consumption expenditure of general government",
-#                 "Household and NPISH final consumption expenditure", "Final consumption expenditure of households",
-#                 "Final consumption expenditure of NPISH", "Statistical discrepancy (production approach)",
-#                 "Statistical discrepancy (expenditure approach)", "Statistical discrepancy (income approach)")
-# )
-#
-# translate_config_table_eurostat <- function(config_table){
-#
-#
-#
-# }
