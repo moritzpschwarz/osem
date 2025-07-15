@@ -18,6 +18,26 @@ strsplits <- function(x, splits, ...) {
   }
 }
 
+#' unpack formulas v2
+#'
+#' NOTE: adapted from strsplits to always return a character, not NULL
+#' @param x String to split
+#' @param splits vector of elements to split the string by.
+#' @param ... Further arguments.
+#'
+#'
+strsplits2 <- function(x, splits, ...) {
+  if (is.null(x) || is.na(x) || identical(x, "")) {
+    return(character(0)) # more consistent if always get a character vector, not NULL
+  } else {
+    for (split in splits)
+    {
+      x <- unlist(strsplit(x, split, ...))
+    }
+    x <- trimws(x) # remove white spaces around variables
+    return(x[!x == ""]) # Remove empty values
+  }
+}
 
 #' Classify variables
 #'
