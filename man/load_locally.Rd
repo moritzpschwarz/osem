@@ -4,14 +4,14 @@
 \alias{load_locally}
 \title{Load Locally}
 \usage{
-load_locally(to_obtain, inputdata_directory, quiet)
+load_locally(to_obtain, input, quiet)
 }
 \arguments{
 \item{to_obtain}{A data.frame as returned by \code{\link[=determine_variables]{determine_variables()}}.}
 
-\item{inputdata_directory}{A path to .rds, .csv, or .xlsx input files in
-which the data is stored. Can be \code{NULL}, in which case data is obtained
-via download if possible.}
+\item{input}{A character vector of file paths, a data.frame, or a list of
+data.frames or file paths. Required if \code{download == FALSE} and at least
+one variable is specified as coming from a local source.}
 
 \item{quiet}{Logical with default = \code{FALSE}. Should messages be displayed?
 These messages are intended to give more information about the estimation
