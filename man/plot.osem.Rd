@@ -61,7 +61,7 @@ independent = c(
 )
 \donttest{
 a <- run_model(specification = spec, dictionary = NULL,
-inputdata_directory = NULL, primary_source = "download",
+primary_source = "download",
 save_to_disk = NULL, present = FALSE)
 plot(a)
 }

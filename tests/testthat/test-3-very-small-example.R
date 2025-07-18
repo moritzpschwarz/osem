@@ -23,7 +23,6 @@ test_that("no errors when running very simple model", {
     a <- run_model(
       specification = spec,
       dictionary = NULL,
-      inputdata_directory = NULL,
       primary_source = "download",
       save_to_disk = NULL,
       present = FALSE,
@@ -36,7 +35,6 @@ test_that("no errors when running very simple model", {
     a <- run_model(
       specification = spec,
       dictionary = NULL,
-      inputdata_directory = NULL,
       primary_source = "local",
       save_to_disk = NULL,
       present = FALSE,

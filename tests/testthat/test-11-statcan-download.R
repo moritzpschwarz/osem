@@ -79,7 +79,7 @@ test_that('statcan_load_and_download_forecasting_functionality',{
   #run the model
   model_run <- run_model(specification = spec,
                          dictionary = dictionary,
-                         inputdata_directory = df,
+                         input = df,
                          primary_source = "local",
                          quiet = TRUE)
 
@@ -433,7 +433,7 @@ test_that("Test behaviour when everything is an identity",{
 
   model_result <- run_model(specification = spec,
                             dictionary = test_imf,
-                            inputdata_directory = imf_data_identical_identity,
+                            input = imf_data_identical_identity,
                             primary_source = "local",
                             quiet = TRUE)
 

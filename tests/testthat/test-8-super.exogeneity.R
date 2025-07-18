@@ -38,7 +38,7 @@ test_that("Super Exogeneity Tests", {
 
   mod <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = testdata,
+                   input = testdata,
                    primary_source = "local",
                    present = FALSE,
                    quiet = TRUE, saturation = "IIS")
@@ -52,7 +52,7 @@ test_that("Super Exogeneity Tests", {
   # run it with a tighter significance to ensure at least one variable is not testable
   mod <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = testdata,
+                   input = testdata,
                    primary_source = "local",
                    present = FALSE,
                    quiet = TRUE, saturation = "IIS",
@@ -65,7 +65,7 @@ test_that("Super Exogeneity Tests", {
   # run it with a very tight significance to ensure no test is possible
   mod <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = testdata,
+                   input = testdata,
                    primary_source = "local",
                    present = FALSE,
                    quiet = TRUE, saturation = "IIS",
@@ -80,7 +80,7 @@ test_that("Super Exogeneity Tests", {
   # check that it works without saturation in the general model
   mod <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = testdata,
+                   input = testdata,
                    primary_source = "local",
                    present = FALSE,
                    quiet = TRUE,

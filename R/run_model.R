@@ -77,7 +77,7 @@
 #' )
 #' \donttest{
 #' a <- run_model(specification = spec, dictionary = NULL,
-#' inputdata_directory = NULL, primary_source = "download",
+#' primary_source = "download",
 #' save_to_disk = NULL, present = FALSE)
 #' }
 
@@ -179,7 +179,9 @@ run_model <- function(specification,
   # if(!is.null(manual_models) & !all(sapply(manual_models, function(x) class(x) %in% c("arx","getsm","isat")))){stop("The list in 'manual_models' must contain only model objects of class 'arx', 'getsm', or 'isat'.")}
 
   if (!missing(inputdata_directory)) {
-    stop("'inputdata_directory' is deprecated. Use 'input' instead.")
+    if(!is.null(inputdata_directory)){
+      stop("'inputdata_directory' is deprecated. Use 'input' instead.")
+    }
   }
 
 
@@ -292,7 +294,7 @@ run_model <- function(specification,
   # prepare output of OSEM model
   out <- list()
   out$args <- list(specification = specification, dictionary = dictionary,
-                   inputdata_directory = inputdata_directory,
+                   input = input,
                    primary_source = primary_source,
                    save_to_disk = save_to_disk, present = present,
 

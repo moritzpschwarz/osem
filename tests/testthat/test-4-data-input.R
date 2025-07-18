@@ -514,3 +514,25 @@ test_that("load_or_download_variables() works correctly", {
   }
 
 })
+
+
+test_that("The change from inputdata_directory to input worked",{
+
+  expect_error(run_model(specification = specification,
+                         dictionary = dict,
+                         inputdata_directory = testdata,
+                         primary_source = "local",
+                         present = FALSE,
+                         quiet = TRUE), regexp = "'inputdata_directory' is deprecated. Use 'input' instead")
+
+  skip_on_cran()
+  skip_on_ci()
+  expect_silent(run_model(specification = specification,
+                          dictionary = dict,
+                          inputdata_directory = NULL,
+                          primary_source = "local",
+                          present = FALSE,
+                          quiet = TRUE))
+
+
+})

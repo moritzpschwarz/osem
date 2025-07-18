@@ -38,8 +38,7 @@
 #' "P5G" = fa, "B1G" = fa, "P3_S13" = fa, "P6" = fa)
 #' \dontrun{
 #' a <- run_model(specification = spec, dictionary = NULL,
-#' inputdata_directory = NULL, filter_list = filter_list,
-#' download = TRUE, save_to_disk = NULL, present = FALSE)
+#' save_to_disk = NULL, present = FALSE)
 #' forecast(a)
 #' }
 

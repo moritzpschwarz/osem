@@ -82,121 +82,206 @@ spec <- dplyr::tibble(
 To summarise this, we can print out the specification table:
 
 <table class="table lightable-paper" style="margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+
 <thead>
+
 <tr>
+
 <th style="text-align:left;">
+
 type
 </th>
+
 <th style="text-align:left;">
+
 dependent
 </th>
+
 <th style="text-align:left;">
+
 independent
 </th>
+
 </tr>
+
 </thead>
+
 <tbody>
+
 <tr>
+
 <td style="text-align:left;">
+
 n
 </td>
+
 <td style="text-align:left;">
+
 Import
 </td>
+
 <td style="text-align:left;">
+
 FinConsExpHH + GCapitalForm
 </td>
+
 </tr>
+
 <tr>
+
 <td style="text-align:left;">
+
 n
 </td>
+
 <td style="text-align:left;">
+
 FinConsExpHH
 </td>
+
 <td style="text-align:left;">
+
 </td>
+
 </tr>
+
 <tr>
+
 <td style="text-align:left;">
+
 n
 </td>
+
 <td style="text-align:left;">
+
 GCapitalForm
 </td>
+
 <td style="text-align:left;">
+
 FinConsExpGov + FinConsExpHH
 </td>
+
 </tr>
+
 <tr>
+
 <td style="text-align:left;">
+
 n
 </td>
+
 <td style="text-align:left;">
+
 Emissions
 </td>
+
 <td style="text-align:left;">
+
 GDP + Export + GValueAddIndus
 </td>
+
 </tr>
+
 <tr>
+
 <td style="text-align:left;">
+
 d
 </td>
+
 <td style="text-align:left;">
+
 GDP
 </td>
+
 <td style="text-align:left;">
+
 GValueAddGov + GValueAddAgri + GValueAddIndus + GValueAddConstr +
 GValueAddWholesaletrade + GValueAddInfocom + GValueAddFinance +
 GValueAddRealest + GValueAddResearch + GValueAddArts
 </td>
+
 </tr>
+
 <tr>
+
 <td style="text-align:left;">
+
 n
 </td>
+
 <td style="text-align:left;">
+
 GValueAddGov
 </td>
+
 <td style="text-align:left;">
+
 FinConsExpGov
 </td>
+
 </tr>
+
 <tr>
+
 <td style="text-align:left;">
+
 n
 </td>
+
 <td style="text-align:left;">
+
 GValueAddManuf
 </td>
+
 <td style="text-align:left;">
+
 Export + LabCostManuf
 </td>
+
 </tr>
+
 <tr>
+
 <td style="text-align:left;">
+
 n
 </td>
+
 <td style="text-align:left;">
+
 GValueAddConstr
 </td>
+
 <td style="text-align:left;">
+
 LabCostConstr + BuildingPermits
 </td>
+
 </tr>
+
 <tr>
+
 <td style="text-align:left;">
+
 n
 </td>
+
 <td style="text-align:left;">
+
 GValueAddWholesaletrade
 </td>
+
 <td style="text-align:left;">
+
 Export + LabCostService
 </td>
+
 </tr>
+
 </tbody>
+
 </table>
 
 In order to run this model, we also need a dictionary that translates
@@ -206,340 +291,1242 @@ function, or you can use the built in dictionary `osem::dict` (here the
 first few rows):
 
 <table class="table lightable-paper" style="margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+
 <thead>
+
 <tr>
+
 <th style="text-align:left;">
+
 model_varname
 </th>
+
 <th style="text-align:left;">
+
 full_name
 </th>
+
 <th style="text-align:left;">
-database
-</th>
-<th style="text-align:left;">
+
 variable_code
 </th>
+
 <th style="text-align:left;">
+
+database
+</th>
+
+<th style="text-align:left;">
+
 dataset_id
 </th>
+
 <th style="text-align:left;">
+
 var_col
 </th>
+
 <th style="text-align:left;">
+
 freq
 </th>
+
 <th style="text-align:left;">
+
 geo
 </th>
+
 <th style="text-align:left;">
+
 unit
 </th>
+
 <th style="text-align:left;">
+
 s_adj
 </th>
+
 <th style="text-align:left;">
+
 nace_r2
 </th>
+
 <th style="text-align:left;">
-ipcc_sector
-</th>
-<th style="text-align:left;">
+
 cpa2_1
 </th>
+
 <th style="text-align:left;">
-siec
+
+sector
 </th>
+
+<th style="text-align:left;">
+
+direct
+</th>
+
+<th style="text-align:left;">
+
+age
+</th>
+
+<th style="text-align:left;">
+
+partner
+</th>
+
+<th style="text-align:left;">
+
+finpos
+</th>
+
+<th style="text-align:left;">
+
+p_adj
+</th>
+
+<th style="text-align:left;">
+
+meat
+</th>
+
+<th style="text-align:left;">
+
+citizen
+</th>
+
+<th style="text-align:left;">
+
+wstatus
+</th>
+
+<th style="text-align:left;">
+
+tra_oper
+</th>
+
+<th style="text-align:left;">
+
+ipcc_sector
+</th>
+
+<th style="text-align:left;">
+
+GEO
+</th>
+
+<th style="text-align:left;">
+
+Seasonal adjustment
+</th>
+
+<th style="text-align:left;">
+
+North American Industry Classification System (NAICS)
+</th>
+
+<th style="text-align:left;">
+
+North American Product Classification System (NAPCS)
+</th>
+
+<th style="text-align:left;">
+
+Prices
+</th>
+
+<th style="text-align:left;">
+
+Type of fuel
+</th>
+
+<th style="text-align:left;">
+
+Products and product groups
+</th>
+
+<th style="text-align:left;">
+
+ref_area
+</th>
+
+<th style="text-align:left;">
+
+commodity
+</th>
+
+<th style="text-align:left;">
+
+unit_measure
+</th>
+
 </tr>
+
 </thead>
+
 <tbody>
+
 <tr>
+
 <td style="text-align:left;">
-TOTS
+
+Supply
 </td>
+
 <td style="text-align:left;">
+
 Total Supply
 </td>
+
 <td style="text-align:left;">
+
 NA
 </td>
+
 <td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+Demand
+</td>
+
+<td style="text-align:left;">
+
+Total Demand
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+GDPOutput
+</td>
+
+<td style="text-align:left;">
+
+GDP Output Approach
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+GDPExpenditure
+</td>
+
+<td style="text-align:left;">
+
+GDP Expenditure Approach
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
+CO2Industry
+</td>
+
+<td style="text-align:left;">
+
+Co2 Emissions Industry in Tonnes
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+</tr>
+
+<tr>
+
+<td style="text-align:left;">
+
 TOTS
 </td>
+
 <td style="text-align:left;">
+
+Total Supply
+</td>
+
+<td style="text-align:left;">
+
+TOTS
+</td>
+
+<td style="text-align:left;">
+
 NA
 </td>
+
 <td style="text-align:left;">
+
 NA
 </td>
+
 <td style="text-align:left;">
+
 NA
 </td>
+
 <td style="text-align:left;">
+
 NA
 </td>
+
 <td style="text-align:left;">
+
 NA
 </td>
+
 <td style="text-align:left;">
+
 NA
 </td>
+
 <td style="text-align:left;">
+
 NA
 </td>
+
 <td style="text-align:left;">
+
 NA
 </td>
+
 <td style="text-align:left;">
+
 NA
 </td>
+
 <td style="text-align:left;">
+
 NA
 </td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
+<td style="text-align:left;">
+
+NA
+</td>
+
 </tr>
-<tr>
-<td style="text-align:left;">
-GDP
-</td>
-<td style="text-align:left;">
-Gross domestic product at market prices
-</td>
-<td style="text-align:left;">
-eurostat
-</td>
-<td style="text-align:left;">
-B1GQ
-</td>
-<td style="text-align:left;">
-namq_10_gdp
-</td>
-<td style="text-align:left;">
-na_item
-</td>
-<td style="text-align:left;">
-q
-</td>
-<td style="text-align:left;">
-AT
-</td>
-<td style="text-align:left;">
-CLV05_MEUR
-</td>
-<td style="text-align:left;">
-SCA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-GValueAdd
-</td>
-<td style="text-align:left;">
-Value added, gross
-</td>
-<td style="text-align:left;">
-eurostat
-</td>
-<td style="text-align:left;">
-B1G
-</td>
-<td style="text-align:left;">
-namq_10_a10
-</td>
-<td style="text-align:left;">
-na_item
-</td>
-<td style="text-align:left;">
-q
-</td>
-<td style="text-align:left;">
-AT
-</td>
-<td style="text-align:left;">
-CLV05_MEUR
-</td>
-<td style="text-align:left;">
-SCA
-</td>
-<td style="text-align:left;">
-TOTAL
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Export
-</td>
-<td style="text-align:left;">
-Exports of goods and services
-</td>
-<td style="text-align:left;">
-eurostat
-</td>
-<td style="text-align:left;">
-P6
-</td>
-<td style="text-align:left;">
-namq_10_gdp
-</td>
-<td style="text-align:left;">
-na_item
-</td>
-<td style="text-align:left;">
-q
-</td>
-<td style="text-align:left;">
-AT
-</td>
-<td style="text-align:left;">
-CLV05_MEUR
-</td>
-<td style="text-align:left;">
-SCA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Import
-</td>
-<td style="text-align:left;">
-Imports of goods and services
-</td>
-<td style="text-align:left;">
-eurostat
-</td>
-<td style="text-align:left;">
-P7
-</td>
-<td style="text-align:left;">
-namq_10_gdp
-</td>
-<td style="text-align:left;">
-na_item
-</td>
-<td style="text-align:left;">
-q
-</td>
-<td style="text-align:left;">
-AT
-</td>
-<td style="text-align:left;">
-CLV05_MEUR
-</td>
-<td style="text-align:left;">
-SCA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-GCapitalForm
-</td>
-<td style="text-align:left;">
-Gross capital formation
-</td>
-<td style="text-align:left;">
-eurostat
-</td>
-<td style="text-align:left;">
-P5G
-</td>
-<td style="text-align:left;">
-namq_10_gdp
-</td>
-<td style="text-align:left;">
-na_item
-</td>
-<td style="text-align:left;">
-q
-</td>
-<td style="text-align:left;">
-AT
-</td>
-<td style="text-align:left;">
-CLV05_MEUR
-</td>
-<td style="text-align:left;">
-SCA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
+
 </tbody>
+
 </table>
+
 <!-- The last step in specifying the model is to create a filter list that determines the country that we want to estimate this for and also which unit we need for each variable. This, for the moment, is quite tedious, but this will be improved in the future: -->
+
 <!-- ```{r} -->
+
 <!-- fa <- list(geo = "AT", s_adj = "SCA", unit = "CLV05_MEUR") -->
+
 <!-- fb <- list(geo = "AT", s_adj = "SCA", unit = "CP_MEUR") -->
+
 <!-- fc <- list(geo = "AT", unit = "THS_T") -->
+
 <!-- fd <- list(geo = "AT", s_adj = "SCA") -->
+
 <!-- fe <- list(geo = "AT", s_adj = "SCA", unit = "I15") -->
+
 <!-- ff <- list(geo = "AT", s_adj = "SCA", unit = "I16") -->
+
 <!-- filter_list <- list( -->
+
 <!-- "P7" = fa, -->
+
 <!-- "YA0" = fb, -->
+
 <!-- "P31_S14_S15" = fa, -->
+
 <!-- "P5G" = fa, -->
+
 <!-- "B1G" = fa, -->
+
 <!-- "P3_S13" = fa, -->
+
 <!-- "P6" = fa, -->
+
 <!-- "GHG" = fc, -->
+
 <!-- "B1GQ" = fa, -->
+
 <!-- "PSQM" = fe, -->
+
 <!-- "LM-LCI-TOT" = ff -->
+
 <!-- ) -->
+
 <!-- ``` -->
 
 ### Running the model
@@ -555,21 +1542,16 @@ model_result <- run_model(
   saturation.tpval = 0.01,
   plot = FALSE
 )
-#> Dataset query already saved in cache_list.json...
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/c567619dc239cdb6c8552d73b75636ff.rds
-#> Table  namq_10_gdp  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/c567619dc239cdb6c8552d73b75636ff.rds
-#> Dataset query already saved in cache_list.json...
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/5f7391f64512e2bcd91dad03fece5d6c.rds
-#> Table  env_ac_aigg_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/5f7391f64512e2bcd91dad03fece5d6c.rds
-#> Dataset query already saved in cache_list.json...
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/48c9e378cb4ff9a025f07c2a3c1c802b.rds
-#> Table  ei_lmlc_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/48c9e378cb4ff9a025f07c2a3c1c802b.rds
-#> Dataset query already saved in cache_list.json...
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/a48b692dcc3fb2781f39b235c4498221.rds
-#> Table  namq_10_a10  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/a48b692dcc3fb2781f39b235c4498221.rds
-#> Dataset query already saved in cache_list.json...
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/747ede24fdec507eceea0e73e631fc53.rds
-#> Table  sts_cobp_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/747ede24fdec507eceea0e73e631fc53.rds
+#> indexed 0B in  0s, 0B/sindexed 2.15GB in  0s, 2.15GB/s                                                                              
+#> Table sts_cobp_q cached at C:\Users\morit\AppData\Local\Temp\RtmpGOqncW/eurostat/b9ab1dabbb1a27521cec3bdf0b9c2c23.rds
+#> indexed 0B in  0s, 0B/sindexed 12.71MB in  0s, 63.19MB/sindexed 12.84MB in  0s, 63.17MB/sindexed 12.98MB in  0s, 63.31MB/sindexed 13.11MB in  0s, 63.39MB/sindexed 13.24MB in  0s, 63.52MB/sindexed 13.37MB in  0s, 63.61MB/sindexed 13.50MB in  0s, 63.73MB/sindexed 13.63MB in  0s, 63.78MB/sindexed 13.76MB in  0s, 63.95MB/sindexed 13.89MB in  0s, 60.77MB/sindexed 14.02MB in  0s, 60.87MB/sindexed 14.16MB in  0s, 60.82MB/sindexed 14.29MB in  0s, 60.99MB/sindexed 14.42MB in  0s, 61.04MB/sindexed 14.55MB in  0s, 61.26MB/sindexed 14.68MB in  0s, 61.44MB/sindexed 14.81MB in  0s, 61.66MB/sindexed 14.94MB in  0s, 61.84MB/sindexed 15.07MB in  0s, 62.04MB/sindexed 15.20MB in  0s, 62.25MB/sindexed 15.34MB in  0s, 62.44MB/sindexed 15.47MB in  0s, 62.41MB/sindexed 15.60MB in  0s, 62.58MB/sindexed 15.73MB in  0s, 62.74MB/sindexed 15.86MB in  0s, 62.92MB/sindexed 15.99MB in  0s, 63.00MB/sindexed 16.12MB in  0s, 63.19MB/sindexed 16.25MB in  0s, 63.34MB/sindexed 16.38MB in  0s, 63.52MB/sindexed 16.51MB in  0s, 63.71MB/sindexed 16.65MB in  0s, 63.90MB/sindexed 16.78MB in  0s, 64.06MB/sindexed 16.91MB in  0s, 64.24MB/sindexed 17.04MB in  0s, 64.41MB/sindexed 17.17MB in  0s, 64.59MB/sindexed 17.30MB in  0s, 64.74MB/sindexed 17.43MB in  0s, 64.98MB/sindexed 17.56MB in  0s, 65.10MB/sindexed 17.69MB in  0s, 65.22MB/sindexed 17.83MB in  0s, 65.36MB/sindexed 17.96MB in  0s, 65.49MB/sindexed 18.09MB in  0s, 65.63MB/sindexed 18.22MB in  0s, 65.78MB/sindexed 18.35MB in  0s, 65.95MB/sindexed 18.48MB in  0s, 66.05MB/sindexed 18.61MB in  0s, 66.16MB/sindexed 18.74MB in  0s, 66.30MB/sindexed 18.87MB in  0s, 66.41MB/sindexed 19.01MB in  0s, 66.57MB/sindexed 19.14MB in  0s, 66.70MB/sindexed 19.27MB in  0s, 66.81MB/sindexed 19.40MB in  0s, 66.95MB/sindexed 19.53MB in  0s, 67.05MB/sindexed 19.66MB in  0s, 67.19MB/sindexed 19.79MB in  0s, 67.29MB/sindexed 19.92MB in  0s, 67.40MB/sindexed 20.05MB in  0s, 67.42MB/sindexed 20.18MB in  0s, 67.48MB/sindexed 20.32MB in  0s, 67.58MB/sindexed 20.45MB in  0s, 67.68MB/sindexed 20.58MB in  0s, 67.76MB/sindexed 20.71MB in  0s, 67.87MB/sindexed 20.84MB in  0s, 67.96MB/sindexed 20.97MB in  0s, 68.06MB/sindexed 21.10MB in  0s, 68.15MB/sindexed 21.23MB in  0s, 68.24MB/sindexed 21.36MB in  0s, 68.22MB/sindexed 21.50MB in  0s, 68.17MB/sindexed 21.63MB in  0s, 68.24MB/sindexed 21.76MB in  0s, 68.34MB/sindexed 21.89MB in  0s, 68.42MB/sindexed 22.02MB in  0s, 68.43MB/sindexed 22.15MB in  0s, 68.50MB/sindexed 22.28MB in  0s, 68.58MB/sindexed 22.41MB in  0s, 68.65MB/sindexed 22.54MB in  0s, 68.77MB/sindexed 22.68MB in  0s, 68.72MB/sindexed 22.81MB in  0s, 68.75MB/sindexed 22.94MB in  0s, 68.77MB/sindexed 23.07MB in  0s, 68.81MB/sindexed 23.20MB in  0s, 66.70MB/sindexed 23.33MB in  0s, 66.70MB/sindexed 23.46MB in  0s, 66.76MB/sindexed 23.59MB in  0s, 66.84MB/sindexed 23.72MB in  0s, 66.91MB/sindexed 23.85MB in  0s, 66.99MB/sindexed 23.99MB in  0s, 67.13MB/sindexed 24.12MB in  0s, 67.21MB/sindexed 24.25MB in  0s, 67.33MB/sindexed 24.38MB in  0s, 67.43MB/sindexed 24.51MB in  0s, 67.52MB/sindexed 24.64MB in  0s, 67.44MB/sindexed 24.77MB in  0s, 67.49MB/sindexed 24.90MB in  0s, 67.55MB/sindexed 25.03MB in  0s, 67.62MB/sindexed 25.17MB in  0s, 67.68MB/sindexed 25.30MB in  0s, 67.75MB/sindexed 25.43MB in  0s, 67.80MB/sindexed 25.56MB in  0s, 67.86MB/sindexed 25.69MB in  0s, 67.82MB/sindexed 25.82MB in  0s, 67.89MB/sindexed 25.95MB in  0s, 67.92MB/sindexed 26.08MB in  0s, 67.95MB/sindexed 26.21MB in  0s, 68.03MB/sindexed 26.35MB in  0s, 68.10MB/sindexed 26.48MB in  0s, 68.19MB/sindexed 26.61MB in  0s, 68.29MB/sindexed 26.74MB in  0s, 68.37MB/sindexed 26.87MB in  0s, 68.44MB/sindexed 27.00MB in  0s, 68.53MB/sindexed 27.13MB in  0s, 68.63MB/sindexed 27.26MB in  0s, 68.69MB/sindexed 27.39MB in  0s, 68.74MB/sindexed 27.52MB in  0s, 63.08MB/sindexed 27.66MB in  0s, 63.11MB/sindexed 27.79MB in  0s, 63.13MB/sindexed 27.92MB in  0s, 63.18MB/sindexed 28.05MB in  0s, 63.23MB/sindexed 28.18MB in  0s, 63.26MB/sindexed 28.31MB in  0s, 63.32MB/sindexed 28.44MB in  0s, 63.44MB/sindexed 28.57MB in  0s, 63.61MB/sindexed 28.70MB in  0s, 63.77MB/sindexed 28.84MB in  0s, 63.91MB/sindexed 28.97MB in  0s, 64.06MB/sindexed 29.10MB in  0s, 64.23MB/sindexed 29.23MB in  0s, 64.40MB/sindexed 29.36MB in  0s, 64.55MB/sindexed 29.49MB in  0s, 64.69MB/sindexed 29.62MB in  0s, 64.83MB/sindexed 29.75MB in  0s, 65.00MB/sindexed 29.88MB in  0s, 65.18MB/sindexed 30.02MB in  0s, 65.36MB/sindexed 30.15MB in  0s, 65.54MB/sindexed 30.28MB in  0s, 65.72MB/sindexed 30.41MB in  0s, 65.75MB/sindexed 30.54MB in  0s, 65.80MB/sindexed 30.67MB in  0s, 65.92MB/sindexed 30.80MB in  0s, 66.06MB/sindexed 30.93MB in  0s, 66.19MB/sindexed 31.06MB in  0s, 66.33MB/sindexed 31.19MB in  0s, 66.50MB/sindexed 31.33MB in  0s, 66.63MB/sindexed 31.46MB in  0s, 66.76MB/sindexed 31.59MB in  0s, 66.82MB/sindexed 31.72MB in  0s, 66.87MB/sindexed 31.85MB in  0s, 66.93MB/sindexed 31.98MB in  0s, 66.99MB/sindexed 32.11MB in  0s, 67.11MB/sindexed 32.24MB in  0s, 67.19MB/sindexed 32.37MB in  0s, 67.31MB/sindexed 32.51MB in  0s, 67.41MB/sindexed 32.64MB in  0s, 67.53MB/sindexed 32.77MB in  0s, 67.63MB/sindexed 32.90MB in  0s, 67.75MB/sindexed 33.03MB in  0s, 67.87MB/sindexed 33.16MB in  0s, 68.00MB/sindexed 33.29MB in  0s, 68.11MB/sindexed 33.42MB in  0s, 68.25MB/sindexed 33.55MB in  0s, 68.37MB/sindexed 33.69MB in  0s, 68.41MB/sindexed 33.82MB in  0s, 68.51MB/sindexed 33.95MB in  0s, 68.59MB/sindexed 34.08MB in  0s, 68.71MB/sindexed 34.21MB in  0s, 68.75MB/sindexed 34.34MB in  0s, 68.85MB/sindexed 34.47MB in  1s, 68.83MB/sindexed 34.60MB in  1s, 68.93MB/sindexed 34.73MB in  1s, 69.01MB/sindexed 34.86MB in  1s, 68.99MB/sindexed 35.00MB in  1s, 69.04MB/sindexed 35.13MB in  1s, 69.05MB/sindexed 35.26MB in  1s, 69.04MB/sindexed 35.39MB in  1s, 69.05MB/sindexed 35.52MB in  1s, 69.02MB/sindexed 35.65MB in  1s, 69.00MB/sindexed 35.78MB in  1s, 68.95MB/sindexed 35.91MB in  1s, 68.93MB/sindexed 36.04MB in  1s, 68.91MB/sindexed 36.18MB in  1s, 68.90MB/sindexed 36.31MB in  1s, 68.87MB/sindexed 36.44MB in  1s, 68.85MB/sindexed 36.57MB in  1s, 68.66MB/sindexed 36.70MB in  1s, 68.53MB/sindexed 36.83MB in  1s, 68.46MB/sindexed 36.96MB in  1s, 68.45MB/sindexed 37.09MB in  1s, 68.43MB/sindexed 37.22MB in  1s, 68.38MB/sindexed 37.36MB in  1s, 68.35MB/sindexed 37.49MB in  1s, 68.37MB/sindexed 37.62MB in  1s, 68.33MB/sindexed 37.75MB in  1s, 68.31MB/sindexed 37.88MB in  1s, 68.20MB/sindexed 38.01MB in  1s, 68.13MB/sindexed 38.14MB in  1s, 68.10MB/sindexed 38.27MB in  1s, 68.08MB/sindexed 38.40MB in  1s, 68.03MB/sindexed 38.53MB in  1s, 68.08MB/sindexed 38.67MB in  1s, 67.81MB/sindexed 38.80MB in  1s, 67.54MB/sindexed 38.93MB in  1s, 67.34MB/sindexed 39.06MB in  1s, 67.23MB/sindexed 39.19MB in  1s, 67.13MB/sindexed 39.32MB in  1s, 67.01MB/sindexed 39.45MB in  1s, 66.87MB/sindexed 39.58MB in  1s, 66.77MB/sindexed 39.71MB in  1s, 66.66MB/sindexed 39.85MB in  1s, 66.55MB/sindexed 39.98MB in  1s, 66.56MB/sindexed 40.11MB in  1s, 66.57MB/sindexed 40.24MB in  1s, 66.61MB/sindexed 40.37MB in  1s, 66.65MB/sindexed 40.50MB in  1s, 66.70MB/sindexed 40.63MB in  1s, 66.73MB/sindexed 40.76MB in  1s, 66.77MB/sindexed 40.89MB in  1s, 66.81MB/sindexed 41.03MB in  1s, 66.89MB/sindexed 41.16MB in  1s, 66.83MB/sindexed 41.29MB in  1s, 66.85MB/sindexed 41.42MB in  1s, 66.87MB/sindexed 41.55MB in  1s, 66.89MB/sindexed 41.68MB in  1s, 66.86MB/sindexed 41.81MB in  1s, 66.83MB/sindexed 41.94MB in  1s, 66.76MB/sindexed 42.07MB in  1s, 66.66MB/sindexed 42.20MB in  1s, 66.63MB/sindexed 42.34MB in  1s, 66.57MB/sindexed 42.47MB in  1s, 66.48MB/sindexed 42.60MB in  1s, 66.39MB/sindexed 42.73MB in  1s, 66.27MB/sindexed 42.86MB in  1s, 66.13MB/sindexed 42.99MB in  1s, 66.01MB/sindexed 43.12MB in  1s, 65.94MB/sindexed 43.25MB in  1s, 65.82MB/sindexed 43.38MB in  1s, 65.72MB/sindexed 43.52MB in  1s, 65.64MB/sindexed 43.65MB in  1s, 65.59MB/sindexed 43.78MB in  1s, 65.49MB/sindexed 43.91MB in  1s, 65.41MB/sindexed 44.04MB in  1s, 65.35MB/sindexed 44.17MB in  1s, 65.29MB/sindexed 44.30MB in  1s, 65.27MB/sindexed 44.43MB in  1s, 65.24MB/sindexed 44.56MB in  1s, 65.21MB/sindexed 44.70MB in  1s, 65.18MB/sindexed 44.83MB in  1s, 65.19MB/sindexed 44.96MB in  1s, 65.11MB/sindexed 45.09MB in  1s, 65.00MB/sindexed 45.22MB in  1s, 64.93MB/sindexed 45.35MB in  1s, 64.85MB/sindexed 45.48MB in  1s, 64.78MB/sindexed 45.61MB in  1s, 64.75MB/sindexed 45.74MB in  1s, 64.75MB/sindexed 45.87MB in  1s, 64.74MB/sindexed 46.01MB in  1s, 64.74MB/sindexed 46.14MB in  1s, 64.79MB/sindexed 46.27MB in  1s, 64.81MB/sindexed 46.40MB in  1s, 64.84MB/sindexed 46.53MB in  1s, 64.88MB/sindexed 46.66MB in  1s, 64.91MB/sindexed 46.79MB in  1s, 64.94MB/sindexed 46.92MB in  1s, 64.98MB/sindexed 47.05MB in  1s, 65.01MB/sindexed 47.19MB in  1s, 65.06MB/sindexed 47.32MB in  1s, 65.10MB/sindexed 47.45MB in  1s, 65.15MB/sindexed 47.58MB in  1s, 65.20MB/sindexed 47.71MB in  1s, 65.25MB/sindexed 47.84MB in  1s, 65.30MB/sindexed 47.97MB in  1s, 65.37MB/sindexed 48.10MB in  1s, 65.43MB/sindexed 48.23MB in  1s, 65.48MB/sindexed 48.37MB in  1s, 65.55MB/sindexed 48.50MB in  1s, 65.61MB/sindexed 48.63MB in  1s, 65.67MB/sindexed 48.76MB in  1s, 65.72MB/sindexed 48.89MB in  1s, 65.78MB/sindexed 49.02MB in  1s, 65.87MB/sindexed 49.15MB in  1s, 65.89MB/sindexed 49.28MB in  1s, 65.90MB/sindexed 49.41MB in  1s, 65.91MB/sindexed 49.54MB in  1s, 65.99MB/sindexed 49.68MB in  1s, 66.02MB/sindexed 49.81MB in  1s, 66.05MB/sindexed 49.94MB in  1s, 66.12MB/sindexed 50.07MB in  1s, 65.46MB/sindexed 50.20MB in  1s, 65.47MB/sindexed 50.33MB in  1s, 65.52MB/sindexed 50.46MB in  1s, 65.53MB/sindexed 50.59MB in  1s, 65.60MB/sindexed 50.72MB in  1s, 65.66MB/sindexed 50.86MB in  1s, 65.69MB/sindexed 50.99MB in  1s, 65.72MB/sindexed 51.12MB in  1s, 62.28MB/sindexed 51.25MB in  1s, 62.33MB/sindexed 51.38MB in  1s, 62.39MB/sindexed 51.51MB in  1s, 62.46MB/sindexed 51.64MB in  1s, 62.48MB/sindexed 51.77MB in  1s, 62.55MB/sindexed 51.90MB in  1s, 62.57MB/sindexed 52.04MB in  1s, 62.56MB/sindexed 52.17MB in  1s, 62.51MB/sindexed 52.30MB in  1s, 62.54MB/sindexed 52.43MB in  1s, 62.57MB/sindexed 52.56MB in  1s, 62.61MB/sindexed 52.69MB in  1s, 62.65MB/sindexed 52.82MB in  1s, 62.70MB/sindexed 52.95MB in  1s, 62.75MB/sindexed 53.08MB in  1s, 62.80MB/sindexed 53.21MB in  1s, 62.84MB/sindexed 53.35MB in  1s, 62.86MB/sindexed 53.48MB in  1s, 62.89MB/sindexed 53.61MB in  1s, 62.93MB/sindexed 53.74MB in  1s, 62.97MB/sindexed 53.87MB in  1s, 63.01MB/sindexed 54.00MB in  1s, 63.07MB/sindexed 54.13MB in  1s, 63.13MB/sindexed 54.26MB in  1s, 63.17MB/sindexed 54.39MB in  1s, 63.21MB/sindexed 54.53MB in  1s, 63.25MB/sindexed 54.66MB in  1s, 63.24MB/sindexed 54.79MB in  1s, 63.27MB/sindexed 54.92MB in  1s, 63.28MB/sindexed 55.05MB in  1s, 63.29MB/sindexed 55.18MB in  1s, 63.31MB/sindexed 55.31MB in  1s, 63.32MB/sindexed 55.44MB in  1s, 63.32MB/sindexed 55.57MB in  1s, 63.35MB/sindexed 55.71MB in  1s, 63.36MB/sindexed 55.84MB in  1s, 63.40MB/sindexed 55.97MB in  1s, 63.44MB/sindexed 56.10MB in  1s, 63.49MB/sindexed 56.23MB in  1s, 63.52MB/sindexed 56.36MB in  1s, 63.57MB/sindexed 56.49MB in  1s, 63.60MB/sindexed 56.62MB in  1s, 63.64MB/sindexed 56.75MB in  1s, 63.68MB/sindexed 56.88MB in  1s, 63.72MB/sindexed 57.02MB in  1s, 63.75MB/sindexed 57.15MB in  1s, 63.77MB/sindexed 57.28MB in  1s, 63.81MB/sindexed 57.41MB in  1s, 63.86MB/sindexed 57.54MB in  1s, 63.88MB/sindexed 57.67MB in  1s, 63.94MB/sindexed 57.80MB in  1s, 63.97MB/sindexed 57.93MB in  1s, 64.00MB/sindexed 58.06MB in  1s, 64.02MB/sindexed 58.20MB in  1s, 64.06MB/sindexed 58.33MB in  1s, 64.09MB/sindexed 58.46MB in  1s, 64.10MB/sindexed 58.59MB in  1s, 64.12MB/sindexed 58.72MB in  1s, 64.12MB/sindexed 58.85MB in  1s, 64.14MB/sindexed 58.98MB in  1s, 64.17MB/sindexed 59.11MB in  1s, 64.21MB/sindexed 59.24MB in  1s, 64.25MB/sindexed 59.38MB in  1s, 64.29MB/sindexed 59.51MB in  1s, 64.32MB/sindexed 59.64MB in  1s, 64.36MB/sindexed 59.77MB in  1s, 64.41MB/sindexed 59.90MB in  1s, 64.44MB/sindexed 60.03MB in  1s, 64.47MB/sindexed 60.16MB in  1s, 64.52MB/sindexed 60.29MB in  1s, 64.55MB/sindexed 60.42MB in  1s, 64.61MB/sindexed 60.55MB in  1s, 64.64MB/sindexed 60.69MB in  1s, 64.68MB/sindexed 60.82MB in  1s, 64.73MB/sindexed 60.95MB in  1s, 64.78MB/sindexed 61.08MB in  1s, 64.83MB/sindexed 61.21MB in  1s, 64.87MB/sindexed 61.34MB in  1s, 64.91MB/sindexed 61.47MB in  1s, 64.94MB/sindexed 61.60MB in  1s, 64.98MB/sindexed 61.73MB in  1s, 65.01MB/sindexed 61.87MB in  1s, 65.05MB/sindexed 62.00MB in  1s, 65.10MB/sindexed 62.13MB in  1s, 65.14MB/sindexed 62.26MB in  1s, 65.18MB/sindexed 62.39MB in  1s, 65.22MB/sindexed 62.52MB in  1s, 65.26MB/sindexed 62.65MB in  1s, 65.30MB/sindexed 62.78MB in  1s, 65.34MB/sindexed 62.91MB in  1s, 65.38MB/sindexed 63.05MB in  1s, 65.41MB/sindexed 63.18MB in  1s, 65.45MB/sindexed 63.31MB in  1s, 65.49MB/sindexed 63.44MB in  1s, 65.52MB/sindexed 63.57MB in  1s, 65.56MB/sindexed 63.70MB in  1s, 65.61MB/sindexed 63.83MB in  1s, 65.63MB/sindexed 63.96MB in  1s, 65.67MB/sindexed 64.09MB in  1s, 65.71MB/sindexed 64.22MB in  1s, 65.75MB/sindexed 64.36MB in  1s, 65.80MB/sindexed 64.49MB in  1s, 65.81MB/sindexed 64.62MB in  1s, 65.80MB/sindexed 64.75MB in  1s, 65.82MB/sindexed 64.88MB in  1s, 65.84MB/sindexed 65.01MB in  1s, 65.87MB/sindexed 65.14MB in  1s, 65.91MB/sindexed 65.27MB in  1s, 65.94MB/sindexed 65.40MB in  1s, 65.99MB/sindexed 65.54MB in  1s, 66.03MB/sindexed 65.67MB in  1s, 66.07MB/sindexed 65.80MB in  1s, 66.10MB/sindexed 65.93MB in  1s, 66.15MB/sindexed 66.06MB in  1s, 66.18MB/sindexed 66.19MB in  1s, 66.23MB/sindexed 66.32MB in  1s, 66.26MB/sindexed 66.45MB in  1s, 66.30MB/sindexed 66.58MB in  1s, 66.33MB/sindexed 66.72MB in  1s, 66.37MB/sindexed 66.85MB in  1s, 66.41MB/sindexed 66.98MB in  1s, 66.44MB/sindexed 67.11MB in  1s, 66.48MB/sindexed 67.24MB in  1s, 66.52MB/sindexed 67.37MB in  1s, 66.54MB/sindexed 67.50MB in  1s, 66.56MB/sindexed 67.63MB in  1s, 66.58MB/sindexed 67.76MB in  1s, 66.61MB/sindexed 67.89MB in  1s, 66.65MB/sindexed 68.03MB in  1s, 66.67MB/sindexed 68.16MB in  1s, 66.69MB/sindexed 68.29MB in  1s, 66.73MB/sindexed 68.42MB in  1s, 66.74MB/sindexed 68.55MB in  1s, 66.79MB/sindexed 68.68MB in  1s, 66.82MB/sindexed 68.81MB in  1s, 66.86MB/sindexed 68.94MB in  1s, 66.90MB/sindexed 69.07MB in  1s, 66.90MB/sindexed 69.21MB in  1s, 66.94MB/sindexed 69.34MB in  1s, 66.98MB/sindexed 69.47MB in  1s, 66.97MB/sindexed 69.60MB in  1s, 67.02MB/sindexed 69.73MB in  1s, 67.05MB/sindexed 69.86MB in  1s, 66.68MB/sindexed 69.99MB in  1s, 66.68MB/sindexed 70.12MB in  1s, 66.65MB/sindexed 70.25MB in  1s, 66.62MB/sindexed 70.39MB in  1s, 66.64MB/sindexed 70.52MB in  1s, 66.65MB/sindexed 70.65MB in  1s, 66.64MB/sindexed 70.78MB in  1s, 66.63MB/sindexed 70.91MB in  1s, 66.53MB/sindexed 71.04MB in  1s, 66.47MB/sindexed 71.17MB in  1s, 66.46MB/sindexed 71.30MB in  1s, 66.42MB/sindexed 71.43MB in  1s, 66.44MB/sindexed 71.56MB in  1s, 66.45MB/sindexed 71.70MB in  1s, 66.48MB/sindexed 71.83MB in  1s, 66.48MB/sindexed 71.96MB in  1s, 66.50MB/sindexed 72.09MB in  1s, 66.45MB/sindexed 72.22MB in  1s, 66.46MB/sindexed 72.35MB in  1s, 66.46MB/sindexed 72.48MB in  1s, 66.48MB/sindexed 72.61MB in  1s, 66.48MB/sindexed 72.74MB in  1s, 66.48MB/sindexed 72.88MB in  1s, 66.45MB/sindexed 73.01MB in  1s, 66.43MB/sindexed 73.14MB in  1s, 66.42MB/sindexed 73.27MB in  1s, 66.39MB/sindexed 73.40MB in  1s, 66.36MB/sindexed 73.53MB in  1s, 66.34MB/sindexed 73.66MB in  1s, 66.30MB/sindexed 73.79MB in  1s, 66.27MB/sindexed 73.92MB in  1s, 66.26MB/sindexed 74.06MB in  1s, 66.23MB/sindexed 74.19MB in  1s, 66.22MB/sindexed 74.32MB in  1s, 66.22MB/sindexed 74.45MB in  1s, 66.23MB/sindexed 74.58MB in  1s, 66.24MB/sindexed 74.71MB in  1s, 66.24MB/sindexed 74.84MB in  1s, 66.22MB/sindexed 74.97MB in  1s, 66.15MB/sindexed 75.10MB in  1s, 66.12MB/sindexed 75.23MB in  1s, 66.04MB/sindexed 75.37MB in  1s, 66.00MB/sindexed 75.50MB in  1s, 65.98MB/sindexed 75.63MB in  1s, 65.93MB/sindexed 75.76MB in  1s, 65.91MB/sindexed 75.89MB in  1s, 65.87MB/sindexed 76.02MB in  1s, 65.82MB/sindexed 76.15MB in  1s, 65.74MB/sindexed 76.28MB in  1s, 65.67MB/sindexed 76.41MB in  1s, 65.62MB/sindexed 76.55MB in  1s, 65.58MB/sindexed 76.68MB in  1s, 65.57MB/sindexed 76.81MB in  1s, 65.57MB/sindexed 76.94MB in  1s, 65.57MB/sindexed 77.07MB in  1s, 65.57MB/sindexed 77.20MB in  1s, 65.58MB/sindexed 77.33MB in  1s, 65.59MB/sindexed 77.46MB in  1s, 65.62MB/sindexed 77.59MB in  1s, 65.66MB/sindexed 77.73MB in  1s, 65.68MB/sindexed 77.86MB in  1s, 65.70MB/sindexed 77.99MB in  1s, 65.73MB/sindexed 78.12MB in  1s, 65.76MB/sindexed 78.25MB in  1s, 65.80MB/sindexed 78.38MB in  1s, 65.81MB/sindexed 78.51MB in  1s, 65.85MB/sindexed 78.64MB in  1s, 65.87MB/sindexed 78.77MB in  1s, 65.88MB/sindexed 78.90MB in  1s, 65.91MB/sindexed 79.04MB in  1s, 65.93MB/sindexed 79.17MB in  1s, 65.97MB/sindexed 79.30MB in  1s, 66.00MB/sindexed 79.43MB in  1s, 66.03MB/sindexed 79.56MB in  1s, 66.06MB/sindexed 79.69MB in  1s, 66.09MB/sindexed 79.82MB in  1s, 66.12MB/sindexed 79.95MB in  1s, 66.15MB/sindexed 80.08MB in  1s, 66.18MB/sindexed 80.22MB in  1s, 66.22MB/sindexed 80.35MB in  1s, 66.24MB/sindexed 80.48MB in  1s, 66.25MB/sindexed 80.61MB in  1s, 66.27MB/sindexed 80.74MB in  1s, 66.30MB/sindexed 80.87MB in  1s, 66.33MB/sindexed 81.00MB in  1s, 66.35MB/sindexed 81.13MB in  1s, 66.37MB/sindexed 81.26MB in  1s, 66.40MB/sindexed 81.40MB in  1s, 66.43MB/sindexed 81.41MB in  1s, 66.40MB/s                                                                              indexed 2.15GB in  1s, 2.15GB/s                                                                              
+#> Table namq_10_gdp cached at C:\Users\morit\AppData\Local\Temp\RtmpGOqncW/eurostat/7cfeb2317299a0462a20558b59fa7fd2.rds
+#> indexed 0B in  0s, 0B/sindexed 2.15GB in  0s, 2.15GB/s                                                                              
+#> Table env_ac_aigg_q cached at C:\Users\morit\AppData\Local\Temp\RtmpGOqncW/eurostat/786decf32a8dc0555b458405bc423a40.rds
+#> indexed 0B in  0s, 0B/sindexed 10.09MB in  0s, 50.18MB/sindexed 10.22MB in  0s, 50.26MB/sindexed 10.35MB in  0s, 50.27MB/sindexed 10.49MB in  0s, 50.49MB/sindexed 10.62MB in  0s, 50.54MB/sindexed 10.75MB in  0s, 50.59MB/sindexed 10.88MB in  0s, 50.57MB/sindexed 11.01MB in  0s, 50.55MB/sindexed 11.14MB in  0s, 50.48MB/sindexed 11.27MB in  0s, 50.42MB/sindexed 11.40MB in  0s, 50.33MB/sindexed 11.53MB in  0s, 50.32MB/sindexed 11.67MB in  0s, 50.22MB/sindexed 11.80MB in  0s, 50.15MB/sindexed 11.93MB in  0s, 48.04MB/sindexed 12.06MB in  0s, 48.09MB/sindexed 12.19MB in  0s, 48.12MB/sindexed 12.32MB in  0s, 48.22MB/sindexed 12.45MB in  0s, 48.23MB/sindexed 12.58MB in  0s, 48.23MB/sindexed 12.71MB in  0s, 48.22MB/sindexed 12.84MB in  0s, 48.21MB/sindexed 12.98MB in  0s, 48.17MB/sindexed 13.11MB in  0s, 48.09MB/sindexed 13.24MB in  0s, 48.02MB/sindexed 13.37MB in  0s, 48.03MB/sindexed 13.50MB in  0s, 48.04MB/sindexed 13.63MB in  0s, 48.03MB/sindexed 13.76MB in  0s, 48.08MB/sindexed 13.89MB in  0s, 48.17MB/sindexed 14.02MB in  0s, 48.21MB/sindexed 14.16MB in  0s, 48.28MB/sindexed 14.29MB in  0s, 48.37MB/sindexed 14.42MB in  0s, 48.48MB/sindexed 14.55MB in  0s, 48.58MB/sindexed 14.68MB in  0s, 48.65MB/sindexed 14.81MB in  0s, 48.73MB/sindexed 14.94MB in  0s, 48.91MB/sindexed 15.07MB in  0s, 49.01MB/sindexed 15.19MB in  0s, 49.09MB/s                                                                              indexed 2.15GB in  0s, 2.15GB/s                                                                              
+#> Table ei_lmlc_q cached at C:\Users\morit\AppData\Local\Temp\RtmpGOqncW/eurostat/5a2d893c55d2002394347b1740520c1f.rds
+#> indexed 0B in  0s, 0B/sindexed 11.80MB in  0s, 58.26MB/sindexed 11.93MB in  0s, 58.21MB/sindexed 12.06MB in  0s, 58.05MB/sindexed 12.19MB in  0s, 58.02MB/sindexed 12.32MB in  0s, 58.02MB/sindexed 12.45MB in  0s, 57.97MB/sindexed 12.58MB in  0s, 57.96MB/sindexed 12.71MB in  0s, 57.97MB/sindexed 12.84MB in  0s, 57.91MB/sindexed 12.98MB in  0s, 58.00MB/sindexed 13.11MB in  0s, 58.01MB/sindexed 13.24MB in  0s, 57.97MB/sindexed 13.37MB in  0s, 57.89MB/sindexed 13.50MB in  0s, 55.30MB/sindexed 13.63MB in  0s, 55.18MB/sindexed 13.76MB in  0s, 55.18MB/sindexed 13.89MB in  0s, 55.13MB/sindexed 14.02MB in  0s, 55.02MB/sindexed 14.16MB in  0s, 54.90MB/sindexed 14.29MB in  0s, 54.88MB/sindexed 14.42MB in  0s, 54.87MB/sindexed 14.55MB in  0s, 54.70MB/sindexed 14.68MB in  0s, 54.17MB/sindexed 14.81MB in  0s, 53.40MB/sindexed 14.94MB in  0s, 52.82MB/sindexed 15.07MB in  0s, 52.32MB/sindexed 15.20MB in  0s, 51.90MB/sindexed 15.34MB in  0s, 51.71MB/sindexed 15.47MB in  0s, 51.76MB/sindexed 15.60MB in  0s, 51.78MB/sindexed 15.73MB in  0s, 51.73MB/sindexed 15.86MB in  0s, 51.74MB/sindexed 15.99MB in  0s, 51.86MB/sindexed 16.12MB in  0s, 51.89MB/sindexed 16.25MB in  0s, 52.01MB/sindexed 16.38MB in  0s, 52.12MB/sindexed 16.51MB in  0s, 52.27MB/sindexed 16.65MB in  0s, 52.32MB/sindexed 16.78MB in  0s, 52.34MB/sindexed 16.91MB in  0s, 52.44MB/sindexed 17.04MB in  0s, 52.57MB/sindexed 17.17MB in  0s, 52.69MB/sindexed 17.30MB in  0s, 52.76MB/sindexed 17.43MB in  0s, 52.88MB/sindexed 17.56MB in  0s, 53.01MB/sindexed 17.69MB in  0s, 53.10MB/sindexed 17.83MB in  0s, 53.19MB/sindexed 17.96MB in  0s, 53.19MB/sindexed 18.09MB in  0s, 53.30MB/sindexed 18.22MB in  0s, 53.42MB/sindexed 18.35MB in  0s, 53.53MB/sindexed 18.48MB in  0s, 53.62MB/sindexed 18.61MB in  0s, 53.73MB/sindexed 18.74MB in  0s, 53.77MB/sindexed 18.87MB in  0s, 53.75MB/sindexed 19.01MB in  0s, 53.81MB/sindexed 19.14MB in  0s, 53.85MB/sindexed 19.27MB in  0s, 53.90MB/sindexed 19.40MB in  0s, 53.96MB/sindexed 19.53MB in  0s, 54.00MB/sindexed 19.66MB in  0s, 54.06MB/sindexed 19.79MB in  0s, 54.05MB/sindexed 19.92MB in  0s, 54.02MB/sindexed 20.05MB in  0s, 54.03MB/sindexed 20.18MB in  0s, 54.00MB/sindexed 20.32MB in  0s, 53.98MB/sindexed 20.45MB in  0s, 53.97MB/sindexed 20.58MB in  0s, 53.98MB/sindexed 20.71MB in  0s, 53.99MB/sindexed 20.84MB in  0s, 53.95MB/sindexed 20.97MB in  0s, 53.89MB/sindexed 21.10MB in  0s, 53.87MB/sindexed 21.23MB in  0s, 53.81MB/sindexed 21.36MB in  0s, 53.68MB/sindexed 21.50MB in  0s, 53.71MB/sindexed 21.63MB in  0s, 53.68MB/sindexed 21.76MB in  0s, 53.68MB/sindexed 21.89MB in  0s, 53.67MB/sindexed 22.02MB in  0s, 53.72MB/sindexed 22.15MB in  0s, 53.79MB/sindexed 22.28MB in  0s, 53.72MB/sindexed 22.41MB in  0s, 53.83MB/sindexed 22.54MB in  0s, 53.89MB/sindexed 22.68MB in  0s, 53.98MB/sindexed 22.81MB in  0s, 54.02MB/sindexed 22.94MB in  0s, 54.14MB/sindexed 23.07MB in  0s, 54.22MB/sindexed 23.20MB in  0s, 54.31MB/sindexed 23.33MB in  0s, 54.41MB/sindexed 23.46MB in  0s, 54.49MB/sindexed 23.59MB in  0s, 54.57MB/sindexed 23.72MB in  0s, 54.67MB/sindexed 23.85MB in  0s, 54.75MB/sindexed 23.99MB in  0s, 54.83MB/sindexed 24.12MB in  0s, 54.91MB/sindexed 24.25MB in  0s, 55.01MB/sindexed 24.38MB in  0s, 55.09MB/sindexed 24.51MB in  0s, 55.10MB/sindexed 24.64MB in  0s, 55.18MB/sindexed 24.77MB in  0s, 55.26MB/sindexed 24.90MB in  0s, 55.33MB/sindexed 25.03MB in  0s, 55.41MB/sindexed 25.17MB in  0s, 55.53MB/sindexed 25.30MB in  0s, 55.63MB/sindexed 25.43MB in  0s, 53.97MB/sindexed 25.56MB in  0s, 53.99MB/sindexed 25.69MB in  0s, 54.03MB/sindexed 25.82MB in  0s, 54.11MB/sindexed 25.95MB in  0s, 54.20MB/sindexed 26.08MB in  0s, 54.26MB/sindexed 26.21MB in  0s, 54.31MB/sindexed 26.35MB in  0s, 54.37MB/sindexed 26.48MB in  0s, 54.39MB/sindexed 26.61MB in  0s, 54.43MB/sindexed 26.74MB in  0s, 54.47MB/sindexed 26.87MB in  0s, 54.49MB/sindexed 27.00MB in  0s, 54.52MB/sindexed 27.13MB in  0s, 54.59MB/sindexed 27.26MB in  0s, 54.63MB/sindexed 27.39MB in  1s, 54.68MB/sindexed 27.52MB in  1s, 54.71MB/sindexed 27.66MB in  1s, 54.76MB/sindexed 27.79MB in  1s, 54.80MB/sindexed 27.92MB in  1s, 54.85MB/sindexed 28.05MB in  1s, 54.91MB/sindexed 28.18MB in  1s, 54.96MB/sindexed 28.31MB in  1s, 55.01MB/sindexed 28.44MB in  1s, 55.09MB/sindexed 28.57MB in  1s, 55.16MB/sindexed 28.70MB in  1s, 55.24MB/sindexed 28.84MB in  1s, 55.32MB/sindexed 28.97MB in  1s, 55.40MB/sindexed 29.10MB in  1s, 55.45MB/sindexed 29.23MB in  1s, 55.52MB/sindexed 29.36MB in  1s, 55.61MB/sindexed 29.49MB in  1s, 55.67MB/sindexed 29.62MB in  1s, 55.72MB/sindexed 29.75MB in  1s, 55.73MB/sindexed 29.88MB in  1s, 55.78MB/sindexed 30.02MB in  1s, 55.82MB/sindexed 30.15MB in  1s, 55.88MB/sindexed 30.28MB in  1s, 55.93MB/sindexed 30.41MB in  1s, 55.98MB/sindexed 30.54MB in  1s, 56.02MB/sindexed 30.67MB in  1s, 56.08MB/sindexed 30.80MB in  1s, 56.13MB/sindexed 30.93MB in  1s, 56.18MB/sindexed 31.06MB in  1s, 56.23MB/sindexed 31.19MB in  1s, 56.28MB/sindexed 31.33MB in  1s, 56.32MB/sindexed 31.46MB in  1s, 56.38MB/sindexed 31.59MB in  1s, 56.44MB/sindexed 31.72MB in  1s, 56.47MB/sindexed 31.85MB in  1s, 56.51MB/sindexed 31.98MB in  1s, 56.58MB/sindexed 32.11MB in  1s, 56.63MB/sindexed 32.24MB in  1s, 56.67MB/sindexed 32.37MB in  1s, 56.74MB/sindexed 32.51MB in  1s, 56.76MB/sindexed 32.64MB in  1s, 56.77MB/sindexed 32.77MB in  1s, 56.78MB/sindexed 32.90MB in  1s, 56.80MB/sindexed 33.03MB in  1s, 56.81MB/sindexed 33.16MB in  1s, 56.82MB/sindexed 33.29MB in  1s, 56.83MB/sindexed 33.42MB in  1s, 56.82MB/sindexed 33.55MB in  1s, 56.86MB/sindexed 33.69MB in  1s, 56.86MB/sindexed 33.82MB in  1s, 56.88MB/sindexed 33.95MB in  1s, 56.86MB/sindexed 34.08MB in  1s, 56.95MB/sindexed 34.21MB in  1s, 56.96MB/sindexed 34.34MB in  1s, 56.98MB/sindexed 34.47MB in  1s, 57.03MB/sindexed 34.60MB in  1s, 57.08MB/sindexed 34.73MB in  1s, 57.13MB/sindexed 34.86MB in  1s, 57.17MB/sindexed 35.00MB in  1s, 57.22MB/sindexed 35.13MB in  1s, 57.23MB/sindexed 35.26MB in  1s, 57.30MB/sindexed 35.39MB in  1s, 57.29MB/sindexed 35.52MB in  1s, 57.31MB/sindexed 35.65MB in  1s, 57.32MB/sindexed 35.78MB in  1s, 57.31MB/sindexed 35.91MB in  1s, 57.33MB/sindexed 36.04MB in  1s, 57.26MB/sindexed 36.18MB in  1s, 57.17MB/sindexed 36.31MB in  1s, 57.06MB/sindexed 36.44MB in  1s, 57.07MB/sindexed 36.57MB in  1s, 57.09MB/sindexed 36.70MB in  1s, 57.12MB/sindexed 36.83MB in  1s, 57.13MB/sindexed 36.96MB in  1s, 57.16MB/sindexed 37.09MB in  1s, 57.19MB/sindexed 37.22MB in  1s, 57.18MB/sindexed 37.36MB in  1s, 57.19MB/sindexed 37.49MB in  1s, 57.17MB/sindexed 37.62MB in  1s, 57.15MB/sindexed 37.75MB in  1s, 57.16MB/sindexed 37.88MB in  1s, 57.16MB/sindexed 38.01MB in  1s, 57.15MB/sindexed 38.14MB in  1s, 57.11MB/sindexed 38.27MB in  1s, 57.06MB/sindexed 38.40MB in  1s, 57.01MB/sindexed 38.53MB in  1s, 56.95MB/sindexed 38.67MB in  1s, 56.94MB/sindexed 38.80MB in  1s, 56.79MB/sindexed 38.93MB in  1s, 56.71MB/sindexed 39.06MB in  1s, 56.59MB/sindexed 39.19MB in  1s, 56.43MB/sindexed 39.32MB in  1s, 56.28MB/sindexed 39.45MB in  1s, 56.07MB/sindexed 39.58MB in  1s, 55.98MB/sindexed 39.71MB in  1s, 55.84MB/sindexed 39.85MB in  1s, 55.80MB/sindexed 39.98MB in  1s, 55.72MB/sindexed 40.11MB in  1s, 55.66MB/sindexed 40.24MB in  1s, 55.65MB/sindexed 40.37MB in  1s, 55.63MB/sindexed 40.50MB in  1s, 55.61MB/sindexed 40.63MB in  1s, 55.56MB/sindexed 40.76MB in  1s, 55.54MB/sindexed 40.89MB in  1s, 55.58MB/sindexed 41.03MB in  1s, 55.61MB/sindexed 41.16MB in  1s, 55.57MB/sindexed 41.29MB in  1s, 55.58MB/sindexed 41.42MB in  1s, 55.50MB/sindexed 41.55MB in  1s, 55.48MB/sindexed 41.68MB in  1s, 55.51MB/sindexed 41.81MB in  1s, 55.55MB/sindexed 41.94MB in  1s, 55.61MB/sindexed 42.07MB in  1s, 55.63MB/sindexed 42.20MB in  1s, 55.54MB/sindexed 42.34MB in  1s, 55.24MB/sindexed 42.47MB in  1s, 55.11MB/sindexed 42.60MB in  1s, 55.08MB/sindexed 42.73MB in  1s, 55.01MB/sindexed 42.86MB in  1s, 54.93MB/sindexed 42.99MB in  1s, 54.92MB/sindexed 43.12MB in  1s, 54.98MB/sindexed 43.25MB in  1s, 54.91MB/sindexed 43.38MB in  1s, 54.89MB/sindexed 43.52MB in  1s, 54.94MB/sindexed 43.65MB in  1s, 54.96MB/sindexed 43.78MB in  1s, 54.96MB/sindexed 43.91MB in  1s, 54.98MB/sindexed 44.04MB in  1s, 55.01MB/sindexed 44.17MB in  1s, 55.07MB/sindexed 44.30MB in  1s, 55.14MB/sindexed 44.43MB in  1s, 55.20MB/sindexed 44.56MB in  1s, 55.25MB/sindexed 44.70MB in  1s, 55.30MB/sindexed 44.83MB in  1s, 55.35MB/sindexed 44.96MB in  1s, 55.39MB/sindexed 45.09MB in  1s, 55.45MB/sindexed 45.22MB in  1s, 55.51MB/sindexed 45.35MB in  1s, 55.57MB/sindexed 45.48MB in  1s, 55.62MB/sindexed 45.61MB in  1s, 55.67MB/sindexed 45.74MB in  1s, 55.73MB/sindexed 45.87MB in  1s, 55.80MB/sindexed 46.01MB in  1s, 55.86MB/sindexed 46.14MB in  1s, 55.92MB/sindexed 46.27MB in  1s, 55.98MB/sindexed 46.40MB in  1s, 56.03MB/sindexed 46.53MB in  1s, 55.96MB/sindexed 46.66MB in  1s, 55.98MB/sindexed 46.79MB in  1s, 56.02MB/sindexed 46.92MB in  1s, 56.07MB/sindexed 47.05MB in  1s, 56.11MB/sindexed 47.19MB in  1s, 56.18MB/sindexed 47.32MB in  1s, 56.24MB/sindexed 47.45MB in  1s, 56.29MB/sindexed 47.58MB in  1s, 56.32MB/sindexed 47.71MB in  1s, 56.35MB/sindexed 47.84MB in  1s, 56.40MB/sindexed 47.97MB in  1s, 56.44MB/sindexed 48.10MB in  1s, 56.50MB/sindexed 48.23MB in  1s, 56.56MB/sindexed 48.37MB in  1s, 56.62MB/sindexed 48.50MB in  1s, 56.68MB/sindexed 48.63MB in  1s, 55.10MB/sindexed 48.76MB in  1s, 55.13MB/sindexed 48.89MB in  1s, 55.16MB/sindexed 49.02MB in  1s, 55.21MB/sindexed 49.15MB in  1s, 55.25MB/sindexed 49.28MB in  1s, 55.30MB/sindexed 49.41MB in  1s, 55.34MB/sindexed 49.54MB in  1s, 55.38MB/sindexed 49.68MB in  1s, 55.42MB/sindexed 49.81MB in  1s, 55.47MB/sindexed 49.94MB in  1s, 55.53MB/sindexed 50.07MB in  1s, 55.57MB/sindexed 50.20MB in  1s, 55.61MB/sindexed 50.33MB in  1s, 55.67MB/sindexed 50.46MB in  1s, 55.70MB/sindexed 50.59MB in  1s, 55.74MB/sindexed 50.72MB in  1s, 55.77MB/sindexed 50.86MB in  1s, 55.78MB/sindexed 50.99MB in  1s, 55.83MB/sindexed 51.12MB in  1s, 55.88MB/sindexed 51.25MB in  1s, 55.92MB/sindexed 51.38MB in  1s, 55.95MB/sindexed 51.51MB in  1s, 56.00MB/sindexed 51.64MB in  1s, 56.01MB/sindexed 51.77MB in  1s, 56.02MB/sindexed 51.90MB in  1s, 56.04MB/sindexed 52.04MB in  1s, 55.99MB/sindexed 52.17MB in  1s, 56.02MB/sindexed 52.30MB in  1s, 56.05MB/sindexed 52.43MB in  1s, 56.05MB/sindexed 52.56MB in  1s, 56.09MB/sindexed 52.69MB in  1s, 56.12MB/sindexed 52.82MB in  1s, 56.14MB/sindexed 52.95MB in  1s, 56.15MB/sindexed 53.08MB in  1s, 56.15MB/sindexed 53.21MB in  1s, 56.19MB/sindexed 53.35MB in  1s, 56.22MB/sindexed 53.48MB in  1s, 56.23MB/sindexed 53.61MB in  1s, 56.27MB/sindexed 53.74MB in  1s, 56.31MB/sindexed 53.87MB in  1s, 56.33MB/sindexed 54.00MB in  1s, 56.35MB/sindexed 54.13MB in  1s, 56.39MB/sindexed 54.26MB in  1s, 56.40MB/sindexed 54.39MB in  1s, 56.39MB/sindexed 54.53MB in  1s, 56.44MB/sindexed 54.66MB in  1s, 56.50MB/sindexed 54.79MB in  1s, 56.53MB/sindexed 54.92MB in  1s, 56.58MB/sindexed 55.05MB in  1s, 56.62MB/sindexed 55.18MB in  1s, 56.65MB/sindexed 55.31MB in  1s, 56.65MB/sindexed 55.44MB in  1s, 56.64MB/sindexed 55.57MB in  1s, 56.66MB/sindexed 55.71MB in  1s, 56.67MB/sindexed 55.72MB in  1s, 56.61MB/s                                                                              indexed 2.15GB in  1s, 2.15GB/s                                                                              
+#> Table namq_10_a10 cached at C:\Users\morit\AppData\Local\Temp\RtmpGOqncW/eurostat/ae4f87b6b545fbad92dc2671c1ef1369.rds
 #> Warning in load_or_download_variables(specification = module_order, dictionary
 #> = dictionary, : Unbalanced panel, will lose more than 20\% of data when making
 #> balanced
@@ -578,6 +1560,8 @@ model_result <- run_model(
 #> Estimating GValueAddGov = FinConsExpGov 
 #> Estimating GValueAddManuf = Export + LabCostManuf 
 #> Estimating GValueAddConstr = LabCostConstr + BuildingPermits 
+#> No Outliers or Step-Shifts detected in the marginal equations to test for Super Exogeneity in ln.GValueAddConstr.
+#> Hence not possible to run the test.
 #> Estimating GValueAddWholesaletrade = Export + LabCostService 
 #> Estimating FinConsExpHH =  
 #> No Outliers or Step-Shifts detected in the marginal equations to test for Super Exogeneity in ln.FinConsExpHH.
@@ -616,16 +1600,16 @@ model_result
 #> 
 #> Diagnostics:
 #>  # A tibble: 8 × 8
-#>   `Dependent Variable`    AR       ARCH     `Super Exogeneity`   IIS   SIS     n
-#>   <chr>                   <chr>    <chr>    <chr>              <int> <int> <int>
-#> 1 GValueAddGov            0.125    0.768    "0.029**"              3     3    53
-#> 2 GValueAddManuf          0.663    0.864    ""                     6     0    54
-#> 3 GValueAddConstr         0.619    0.541    "<0.001***"            3     2    54
-#> 4 GValueAddWholesaletrade 0.258    0.001*** "<0.001***"           13     0    54
-#> 5 FinConsExpHH            0.870    0.711    ""                     7     1    54
-#> 6 GCapitalForm            0.602    0.851    ""                     0     5    54
-#> 7 Emissions               0.009*** 0.070*   "0.007***"             0     3    55
-#> 8 Import                  0.106    0.958    "0.092*"               1     1    54
+#>   `Dependent Variable`    AR        ARCH    `Super Exogeneity`   IIS   SIS     n
+#>   <chr>                   <chr>     <chr>   <chr>              <int> <int> <int>
+#> 1 GValueAddGov            0.096*    0.557   "0.357"               10     2    55
+#> 2 GValueAddManuf          <0.001*** 0.016** "0.059*"               0     4    55
+#> 3 GValueAddConstr         0.008***  0.524   ""                     7     3    55
+#> 4 GValueAddWholesaletrade 0.616     0.588   "0.240"                0     5    52
+#> 5 FinConsExpHH            0.675     0.920   ""                     9     0    54
+#> 6 GCapitalForm            0.691     0.247   ""                     1     1    53
+#> 7 Emissions               0.042**   0.364   "0.050**"              0     2    55
+#> 8 Import                  0.740     0.700   "<0.001***"            5     0    53
 #> # ℹ 1 more variable: `Share of Indicators` <dbl>
 ```
 
@@ -641,7 +1625,7 @@ load the data from our earlier run:
 model_result <- run_model(
   specification = spec,
   primary_source = "local",
-  inputdata_directory = "inst/extdata",
+  input = "inst/extdata/InputData.xlsx",
   trend = TRUE,
   saturation.tpval = 0.01
 )

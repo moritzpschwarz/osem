@@ -41,7 +41,7 @@ test_that("Error messages for saturation, selection",{
 
   expect_silent(mod <- run_model(specification = specification,
                                  dictionary = dict,
-                                 inputdata_directory = testdata,
+                                 input = testdata,
                                  primary_source = "local",
                                  present = FALSE,
                                  quiet = TRUE, saturation = "IIS"))
@@ -51,7 +51,7 @@ test_that("Error messages for saturation, selection",{
 
   expect_silent(mod <- run_model(specification = specification,
                                  dictionary = dict,
-                                 inputdata_directory = testdata,
+                                 input = testdata,
                                  primary_source = "local",
                                  present = FALSE,
                                  quiet = TRUE, saturation = c("SIS","TIS")))
@@ -67,7 +67,7 @@ test_that("Check that arx estimation works (i.e. saturation = NULL)",{
   # check that saturation = NULL works
   expect_silent(mod <- run_model(specification = specification,
                                  dictionary = dict,
-                                 inputdata_directory = testdata,
+                                 input = testdata,
                                  primary_source = "local",
                                  present = FALSE,
                                  quiet = TRUE, saturation = NULL))
@@ -81,7 +81,7 @@ test_that("Check that arx estimation works (i.e. saturation = NULL)",{
   # check that saturation = NULL and gets_selection = NULL works
   expect_silent(mod <- run_model(specification = specification,
                                  dictionary = dict,
-                                 inputdata_directory = testdata,
+                                 input = testdata,
                                  primary_source = "local",
                                  present = FALSE,
                                  quiet = TRUE,
@@ -102,7 +102,7 @@ test_that("Error messages for log specifications", {
 
   mod <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = testdata,
+                   input = testdata,
                    primary_source = "local",
                    present = FALSE,
                    quiet = TRUE,
@@ -118,7 +118,7 @@ test_that("Error messages for log specifications", {
 
   mod <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = testdata,
+                   input = testdata,
                    primary_source = "local",
                    present = FALSE,
                    quiet = TRUE,
@@ -135,7 +135,7 @@ test_that("Error messages for log specifications", {
 
   mod <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = testdata,
+                   input = testdata,
                    primary_source = "local",
                    present = FALSE,
                    quiet = TRUE,
@@ -153,7 +153,7 @@ test_that("Error messages for log specifications", {
 
   mod <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = testdata,
+                   input = testdata,
                    primary_source = "local",
                    present = FALSE,
                    quiet = TRUE,
@@ -173,7 +173,7 @@ test_that("Error messages for log specifications", {
 
   mod <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = testdata,
+                   input = testdata,
                    primary_source = "local",
                    present = FALSE,
                    quiet = TRUE,
@@ -236,7 +236,7 @@ test_that("Check that all variables are in the dictionary",{
 
   expect_error(model <- run_model(specification = specification,
                                   dictionary = dict,
-                                  inputdata_directory = testdata_modified_long,
+                                  input = testdata_modified_long,
                                   primary_source = "local",
                                   present = FALSE,
                                   quiet = TRUE,
@@ -280,7 +280,7 @@ test_that("Check that a missing dictionary entry is not triggering an error for 
 
   expect_silent(mod <- run_model(specification = specification,
                                  dictionary = dict,
-                                 inputdata_directory = testdata,
+                                 input = testdata,
                                  primary_source = "local",
                                  present = FALSE,
                                  quiet = TRUE, saturation = "IIS"))
@@ -293,7 +293,7 @@ test_that("Check that a missing dictionary entry is not triggering an error for 
   dict %>%
     dplyr::mutate(database = "incorrect") -> dict_incorrect
 
-  expect_error(run_model(specification = specification, dictionary = dict_incorrect, inputdata_directory = testdata, quiet = TRUE),
+  expect_error(run_model(specification = specification, dictionary = dict_incorrect, input = testdata, quiet = TRUE),
                regexp = "Currently, only allow data bases 'eurostat', 'edgar', 'statcan', 'imf', or 'local' files")
 
 
@@ -334,7 +334,7 @@ test_that("Check the keep argument",{
 
   expect_error(mod <- run_model(specification = specification,
                                 dictionary = dict,
-                                inputdata_directory = testdata,
+                                input = testdata,
                                 primary_source = "local",
                                 present = FALSE,
                                 keep = 2,
@@ -342,7 +342,7 @@ test_that("Check the keep argument",{
 
   expect_error(mod <- run_model(specification = specification,
                                 dictionary = dict,
-                                inputdata_directory = testdata,
+                                input = testdata,
                                 primary_source = "local",
                                 present = FALSE,
                                 keep = c("sdklf0", "asdfkj"),
@@ -352,7 +352,7 @@ test_that("Check the keep argument",{
   # check that test is not in the final model
   nokeep <- run_model(specification = specification,
                       dictionary = dict %>% dplyr::add_row(model_varname = "test", database = "local"),
-                      inputdata_directory = testdata,
+                      input = testdata,
                       primary_source = "local",
                       present = FALSE,
                       plot = FALSE,
@@ -361,7 +361,7 @@ test_that("Check the keep argument",{
 
   wkeep <- run_model(specification = specification,
                      dictionary = dict %>% dplyr::add_row(model_varname = "test", database = "local"),
-                     inputdata_directory = testdata,
+                     input = testdata,
                      primary_source = "local",
                      present = FALSE,
                      plot = FALSE,
@@ -374,4 +374,5 @@ test_that("Check the keep argument",{
   expect_true(any(grepl("test",row.names(wkeep$module_collection$model[[1]]$mean.results))))
 
 })
+
 
