@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.osem.R
 \name{plot.osem}
 \alias{plot.osem}
-\title{Plot the estimated OSEM Model}
+\title{Plot OSEM Model}
 \usage{
 \method{plot}{osem}(
   x,
@@ -37,6 +37,9 @@
 \item{return.data}{Logical. Do not return a plot but rather just the final dataset that has been created for the plot.}
 
 \item{...}{Additional arguments passed to the plotting function.}
+}
+\value{
+A ggplot object or a tibble/data.frame with the data used for plotting, depending on the value of \code{return.data}.
 }
 \description{
 Plot the estimated OSEM Model

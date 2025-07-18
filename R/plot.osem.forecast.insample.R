@@ -1,3 +1,5 @@
+#' Plot OSEM Insample Forecast
+#'
 #' Plot an Insample-Forecast of the OSEM Model
 #'
 #' @param x An object of class osem.forecast.insample, which is the output from the \link{forecast_insample} function.

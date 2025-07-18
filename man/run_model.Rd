@@ -149,8 +149,6 @@ spec <- dplyr::tibble(
   )
 )
 \donttest{
-a <- run_model(specification = spec, dictionary = NULL,
-primary_source = "download",
-save_to_disk = NULL, present = FALSE)
+run_model(specification = spec)
 }
 }

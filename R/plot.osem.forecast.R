@@ -1,4 +1,6 @@
-#' Plot a Forecast Object of the OSEM Model
+#' Plot OSEM Forecast
+#'
+#' Plot a forecast object of the OSEM Model
 #'
 #' @param x An object of class osem.forecast, which is the output from the \link{forecast_model} function.
 #' @param exclude.exogenous Logical. Should exogenous values be plotted? Default is FALSE.
@@ -12,6 +14,8 @@
 #' @param ... Additional arguments passed to the plotting function.
 #'
 #' @export
+#'
+#' @return A ggplot2 object or a plotly object if interactive is TRUE. If return.data is TRUE, a tibble with the data used for plotting.
 #'
 #' @examples
 #' spec <- dplyr::tibble(

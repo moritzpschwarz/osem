@@ -76,21 +76,9 @@
 #'   )
 #' )
 #' \donttest{
-#' a <- run_model(specification = spec, dictionary = NULL,
-#' primary_source = "download",
-#' save_to_disk = NULL, present = FALSE)
+#' run_model(specification = spec)
 #' }
 
-# config_table_small <- dplyr::tibble(
-#   dependent = c("StatDiscrep",
-#                 "TOTS",
-#                 "Import"),
-#   independent = c("TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
-#                   "GValueAdd + Import",
-#                   "FinConsExpHH + GCapitalForm"))
-#
-#
-# specification <- config_table_small
 
 run_model <- function(specification,
                       dictionary = NULL,
@@ -245,10 +233,10 @@ run_model <- function(specification,
     if(!quiet){
       if(i == 1){cat("\n--- Estimation begins ---\n")}
 
-
-      if (shiny::isRunning()) { # send updates to shiny if called from shiny session
-        shiny::incProgress(1/length(module_order$order), detail = paste0(paste0("Running step ", i, "/", length(module_order$order), ": ", module_order$dependent[i], " = ", module_order$independent[i])))
-      }
+      if (requireNamespace("shiny", quietly = TRUE)) {
+        if (shiny::isRunning()) { # send updates to shiny if called from shiny session
+          shiny::incProgress(1/length(module_order$order), detail = paste0(paste0("Running step ", i, "/", length(module_order$order), ": ", module_order$dependent[i], " = ", module_order$independent[i])))
+        }}
 
 
       if(module_order$type[i] == "n") {cat(paste0("Estimating ", module_order$dependent[i], " = ", module_order$independent[i]), "\n")}

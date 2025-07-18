@@ -15,6 +15,9 @@
 
 \item{...}{Further arguments.}
 }
+\value{
+A printed summary of the insample forecast output, including RMSFE and forecast within uncertainty statistics.
+}
 \description{
 Print output of an OSEM Insample Forecast
 }

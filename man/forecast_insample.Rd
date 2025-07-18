@@ -2,7 +2,7 @@
 % Please edit documentation in R/forecast_insample.R
 \name{forecast_insample}
 \alias{forecast_insample}
-\title{Forecast model insample to evaluate forecasting performance}
+\title{Forecast OSEM Insample}
 \usage{
 forecast_insample(
   model,
@@ -30,5 +30,6 @@ forecast_insample(
 An object (list) with the class \code{osem.forecast.insample}. This object contains the central estimates and the uncertainty estimates of the forecasted values as well as the original data.
 }
 \description{
-Forecast model insample to evaluate forecasting performance
+This function runs the OSEM model insample and can be used to evaluate the historical forecast performance. In doing so, the function determines the share of the sample that should be used for the insample forecasting.
+The function then runs the model up to the last time point of the sample and forecasts the values for all dependent variables. The function also reports diagnostics for those forecasts, such as the RMSFE and the forecast failures (share of forecasts outside of the uncertainty bands).
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.osem.forecast.insample.R
 \name{plot.osem.forecast.insample}
 \alias{plot.osem.forecast.insample}
-\title{Plot an Insample-Forecast of the OSEM Model}
+\title{Plot OSEM Insample Forecast}
 \usage{
 \method{plot}{osem.forecast.insample}(
   x,
