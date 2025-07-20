@@ -161,7 +161,9 @@ forecast_model <- function(model,
                                      ci.levels = ci.levels)
 
       # make samples from the model residuals and add them to the mean prediction
-      res_draws <- sample(as.numeric(isat_obj$residuals), size = uncertainty_sample * n.ahead, replace = TRUE)
+      res_nozero <- as.numeric(isat_obj$residuals)[round(as.numeric(isat_obj$residuals),10) != 0] # exclude 0 residuals (due to IIS) to not underestimate uncertainty
+      res_draws <- sample(res_nozero, size = uncertainty_sample * n.ahead, replace = TRUE)
+
       # create a tibble with all res_draws with the same number of rows as n.ahead
       res_names <- paste0("run_",1:(length(res_draws)/n.ahead))
       dplyr::as_tibble(matrix(res_draws, nrow = n.ahead, dimnames = list(NULL, res_names))) %>%
