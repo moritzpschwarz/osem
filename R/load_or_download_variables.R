@@ -244,8 +244,10 @@ load_or_download_variables <- function(specification,
   # This must come after saving
   if (constrain.to.minimum.sample) {
     if(!quiet){
-      if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
-        warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+      if(length(availability$n > 1)){
+        if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
+          warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+        }
       }
     }
     min_date <- max(availability$min_date) # highest minimum date
