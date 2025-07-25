@@ -73,7 +73,7 @@ test_that("Check that single variable model works", {
                             HICP_Gas = rnorm(mean = 200, n = length(time)),
                             FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time),mean = 0, sd = 0.2))
 
-  # now modify this to simluate the effect of providing external exogenous data but
+  # now modify this to simulate the effect of providing external exogenous data but
   # where we do not provide any values for the values that would otherwise be nowcasted
   # so first we get the exogenous values based of a base case
   # then we set one value in the historical data to NA
