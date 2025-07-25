@@ -244,7 +244,7 @@ load_or_download_variables <- function(specification,
   # This must come after saving
   if (constrain.to.minimum.sample) {
     if(!quiet){
-      if(length(availability$n > 1)){
+      if(length(availability$n) > 1){
         if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
           warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
         }
