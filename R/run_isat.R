@@ -154,11 +154,11 @@ run_isat <- function(yvar,
     ), silent = TRUE)
   }
 
-
   # TODO necessary to add the tis argument to the call due to error in gets package
   if(exists("intermed.model")){intermed.model$call$tis <- intermed.model$aux$args$tis}
   if(exists("intermed.model")){intermed.model$aux$y.name <- y.name}
 
+  if(exists("intermed.model")){return(intermed.model)}
 
-  return(intermed.model)
+
 }

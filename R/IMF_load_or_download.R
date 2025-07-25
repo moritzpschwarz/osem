@@ -64,8 +64,30 @@ download_imf <- function(to_obtain, column_filters, quiet) {
       value_colname <- columns[2]
 
       #ensure data is TIME_PERIOD is set to data time
-      subset_of_data <- subset_of_data %>%
-        dplyr::mutate(TIME_PERIOD = as.Date(as.Date(paste(.data$TIME_PERIOD, "-01", sep=""))))
+      # first check whether the TIME_PERIOD column is a date object or potentially annual data
+      # the TIME_PERIOD column always comes as a character. The question is whether it can be converted to a date or integer without causing an error
+      suppressWarnings({
+        try({
+          timechk_num <- as.numeric(subset_of_data$TIME_PERIOD)
+          if(all(is.na(timechk_num))){rm("timechk_num")}
+        }, silent = TRUE)
+        try(timechk_date <- as.Date(subset_of_data$TIME_PERIOD), silent = TRUE)
+        try(timechk_datemod <- as.Date(paste(subset_of_data$TIME_PERIOD, "-01", sep="")), silent = TRUE)
+      })
+
+      if(exists("timechk_num")){
+        subset_of_data <- subset_of_data %>%
+          dplyr::mutate(TIME_PERIOD = as.Date(paste(.data$TIME_PERIOD, "-01-01", sep="")))
+      } else if (exists("timechk_date")) {
+        subset_of_data <- subset_of_data %>%
+          dplyr::mutate(TIME_PERIOD = as.Date(.data$TIME_PERIOD))
+      } else if (exists("timechk_datemod")) {
+        subset_of_data <- subset_of_data %>%
+          dplyr::mutate(TIME_PERIOD = as.Date(paste(.data$TIME_PERIOD, "-01", sep="")))
+      } else {
+        stop("The TIME_PERIOD column cannot be converted to a date or numeric object. Please check the data source or contact the OSEM Admin to check the IMF function.")
+
+      }
 
       #convert the value column into numeric
       subset_of_data <- subset_of_data %>%

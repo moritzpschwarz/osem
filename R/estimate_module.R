@@ -194,9 +194,8 @@ estimate_module <- function(clean_data,
       intermed.model$aux$y.name <- y.name
     }
 
-
-    isat_list[i + 1, "BIC"] <- if(exists("intermed.model")){stats::BIC(intermed.model)}else{NA}
-    isat_list[i + 1, "isat_object"] <- if(exists("intermed.model")){dplyr::tibble(isat_object = list(intermed.model))}else{NA}
+    isat_list[i + 1, "BIC"] <- if(exists("intermed.model") & !is.null(intermed.model)){stats::BIC(intermed.model)}else{NA}
+    isat_list[i + 1, "isat_object"] <- if(exists("intermed.model") & !is.null(intermed.model)){dplyr::tibble(isat_object = list(intermed.model))}else{NA}
     if(exists("intermed.model")){rm(intermed.model)}
   }
 
@@ -236,6 +235,8 @@ estimate_module <- function(clean_data,
                                                ar.LjungB = NULL,
                                                arch.LjungB = NULL,
                                                keep = keep_num), silent = TRUE)
+
+    best_isat_model.selected$aux$y.index <- best_isat_model$aux$y.index
 
     if(!exists("best_isat_model.selected")){
       #if(!quiet){warning("Model selection with 'gets' failed. The best model is the one with the lowest BIC. Disable warning with 'quiet = TRUE'.")}
@@ -290,16 +291,15 @@ estimate_module <- function(clean_data,
       #                                             max.block.size = best_isat_model$aux$args$max.block.size,
       #                                             include.gum = FALSE)
 
-      if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$call$tis <- best_isat_model.selected.isat$aux$args$tis}
-      if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$aux$y.name <- y.name}
+      if(exists("best_isat_model.selected.isat") & !is.null(best_isat_model.selected.isat)){best_isat_model.selected.isat$call$tis <- best_isat_model.selected.isat$aux$args$tis}
+      if(exists("best_isat_model.selected.isat") & !is.null(best_isat_model.selected.isat)){best_isat_model.selected.isat$aux$y.name <- y.name}
     }
   }
-
-
+  browser()
   final_model <- if(gets_selection) {
-    if (!is.null(saturation)) {
+    if (!is.null(saturation) & !is.null(best_isat_model.selected.isat)) {
       best_isat_model.selected.isat
-    } else {
+    } else if(!is.null(best_isat_model.selected)) {
       best_isat_model.selected
     }
   } else {
@@ -307,7 +307,7 @@ estimate_module <- function(clean_data,
   }
 
   # Super Exogeneity Testing ------------------------------------------------
-  try(superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet))
+  suppressWarnings(try(superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet), silent = TRUE))
   if(!exists("superex_test")){superex_test <- NA}
 
   # Output ------------------------------------------------------------------
