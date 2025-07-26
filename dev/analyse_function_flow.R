@@ -2,7 +2,7 @@
 
 if (requireNamespace("pkgnet", "igraph", "visNetwork")) {
   # install & load OSEM first
-  devtools::load_all()
+  devtools::load_all(".")
 
   # create automatic report
   report <- pkgnet::CreatePackageReport(pkg_name = "osem")

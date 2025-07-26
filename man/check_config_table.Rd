@@ -24,7 +24,7 @@ Check the configuration of the model contained in the config table
 }
 \examples{
 config_table_small <- dplyr::tibble(
-  type = c("d","d","n"),
+  type = c("d", "d", "n"),
   dependent = c("JL", "TOTS", "B"),
   independent = c("TOTS - CP - CO - J - A", "YF + B", "CP + J"),
   lag = c("", "", ""),
@@ -40,6 +40,5 @@ mwe <- dplyr::tibble(
   cvar = c("system1", "system1", "", "", "", "", "", "", "")
 )
 osem:::check_config_table(mwe)
-
 
 }
