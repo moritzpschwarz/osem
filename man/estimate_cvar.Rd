@@ -11,6 +11,7 @@ estimate_cvar(
   x_vars_basename,
   use_logs,
   ar,
+  freq,
   coint_deterministic = c("none", "const", "trend"),
   coint_significance = c("1pct", "5pct", "10pct")
 )
@@ -36,14 +37,14 @@ included.}
 
 \item{ar}{Number of lags of the VAR system in levels. Must be > 2.}
 
+\item{freq}{Data frequency if want to include seasonal dummies, NULL
+otherwise.}
+
 \item{coint_deterministic}{Character specifying whether and if yes which
 deterministic component to include in the cointegrating relationship.}
 
 \item{coint_significance}{Significance level for the rank test for
 cointegration.}
-
-\item{freq}{Data frequency if want to include seasonal dummies, NULL
-otherwise.}
 }
 \value{
 A list containing unit root tests for the variables involved, the

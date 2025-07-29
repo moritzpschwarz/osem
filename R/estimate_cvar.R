@@ -35,7 +35,7 @@
 #' \item{args}{A list storing the settings of the function call.}
 
 estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
-                          x_vars_basename, use_logs, ar,
+                          x_vars_basename, use_logs, ar, freq,
                           coint_deterministic = c("none", "const", "trend"),
                           coint_significance = c("1pct", "5pct", "10pct")) {
   # input validation
