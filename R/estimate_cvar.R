@@ -79,12 +79,12 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
   # check that all CVAR elements are unit roots
   y_urreject <- purrr::map_lgl(y_urtest, ~ .$decision$reject_ur)
   if (length(y_urreject > 0) & any(y_urreject)) {
-    stop(paste0("Not all CVAR variables ", y.names, " in CVAR sub-system ", system_name, " are I(1). For the following variables, we reject the unit root hypothesis: ", y_urreject[y_urreject], "."))
+    stop(paste0("Not all CVAR variables in CVAR sub-system ", system_name, " are I(1). For the following variables, we reject the unit root hypothesis: ", names(y_urreject[y_urreject]), "."))
   }
   # ...and all exogenous regressors stationary
   x_urreject <- purrr::map_lgl(x_urtest, ~ .$decision$reject_ur)
   if (length(x_urreject > 0) & !all(x_urreject)) { # only check if have X vars
-    stop(paste0("Not all exogenous regressors ", x.names, " in CVAR sub-system ", system_name, " are stationary. For the following variables, we do not reject the unit root hypothesis: ", x_urreject[!x_urreject], "."))
+    stop(paste0("Not all exogenous regressors in CVAR sub-system ", system_name, " are stationary. For the following variables, we do not reject the unit root hypothesis: ", names(x_urreject[!x_urreject]), "."))
   }
 
   # cointegration test
@@ -113,7 +113,7 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
     }
     stop("Cannot reject r = 0. Specified variables seem nonstationary but not cointegrated. Please re-specify the model.")
   } else {
-    rankval <- length(which_reject) - first_pass
+    rankval <- length(which_reject) - first_pass %>% as.integer()
     message(paste0("Determined cointegration rank for CVAR sub-system '", system_name, "' was ", rankval, ". Proceed to estimate CVAR."))
   }
 
