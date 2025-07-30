@@ -183,5 +183,9 @@ check_config_table <- function(config_table) {
       independent = gsub("/", " / ", .data$independent),
       independent = gsub("\\*", " * ", .data$independent)
     ) %>%
+    # old code created a column "index", which is used by other functions
+    # my understanding (Jonas) is that this was essentially random, so simply
+    # add another column called index that mirrors the order column
+    dplyr::mutate(index = .data$order) %>%
     return()
 }
