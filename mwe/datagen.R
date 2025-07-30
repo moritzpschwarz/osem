@@ -20,7 +20,7 @@ for (t in 2:nobs) {
   # generate errors
   epsilont <- matrix(mvrnorm(n = 1, mu = c(0, 0), Sigma = Sigma), nrow = 2, ncol = 1)
   # update observations of Y, Z
-  data_cvar[, t] <- A %*% data_cvar[, t-1] + mu + epsilont
+  data_cvar[, t] <- A %*% data_cvar[, t - 1] + mu + epsilont
 }
 data_cvar <- as.data.frame(t(data_cvar)) |>
   mutate(time = 1:nobs)
@@ -44,7 +44,7 @@ for (t in 2:nobs) {
   # generate errors
   epsilont <- matrix(mvrnorm(n = 1, mu = c(0, 0, 0), Sigma = diag(3)), nrow = 3, ncol = 1)
   # update observations of U, V, T
-  data_uni[, t] <- Phi %*% data_uni[, t-1] + epsilont
+  data_uni[, t] <- Phi %*% data_uni[, t - 1] + epsilont
 }
 data_uni <- as.data.frame(t(data_uni)) |>
   mutate(time = 1:nobs)
@@ -60,12 +60,16 @@ rownames(data_ar) <- "Q"
 data_ar[, 1] <- 1.5
 for (t in 2:nobs) {
   # update observation Q
-  data_ar[, t] <- 1 + 0.3*data_ar[, t-1] + rnorm(1)
+  data_ar[, t] <- 1 + 0.3 * data_ar[, t - 1] + rnorm(1)
 }
-data_other <- data.frame(Q = t(data_ar),
-                         R = rnorm(nobs)) |>
-  mutate(S = 5*R + rnorm(nobs),
-         time = 1:nobs)
+data_other <- data.frame(
+  Q = t(data_ar),
+  R = rnorm(nobs)
+) |>
+  mutate(
+    S = 5 * R + rnorm(nobs),
+    time = 1:nobs
+  )
 ggplot(data = data_other) +
   geom_line(aes(x = time, y = Q), color = "blue") +
   geom_line(aes(x = time, y = R), color = "red") +
@@ -79,10 +83,22 @@ data_cvar |>
   bind_cols(data_other |> dplyr::select(Q, R, S)) |>
   # generate a variable based on variables from both CVAR and stationary system: Mt = 0.1Yt-1 + 0.1Ut-1
   mutate(error = rnorm(nobs)) |>
-  mutate(M = 0.1*lag(Y) + 0.1*lag(U) + error) |>
+  mutate(M = 0.1 * lag(Y) + 0.1 * lag(U) + error) |>
   dplyr::select(-error) |>
   drop_na() |>
-  mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = nobs-1)) |>
+  mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = nobs - 1)) |>
   saveRDS(file = "./mwe/artificial_data.rds")
 
-
+data_cvar |>
+  dplyr::select(Y, Z) |>
+  bind_cols(data_uni |> dplyr::select(U, V, W)) |>
+  bind_cols(data_other |> dplyr::select(Q, R, S)) |>
+  # generate a variable based on variables from both CVAR and stationary system: Mt = 0.1Yt-1 + 0.1Ut-1
+  mutate(error = rnorm(nobs)) |>
+  mutate(M = 0.1 * lag(Y) + 0.1 * lag(U) + error) |>
+  dplyr::select(-error) |>
+  drop_na() |>
+  mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = nobs - 1)) %>%
+  pivot_longer(cols = 1:9, names_to = "na_item", values_to = "value") %>%
+  dplyr::mutate(geo = "DE") %>%
+  saveRDS(file = "./tests/testthat/testdata/cvar/artificial_cvar_data.rds")
