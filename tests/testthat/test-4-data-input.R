@@ -3,7 +3,6 @@
 # since downloading is involved, run these tests only locally
 
 test_that("download_eurostat works correctly", {
-
   skip_on_cran()
   skip_on_ci()
 
@@ -26,18 +25,24 @@ test_that("download_eurostat works correctly", {
       "GValueAdd + Import",
       "FinConsExpHH + GCapitalForm",
       "HDD + CDD + HICP_Energy + GValueAdd"
-    )
+    ),
+    lag = c("", "", "", ""),
+    cvar = c("", "", "", "")
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
   additional_filters <- character() # no additional filters
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                   dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
 
   # basic functionality
-  a <- osem:::download_eurostat(to_obtain = to_obtain,
-                         additional_filters = additional_filters,
-                         quiet = FALSE)
+  a <- osem:::download_eurostat(
+    to_obtain = to_obtain,
+    additional_filters = additional_filters,
+    quiet = FALSE
+  )
   # expected:
   # download 4 datasets from eurostat: namq_10_a10, namq_10_gdp, prc_hicp_midx, nrg_chdd_m
   # list with two entries: a df and updated "to_obtain" where the eurostat vars are found == TRUE
@@ -58,11 +63,15 @@ test_that("download_eurostat works correctly", {
   dictionary$time <- lubridate::NA_Date_
   dictionary[, "time"] <- as.Date("2022-10-01")
   additional_filters <- c("time")
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                                     dictionary = dictionary)
-  a <- osem:::download_eurostat(to_obtain = to_obtain,
-                                           additional_filters = additional_filters,
-                                           quiet = FALSE)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
+  a <- osem:::download_eurostat(
+    to_obtain = to_obtain,
+    additional_filters = additional_filters,
+    quiet = FALSE
+  )
   # expected as before:
   # download 4 datasets from eurostat: namq_10_a10, namq_10_gdp, prc_hicp_midx, nrg_chdd_m
   # list with two entries: a df and updated "to_obtain" where the eurostat vars are found == TRUE
@@ -76,13 +85,10 @@ test_that("download_eurostat works correctly", {
   expect_true(all(a$to_obtain[which(to_obtain$database == "eurostat"), "found"]))
   expect_false(all(a$to_obtain[which(to_obtain$database != "eurostat"), "found"]))
   expect_identical(unique(a$df$time), as.Date("2022-10-01"))
-
-
 })
 
 
 test_that("download_edgar works correctly", {
-
   skip_on_cran()
   skip_on_ci()
 
@@ -113,12 +119,16 @@ test_that("download_edgar works correctly", {
       "HDD + CDD + HICP_Energy + GValueAdd",
       "HICP_Energy",
       "GValueAdd"
-    )
+    ),
+    lag = c("", "", "", "", "", ""),
+    cvar = c("", "", "", "", "", "")
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                                     dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
 
   # basic functionality
   a <- osem:::download_edgar(to_obtain = to_obtain, quiet = FALSE)
@@ -138,59 +148,67 @@ test_that("download_edgar works correctly", {
   # IPCC code allows to sum across sub-codes
   # e.g. code "1.A" sums up all codes "1.A.xxx"
   # check manually whether this worked correctly for EmiCO2Combustion
-  #url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip"
+  # url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip"
   url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v80_FT2022_GHG/IEA_EDGAR_CO2_m_1970_2022.zip"
   tmp_download <- tempfile(fileext = "zip")
   download.file(url = url, destfile = tmp_download, mode = "wb")
   tmp_extract <- tempdir()
   unzip(zipfile = tmp_download, files = "IEA_EDGAR_CO2_m_1970_2022.xlsx", exdir = tmp_extract)
-  tmp <- readxl::read_excel(path = file.path(tmp_extract, "IEA_EDGAR_CO2_m_1970_2022.xlsx"),
-                            sheet = "IPCC 2006",
-                            skip = 9)
+  tmp <- readxl::read_excel(
+    path = file.path(tmp_extract, "IEA_EDGAR_CO2_m_1970_2022.xlsx"),
+    sheet = "IPCC 2006",
+    skip = 9
+  )
   manual <- tmp %>%
     dplyr::select("Country_code_A3", "Year", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "ipcc_code_2006_for_standard_report") %>%
     dplyr::filter(Country_code_A3 == "AUT") %>%
     dplyr::rename(geo = Country_code_A3) %>%
     dplyr::mutate(geo = "AT") %>%
-    tidyr::pivot_longer(cols = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
-                        names_to = "Month",
-                        values_to = "values") %>%
-    dplyr::mutate(Month = dplyr::case_when(Month == "Jan" ~ "01",
-                                           Month == "Feb" ~ "02",
-                                           Month == "Mar" ~ "03",
-                                           Month == "Apr" ~ "04",
-                                           Month == "May" ~ "05",
-                                           Month == "Jun" ~ "06",
-                                           Month == "Jul" ~ "07",
-                                           Month == "Aug" ~ "08",
-                                           Month == "Sep" ~ "09",
-                                           Month == "Oct" ~ "10",
-                                           Month == "Nov" ~ "11",
-                                           Month == "Dec" ~ "12",
-                                           TRUE ~ "error")) %>%
+    tidyr::pivot_longer(
+      cols = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+      names_to = "Month",
+      values_to = "values"
+    ) %>%
+    dplyr::mutate(Month = dplyr::case_when(
+      Month == "Jan" ~ "01",
+      Month == "Feb" ~ "02",
+      Month == "Mar" ~ "03",
+      Month == "Apr" ~ "04",
+      Month == "May" ~ "05",
+      Month == "Jun" ~ "06",
+      Month == "Jul" ~ "07",
+      Month == "Aug" ~ "08",
+      Month == "Sep" ~ "09",
+      Month == "Oct" ~ "10",
+      Month == "Nov" ~ "11",
+      Month == "Dec" ~ "12",
+      TRUE ~ "error"
+    )) %>%
     dplyr::mutate(time = as.Date(paste(Year, Month, "01", sep = "-"))) %>%
     dplyr::select(-Year, -Month) %>%
     dplyr::filter(ipcc_code_2006_for_standard_report %in% c("1.A.1.a", "1.A.1.bc", "1.A.2", "1.A.3.a", "1.A.3.b_noRES", "1.A.3.c", "1.A.3.d", "1.A.3.e", "1.A.4")) %>%
     dplyr::group_by(geo, time) %>%
     dplyr::summarise(values = sum(values)) %>%
     dplyr::ungroup() %>%
-    dplyr::mutate(year = lubridate::year(time),
-                  quarter = lubridate::quarter(time)) %>%
+    dplyr::mutate(
+      year = lubridate::year(time),
+      quarter = lubridate::quarter(time)
+    ) %>%
     dplyr::group_by(geo, year, quarter) %>%
-    dplyr::summarise(values = sum(values),
-                     nobs = dplyr::n(),
-                     time = min(time)) %>%
+    dplyr::summarise(
+      values = sum(values),
+      nobs = dplyr::n(),
+      time = min(time)
+    ) %>%
     dplyr::ungroup() %>%
     dplyr::filter(nobs == 3L) %>%
     dplyr::select(-year, -quarter, -nobs) %>%
     dplyr::mutate(na_item = "EmiCO2Combustion") %>%
-    dplyr::relocate("time","geo","na_item","values")
+    dplyr::relocate("time", "geo", "na_item", "values")
   expect_identical(a$df %>% dplyr::filter(na_item == "EmiCO2Combustion"), manual)
-
 })
 
 test_that("load_locally() works correctly", {
-
   skip_on_cran()
   skip_on_ci()
 
@@ -229,15 +247,19 @@ test_that("load_locally() works correctly", {
       "HDD + CDD + HICP_Energy + GValueAdd",
       "HICP_Energy",
       "GValueAdd"
-    )
+    ),
+    lag = c("", "", "", "", "", ""),
+    cvar = c("", "", "", "", "", "")
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
   # make the edgar emissions data to be loaded locally
   indices <- which(dictionary$model_varname %in% c("EmiCO2Combustion", "EmiN2OTotal", "EmiCH4Livestock"))
   dictionary[indices, "database"] <- "local"
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                                     dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
 
   # basic functionality
   a <- osem:::load_locally(to_obtain = to_obtain, inputdata_directory = test_path("testdata", "complete"), quiet = FALSE)
@@ -246,13 +268,15 @@ test_that("load_locally() works correctly", {
   expect_named(a, c("df", "to_obtain"))
   expect_true(all(a$to_obtain[which(to_obtain$database == "local"), "found"]))
   expect_false(all(a$to_obtain[which(to_obtain$database != "local"), "found"]))
-  expect_identical(NROW(a$df), 3L*88L) # each df should be 88 rows
+  expect_identical(NROW(a$df), 3L * 88L) # each df should be 88 rows
 
   # internally, Moritz has allowed for inputdata_directory to be a data.frame
   # check that this also works as intended
   # reset
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                                     dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
   # create data.frame
   x <- readRDS(test_path("testdata", "complete", "emin2ototal.rds"))
   a <- osem:::load_locally(to_obtain = to_obtain, inputdata_directory = x, quiet = FALSE)
@@ -262,11 +286,9 @@ test_that("load_locally() works correctly", {
   expect_true(a$to_obtain[which(to_obtain$model_varname == "EmiN2OTotal"), "found"])
   expect_false(all(a$to_obtain[which(to_obtain$model_varname != "EmiN2OTotal"), "found"]))
   expect_identical(NROW(a$df), 88L) # each df should be 88 rows, only loaded 1
-
 })
 
 test_that("load_or_download_variables() works correctly", {
-
   skip_on_cran()
   skip_on_ci()
 
@@ -286,7 +308,9 @@ test_that("load_or_download_variables() works correctly", {
       "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
       "GValueAdd + Import",
       "FinConsExpHH + GCapitalForm"
-    )
+    ),
+    lag = c("", "", ""),
+    cvar = c("", "", "")
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
@@ -302,8 +326,10 @@ test_that("load_or_download_variables() works correctly", {
   )
 
   # check that obtained all variables
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                                     dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
   expect_setequal(unique(to_obtain$model_varname), unique(a$na_item))
 
   # specification 2: requires only edgar download
@@ -319,7 +345,9 @@ test_that("load_or_download_variables() works correctly", {
     independent = c(
       "EmiCO2Combustion",
       ""
-    )
+    ),
+    lag = c("", ""),
+    cvar = c("", "")
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
@@ -335,8 +363,10 @@ test_that("load_or_download_variables() works correctly", {
   )
 
   # check that obtained all variables
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                                     dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
   expect_setequal(unique(to_obtain$model_varname), unique(a$na_item))
 
   # specification 3: requires only local loading
@@ -352,7 +382,9 @@ test_that("load_or_download_variables() works correctly", {
     independent = c(
       "EmiCO2Combustion",
       ""
-    )
+    ),
+    lag = c("", ""),
+    cvar = c("", "")
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
@@ -380,8 +412,10 @@ test_that("load_or_download_variables() works correctly", {
   )
 
   # check that obtained all variables
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                                     dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
   expect_setequal(unique(to_obtain$model_varname), unique(a$na_item))
   expect_identical(a, b)
 
@@ -418,15 +452,19 @@ test_that("load_or_download_variables() works correctly", {
       "FinConsExpHH + GCapitalForm",
       "HDD + CDD + HICP_Energy + GValueAdd",
       "EmiCH4Livestock" # this will be database == "local", so should always be local
-    )
+    ),
+    lag = c("", "", "", "", ""),
+    cvar = c("", "", "", "", "")
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
   # make the "EmiCH4Livestock" to be loaded locally
   indices <- which(dictionary$model_varname == "EmiCH4Livestock")
   dictionary[indices, "database"] <- "local"
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                                     dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
 
   # should see difference in EmiN2OTotal; EmiCH4Livestock should always be from local
   # use incomplete directory so that we know they come from the local data
@@ -475,7 +513,9 @@ test_that("load_or_download_variables() works correctly", {
       "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
       "GValueAdd + Import",
       "FinConsExpHH + GCapitalForm"
-    )
+    ),
+    lag = c("", "", ""),
+    cvar = c("", "", "")
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
@@ -498,5 +538,4 @@ test_that("load_or_download_variables() works correctly", {
     recently <- (Sys.time() < info$mtime + 60) # adds 60 seconds
     expect_true(recently)
   }
-
 })
