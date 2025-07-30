@@ -46,21 +46,24 @@
 #' a <- run_model(specification = spec)
 #' forecast_model(a)
 #' }
-
-
 forecast_model <- function(model,
                            exog_predictions = NULL,
                            n.ahead = 10,
-                           ci.levels = c(0.5,0.66,0.95),
+                           ci.levels = c(0.5, 0.66, 0.95),
                            exog_fill_method = "AR",
                            ar.fill.max = 4,
                            plot = TRUE,
                            uncertainty_sample = 100,
-                           quiet = FALSE){
-
-  if(!isa(model, "osem")){stop("Forecasting only possible with an osem object. Execute 'run_model' to get such an object.")}
-  if(!is.null(exog_fill_method) & !exog_fill_method %in% c("AR","last","auto","ets")){stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR', 'auto', 'ets', or 'last'.")}
-  if(!is.null(ar.fill.max) & (!is.integer(as.integer(ar.fill.max)) | ar.fill.max < 1)){stop("The option 'ar.fill.max' can either be NULL or must be an integer that is larger than 0.")}
+                           quiet = FALSE) {
+  if (!isa(model, "osem")) {
+    stop("Forecasting only possible with an osem object. Execute 'run_model' to get such an object.")
+  }
+  if (!is.null(exog_fill_method) & !exog_fill_method %in% c("AR", "last", "auto", "ets")) {
+    stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR', 'auto', 'ets', or 'last'.")
+  }
+  if (!is.null(ar.fill.max) & (!is.integer(as.integer(ar.fill.max)) | ar.fill.max < 1)) {
+    stop("The option 'ar.fill.max' can either be NULL or must be an integer that is larger than 0.")
+  }
 
   # 1. Determine Exogenous Variables and wrangle future values ---------------
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
@@ -70,13 +73,15 @@ forecast_model <- function(model,
     dplyr::filter(.data$class == "x") %>%
     dplyr::pull(.data$var) -> exog_vars
 
-  exog_forecast_list <- forecast_exogenous_values(model = model,
-                                                  exog_vars = exog_vars,
-                                                  exog_predictions = exog_predictions,
-                                                  exog_fill_method = exog_fill_method,
-                                                  ar.fill.max = ar.fill.max,
-                                                  n.ahead = n.ahead,
-                                                  quiet = quiet)
+  exog_forecast_list <- forecast_exogenous_values(
+    model = model,
+    exog_vars = exog_vars,
+    exog_predictions = exog_predictions,
+    exog_fill_method = exog_fill_method,
+    ar.fill.max = ar.fill.max,
+    n.ahead = n.ahead,
+    quiet = quiet
+  )
 
   # extract the exogenous data that is ready for forecasting
   exog_df_ready_full <- exog_forecast_list$exog_df_ready
@@ -98,53 +103,49 @@ forecast_model <- function(model,
 
   ## 2a. Start of main loop ------------------------------------------------
   # cycling through each module
-  for(i in seq(model$module_order$order)){
+  for (i in seq(model$module_order$order)) {
     # i = 1
     current_spec <- model$module_order %>%
       dplyr::filter(.data$order == i) %>%
-
       # save original form of independent col
       dplyr::mutate(independent_orig = .data$independent) %>%
-
       # make sure each independent variable has a separate row
       dplyr::mutate(independent = gsub(" ", "", .data$independent)) %>%
-
       dplyr::rowwise() %>%
-      dplyr::mutate(independent = list(strsplits(.data$independent,c("\\-", "\\+", "/", "\\*")))) %>%
-
+      dplyr::mutate(independent = list(strsplits(.data$independent, c("\\-", "\\+", "/", "\\*")))) %>%
       # following line added to deal with AR models when ind_vars is a list of NULL
       dplyr::bind_rows(dplyr::tibble(independent = list(""))) %>%
-
       tidyr::unnest("independent", keep_empty = TRUE) %>%
       tidyr::drop_na("index") %>%
-      dplyr::select("index","dependent","independent","independent_orig")
+      dplyr::select("index", "dependent", "independent", "independent_orig")
 
 
     ## 2b. Start of loop for estimated relationships  ------------------------------------------------
-    if(model$module_order$type[model$module_order$order == i] != "d"){
-
+    if (model$module_order$type[model$module_order$order == i] != "d") {
       # get the isat object for this relationship
       isat_obj <- model$module_collection %>%
         dplyr::filter(.data$order == i) %>%
         dplyr::pull(.data$model) %>%
         .[[1]]
 
-      pred_setup_list <- forecast_setup_estimated_relationships(model = model,
-                                                                i = i,
-                                                                exog_df_ready = exog_df_ready,
-                                                                full_exog_predicted_data = exog_df_ready_full,
-                                                                n.ahead = n.ahead,
-                                                                current_spec = current_spec,
-                                                                prediction_list = prediction_list,
-                                                                uncertainty_sample = uncertainty_sample,
-                                                                nowcasted_data = nowcasted)
+      pred_setup_list <- forecast_setup_estimated_relationships(
+        model = model,
+        i = i,
+        exog_df_ready = exog_df_ready,
+        full_exog_predicted_data = exog_df_ready_full,
+        n.ahead = n.ahead,
+        current_spec = current_spec,
+        prediction_list = prediction_list,
+        uncertainty_sample = uncertainty_sample,
+        nowcasted_data = nowcasted
+      )
 
       final_i_data <- pred_setup_list$final_i_data
       pred_df <- pred_setup_list$pred_df
       chk_any_listcols <- pred_setup_list$chk_any_listcols
       current_pred_raw <- pred_setup_list$current_pred_raw
 
-      if(!is.null(pred_setup_list$pred_df.all)){
+      if (!is.null(pred_setup_list$pred_df.all)) {
         pred_df.all <- pred_setup_list$pred_df.all
       }
 
@@ -154,18 +155,23 @@ forecast_model <- function(model,
       isat_obj$call$tis <- isat_obj$aux$args$tis
 
       pred_obj <- gets::predict.isat(isat_obj,
-                                     newmxreg = as.matrix(utils::tail(pred_df %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)),
-                                                                      n.ahead)),
-                                     n.ahead = n.ahead,
-                                     plot = FALSE,
-                                     ci.levels = ci.levels)
+        newmxreg = as.matrix(utils::tail(
+          pred_df %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)),
+          n.ahead
+        )),
+        n.ahead = n.ahead,
+        plot = FALSE,
+        ci.levels = ci.levels
+      )
 
       # make samples from the model residuals and add them to the mean prediction
-      res_nozero <- as.numeric(isat_obj$residuals)[round(as.numeric(isat_obj$residuals),10) != 0] # exclude 0 residuals (due to IIS) to not underestimate uncertainty
+      # use machine precision to determine whether close to zero
+      tolerance <- sqrt(.Machine$double.eps)
+      res_nozero <- as.numeric(isat_obj$residuals)[abs(as.numeric(isat_obj$residuals)) > tolerance] # exclude 0 residuals (due to IIS) to not underestimate uncertainty
       res_draws <- sample(res_nozero, size = uncertainty_sample * n.ahead, replace = TRUE)
 
       # create a tibble with all res_draws with the same number of rows as n.ahead
-      res_names <- paste0("run_",1:(length(res_draws)/n.ahead))
+      res_names <- paste0("run_", 1:(length(res_draws) / n.ahead))
       dplyr::as_tibble(matrix(res_draws, nrow = n.ahead, dimnames = list(NULL, res_names))) %>%
         dplyr::mutate(dplyr::across(dplyr::everything(), cumsum)) %>%
         as.matrix() -> res_draws_matrix
@@ -176,28 +182,28 @@ forecast_model <- function(model,
 
       # if there are any list columns then that means that a preceding variable has uncertainty
       # then the pred_draw_matrix is replaced with the uncertainty estimates
-      if(chk_any_listcols){
+      if (chk_any_listcols) {
         # first find the list columns - these indicate that there has been uncertainty in preceding variables
-        list_cols <- names(pred_df.all)[sapply(pred_df.all, "class")=="list"]
+        list_cols <- names(pred_df.all)[sapply(pred_df.all, "class") == "list"]
         time_values <- current_pred_raw$time
 
         # in this following dataset we write the list columns properly formatted
         overall_listcols <- dplyr::tibble(time = time_values) %>%
-          #dplyr::full_join(dplyr::tibble(run = 1:uncertainty_sample), by = character())
+          # dplyr::full_join(dplyr::tibble(run = 1:uncertainty_sample), by = character())
           dplyr::cross_join(dplyr::tibble(run = 1:uncertainty_sample))
 
-        for(m in list_cols){
+        for (m in list_cols) {
           # m = list_cols[1]
 
           # we extract the list columns into individual lists
-          lapply(pred_df.all %>% dplyr::pull(m), FUN = function(x){
+          lapply(pred_df.all %>% dplyr::pull(m), FUN = function(x) {
             # if the value is just a number (must be due to it being a lagged observed value), then just take that value
-            if(is.numeric(x)){
+            if (is.numeric(x)) {
               x
-            } else if(is.data.frame(x)){
+            } else if (is.data.frame(x)) {
               # if this is already a dataframe, then pivot it to longer
               tidyr::pivot_longer(x, dplyr::everything(), names_to = "run") %>%
-                dplyr::mutate(run = as.numeric(grep("[0-9]+$",.data$run)))
+                dplyr::mutate(run = as.numeric(grep("[0-9]+$", .data$run)))
             }
           }) -> listcol_unformatted
 
@@ -205,59 +211,62 @@ forecast_model <- function(model,
           # now we combine the individual formatted list columns to one data frame
           # for that, we cycle through each element of the formatted list columns
           listcol_formatted <- dplyr::tibble()
-          for(l in 1:length(listcol_unformatted)){
-            if(is.numeric(listcol_unformatted[[l]])){
-              dplyr::tibble(time = time_values[l],
-                            run = 1:uncertainty_sample,
-                            value = listcol_unformatted[[l]]) %>%
-                dplyr::bind_rows(.,listcol_formatted) -> listcol_formatted
+          for (l in 1:length(listcol_unformatted)) {
+            if (is.numeric(listcol_unformatted[[l]])) {
+              dplyr::tibble(
+                time = time_values[l],
+                run = 1:uncertainty_sample,
+                value = listcol_unformatted[[l]]
+              ) %>%
+                dplyr::bind_rows(., listcol_formatted) -> listcol_formatted
             } else {
-              dplyr::tibble(time = time_values[l],
-                            listcol_unformatted[[l]]) %>%
-                dplyr::bind_rows(.,listcol_formatted) -> listcol_formatted
+              dplyr::tibble(
+                time = time_values[l],
+                listcol_unformatted[[l]]
+              ) %>%
+                dplyr::bind_rows(., listcol_formatted) -> listcol_formatted
             }
           }
           listcol_formatted <- dplyr::arrange(listcol_formatted, .data$time, .data$run)
           names(listcol_formatted) <- c("time", "run", m)
 
-          dplyr::full_join(overall_listcols, listcol_formatted, by = c("time","run")) -> overall_listcols
+          dplyr::full_join(overall_listcols, listcol_formatted, by = c("time", "run")) -> overall_listcols
         }
 
         # now that we have all list columns properly formatted in one dataset, we join them with the rest of the columns
         pred_df.all_new <- pred_df.all %>%
           dplyr::mutate(time = time_values) %>%
           # we can delete the list_cols, because those will now be added in their formatted version
-          dplyr::select(-dplyr::all_of(list_cols))  %>%
-          dplyr::full_join(overall_listcols,., by = "time")
+          dplyr::select(-dplyr::all_of(list_cols)) %>%
+          dplyr::full_join(overall_listcols, ., by = "time")
 
         pred_df.all_new %>%
           # we nest all data so that each run is one line
-          tidyr::nest(data = c(dplyr::everything(),-"run")) %>%
-
+          tidyr::nest(data = c(dplyr::everything(), -"run")) %>%
           # now for each run-row, we run predict.isat
-          dplyr::mutate(prediction = purrr::map(.data$data, function(x){
+          dplyr::mutate(prediction = purrr::map(.data$data, function(x) {
             gets::predict.isat(isat_obj,
-                               newmxreg = x %>%
-                                 dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)) %>%
-                                 as.matrix,
-                               n.ahead = n.ahead, plot = FALSE,
-                               ci.levels = ci.levels, n.sim = 1)
-
+              newmxreg = x %>%
+                dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)) %>%
+                as.matrix(),
+              n.ahead = n.ahead, plot = FALSE,
+              ci.levels = ci.levels, n.sim = 1
+            )
           })) -> all_preds
 
         all_preds %>%
           # we get all predictions back into a row format
-          dplyr::mutate(prediction = purrr::map(.data$prediction,dplyr::as_tibble)) %>%
+          dplyr::mutate(prediction = purrr::map(.data$prediction, dplyr::as_tibble)) %>%
           tidyr::unnest("prediction") %>%
           # we add the time dimension
           dplyr::mutate(time = time_values, .by = "run") %>%
-          dplyr::select("run","time", pred = "yhat") %>%
-
+          dplyr::select("run", "time", pred = "yhat") %>%
           # here pred only takes into account the uncertainty in the x-variables
           # pred_draws combines the model residual uncertainty for y and the uncertainty of the x-variables
-          dplyr::mutate(pred_draws = .data$pred + res_draws,
-                        pred = NULL) %>%
-
+          dplyr::mutate(
+            pred_draws = .data$pred + res_draws,
+            pred = NULL
+          ) %>%
           # now we get them into the final format to add them back to the overall list
           tidyr::pivot_wider(id_cols = "time", names_from = "run", values_from = "pred_draws") %>%
           dplyr::select(-"time") %>%
@@ -271,18 +280,26 @@ forecast_model <- function(model,
 
       ## 2b.iii. Prepare output for estimated relationships  ------------------------------------------------
 
-      outvarname <- paste0(if (model$module_collection %>%
-                               dplyr::filter(.data$order == i) %>%
-                               .$model.args %>%
-                               .[[1]] %>%
-                               .$use_logs %in% c("both","y")) {"ln."} else {""},
-                           current_spec %>% dplyr::pull("dependent") %>% unique)
+      outvarname <- paste0(
+        if (model$module_collection %>%
+          dplyr::filter(.data$order == i) %>%
+          .$model.args %>%
+          .[[1]] %>%
+          .$use_logs %in% c("both", "y")) {
+          "ln."
+        } else {
+          ""
+        },
+        current_spec %>% dplyr::pull("dependent") %>% unique()
+      )
 
-      dplyr::tibble(time = current_pred_raw %>% dplyr::pull(.data$time),
-                    value = as.numeric(pred_obj[,1])) %>%
-        setNames(c("time",outvarname)) -> central_estimate
+      dplyr::tibble(
+        time = current_pred_raw %>% dplyr::pull(.data$time),
+        value = as.numeric(pred_obj[, 1])
+      ) %>%
+        setNames(c("time", outvarname)) -> central_estimate
 
-      colnames(pred_draw_matrix) <- paste0("run_",1:uncertainty_sample)
+      colnames(pred_draw_matrix) <- paste0("run_", 1:uncertainty_sample)
       pred_draw_matrix <- dplyr::as_tibble(pred_draw_matrix) %>%
         dplyr::bind_cols(dplyr::tibble(time = current_pred_raw$time), .)
 
@@ -291,17 +308,16 @@ forecast_model <- function(model,
       prediction_list[prediction_list$order == i, "data"] <- final_i_data
       prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(central_estimate = list(central_estimate))
       prediction_list[prediction_list$order == i, "all.estimates"] <- dplyr::tibble(all_estimates = list(pred_draw_matrix))
-
-
     } else {
-
       ## 2b. Start of loop for identities  ------------------------------------------------
 
-      identity_setup <- forecast_identities(model = model,
-                                            exog_df_ready = exog_df_ready,
-                                            current_spec = current_spec,
-                                            prediction_list = prediction_list,
-                                            uncertainty_sample = uncertainty_sample)
+      identity_setup <- forecast_identities(
+        model = model,
+        exog_df_ready = exog_df_ready,
+        current_spec = current_spec,
+        prediction_list = prediction_list,
+        uncertainty_sample = uncertainty_sample
+      )
 
       identity_pred <- identity_setup$identity_pred
       identity_pred_final <- identity_setup$identity_pred_final
@@ -309,7 +325,7 @@ forecast_model <- function(model,
       central_estimate <- identity_setup$central_estimate
       prediction_list <- identity_setup$prediction_list
 
-      prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::tibble(yhat = identity_pred_final[,1, drop = TRUE])))
+      prediction_list[prediction_list$order == i, "predict.isat_object"] <- dplyr::tibble(predict.isat_object = list(dplyr::tibble(yhat = identity_pred_final[, 1, drop = TRUE])))
       prediction_list[prediction_list$order == i, "data"] <- dplyr::tibble(data = list(dplyr::bind_cols(identity_pred_final, identity_pred)))
       prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(data = list(central_estimate))
       prediction_list[prediction_list$order == i, "all.estimates"] <- dplyr::tibble(data = list(identity_pred_final.all))
@@ -338,10 +354,9 @@ forecast_model <- function(model,
 
   try(out$full_forecast_data <- plot(out, return.data = TRUE))
 
-  if(plot){
+  if (plot) {
     try(print(plot(out)))
   }
 
   return(out)
-
 }
