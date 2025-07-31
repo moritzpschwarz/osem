@@ -19,12 +19,14 @@
 identify_module_data <- function(module, classification, data) {
   # extract variable names
   dep <- module$dependent
+  dep <- trimws(unlist(strsplit(dep, ",")))
   indep <- module$independent
   indep <- unlist(strsplits(indep, splits = c("\\+", "\\-", "/", "\\*")))
   indep <- gsub(" ", "", indep)
 
   # if module is an identity/definition module then the dependent variable is not necessary
   if (module$type == "d") {
+    stopifnot(length(dep) == 1L) # would be longer than 1 for CVAR, but should not be "d" then
     # original variables
     vars.need.base <- indep
     # in the model, need the predicted values (hat) of the endogenous variables
