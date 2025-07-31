@@ -227,3 +227,31 @@ test_that("classify_variables() works correctly with CVAR entries", {
   expect_setequal(exo, c("L", "R"))
   expect_setequal(end, c("Y", "Z", "U", "V", "W", "M", "Q", "S", "A", "B", "D"))
 })
+
+test_that("identify_module_data() works with CVAR", {
+  cfg <- dplyr::tibble(
+    type = c("n", "n", "n", "n", "n", "n", "d", "n", "n", "n", "n", "d", "n"),
+    dependent = c("Y", "Z", "U", "V", "W", "M", "T", "Q", "S", "A", "B", "C", "D"),
+    independent = c("U", "U", "", "U + W", "U + V", "Y + U", "U + V + W", "", "R", "", "", "A - B", "Y + L"),
+    lag = c("", "", "", "W", "", "U, Y", "", "", "", "", "", "", "L"),
+    cvar = c("system1", "system1", "", "", "", "", "", "", "", "system2", "system2", "", "")
+  )
+  mdl <- osem:::check_config_table(cfg)
+  classification <- osem:::classify_variables(mdl)
+  df <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds"))
+  # "normal", single equation module
+  single1 <- osem:::identify_module_data(mdl[which(mdl$dependent == "M"), ], classification, data = df)
+  expect_named(single1, c("time", "na_item", "values", "geo"))
+  expect_setequal(unique(single1$na_item), c("M", "Y", "U"))
+  expect_equal(NROW(single1), 300L)
+  # "system1"
+  cvar1 <- osem:::identify_module_data(mdl[which(mdl$cvar == "system1"), ], classification, data = df)
+  expect_named(cvar1, c("time", "na_item", "values", "geo"))
+  expect_setequal(unique(cvar1$na_item), c("Y", "Z", "U"))
+  expect_equal(NROW(cvar1), 300L)
+  # "system2"
+  cvar2 <- osem:::identify_module_data(mdl[which(mdl$cvar == "system2"), ], classification, data = df)
+  expect_named(cvar2, c("time", "na_item", "values", "geo"))
+  expect_setequal(unique(cvar2$na_item), c("A", "B"))
+  expect_equal(NROW(cvar2), 200L)
+})
