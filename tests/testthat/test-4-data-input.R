@@ -539,3 +539,28 @@ test_that("load_or_download_variables() works correctly", {
     expect_true(recently)
   }
 })
+
+test_that("determine_variables() works with CVAR modules", {
+  # specification with two systems
+  specification <- dplyr::tibble(
+    type = c("n", "n", "n", "n", "n", "n", "d", "n", "n", "n", "n"),
+    dependent = c("Y", "Z", "U", "V", "W", "M", "T", "Q", "S", "A", "B"),
+    independent = c("U", "U", "", "U + W", "U + V", "Y + U", "U + V + W", "", "R", "", ""),
+    lag = c("", "", "", "W", "", "U, Y", "", "", "", "", ""),
+    cvar = c("system1", "system1", "", "", "", "", "", "", "", "system2", "system2")
+  )
+  # fun takes output of check_config_table() as input (from within load_or_download_variables())
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- dplyr::tibble(
+    model_varname = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    full_name = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    database = c("local", "local", "local", "local", "local", "local", "local", "local", NA, "local", "local", "local")
+  )
+  a <- osem:::determine_variables(dictionary = dictionary, specification = module_order)
+  expect_s3_class(a, c("tbl", "data.frame"))
+  # we need to find A, B, M, Q, R, S, U, V, W, Y, Z = 11 vars (T is given as identity with db NA)
+  expect_identical(dim(a), c(11L, 4L))
+  expect_setequal(a$model_varname, c("A", "B", "M", "Q", "R", "S", "U", "V", "W", "Y", "Z"))
+  expect_identical(a$database, rep("local", times = 11))
+  expect_identical(a$found, rep(FALSE, times = 11)) # initial state is set to FALSE
+})
