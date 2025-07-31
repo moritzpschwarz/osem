@@ -47,7 +47,7 @@ test_that("valid configurations are not rejected and correctly ordered", {
   cfg <- cfg[c(4, 5, 1, 3, 2), ] # reshuffle, so not already ordered
   out <- check_config_table(cfg)
   expect_identical(out$dependent, c("B", "C", "D", "E", "F"))
-  expect_setequal(colnames(out), c("order", "type", "dependent", "independent", "lag", "cvar"))
+  expect_setequal(colnames(out), c("order", "type", "dependent", "independent", "lag", "cvar", "index"))
 
   # direct simultaneity broken when lag only is specified
   cfg <- tibble::tibble(
@@ -70,7 +70,7 @@ test_that("valid configurations are not rejected and correctly ordered", {
   )
   out <- check_config_table(cfg)
   expect_identical(NROW(out), NROW(cfg) - 2L) # dimension reduced because of system
-  expect_setequal(colnames(out), c("order", "type", "dependent", "independent", "lag", "cvar"))
+  expect_setequal(colnames(out), c("order", "type", "dependent", "independent", "lag", "cvar", "index"))
   # valid ordering is not unique (and I believe topo_sort() can sometimes pick different ones)
   # Check that the set of variables is correct, regardless of order
   expected_vars <- c("M", "Q", "U", "S", "X,Y", "V", "A,B", "W", "T")
@@ -168,4 +168,62 @@ test_that("legacy tests run successfully", {
     cvar = c("", "", "")
   )
   expect_error(check_config_table(cfg))
+})
+
+test_that("classify_variables() works correctly with CVAR entries", {
+  # takes as input the result from check_config_table()
+
+  # baseline case without cvar
+  cfg <- dplyr::tibble(
+    type = c("d", "d", "n"),
+    dependent = c(
+      "JL",
+      "TOTS",
+      "B"
+    ),
+    independent = c(
+      "TOTS - CP - CO - J - A",
+      "YF + B",
+      "CP + J"
+    ),
+    lag = c("", "", ""),
+    cvar = c("", "", "")
+  )
+  mdl <- osem:::check_config_table(cfg)
+  clv <- osem:::classify_variables(mdl)
+  def <- clv %>%
+    dplyr::filter(class == "d") %>%
+    dplyr::pull(var)
+  exo <- clv %>%
+    dplyr::filter(class == "x") %>%
+    dplyr::pull(var)
+  end <- clv %>%
+    dplyr::filter(class == "n") %>%
+    dplyr::pull(var)
+  expect_setequal(def, c("JL", "TOTS"))
+  expect_setequal(end, "B")
+  expect_setequal(exo, c("CP", "J", "YF", "CO", "A"))
+
+  # with cvar
+  cfg <- dplyr::tibble(
+    type = c("n", "n", "n", "n", "n", "n", "d", "n", "n", "n", "n", "d", "n"),
+    dependent = c("Y", "Z", "U", "V", "W", "M", "T", "Q", "S", "A", "B", "C", "D"),
+    independent = c("U", "U", "", "U + W", "U + V", "Y + U", "U + V + W", "", "R", "", "", "A - B", "Y + L"),
+    lag = c("", "", "", "W", "", "U, Y", "", "", "", "", "", "", "L"),
+    cvar = c("system1", "system1", "", "", "", "", "", "", "", "system2", "system2", "", "")
+  )
+  mdl <- osem:::check_config_table(cfg)
+  clv <- osem:::classify_variables(mdl)
+  def <- clv %>%
+    dplyr::filter(class == "d") %>%
+    dplyr::pull(var)
+  exo <- clv %>%
+    dplyr::filter(class == "x") %>%
+    dplyr::pull(var)
+  end <- clv %>%
+    dplyr::filter(class == "n") %>%
+    dplyr::pull(var)
+  expect_setequal(def, c("T", "C"))
+  expect_setequal(exo, c("L", "R"))
+  expect_setequal(end, c("Y", "Z", "U", "V", "W", "M", "Q", "S", "A", "B", "D"))
 })
