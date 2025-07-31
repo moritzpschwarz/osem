@@ -564,3 +564,37 @@ test_that("determine_variables() works with CVAR modules", {
   expect_identical(a$database, rep("local", times = 11))
   expect_identical(a$found, rep(FALSE, times = 11)) # initial state is set to FALSE
 })
+
+test_that("load_or_download_variables() works with CVAR modules", {
+  # specification with two systems
+  specification <- dplyr::tibble(
+    type = c("n", "n", "n", "n", "n", "n", "d", "n", "n", "n", "n"),
+    dependent = c("Y", "Z", "U", "V", "W", "M", "T", "Q", "S", "A", "B"),
+    independent = c("U", "U", "", "U + W", "U + V", "Y + U", "U + V + W", "", "R", "", ""),
+    lag = c("", "", "", "W", "", "U, Y", "", "", "", "", ""),
+    cvar = c("system1", "system1", "", "", "", "", "", "", "", "system2", "system2")
+  )
+  dictionary <- dplyr::tibble(
+    model_varname = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    full_name = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    database = c("local", "local", "local", "local", "local", "local", "local", "local", NA, "local", "local", "local"),
+    geo = "DE"
+  )
+  expect_silent(a <- osem:::load_or_download_variables(
+    specification = specification,
+    dictionary = dictionary,
+    primary_source = "local",
+    inputdata_directory = test_path("testdata", "cvar"),
+    save_to_disk = NULL,
+    quiet = TRUE,
+    constrain.to.minimum.sample = FALSE
+  ))
+  # resulting data should contain all variables (except T), 100 obs each -> 1100 obs
+  # and have 4 columns: time, na_item, value, geo
+  expect_named(a, c("time", "na_item", "value", "geo"))
+  expect_identical(NROW(a), 1100L)
+  expect_setequal(unique(a$na_item), c("A", "B", "M", "Q", "R", "S", "U", "V", "W", "Y", "Z"))
+  # cross-check with local loading
+  a_manual <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds")) %>% as.data.frame()
+  expect_identical(a, a_manual)
+})

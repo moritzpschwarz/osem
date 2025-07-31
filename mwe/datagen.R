@@ -98,7 +98,11 @@ data_cvar |>
   mutate(M = 0.1 * lag(Y) + 0.1 * lag(U) + error) |>
   dplyr::select(-error) |>
   drop_na() |>
+  mutate(
+    A = rnorm(nobs - 1),
+    B = rnorm(nobs - 1)
+  ) %>%
   mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = nobs - 1)) %>%
-  pivot_longer(cols = 1:9, names_to = "na_item", values_to = "value") %>%
+  pivot_longer(cols = 1:11, names_to = "na_item", values_to = "value") %>%
   dplyr::mutate(geo = "DE") %>%
   saveRDS(file = "./tests/testthat/testdata/cvar/artificial_cvar_data.rds")
