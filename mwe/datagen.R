@@ -1,5 +1,6 @@
 # generate cointegrated system: Y, Z -> X (vector)
 # setup
+library(tidyverse)
 nobs <- 101 # lose 1 obs
 Sigma <- matrix(c(0.2, 0.1, 0.1, 0.1), nrow = 2, ncol = 2) # error matrix
 A <- matrix(c(0.8, 0, 0.6, 1), nrow = 2, ncol = 2) # AR matrix
@@ -102,7 +103,7 @@ data_cvar |>
     A = rnorm(nobs - 1),
     B = rnorm(nobs - 1)
   ) %>%
-  mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = nobs - 1)) %>%
-  pivot_longer(cols = 1:11, names_to = "na_item", values_to = "value") %>%
+  mutate(time = seq.Date(from = as.Date("1900-01-01"), by = "quarter", length.out = nobs - 1)) %>%
+  pivot_longer(cols = 1:11, names_to = "na_item", values_to = "values") %>%
   dplyr::mutate(geo = "DE") %>%
   saveRDS(file = "./tests/testthat/testdata/cvar/artificial_cvar_data.rds")
