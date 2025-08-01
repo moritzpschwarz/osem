@@ -255,3 +255,37 @@ test_that("identify_module_data() works with CVAR", {
   expect_setequal(unique(cvar2$na_item), c("A", "B"))
   expect_equal(NROW(cvar2), 200L)
 })
+
+test_that("clean_data() works with CVAR", {
+  specification <- dplyr::tibble(
+    type = c("n", "n"),
+    dependent = c("Y", "Z"),
+    independent = c("U", "U"),
+    lag = c("", ""),
+    cvar = c("system1", "system1")
+  )
+  mdl <- osem:::check_config_table(specification)
+  df <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds")) %>%
+    dplyr::filter(na_item %in% c("Y", "Z", "U"))
+  df_wide <- tidyr::pivot_wider(df, names_from = "na_item", values_from = "values")
+  # note: module arg takes single module and here our whole specification is a single module
+  # note: opts_df can here be mdl too because no log_opts stored yet anyway
+  a <- osem:::clean_data(
+    raw_data = df, max.ar = 1, max.dl = 1, trend = TRUE,
+    opts_df = mdl, module = mdl, use_logs = "both"
+  )
+  expect_named(a, c("df", "opts_df"))
+  expect_identical(mdl[, 1:7], a$opts_df[, 1:7])
+  expect_named(a$opts_df, c("order", "type", "dependent", "independent", "lag", "cvar", "index", "log_opts"))
+  expect_type(a$opts_df$log_opts, "list")
+  expect_length(a$opts_df$log_opts, 1L)
+  expect_s3_class(a$opts_df$log_opts[[1]], "tbl")
+  expect_identical(dim(a$opts_df$log_opts[[1]]), c(1L, 3L))
+  expect_named(a$opts_df$log_opts[[1]], c("Y", "Z", "U"))
+  y_transformation <- dplyr::if_else(any(df_wide$Y < 0), "asinh", "log")
+  z_transformation <- dplyr::if_else(any(df_wide$Z < 0), "asinh", "log")
+  u_transformation <- dplyr::if_else(any(df_wide$U < 0), "asinh", "log")
+  expect_identical(a$opts_df$log_opts[[1]] %>% dplyr::pull(Y), y_transformation)
+  expect_identical(a$opts_df$log_opts[[1]] %>% dplyr::pull(Z), z_transformation)
+  expect_identical(a$opts_df$log_opts[[1]] %>% dplyr::pull(U), u_transformation)
+})
