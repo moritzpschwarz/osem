@@ -40,26 +40,28 @@ add_to_original_data <- function(clean_data,
 
   if (ardl_or_ecm == "ecm") {
     dplyr::mutate(intermed_init,
-                  fitted.cumsum = dplyr::case_when(
-                    is.na(.data$fitted) & is.na(dplyr::lead(.data$fitted)) ~ 0,
+      fitted.cumsum = dplyr::case_when(
+        is.na(.data$fitted) & is.na(dplyr::lead(.data$fitted)) ~ 0,
+        is.na(.data$fitted) & !is.na(dplyr::lead(.data$fitted)) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
+        !is.na(.data$fitted) ~ .data$fitted
+      ),
+      fitted.cumsum = cumsum(.data$fitted.cumsum),
+      fitted.cumsum = ifelse(is.na(.data$fitted.cumsum), NA, .data$fitted.cumsum)
+    ) -> intermed_ecm
 
-                    is.na(.data$fitted) & !is.na(dplyr::lead(.data$fitted)) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
-                    !is.na(.data$fitted) ~ .data$fitted
-                  ),
-                  fitted.cumsum = cumsum(.data$fitted.cumsum),
-                  fitted.cumsum = ifelse(is.na(.data$fitted.cumsum), NA, .data$fitted.cumsum)) -> intermed_ecm
-
-    fitted_vals <- fitted_vals <- dplyr::case_when(is.na(dependent_log_opts) ~ intermed_ecm$fitted.cumsum,
-                                                   dependent_log_opts == "log" ~ exp(intermed_ecm$fitted.cumsum),
-                                                   dependent_log_opts == "asinh" ~ sinh(intermed_ecm$fitted.cumsum))
+    fitted_vals <- fitted_vals <- dplyr::case_when(
+      is.na(dependent_log_opts) ~ intermed_ecm$fitted.cumsum,
+      dependent_log_opts == "log" ~ exp(intermed_ecm$fitted.cumsum),
+      dependent_log_opts == "asinh" ~ sinh(intermed_ecm$fitted.cumsum)
+    )
   }
 
   if (ardl_or_ecm == "ardl") {
-
-    fitted_vals <- dplyr::case_when(is.na(dependent_log_opts) ~ intermed_init$fitted,
-                                    dependent_log_opts == "log" ~ exp(intermed_init$fitted),
-                                    dependent_log_opts == "asinh" ~ sinh(intermed_init$fitted))
-
+    fitted_vals <- dplyr::case_when(
+      is.na(dependent_log_opts) ~ intermed_init$fitted,
+      dependent_log_opts == "log" ~ exp(intermed_init$fitted),
+      dependent_log_opts == "asinh" ~ sinh(intermed_init$fitted)
+    )
   }
 
   intermed_init %>%
@@ -73,8 +75,9 @@ add_to_original_data <- function(clean_data,
   # Update Moritz 29/08/2022: does not give me an error - also the example in the documentation works
 
   intermed %>%
-    dplyr::rename_with(.cols = dplyr::any_of(c("fitted", "fitted.level", "fitted.cumsum")),
-                       .fn = ~ paste0(gsub("fitted", dep_var_basename, .), ".hat")) %>%
+    dplyr::rename_with(
+      .cols = dplyr::any_of(c("fitted", "fitted.level", "fitted.cumsum")),
+      .fn = ~ paste0(gsub("fitted", dep_var_basename, .), ".hat")
+    ) %>%
     return()
-
 }
