@@ -61,7 +61,7 @@ rownames(data_ar) <- "Q"
 data_ar[, 1] <- 1.5
 for (t in 2:nobs) {
   # update observation Q
-  data_ar[, t] <- 1 + 0.3 * data_ar[, t - 1] + rnorm(1)
+  data_ar[, t] <- 1 + 0.7 * data_ar[, t - 1] + rnorm(1)
 }
 data_other <- data.frame(
   Q = t(data_ar),
