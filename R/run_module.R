@@ -7,9 +7,11 @@
 #' @param data A tibble or data.frame containing the full data for the OSEM
 #'   model.
 #' @param opts_df Internal object containing detailed options and information on individual modules.
+#' @param cvar.ar Number of lags of the VAR system in levels. Must be > 2.
 #' @inheritParams identify_module_data
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
+#' @inheritParams estimate_cvar
 #'
 #'
 #' @return Returns a list with two named elements.
@@ -40,7 +42,11 @@ run_module <- function(
     opts_df,
     keep,
     pretest_steps,
-    quiet) {
+    quiet,
+    cvar.ar = 4,
+    freq = NULL,
+    coint_deterministic = "const",
+    coint_significance = "5pct") {
   raw_data <- identify_module_data(module, classification, data)
 
   # if is identity/definition equation, run simple parse
@@ -50,14 +56,14 @@ run_module <- function(
       data = raw_data,
       classification = classification
     )
-
     out <- list(
       model = NULL,
       data = moduledata,
       args = NULL,
       opts_df = opts_df
     )
-  } else if (module$type == "n") {
+    # endogenous, single equation module
+  } else if (module$type == "n" & identical(module$cvar, "")) {
     # prepare data (create regressors)
     clean_data_output <- clean_data(
       raw_data = raw_data, max.ar = max.ar, max.dl = max.dl, trend = trend,
@@ -97,9 +103,9 @@ run_module <- function(
 
     moduledata <- add_to_original_data(
       clean_data = clean_df,
-      isat_object = estimated_module$best_model,
+      model_object = estimated_module$best_model,
       dep_var_basename = dep,
-      ardl_or_ecm = estimated_module$args$ardl_or_ecm,
+      model_type = estimated_module$args$ardl_or_ecm,
       opts_df = opts_df,
       module = module
     )
@@ -113,7 +119,53 @@ run_module <- function(
       diagnostics = list(super.exogeneity = estimated_module$superex_test),
       opts_df = opts_df
     )
-  } # end "n"
+    # endogenous, cvar module
+  } else if (module$type == "n" & !identical(module$cvar, "")) {
+    # prepare data (create regressors)
+    clean_data_output <- clean_data(
+      raw_data = raw_data, max.ar = max.ar, max.dl = max.dl, trend = trend,
+      opts_df = opts_df,
+      module = module,
+      use_logs = use_logs
+    )
+    clean_df <- clean_data_output$df
+    opts_df <- clean_data_output$opts_df
 
+    # extract base variable names
+    dep <- trimws(unlist(strsplit(module$dependent, ",")))
+    indep <- trimws(unlist(strsplit(module$independent, "[+-]")))
+
+    # run estimation
+    estimated_cvar <- estimate_cvar(
+      clean_data = clean_df,
+      system_name = module$cvar,
+      dep_vars_basename = module$dependent,
+      x_vars_basename = indep,
+      use_logs = use_logs,
+      ar = cvar.ar,
+      freq = freq,
+      coint_deterministic = coint_deterministic,
+      coint_significance = coint_significance
+    )
+
+    moduledata <- add_to_original_data(
+      clean_data = clean_df,
+      model_object = estimated_cvar,
+      dep_var_basename = dep,
+      model_type = "cvar",
+      opts_df = opts_df,
+      module = module
+    )
+
+    out <- list(
+      model = estimated_cvar,
+      data = moduledata,
+      args = estimated_cvar$args,
+      indep = indep,
+      dep = dep,
+      diagnostics = list(super.exogeneity = NA), # set always NA but match output structure as for ardl/ecm
+      opts_df = opts_df
+    )
+  }
   return(out)
 }
