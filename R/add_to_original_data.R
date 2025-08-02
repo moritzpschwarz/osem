@@ -85,7 +85,7 @@ add_to_original_data <- function(clean_data,
       # remove the "fit of " in varname, add ".hat" at end
       dplyr::rename_with(~ gsub("fit of (ln\\.)?", "", .x)) %>%
       # add index for merging with full data later; lose first K=ar observations
-      mutate(index = (model_object$args$ar + 1):NROW(clean_data))
+      dplyr::mutate(index = (model_object$args$ar + 1):NROW(clean_data))
     # should now correspond to "basename", add failsafe:
     if (!setdiff(colnames(cvar_fitted), dep_var_basename) == "index") {
       stop(paste0("Problem in module ", module$order, ". Computation of fitted values failed. Debug at add_to_original_data()."))
