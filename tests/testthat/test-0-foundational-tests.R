@@ -387,3 +387,90 @@ test_that("add_to_original_data() works with CVAR", {
   expect_true(all(!is.na(a$Y.hat %>% tail(-2))))
   expect_true(all(!is.na(a$Z.hat %>% tail(-2))))
 })
+
+test_that("run_module() works with CVAR", {
+  specification <- dplyr::tibble(
+    type = c("n", "n"),
+    dependent = c("Y", "Z"),
+    independent = c("U", "U"),
+    lag = c("", ""),
+    cvar = c("system1", "system1")
+  )
+  # dictionary <- dplyr::tibble(
+  #   model_varname = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+  #   full_name = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+  #   database = c("local", "local", "local", "local", "local", "local", "local", "local", NA, "local", "local", "local"),
+  #   geo = "DE",
+  #   dataset_id = NA,
+  #   freq = ""
+  # )
+  mdl <- osem:::check_config_table(specification)
+  opts <- mdl
+  # opts$log_opts <- list(dplyr::tibble(Y = NA, Z = NA, U = NA))
+  df <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds"))
+  cls <- osem:::classify_variables(mdl)
+  a <- run_module(
+    module = mdl[1, ],
+    data = df,
+    classification = cls,
+    use_logs = "none",
+    trend = TRUE,
+    opts_df = opts,
+    keep = NULL,
+    quiet = TRUE,
+    cvar.ar = 2,
+    freq = NULL,
+    coint_deterministic = "const",
+    coint_significance = "5pct"
+  )
+  expect_named(a, c("model", "data", "args", "indep", "dep", "diagnostics", "opts_df"))
+  # a$model should be output of estimate_cvar(), check whether all elements are present
+  expect_named(a$model, c("cointtest", "vecm", "varm", "rank", "urtest", "args"))
+  # data should be output of add_to_original_data()
+  expect_s3_class(a$data, c("data.frame", "tbl"))
+  expect_true(all(c("index", "time", "trend", "Y", "Z", "U", "Y.hat", "Z.hat", "Y.level.hat", "Z.level.hat") %in% colnames(a$data)))
+  expect_identical(a$data$Y.hat, a$data$Y.level.hat) # no log transformations
+  expect_identical(a$data$Z.hat, a$data$Z.level.hat) # no log transformations
+  expect_identical(a$dep, c("Y", "Z"))
+  expect_identical(a$indep, "U")
+  expect_identical(a$diagnostics, list(super.exogeneity = NA)) # should always be NA
+  # first module run, so now should have added "log_opts" column to opts_df
+  expect_named(a$opts_df, c("order", "type", "dependent", "independent", "lag", "cvar", "index", "log_opts"))
+  expect_identical(a$opts_df[, 1:7], mdl)
+  expect_type(a$opts_df %>% dplyr::pull(log_opts), "list")
+  expect_s3_class(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), c("data.frame", "tibble"))
+  expect_identical(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), dplyr::tibble(Y = NA, Z = NA, U = NA))
+
+  #### test CVAR with log transformations
+  a <- run_module(
+    module = mdl[1, ],
+    data = df,
+    classification = cls,
+    use_logs = "both",
+    trend = TRUE,
+    opts_df = opts,
+    keep = NULL,
+    quiet = TRUE,
+    cvar.ar = 2,
+    freq = NULL,
+    coint_deterministic = "const",
+    coint_significance = "5pct"
+  )
+  expect_named(a, c("model", "data", "args", "indep", "dep", "diagnostics", "opts_df"))
+  # a$model should be output of estimate_cvar(), check whether all elements are present
+  expect_named(a$model, c("cointtest", "vecm", "varm", "rank", "urtest", "args"))
+  # data should be output of add_to_original_data()
+  expect_s3_class(a$data, c("data.frame", "tbl"))
+  expect_true(all(c("index", "time", "trend", "Y", "Z", "U", "ln.Y", "ln.Z", "Y.hat", "Z.hat", "Y.level.hat", "Z.level.hat") %in% colnames(a$data)))
+  expect_identical(exp(a$data$Y.hat), a$data$Y.level.hat) # log transformation
+  expect_identical(sinh(a$data$Z.hat), a$data$Z.level.hat) # asinh transformation
+  expect_identical(a$dep, c("Y", "Z"))
+  expect_identical(a$indep, "U")
+  expect_identical(a$diagnostics, list(super.exogeneity = NA)) # should always be NA
+  # first module run, so now should have added "log_opts" column to opts_df
+  expect_named(a$opts_df, c("order", "type", "dependent", "independent", "lag", "cvar", "index", "log_opts"))
+  expect_identical(a$opts_df[, 1:7], mdl)
+  expect_type(a$opts_df %>% dplyr::pull(log_opts), "list")
+  expect_s3_class(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), c("data.frame", "tibble"))
+  expect_identical(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), dplyr::tibble(Y = "log", Z = "asinh", U = "asinh"))
+})
