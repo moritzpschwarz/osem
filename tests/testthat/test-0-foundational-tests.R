@@ -289,3 +289,101 @@ test_that("clean_data() works with CVAR", {
   expect_identical(a$opts_df$log_opts[[1]] %>% dplyr::pull(Z), z_transformation)
   expect_identical(a$opts_df$log_opts[[1]] %>% dplyr::pull(U), u_transformation)
 })
+
+test_that("add_to_original_data() works with CVAR", {
+  spec <- dplyr::tibble(
+    type = c("n", "n"),
+    dependent = c("Y", "Z"),
+    independent = c("U", "U"),
+    lag = c("", ""),
+    cvar = c("system1", "system1")
+  )
+  dict <- dplyr::tibble(
+    model_varname = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    full_name = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    database = c("local", "local", "local", "local", "local", "local", "local", "local", NA, "local", "local", "local"),
+    geo = "DE",
+    dataset_id = NA,
+    freq = ""
+  )
+  mdl <- osem:::check_config_table(spec)
+  opts <- mdl
+  opts$log_opts <- list(dplyr::tibble(Y = NA, Z = NA, U = NA))
+  df <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds")) %>%
+    dplyr::filter(na_item %in% c("Y", "Z", "U"))
+  df_wide <- tidyr::pivot_wider(df, names_from = "na_item", values_from = "values") %>%
+    dplyr::mutate(index = 1:100)
+  depnames <- c("Y", "Z")
+  yvars <- df_wide %>%
+    dplyr::select(Y, Z)
+  xvars <- df_wide %>%
+    dplyr::select(U)
+  K <- 2
+  cointtest <- urca::ca.jo(
+    x = yvars, type = "trace", ecdet = "const", K = K,
+    season = NULL, dumvar = xvars, spec = "transitory"
+  )
+  cvar_vecm <- urca::cajorls(cointtest, r = 1)
+  cvar_varm <- vars::vec2var(cointtest, r = 1)
+  # mimic object that would be returned by estimate_cvar(), but only necessary components for this functions
+  cvar_out <- list(vecm = cvar_vecm, varm = cvar_varm, args = list(ar = K))
+  a <- osem:::add_to_original_data(
+    clean_data = df_wide,
+    model_object = cvar_out,
+    dep_var_basename = depnames,
+    model_type = "cvar",
+    opts_df = opts,
+    module = mdl[1, ]
+  )
+  expect_s3_class(a, c("data.frame", "tbl"))
+  expect_identical(dim(a), as.integer(c(NROW(df_wide), NCOL(df_wide) + 4))) # fitted values of Y,Z and "level"
+  expect_named(a, c("time", "geo", "Y", "Z", "U", "index", "Y.hat", "Z.hat", "Y.level.hat", "Z.level.hat"))
+  # since we did not take log transformations, fitted values and level.fitted values should be same
+  expect_identical(a$Y.hat, a$Y.level.hat)
+  expect_identical(a$Z.hat, a$Z.level.hat)
+  # since we specified K = 2 (lags in level of VAR), we should lose the first two observations
+  expect_identical(a$Y.hat %>% head(2), c(NA_real_, NA_real_))
+  expect_identical(a$Z.hat %>% head(2), c(NA_real_, NA_real_))
+  expect_true(all(!is.na(a$Y.hat %>% tail(-2))))
+  expect_true(all(!is.na(a$Z.hat %>% tail(-2))))
+
+  ### CVAR with log transformations
+  opts <- mdl
+  opts$log_opts <- list(dplyr::tibble(
+    Y = "log", Z = "asinh", U = NA
+  ))
+  df_wide <- df_wide %>%
+    # Y has no negative values but Z does
+    dplyr::mutate(ln.Y = log(Y), ln.Z = asinh(Z))
+  yvars <- df_wide %>%
+    dplyr::select(ln.Y, ln.Z)
+  xvars <- df_wide %>%
+    dplyr::select(U)
+  cointtest <- urca::ca.jo(
+    x = yvars, type = "trace", ecdet = "const", K = K,
+    season = NULL, dumvar = xvars, spec = "transitory"
+  )
+  cvar_vecm <- urca::cajorls(cointtest, r = 1)
+  cvar_varm <- vars::vec2var(cointtest, r = 1)
+  # mimic object that would be returned by estimate_cvar(), but only necessary components for this functions
+  cvar_out <- list(vecm = cvar_vecm, varm = cvar_varm, args = list(ar = K))
+  a <- osem:::add_to_original_data(
+    clean_data = df_wide,
+    model_object = cvar_out,
+    dep_var_basename = depnames,
+    model_type = "cvar",
+    opts_df = opts,
+    module = mdl[1, ]
+  )
+  expect_s3_class(a, c("data.frame", "tbl"))
+  expect_identical(dim(a), as.integer(c(NROW(df_wide), NCOL(df_wide) + 4))) # fitted values of Y,Z and "level"
+  expect_named(a, c("time", "geo", "Y", "Z", "U", "index", "ln.Y", "ln.Z", "Y.hat", "Z.hat", "Y.level.hat", "Z.level.hat"))
+  # level.fitted values are now transformed
+  expect_identical(a$Y.level.hat, exp(a$Y.hat))
+  expect_identical(a$Z.level.hat, sinh(a$Z.hat))
+  # since we specified K = 2 (lags in level of VAR), we should lose the first two observations
+  expect_identical(a$Y.hat %>% head(2), c(NA_real_, NA_real_))
+  expect_identical(a$Z.hat %>% head(2), c(NA_real_, NA_real_))
+  expect_true(all(!is.na(a$Y.hat %>% tail(-2))))
+  expect_true(all(!is.na(a$Z.hat %>% tail(-2))))
+})
