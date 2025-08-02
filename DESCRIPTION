@@ -31,7 +31,9 @@ Imports:
     scales,
     zoo,
     igraph,
-    vars
+    vars,
+    urca,
+    tidyselect
 LazyData: true
 Suggests: 
     shiny,

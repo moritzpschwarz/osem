@@ -8,6 +8,8 @@ decide_unit_roots(urtest, alpha = c("1pct", "5pct", "10pct"))
 }
 \arguments{
 \item{urtest}{A named list as returned from \code{\link{test_unit_roots}}.}
+
+\item{alpha}{Significance level for unit root tests.}
 }
 \value{
 A named list as the input but with additional element

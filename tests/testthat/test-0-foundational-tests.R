@@ -5,7 +5,7 @@ test_that("error raised when columns missing", {
 
 test_that("rejects cycles", {
   # direct simultaneity
-  cfg <- tibble::tibble(
+  cfg <- dplyr::tibble(
     type        = c("n", "n"),
     dependent   = c("A", "B"),
     independent = c("B", "A"),
@@ -15,7 +15,7 @@ test_that("rejects cycles", {
   expect_error(check_config_table(cfg), "Contemporaneous simultaneity detected")
 
   # indirect simultaneity
-  cfg <- tibble::tibble(
+  cfg <- dplyr::tibble(
     type        = c("n", "n", "n"),
     dependent   = c("B", "C", "A"),
     independent = c("A", "B", "C"), # A->B->C->A
@@ -25,7 +25,7 @@ test_that("rejects cycles", {
   expect_error(check_config_table(cfg), "Contemporaneous simultaneity detected")
 
   # long indirect simultaneity
-  cfg <- tibble::tibble(
+  cfg <- dplyr::tibble(
     type        = c("n", "n", "n", "n", "n"),
     dependent   = c("B", "C", "D", "E", "A"),
     independent = c("A", "B", "C", "D", "E"), # A->B->C->D->E->A
@@ -37,7 +37,7 @@ test_that("rejects cycles", {
 
 test_that("valid configurations are not rejected and correctly ordered", {
   # long acyclic simultaneity: no error, correct ordering
-  cfg <- tibble::tibble(
+  cfg <- dplyr::tibble(
     type        = c("n", "n", "n", "n", "n"),
     dependent   = c("B", "C", "D", "E", "F"),
     independent = c("A", "B", "C", "D", "E"), # A->B->C->D->E->F
@@ -50,7 +50,7 @@ test_that("valid configurations are not rejected and correctly ordered", {
   expect_setequal(colnames(out), c("order", "type", "dependent", "independent", "lag", "cvar", "index"))
 
   # direct simultaneity broken when lag only is specified
-  cfg <- tibble::tibble(
+  cfg <- dplyr::tibble(
     type        = c("n", "n"),
     dependent   = c("A", "B"),
     independent = c("B", "A"),

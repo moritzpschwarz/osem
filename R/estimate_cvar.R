@@ -100,7 +100,7 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
   ## which do we reject?
   which_reject <- coint_stat > coint_cv
   ## determine the first one we don't reject, starting from lowest r test
-  first_pass <- tail(which(which_reject == FALSE), 1)
+  first_pass <- utils::tail(which(which_reject == FALSE), 1)
   # communicate outcome
   ## which_reject was never FALSE -> rejected all tests
   if (identical(first_pass, integer(0))) {

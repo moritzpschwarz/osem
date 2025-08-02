@@ -99,16 +99,16 @@ add_to_original_data <- function(clean_data,
       ) %>%
       dplyr::left_join(dependent_log_opts, by = "na_item") %>%
       dplyr::mutate(level.values = dplyr::case_when(
-        transformation == "log" ~ exp(values),
-        transformation == "asinh" ~ sinh(values),
-        is.na(transformation) ~ values
+        .data$transformation == "log" ~ exp(values),
+        .data$transformation == "asinh" ~ sinh(values),
+        is.na(.data$transformation) ~ values
       )) %>%
-      dplyr::select(-transformation) %>%
+      dplyr::select(-"transformation") %>%
       tidyr::pivot_wider(
         id_cols = "index", names_from = "na_item",
         values_from = c("values", "level.values"), names_glue = "{na_item}.{.value}"
       ) %>%
-      dplyr::rename_with(~ sub("\\.values$", ".hat", .x), ends_with(".values"))
+      dplyr::rename_with(~ sub("\\.values$", ".hat", .x), tidyselect::ends_with(".values"))
 
     # add fitted values to original data
     out <- clean_data %>%
