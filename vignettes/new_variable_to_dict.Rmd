@@ -336,7 +336,7 @@ $$
 EmiCO2IndustryProcess = HICP_{Gas} + HICP_{Electricity} + IndProdIdx
 $$
 
-This is then the specification that we will run - with the type being `n` that denotes a Definition and will therefore be estimated: 
+This is then the specification that we will run - with the type being `n` that denotes an estimated equation and will therefore be estimated: 
 
 ```{r}
 specification <- dplyr::tibble(
@@ -348,6 +348,12 @@ specification <- dplyr::tibble(
   ),
   independent = c(
     "HICP_Gas + HICP_Electricity + IndProdIdx"
+  ),
+  lag = c(
+    ""
+  ),
+  cvar = c(
+    ""
   )
 )
 specification
