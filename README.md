@@ -76,12 +76,14 @@ spec <- dplyr::tibble(
     "Export + LabCostManuf", # NAM uses 'export market indicator' not exports - unclear what this is, NAM uses unit labour cost in NOR manufacturing relative to the foreign price level - here is just total labour cost
     "LabCostConstr + BuildingPermits", # in NAM some form of YFP2J = 0.3JBOL + 0.2JF P N + 0.3JO + 0.3JOIL. Unclear what this is. Using Building Permits instead
     "Export + LabCostService"
-  ))
+  ),
+  lag = "",
+  cvar = "")
 ```
 
 To summarise this, we can print out the specification table:
 
-<table class="table lightable-paper" style="margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<table class="table lightable-paper" style="color: black; margin-left: auto; margin-right: auto; color: black; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -92,6 +94,12 @@ dependent
 </th>
 <th style="text-align:left;">
 independent
+</th>
+<th style="text-align:left;">
+lag
+</th>
+<th style="text-align:left;">
+cvar
 </th>
 </tr>
 </thead>
@@ -106,6 +114,10 @@ Import
 <td style="text-align:left;">
 FinConsExpHH + GCapitalForm
 </td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -113,6 +125,10 @@ n
 </td>
 <td style="text-align:left;">
 FinConsExpHH
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
 </td>
 <td style="text-align:left;">
 </td>
@@ -127,6 +143,10 @@ GCapitalForm
 <td style="text-align:left;">
 FinConsExpGov + FinConsExpHH
 </td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -137,6 +157,10 @@ Emissions
 </td>
 <td style="text-align:left;">
 GDP + Export + GValueAddIndus
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
 </td>
 </tr>
 <tr>
@@ -151,6 +175,10 @@ GValueAddGov + GValueAddAgri + GValueAddIndus + GValueAddConstr +
 GValueAddWholesaletrade + GValueAddInfocom + GValueAddFinance +
 GValueAddRealest + GValueAddResearch + GValueAddArts
 </td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -161,6 +189,10 @@ GValueAddGov
 </td>
 <td style="text-align:left;">
 FinConsExpGov
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
 </td>
 </tr>
 <tr>
@@ -173,6 +205,10 @@ GValueAddManuf
 <td style="text-align:left;">
 Export + LabCostManuf
 </td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
@@ -183,6 +219,10 @@ GValueAddConstr
 </td>
 <td style="text-align:left;">
 LabCostConstr + BuildingPermits
+</td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
 </td>
 </tr>
 <tr>
@@ -195,6 +235,10 @@ GValueAddWholesaletrade
 <td style="text-align:left;">
 Export + LabCostService
 </td>
+<td style="text-align:left;">
+</td>
+<td style="text-align:left;">
+</td>
 </tr>
 </tbody>
 </table>
@@ -205,7 +249,7 @@ be automated. You can either pass a new dictionary to the model
 function, or you can use the built in dictionary `osem::dict` (here the
 first few rows):
 
-<table class="table lightable-paper" style="margin-left: auto; margin-right: auto; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
+<table class="table lightable-paper" style="color: black; margin-left: auto; margin-right: auto; color: black; font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -215,10 +259,10 @@ model_varname
 full_name
 </th>
 <th style="text-align:left;">
-database
+variable_code
 </th>
 <th style="text-align:left;">
-variable_code
+database
 </th>
 <th style="text-align:left;">
 dataset_id
@@ -242,20 +286,77 @@ s_adj
 nace_r2
 </th>
 <th style="text-align:left;">
-ipcc_sector
-</th>
-<th style="text-align:left;">
 cpa2_1
 </th>
 <th style="text-align:left;">
-siec
+sector
+</th>
+<th style="text-align:left;">
+direct
+</th>
+<th style="text-align:left;">
+age
+</th>
+<th style="text-align:left;">
+partner
+</th>
+<th style="text-align:left;">
+finpos
+</th>
+<th style="text-align:left;">
+p_adj
+</th>
+<th style="text-align:left;">
+meat
+</th>
+<th style="text-align:left;">
+citizen
+</th>
+<th style="text-align:left;">
+wstatus
+</th>
+<th style="text-align:left;">
+tra_oper
+</th>
+<th style="text-align:left;">
+ipcc_sector
+</th>
+<th style="text-align:left;">
+GEO
+</th>
+<th style="text-align:left;">
+Seasonal adjustment
+</th>
+<th style="text-align:left;">
+North American Industry Classification System (NAICS)
+</th>
+<th style="text-align:left;">
+North American Product Classification System (NAPCS)
+</th>
+<th style="text-align:left;">
+Prices
+</th>
+<th style="text-align:left;">
+Type of fuel
+</th>
+<th style="text-align:left;">
+Products and product groups
+</th>
+<th style="text-align:left;">
+ref_area
+</th>
+<th style="text-align:left;">
+commodity
+</th>
+<th style="text-align:left;">
+unit_measure
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
-TOTS
+Supply
 </td>
 <td style="text-align:left;">
 Total Supply
@@ -264,6 +365,508 @@ Total Supply
 NA
 </td>
 <td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Demand
+</td>
+<td style="text-align:left;">
+Total Demand
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GDPOutput
+</td>
+<td style="text-align:left;">
+GDP Output Approach
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+GDPExpenditure
+</td>
+<td style="text-align:left;">
+GDP Expenditure Approach
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+CO2Industry
+</td>
+<td style="text-align:left;">
+Co2 Emissions Industry in Tonnes
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+<td style="text-align:left;">
+NA
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+TOTS
+</td>
+<td style="text-align:left;">
+Total Supply
+</td>
+<td style="text-align:left;">
 TOTS
 </td>
 <td style="text-align:left;">
@@ -296,37 +899,17 @@ NA
 <td style="text-align:left;">
 NA
 </td>
-</tr>
-<tr>
 <td style="text-align:left;">
-GDP
+NA
 </td>
 <td style="text-align:left;">
-Gross domestic product at market prices
+NA
 </td>
 <td style="text-align:left;">
-eurostat
+NA
 </td>
 <td style="text-align:left;">
-B1GQ
-</td>
-<td style="text-align:left;">
-namq_10_gdp
-</td>
-<td style="text-align:left;">
-na_item
-</td>
-<td style="text-align:left;">
-q
-</td>
-<td style="text-align:left;">
-AT
-</td>
-<td style="text-align:left;">
-CLV05_MEUR
-</td>
-<td style="text-align:left;">
-SCA
+NA
 </td>
 <td style="text-align:left;">
 NA
@@ -340,41 +923,6 @@ NA
 <td style="text-align:left;">
 NA
 </td>
-</tr>
-<tr>
-<td style="text-align:left;">
-GValueAdd
-</td>
-<td style="text-align:left;">
-Value added, gross
-</td>
-<td style="text-align:left;">
-eurostat
-</td>
-<td style="text-align:left;">
-B1G
-</td>
-<td style="text-align:left;">
-namq_10_a10
-</td>
-<td style="text-align:left;">
-na_item
-</td>
-<td style="text-align:left;">
-q
-</td>
-<td style="text-align:left;">
-AT
-</td>
-<td style="text-align:left;">
-CLV05_MEUR
-</td>
-<td style="text-align:left;">
-SCA
-</td>
-<td style="text-align:left;">
-TOTAL
-</td>
 <td style="text-align:left;">
 NA
 </td>
@@ -383,38 +931,6 @@ NA
 </td>
 <td style="text-align:left;">
 NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Export
-</td>
-<td style="text-align:left;">
-Exports of goods and services
-</td>
-<td style="text-align:left;">
-eurostat
-</td>
-<td style="text-align:left;">
-P6
-</td>
-<td style="text-align:left;">
-namq_10_gdp
-</td>
-<td style="text-align:left;">
-na_item
-</td>
-<td style="text-align:left;">
-q
-</td>
-<td style="text-align:left;">
-AT
-</td>
-<td style="text-align:left;">
-CLV05_MEUR
-</td>
-<td style="text-align:left;">
-SCA
 </td>
 <td style="text-align:left;">
 NA
@@ -428,81 +944,8 @@ NA
 <td style="text-align:left;">
 NA
 </td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Import
-</td>
-<td style="text-align:left;">
-Imports of goods and services
-</td>
-<td style="text-align:left;">
-eurostat
-</td>
-<td style="text-align:left;">
-P7
-</td>
-<td style="text-align:left;">
-namq_10_gdp
-</td>
-<td style="text-align:left;">
-na_item
-</td>
-<td style="text-align:left;">
-q
-</td>
-<td style="text-align:left;">
-AT
-</td>
-<td style="text-align:left;">
-CLV05_MEUR
-</td>
-<td style="text-align:left;">
-SCA
-</td>
 <td style="text-align:left;">
 NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-<td style="text-align:left;">
-NA
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-GCapitalForm
-</td>
-<td style="text-align:left;">
-Gross capital formation
-</td>
-<td style="text-align:left;">
-eurostat
-</td>
-<td style="text-align:left;">
-P5G
-</td>
-<td style="text-align:left;">
-namq_10_gdp
-</td>
-<td style="text-align:left;">
-na_item
-</td>
-<td style="text-align:left;">
-q
-</td>
-<td style="text-align:left;">
-AT
-</td>
-<td style="text-align:left;">
-CLV05_MEUR
-</td>
-<td style="text-align:left;">
-SCA
 </td>
 <td style="text-align:left;">
 NA
@@ -555,37 +998,161 @@ model_result <- run_model(
   saturation.tpval = 0.01,
   plot = FALSE
 )
+#> Lade nötigen Namensraum: tidygraph
+#> Lade nötigen Namensraum: ggraph
+#> indexed 0B in  0s, 0B/sindexed 2.15GB in  0s, 2.15GB/s                                                                              
+#> Table sts_cobp_q cached at C:\Users\jonas\AppData\Local\Temp\RtmpUnjZbF/eurostat/359a70cefc8dc229abccf821f6ab46a1.rds
 #> Dataset query already saved in cache_list.json...
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/c567619dc239cdb6c8552d73b75636ff.rds
-#> Table  namq_10_gdp  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/c567619dc239cdb6c8552d73b75636ff.rds
+#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpUnjZbF/eurostat/1a1e18ed86b9f5c9518ed4a594836ef0.rds
+#> Table  namq_10_gdp  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpUnjZbF/eurostat/1a1e18ed86b9f5c9518ed4a594836ef0.rds
+#> indexed 0B in  0s, 0B/sindexed 2.15GB in  0s, 2.15GB/s                                                                              
+#> Table env_ac_aigg_q cached at C:\Users\jonas\AppData\Local\Temp\RtmpUnjZbF/eurostat/e57785d3b87ff75e07d888c79049c6c1.rds
+#> indexed 0B in  0s, 0B/sindexed 2.15GB in  0s, 2.15GB/s                                                                              
+#> Table ei_lmlc_q cached at C:\Users\jonas\AppData\Local\Temp\RtmpUnjZbF/eurostat/024d13ac9c0969c94ae43c9a3c2a1a1d.rds
 #> Dataset query already saved in cache_list.json...
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/5f7391f64512e2bcd91dad03fece5d6c.rds
-#> Table  env_ac_aigg_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/5f7391f64512e2bcd91dad03fece5d6c.rds
-#> Dataset query already saved in cache_list.json...
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/48c9e378cb4ff9a025f07c2a3c1c802b.rds
-#> Table  ei_lmlc_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/48c9e378cb4ff9a025f07c2a3c1c802b.rds
-#> Dataset query already saved in cache_list.json...
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/a48b692dcc3fb2781f39b235c4498221.rds
-#> Table  namq_10_a10  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/a48b692dcc3fb2781f39b235c4498221.rds
-#> Dataset query already saved in cache_list.json...
-#> Reading cache file C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/747ede24fdec507eceea0e73e631fc53.rds
-#> Table  sts_cobp_q  read from cache file:  C:\Users\morit\AppData\Local\Temp\RtmpOUIr06/eurostat/747ede24fdec507eceea0e73e631fc53.rds
+#> Reading cache file C:\Users\jonas\AppData\Local\Temp\RtmpUnjZbF/eurostat/f477c9ee01a86dadfa13c08f2dae0171.rds
+#> Table  namq_10_a10  read from cache file:  C:\Users\jonas\AppData\Local\Temp\RtmpUnjZbF/eurostat/f477c9ee01a86dadfa13c08f2dae0171.rds
 #> Warning in load_or_download_variables(specification = module_order, dictionary
 #> = dictionary, : Unbalanced panel, will lose more than 20\% of data when making
 #> balanced
 #> 
 #> --- Estimation begins ---
-#> Estimating GValueAddGov = FinConsExpGov 
-#> Estimating GValueAddManuf = Export + LabCostManuf 
-#> Estimating GValueAddConstr = LabCostConstr + BuildingPermits 
-#> Estimating GValueAddWholesaletrade = Export + LabCostService 
-#> Estimating FinConsExpHH =  
+#> Estimating FinConsExpHH =
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
 #> No Outliers or Step-Shifts detected in the marginal equations to test for Super Exogeneity in ln.FinConsExpHH.
 #> Hence not possible to run the test.
-#> Constructing GDP = GValueAddGov + GValueAddAgri + GValueAddIndus + GValueAddConstr + GValueAddWholesaletrade + GValueAddInfocom + GValueAddFinance + GValueAddRealest + GValueAddResearch + GValueAddArts 
-#> Estimating GCapitalForm = FinConsExpGov + FinConsExpHH 
-#> Estimating Emissions = GDP + Export + GValueAddIndus 
-#> Estimating Import = FinConsExpHH + GCapitalForm
+#> Estimating GValueAddGov = FinConsExpGov
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = initial.model$aux$mX[, dep_var_exog_test], mxreg =
+#> xvars_ready_df, : The 'include.gum' argument is ignored (temporarily deprecated
+#> in isat)
+#> Estimating GCapitalForm = FinConsExpGov  +  FinConsExpHH
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = initial.model$aux$mX[, dep_var_exog_test], mxreg =
+#> xvars_ready_df, : The 'include.gum' argument is ignored (temporarily deprecated
+#> in isat)
+#> Warning in isat.default(y = initial.model$aux$mX[, dep_var_exog_test], mxreg =
+#> xvars_ready_df, : The 'include.gum' argument is ignored (temporarily deprecated
+#> in isat)
+#> Estimating GValueAddConstr = LabCostConstr  +  BuildingPermits
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> No Outliers or Step-Shifts detected in the marginal equations to test for Super Exogeneity in ln.GValueAddConstr.
+#> Hence not possible to run the test.
+#> Estimating GValueAddManuf = Export  +  LabCostManuf
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = initial.model$aux$mX[, dep_var_exog_test], mxreg =
+#> xvars_ready_df, : The 'include.gum' argument is ignored (temporarily deprecated
+#> in isat)
+#> Warning in isat.default(y = initial.model$aux$mX[, dep_var_exog_test], mxreg =
+#> xvars_ready_df, : The 'include.gum' argument is ignored (temporarily deprecated
+#> in isat)
+#> Estimating GValueAddWholesaletrade = Export  +  LabCostService
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = initial.model$aux$mX[, dep_var_exog_test], mxreg =
+#> xvars_ready_df, : The 'include.gum' argument is ignored (temporarily deprecated
+#> in isat)
+#> Estimating Import = FinConsExpHH  +  GCapitalForm
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = initial.model$aux$mX[, dep_var_exog_test], mxreg =
+#> xvars_ready_df, : The 'include.gum' argument is ignored (temporarily deprecated
+#> in isat)
+#> Warning in isat.default(y = initial.model$aux$mX[, dep_var_exog_test], mxreg =
+#> xvars_ready_df, : The 'include.gum' argument is ignored (temporarily deprecated
+#> in isat)
+#> Constructing GDP = GValueAddGov  +  GValueAddAgri  +  GValueAddIndus  +  GValueAddConstr  +  GValueAddWholesaletrade  +  GValueAddInfocom  +  GValueAddFinance  +  GValueAddRealest  +  GValueAddResearch  +  GValueAddArts 
+#> Estimating Emissions = GDP  +  Export  +  GValueAddIndus
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = zoo::zoo(yvar, order.by = clean_data$time), : The
+#> 'include.gum' argument is ignored (temporarily deprecated in isat)
+#> Warning in isat.default(y = initial.model$aux$mX[, dep_var_exog_test], mxreg =
+#> xvars_ready_df, : The 'include.gum' argument is ignored (temporarily deprecated
+#> in isat)
 ```
 
 ``` r
@@ -601,31 +1168,31 @@ model_result
 #> Relationships considered: 
 #> # A tibble: 9 × 3
 #>   Model `Dep. Var.`             `Ind. Var`                                      
-#> 1     1 Import                  "FinConsExpHH + GCapitalForm"                   
-#> 2     2 FinConsExpHH            ""                                              
-#> 3     3 GCapitalForm            "FinConsExpGov + FinConsExpHH"                  
-#> 4     4 Emissions               "GDP + Export + GValueAddIndus"                 
-#> 5     5 GDP                     "GValueAddGov + GValueAddAgri + GValueAddIndus …
-#> 6     6 GValueAddGov            "FinConsExpGov"                                 
-#> 7     7 GValueAddManuf          "Export + LabCostManuf"                         
-#> 8     8 GValueAddConstr         "LabCostConstr + BuildingPermits"               
-#> 9     9 GValueAddWholesaletrade "Export + LabCostService"                       
+#> 1     1 FinConsExpHH            ""                                              
+#> 2     2 GValueAddGov            "FinConsExpGov"                                 
+#> 3     3 GCapitalForm            "FinConsExpGov  +  FinConsExpHH"                
+#> 4     4 GValueAddConstr         "LabCostConstr  +  BuildingPermits"             
+#> 5     5 GValueAddManuf          "Export  +  LabCostManuf"                       
+#> 6     6 GValueAddWholesaletrade "Export  +  LabCostService"                     
+#> 7     7 Import                  "FinConsExpHH  +  GCapitalForm"                 
+#> 8     8 GDP                     "GValueAddGov  +  GValueAddAgri  +  GValueAddIn…
+#> 9     9 Emissions               "GDP  +  Export  +  GValueAddIndus"             
 #> 
 #> 
-#> Relationships estimated in the order:  6,7,8,9,2,5,3,4,1
+#> Relationships estimated in the order:  1,2,3,4,5,6,7,8,9
 #> 
 #> Diagnostics:
 #>  # A tibble: 8 × 8
-#>   `Dependent Variable`    AR       ARCH     `Super Exogeneity`   IIS   SIS     n
-#>   <chr>                   <chr>    <chr>    <chr>              <int> <int> <int>
-#> 1 GValueAddGov            0.125    0.768    "0.029**"              3     3    53
-#> 2 GValueAddManuf          0.663    0.864    ""                     6     0    54
-#> 3 GValueAddConstr         0.619    0.541    "<0.001***"            3     2    54
-#> 4 GValueAddWholesaletrade 0.258    0.001*** "<0.001***"           13     0    54
-#> 5 FinConsExpHH            0.870    0.711    ""                     7     1    54
-#> 6 GCapitalForm            0.602    0.851    ""                     0     5    54
-#> 7 Emissions               0.009*** 0.070*   "0.007***"             0     3    55
-#> 8 Import                  0.106    0.958    "0.092*"               1     1    54
+#>   `Dependent Variable`    AR       ARCH   `Super Exogeneity`   IIS   SIS     n
+#>   <chr>                   <chr>    <chr>  <chr>              <int> <int> <int>
+#> 1 FinConsExpHH            0.675    0.920  ""                     9     0    54
+#> 2 GValueAddGov            0.088*   0.752  "0.027**"             10     3    55
+#> 3 GCapitalForm            0.599    0.446  ""                     2     1    53
+#> 4 GValueAddConstr         0.008*** 0.524  ""                     7     3    55
+#> 5 GValueAddManuf          0.004*** 0.092* "0.014**"              0     7    55
+#> 6 GValueAddWholesaletrade 0.616    0.588  "0.240"                0     5    52
+#> 7 Import                  0.740    0.700  ""                     5     0    53
+#> 8 Emissions               0.042**  0.364  "0.050**"              0     2    55
 #> # ℹ 1 more variable: `Share of Indicators` <dbl>
 ```
 
