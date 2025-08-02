@@ -396,17 +396,8 @@ test_that("run_module() works with CVAR", {
     lag = c("", ""),
     cvar = c("system1", "system1")
   )
-  # dictionary <- dplyr::tibble(
-  #   model_varname = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
-  #   full_name = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
-  #   database = c("local", "local", "local", "local", "local", "local", "local", "local", NA, "local", "local", "local"),
-  #   geo = "DE",
-  #   dataset_id = NA,
-  #   freq = ""
-  # )
   mdl <- osem:::check_config_table(specification)
   opts <- mdl
-  # opts$log_opts <- list(dplyr::tibble(Y = NA, Z = NA, U = NA))
   df <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds"))
   cls <- osem:::classify_variables(mdl)
   a <- run_module(
@@ -473,4 +464,48 @@ test_that("run_module() works with CVAR", {
   expect_type(a$opts_df %>% dplyr::pull(log_opts), "list")
   expect_s3_class(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), c("data.frame", "tibble"))
   expect_identical(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), dplyr::tibble(Y = "log", Z = "asinh", U = "asinh"))
+})
+
+test_that("update_data() works with CVAR", {
+  specification <- dplyr::tibble(
+    type = c("n", "n"),
+    dependent = c("Y", "Z"),
+    independent = c("U", "U"),
+    lag = c("", ""),
+    cvar = c("system1", "system1")
+  )
+  dictionary <- dplyr::tibble(
+    model_varname = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    full_name = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    database = c("local", "local", "local", "local", "local", "local", "local", "local", NA, "local", "local", "local"),
+    geo = "DE",
+    dataset_id = NA,
+    freq = ""
+  )
+  mdl <- osem:::check_config_table(specification)
+  opts <- mdl
+  df <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds")) %>%
+    dplyr::filter(na_item %in% c("Y", "Z", "U")) %>%
+    dplyr::select(-geo)
+  cls <- osem:::classify_variables(mdl)
+  tmp_before <- df
+  module_out <- run_module(
+    module = mdl[1, ],
+    data = df,
+    classification = cls,
+    use_logs = "none",
+    trend = TRUE,
+    opts_df = opts,
+    keep = NULL,
+    quiet = TRUE,
+    cvar.ar = 2,
+    freq = NULL,
+    coint_deterministic = "const",
+    coint_significance = "5pct"
+  )
+  tmp_after <- osem:::update_data(tmp_before, new_data = module_out$data)
+  expect_s3_class(tmp_after, c("data.frame", "tibble"))
+  expect_named(tmp_after, c("time", "na_item", "values"))
+  expect_setequal(unique(tmp_after$na_item), c("Y", "Z", "U", "Y.hat", "Z.hat"))
+  expect_identical(dim(tmp_after), c(500L, 3L))
 })
