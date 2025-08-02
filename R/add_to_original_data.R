@@ -64,6 +64,57 @@ add_to_original_data <- function(clean_data,
 
     intermed_init %>%
       dplyr::mutate(fitted.level = fitted_vals) -> intermed
+
+    out <- intermed %>%
+      dplyr::rename_with(
+        .cols = dplyr::any_of(c("fitted", "fitted.level", "fitted.cumsum")),
+        .fn = ~ paste0(gsub("fitted", dep_var_basename, .), ".hat")
+      )
+  } else if (identical(model_type, "cvar")) {
+    # extract whether dependent variable was transformed
+    dependent_log_opts <- opts_df %>%
+      dplyr::filter(.data$index == module$index) %>%
+      dplyr::pull("log_opts") %>%
+      dplyr::first() %>%
+      dplyr::select(dplyr::all_of(dep_var_basename)) %>%
+      tidyr::pivot_longer(cols = dplyr::everything(), names_to = "na_item", values_to = "transformation")
+
+    # for CVAR, have to add multiple fitted values because have multiple depvars
+    cvar_fitted <- fitted(model_object$varm) %>%
+      as.data.frame(.data) %>%
+      # remove the "fit of " in varname, add ".hat" at end
+      dplyr::rename_with(~ gsub("fit of (ln\\.)?", "", .x)) %>%
+      # add index for merging with full data later; lose first K=ar observations
+      mutate(index = (model_object$args$ar + 1):NROW(clean_data))
+    # should now correspond to "basename", add failsafe:
+    if (!setdiff(colnames(cvar_fitted), dep_var_basename) == "index") {
+      stop(paste0("Problem in module ", module$order, ". Computation of fitted values failed. Debug at add_to_original_data()."))
+    }
+
+    # transform fitted values to levels
+    cvar_fitted <- cvar_fitted %>%
+      tidyr::pivot_longer(
+        cols = !dplyr::all_of("index"),
+        names_to = "na_item", values_to = "values"
+      ) %>%
+      dplyr::left_join(dependent_log_opts, by = "na_item") %>%
+      dplyr::mutate(level.values = dplyr::case_when(
+        transformation == "log" ~ exp(values),
+        transformation == "asinh" ~ sinh(values),
+        is.na(transformation) ~ values
+      )) %>%
+      dplyr::select(-transformation) %>%
+      tidyr::pivot_wider(
+        id_cols = "index", names_from = "na_item",
+        values_from = c("values", "level.values"), names_glue = "{na_item}.{.value}"
+      ) %>%
+      dplyr::rename_with(~ sub("\\.values$", ".hat", .x), ends_with(".values"))
+
+    # add fitted values to original data
+    out <- clean_data %>%
+      dplyr::full_join(cvar_fitted, by = "index")
+  } else {
+    stop("Argument model_type not recognised.")
   }
 
   # intermed %>% ggplot2::ggplot(ggplot2::aes(x = as.Date(time))) + ggplot2::geom_line(ggplot2::aes(y = fitted.level), col = "blue") + ggplot2::geom_line(ggplot2::aes(y = p5g))
@@ -73,10 +124,5 @@ add_to_original_data <- function(clean_data,
   # replace by following suggestion: TO DO
   # Update Moritz 29/08/2022: does not give me an error - also the example in the documentation works
 
-  intermed %>%
-    dplyr::rename_with(
-      .cols = dplyr::any_of(c("fitted", "fitted.level", "fitted.cumsum")),
-      .fn = ~ paste0(gsub("fitted", dep_var_basename, .), ".hat")
-    ) %>%
-    return()
+  return(out)
 }
