@@ -105,18 +105,21 @@ update_data <- function(orig_data, new_data) {
   # change name to make consistent with identify_module_data()
   cnames <- colnames(add)
   cur_name <- gsub("\\.level\\.hat", "", cnames[cnames != "time"])
-  regexpression <- paste0("^", cur_name, "(\\.hat)?$")
-  orig_name_index <- grep(regexpression, orig_data %>%
-    dplyr::distinct(.data$na_item) %>%
-    dplyr::pull(), fixed = FALSE)
-
-  orig_data_names <- orig_data %>%
-    dplyr::distinct(.data$na_item) %>%
-    dplyr::pull()
-  orig_name <- orig_data_names[orig_name_index]
-
-  cnames[cnames != "time"] <- gsub(cur_name, orig_name, cnames[cnames != "time"])
+  ## for cvar, have multiple .level.hat variables -> need to loop over them
+  for (i in seq_along(cur_name)) {
+    # TODO: I only vectorised this code below but I'm not sure whether it is needed, convoluted
+    regexpression <- paste0("^", cur_name[i], "(\\.hat)?$")
+    orig_name_index <- grep(regexpression, orig_data %>%
+      dplyr::distinct(.data$na_item) %>%
+      dplyr::pull(), fixed = FALSE)
+    orig_data_names <- orig_data %>%
+      dplyr::distinct(.data$na_item) %>%
+      dplyr::pull()
+    orig_name <- orig_data_names[orig_name_index]
+    cnames[cnames != "time"] <- gsub(cur_name[i], orig_name, cnames[cnames != "time"])
+  }
   cnames <- gsub("\\.level", "", cnames)
+
   # cnames <- gsub("HAT", "hat", cnames)
   colnames(add) <- cnames
 
