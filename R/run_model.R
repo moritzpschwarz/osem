@@ -71,6 +71,16 @@
 #'     "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
 #'     "GValueAdd + Import",
 #'     "FinConsExpHH + GCapitalForm"
+#'   ),
+#'   lag = c(
+#'     "",
+#'     "",
+#'     ""
+#'   ),
+#'   cvar = c(
+#'     "",
+#'     "",
+#'     ""
 #'   )
 #' )
 #' \donttest{

@@ -16,6 +16,12 @@
 #'  ),
 #'  independent = c(
 #'    "FinConsExpGov + HICP_Gas"
+#'  ),
+#'  lag = c(
+#'    ""
+#'  ),
+#'  cvar = c(
+#'    ""
 #'  )
 #')
 #'
