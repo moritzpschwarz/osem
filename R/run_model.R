@@ -205,7 +205,7 @@ run_model <- function(specification,
   # start of OSEM model -----------------------------------------------------
 
   # check whether OSEM model is well-specified
-  module_order <- check_config_table(specification)
+  module_order <- check_config_table(specification, quiet = quiet)
 
   # download or locally load the data necessary for the whole OSEM model
   loaded_data <- load_or_download_variables(

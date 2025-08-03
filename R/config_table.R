@@ -8,6 +8,7 @@
 #'    \item{lag}{RHS variables that should only enter as lags and not contemporaneously, separated by a comma.}
 #'    \item{cvar}{Unique character identifiers to group LHS variables into estimation as a cointegrated vector autoregression (CVAR).}
 #'  }
+#' @param quiet Logical whether should plot the DAG.
 #'
 #' @return A tibble that appends the order of the modules to be run to the input tibble/data.frame. Variable rows from the same cvar system are collapsed to a single row.
 #'
@@ -30,7 +31,7 @@
 #' )
 #' osem:::check_config_table(mwe)
 #'
-check_config_table <- function(config_table) {
+check_config_table <- function(config_table, quiet = TRUE) {
   if (!setequal(colnames(config_table), c("type", "dependent", "independent", "lag", "cvar"))) {
     stop("config_table does not contain all required columns.")
   }
@@ -139,27 +140,29 @@ check_config_table <- function(config_table) {
     stop("Contemporaneous simultaneity detected. Model cannot be identified with Cholesky ordering.")
   }
 
-  # plot the graph (if pkgs in Suggests: are installed)
-  if (requireNamespace("tidygraph") & requireNamespace("ggraph") & requireNamespace("ggforce")) {
-    g_tbl <- tidygraph::as_tbl_graph(g_full) %>%
-      dplyr::mutate(node_type = ifelse(.data$exog, "exog", "endog"))
-    ggraph::ggraph(g_tbl, layout = "sugiyama") +
-      ggraph::geom_node_circle(ggplot2::aes(r = 0.2, fill = .data$node_type), colour = "black") +
-      ggraph::geom_node_text(ggplot2::aes(label = .data$name), size = 3) +
-      ggraph::geom_edge_link(
-        arrow = ggplot2::arrow(
-          type = "closed",
-          length = ggplot2::unit(4, "pt")
-        ),
-        end_cap = ggraph::circle(0.8, "cm"),
-        start_cap = ggraph::circle(0.8, "cm"),
-        alpha = 0.6
-      ) +
-      ggforce::geom_mark_hull(ggplot2::aes(x = .data$x, y = .data$y, filter = !is.na(.data$cvar), fill = .data$cvar),
-        concavity = 5, linetype = "dashed"
-      )
-  } else {
-    message("Skipping plot of model configuration - install tidygraph, ggraph, ggforce.")
+  if (!quiet) {
+    # plot the graph (if pkgs in Suggests: are installed)
+    if (requireNamespace("tidygraph") & requireNamespace("ggraph") & requireNamespace("ggforce")) {
+      g_tbl <- tidygraph::as_tbl_graph(g_full) %>%
+        dplyr::mutate(node_type = ifelse(.data$exog, "exog", "endog"))
+      ggraph::ggraph(g_tbl, layout = "sugiyama") +
+        ggraph::geom_node_circle(ggplot2::aes(r = 0.2, fill = .data$node_type), colour = "black") +
+        ggraph::geom_node_text(ggplot2::aes(label = .data$name), size = 3) +
+        ggraph::geom_edge_link(
+          arrow = ggplot2::arrow(
+            type = "closed",
+            length = ggplot2::unit(4, "pt")
+          ),
+          end_cap = ggraph::circle(0.8, "cm"),
+          start_cap = ggraph::circle(0.8, "cm"),
+          alpha = 0.6
+        ) +
+        ggforce::geom_mark_hull(ggplot2::aes(x = .data$x, y = .data$y, filter = !is.na(.data$cvar), fill = .data$cvar),
+          concavity = 5, linetype = "dashed"
+        )
+    } else {
+      message("Skipping plot of model configuration - install tidygraph, ggraph, ggforce.")
+    }
   }
 
   #### Part 2 - determine a possible Cholesky ordering -------------------------
