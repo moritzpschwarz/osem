@@ -73,6 +73,20 @@ run_module <- function(
     clean_df <- clean_data_output$df
     opts_df <- clean_data_output$opts_df
 
+    # can delete contemporaneous values for variables that only enter as lags
+    # TODO: in future should probably do this in clean_data, need to add an argument to it
+    if (module$lag != "") {
+      lag_only_vars <- trimws(unlist(strsplit(module$lag, ",")))
+      if (use_logs %in% c("both", "x")) {
+        lag_only_vars <- paste0("ln.", lag_only_vars)
+      }
+      for (i in seq_along(lag_only_vars)) {
+        clean_df <- clean_df %>%
+          # remove variables that are x variables but not lagged
+          dplyr::select(!(dplyr::contains(lag_only_vars[i]) & !dplyr::matches("^L\\d+\\.")))
+      }
+    }
+
     # extract base variable names (and convert to lower case because janitor::clean_names() does so)
     dep <- module$dependent
     # dep <- tolower(dep)
@@ -97,7 +111,8 @@ run_module <- function(
       selection.tpval = selection.tpval,
       keep = keep,
       pretest_steps = pretest_steps,
-      quiet = quiet
+      quiet = quiet,
+      module = module
     )
 
     moduledata <- add_to_original_data(
