@@ -35,6 +35,49 @@ check_config_table <- function(config_table) {
     stop("config_table does not contain all required columns.")
   }
 
+  # check that CVAR system specifies same regressors
+  check_cvar_dependent <- config_table %>%
+    dplyr::filter(.data$cvar != "") %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(indep_sets = list(sort(trimws(unlist(strsplit(.data$independent, "\\+")))))) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(.data$cvar) %>%
+    dplyr::summarise(indep_sets_num = dplyr::n_distinct(.data$indep_sets)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(indep_set_equal = .data$indep_sets_num == 1L)
+  if (any(check_cvar_dependent$indep_set_equal == FALSE)) {
+    stop("Please specify the same independent variables within each CVAR system.")
+  }
+
+  # check that CVAR system is of type "n" and has no "lag" specified
+  check_cvar_vals <- config_table %>%
+    dplyr::filter(.data$cvar != "")
+  if (!all(check_cvar_vals$type == "n")) {
+    stop("All CVAR modules must be of type 'n'.")
+  }
+  if (!all(check_cvar_vals$lag == "")) {
+    stop("CVAR modules cannot specify exogenous variables that enter only as lags.")
+  }
+
+  # check that for single equation modules, any "lag" vars are also part of "independent"
+  check_single_lag <- config_table %>%
+    dplyr::filter(.data$cvar == "") %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+      indep_sets = list(sort(trimws(unlist(strsplit(.data$independent, "\\+"))))),
+      lag_sets = list(sort(trimws(unlist(strsplit(.data$lag, ",")))))
+    ) %>%
+    dplyr::rowwise() %>%
+    dplyr::mutate(
+      is_lag_subset_of_independent = dplyr::case_when(
+        .data$lag == "" ~ TRUE,
+        TRUE ~ all(.data$lag_sets %>% purrr::pluck() %in% .data$indep_sets %>% purrr::pluck())
+      )
+    )
+  if (any(check_single_lag$is_lag_subset_of_independent == FALSE)) {
+    stop("Any variable specified to enter only lagged (column 'lag') has to also be specified in the 'independent' formula.")
+  }
+
   # internal logic:
   # estimate CVAR sub-systems separately
   # allow for CVAR to have exogenous regressors in principle (despite not in urca-pkg)

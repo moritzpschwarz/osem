@@ -1,6 +1,65 @@
 test_that("error raised when columns missing", {
   cfg <- data.frame(type = "n", dependent = "Y", independent = "X", lag = "")
-  expect_error(check_config_table(cfg), "config_table does not contain all required columns")
+  expect_error(osem:::check_config_table(cfg), "config_table does not contain all required columns")
+})
+
+test_that("input errors raised", {
+  cfg <- data.frame(
+    type = c("n", "n"),
+    dependent = c("A", "B"),
+    independent = c("C", "C"),
+    lag = c("C", "C"),
+    cvar = c("sys1", "sys1")
+  )
+  expect_error(osem:::check_config_table(cfg),
+    "CVAR modules cannot specify exogenous variables that enter only as lags.",
+    fixed = TRUE
+  )
+
+  cfg <- data.frame(
+    type = c("n", "n"),
+    dependent = c("A", "B"),
+    independent = c("C", "D"),
+    lag = c("", ""),
+    cvar = c("sys1", "sys1")
+  )
+  expect_error(osem:::check_config_table(cfg),
+    "Please specify the same independent variables within each CVAR system.",
+    fixed = TRUE
+  )
+
+  cfg <- data.frame(
+    type = c("d", "d"),
+    dependent = c("A", "B"),
+    independent = c("", ""),
+    lag = c("", ""),
+    cvar = c("sys1", "sys1")
+  )
+  expect_error(osem:::check_config_table(cfg),
+    "All CVAR modules must be of type 'n'.",
+    fixed = TRUE
+  )
+
+  cfg <- data.frame(
+    type = "n",
+    dependent = "A",
+    independent = "C",
+    lag = "D",
+    cvar = ""
+  )
+  expect_error(osem:::check_config_table(cfg),
+    "lagged (column 'lag') has to also be specified in the 'independent' formula.",
+    fixed = TRUE
+  )
+
+  cfg <- data.frame(
+    type = c("n", "n"),
+    dependent = c("A", "B"),
+    independent = c("C + D", "E + F"),
+    lag = c("C, D", "F, E"), # swapped order for B module, should still work
+    cvar = c("", "")
+  )
+  expect_no_error(osem:::check_config_table(cfg))
 })
 
 test_that("rejects cycles", {
@@ -12,7 +71,7 @@ test_that("rejects cycles", {
     lag         = "",
     cvar        = ""
   )
-  expect_error(check_config_table(cfg), "Contemporaneous simultaneity detected")
+  expect_error(osem:::check_config_table(cfg), "Contemporaneous simultaneity detected")
 
   # indirect simultaneity
   cfg <- dplyr::tibble(
@@ -54,7 +113,7 @@ test_that("valid configurations are not rejected and correctly ordered", {
     type        = c("n", "n"),
     dependent   = c("A", "B"),
     independent = c("B", "A"),
-    lag         = "A",
+    lag         = c("", "A"),
     cvar        = ""
   )
   expect_no_error(check_config_table(cfg))
