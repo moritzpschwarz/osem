@@ -85,18 +85,7 @@ data_cvar |>
   # generate a variable based on variables from both CVAR and stationary system: Mt = 0.1Yt-1 + 0.1Ut-1
   mutate(error = rnorm(nobs)) |>
   mutate(M = 0.1 * lag(Y) + 0.1 * lag(U) + error) |>
-  dplyr::select(-error) |>
-  drop_na() |>
-  mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = nobs - 1)) |>
-  saveRDS(file = "./mwe/artificial_data.rds")
-
-data_cvar |>
-  dplyr::select(Y, Z) |>
-  bind_cols(data_uni |> dplyr::select(U, V, W)) |>
-  bind_cols(data_other |> dplyr::select(Q, R, S)) |>
-  # generate a variable based on variables from both CVAR and stationary system: Mt = 0.1Yt-1 + 0.1Ut-1
-  mutate(error = rnorm(nobs)) |>
-  mutate(M = 0.1 * lag(Y) + 0.1 * lag(U) + error) |>
+  mutate(N = 3 * lag(U) + 3 * R + error) |>
   dplyr::select(-error) |>
   drop_na() |>
   mutate(
@@ -104,6 +93,6 @@ data_cvar |>
     B = rnorm(nobs - 1)
   ) %>%
   mutate(time = seq.Date(from = as.Date("1900-01-01"), by = "quarter", length.out = nobs - 1)) %>%
-  pivot_longer(cols = 1:11, names_to = "na_item", values_to = "values") %>%
+  pivot_longer(cols = 1:12, names_to = "na_item", values_to = "values") %>%
   dplyr::mutate(geo = "DE") %>%
   saveRDS(file = "./tests/testthat/testdata/cvar/artificial_cvar_data.rds")
