@@ -25,7 +25,11 @@ run_model(
   pretest_steps = FALSE,
   present = FALSE,
   quiet = FALSE,
-  plot = TRUE
+  plot = TRUE,
+  cvar.ar = 2,
+  coint_seasonal = FALSE,
+  coint_deterministic = "const",
+  coint_significance = "5pct"
 )
 }
 \arguments{
@@ -107,6 +111,17 @@ These messages are intended to give more information about the estimation
 and data retrieval process.}
 
 \item{plot}{Logical with default = TRUE. Should plots be displayed?}
+
+\item{cvar.ar}{Number of lags of the VAR system in levels. Must be > 2.}
+
+\item{coint_seasonal}{Logical value whether cointegration analysis should
+include seasonal dummies.}
+
+\item{coint_deterministic}{Character specifying whether and if yes which
+deterministic component to include in the cointegrating relationship.}
+
+\item{coint_significance}{Significance level for the rank test for
+cointegration.}
 }
 \value{
 An object of class \link[=new_osem]{osem}, which is a named list

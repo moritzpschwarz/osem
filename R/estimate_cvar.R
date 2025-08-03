@@ -13,13 +13,15 @@
 #' included.
 #' @param use_logs To decide whether to log any variables. Must be one of
 #' 'both', 'y', 'x', or 'none'. Default is 'both'.
-#' @param ar Number of lags of the VAR system in levels. Must be > 2.
+#' @param cvar.ar Number of lags of the VAR system in levels. Must be > 2.
 #' @param freq Data frequency if want to include seasonal dummies, NULL
 #' otherwise.
 #' @param coint_deterministic Character specifying whether and if yes which
 #' deterministic component to include in the cointegrating relationship.
 #' @param coint_significance Significance level for the rank test for
 #' cointegration.
+#'
+#' @inheritParams run_model
 #'
 #' @return A list containing unit root tests for the variables involved, the
 #' resulting CVAR model, and the argument setting:
@@ -35,9 +37,10 @@
 #' \item{args}{A list storing the settings of the function call.}
 
 estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
-                          x_vars_basename, use_logs, ar, freq,
+                          x_vars_basename, use_logs, cvar.ar, freq,
                           coint_deterministic = c("none", "const", "trend"),
-                          coint_significance = c("1pct", "5pct", "10pct")) {
+                          coint_significance = c("1pct", "5pct", "10pct"),
+                          quiet = FALSE) {
   # input validation
   coint_significance <- match.arg(coint_significance)
   coint_deterministic <- match.arg(coint_deterministic)
@@ -68,11 +71,11 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
 
   # run all types of ADF tests
   for (i in seq_along(y.names)) {
-    y_urtest[[i]] <- test_unit_roots(x = yvars %>% dplyr::pull(y.names[i]), max.ar = ar, selectlags = "BIC") %>%
+    y_urtest[[i]] <- test_unit_roots(x = yvars %>% dplyr::pull(y.names[i]), max.ar = cvar.ar, selectlags = "BIC") %>%
       decide_unit_roots(alpha = "1pct")
   }
   for (i in seq_along(x.names)) { # will be skipped if length(x.names) == 0L
-    x_urtest[[i]] <- test_unit_roots(x = xvars %>% dplyr::pull(x.names[i]), max.ar = ar, selectlags = "BIC") %>%
+    x_urtest[[i]] <- test_unit_roots(x = xvars %>% dplyr::pull(x.names[i]), max.ar = cvar.ar, selectlags = "BIC") %>%
       decide_unit_roots(alpha = "1pct")
   }
 
@@ -89,7 +92,7 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
 
   # cointegration test
   cointtest <- urca::ca.jo(
-    x = yvars, type = "trace", ecdet = coint_deterministic, K = ar,
+    x = yvars, type = "trace", ecdet = coint_deterministic, K = cvar.ar,
     season = freq, dumvar = xvars, spec = "transitory"
   )
   # automated rank selection
@@ -114,7 +117,9 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
     stop("Cannot reject r = 0. Specified variables seem nonstationary but not cointegrated. Please re-specify the model.")
   } else {
     rankval <- length(which_reject) - first_pass %>% as.integer()
-    message(paste0("Determined cointegration rank for CVAR sub-system '", system_name, "' was ", rankval, ". Proceed to estimate CVAR."))
+    if (!quiet) {
+      message(paste0("Determined cointegration rank for CVAR sub-system '", system_name, "' was ", rankval, ". Proceed to estimate CVAR."))
+    }
   }
 
   # estimated the restricted model
@@ -137,7 +142,7 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
     dep_vars_basename = dep_vars_basename,
     x_vars_basename = x_vars_basename,
     use_logs = use_logs,
-    ar = ar,
+    ar = cvar.ar,
     coint_deterministic = coint_deterministic,
     coint_significance = coint_significance
   )

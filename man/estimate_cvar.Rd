@@ -10,10 +10,11 @@ estimate_cvar(
   dep_vars_basename,
   x_vars_basename,
   use_logs,
-  ar,
+  cvar.ar,
   freq,
   coint_deterministic = c("none", "const", "trend"),
-  coint_significance = c("1pct", "5pct", "10pct")
+  coint_significance = c("1pct", "5pct", "10pct"),
+  quiet = FALSE
 )
 }
 \arguments{
@@ -35,7 +36,7 @@ included.}
 \item{use_logs}{To decide whether to log any variables. Must be one of
 'both', 'y', 'x', or 'none'. Default is 'both'.}
 
-\item{ar}{Number of lags of the VAR system in levels. Must be > 2.}
+\item{cvar.ar}{Number of lags of the VAR system in levels. Must be > 2.}
 
 \item{freq}{Data frequency if want to include seasonal dummies, NULL
 otherwise.}
@@ -45,6 +46,10 @@ deterministic component to include in the cointegrating relationship.}
 
 \item{coint_significance}{Significance level for the rank test for
 cointegration.}
+
+\item{quiet}{Logical with default = FALSE. Should messages be displayed?
+These messages are intended to give more information about the estimation
+and data retrieval process.}
 }
 \value{
 A list containing unit root tests for the variables involved, the

@@ -7,7 +7,6 @@
 #' @param data A tibble or data.frame containing the full data for the OSEM
 #'   model.
 #' @param opts_df Internal object containing detailed options and information on individual modules.
-#' @param cvar.ar Number of lags of the VAR system in levels. Must be > 2.
 #' @inheritParams identify_module_data
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
@@ -142,10 +141,11 @@ run_module <- function(
       dep_vars_basename = module$dependent,
       x_vars_basename = indep,
       use_logs = use_logs,
-      ar = cvar.ar,
+      cvar.ar = cvar.ar,
       freq = freq,
       coint_deterministic = coint_deterministic,
-      coint_significance = coint_significance
+      coint_significance = coint_significance,
+      quiet = quiet
     )
 
     moduledata <- add_to_original_data(

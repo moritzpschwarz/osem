@@ -28,6 +28,8 @@
 #' @param keep Character. A string that will be used as regex (in \code{grepl()})
 #' when selection is carried out. This argument therefore requires \code{gets_selection = TRUE}.
 #' Variables that match this character will not be selected over (see \code{\link[gets]{getsm}} for details).
+#' @param coint_seasonal Logical value whether cointegration analysis should
+#' include seasonal dummies.
 #' @param pretest_steps Logical. Default is \code{FALSE}. This argument controls
 #' whether isat should first be run for SIS in isolation before other saturation
 #' methods are added (IIS, TIS). This can lead to better results if there are many
@@ -37,6 +39,7 @@
 #' After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
+#' @inheritParams estimate_cvar
 #' @param plot Logical with default = TRUE. Should plots be displayed?
 #'
 #' @return An object of class \link[=new_osem]{osem}, which is a named list
@@ -107,7 +110,11 @@ run_model <- function(specification,
                       pretest_steps = FALSE,
                       present = FALSE,
                       quiet = FALSE,
-                      plot = TRUE) {
+                      plot = TRUE,
+                      cvar.ar = 2,
+                      coint_seasonal = FALSE,
+                      coint_deterministic = "const",
+                      coint_significance = "5pct") {
   primary_source <- match.arg(primary_source)
 
   if (!(is.data.frame(specification) | is.matrix(specification))) {
@@ -225,7 +232,14 @@ run_model <- function(specification,
   freq_output <- check_frequencies(full_data, quiet = quiet)
   full_data <- freq_output$full_data
   frequency <- freq_output$frequency
-
+  cvar_freq <- dplyr::case_when(
+    frequency == "3 months" ~ "4",
+    frequency == "month" ~ "12",
+    TRUE ~ "unknown seasonality"
+  )
+  if (cvar_freq == "unknown seasonality") {
+    stop("Unknown seasonality for CVAR seasonal dummies.")
+  }
 
   # check for duplicates in the data
   if (full_data %>%
@@ -301,7 +315,15 @@ run_model <- function(specification,
       opts_df = opts_df,
       keep = keep,
       pretest_steps = pretest_steps,
-      quiet = quiet
+      quiet = quiet,
+      cvar.ar = cvar.ar,
+      freq = if (isTRUE(coint_seasonal)) {
+        as.numeric(cvar_freq)
+      } else {
+        NULL
+      },
+      coint_deterministic = coint_deterministic,
+      coint_significance = coint_significance
     )
 
     opts_df <- module_estimate$opts_df
