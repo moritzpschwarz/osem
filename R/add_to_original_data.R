@@ -108,7 +108,7 @@ add_to_original_data <- function(clean_data,
         id_cols = "index", names_from = "na_item",
         values_from = c("values", "level.values"), names_glue = "{na_item}.{.value}"
       ) %>%
-      dplyr::rename_with(~ sub("\\.values$", ".hat", .x), tidyselect::ends_with(".values"))
+      dplyr::rename_with(~ sub("\\.values$", ".hat", .x), dplyr::ends_with(".values"))
 
     # add fitted values to original data
     out <- clean_data %>%
