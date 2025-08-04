@@ -39,14 +39,14 @@ data <- cbind(data_cvar, t(data_ar)) %>%
 test_that("estimate_cvar() raises input errors", {
   expect_error(
     estimate_cvar(data, "sys1", "Y, Z", character(0),
-      use_logs = "none", ar = 4, NULL,
+      use_logs = "none", cvar.ar = 4, NULL,
       coint_deterministic = "Seasonal", coint_significance = "5pct"
     ),
     "none.*const.*trend"
   )
   expect_error(
     estimate_cvar(data, "sys1", "Y, Z", character(0),
-      use_logs = "none", ar = 4, NULL,
+      use_logs = "none", cvar.ar = 4, NULL,
       coint_deterministic = "none", coint_significance = "15pct"
     ),
     "1pct.*5pct.*10pct"

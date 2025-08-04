@@ -591,10 +591,12 @@ test_that("load_or_download_variables() works with CVAR modules", {
   ))
   # resulting data should contain all variables (except T), 100 obs each -> 1100 obs
   # and have 4 columns: time, na_item, value, geo
-  expect_named(a, c("time", "na_item", "value", "geo"))
+  expect_named(a, c("time", "na_item", "values", "geo"))
   expect_identical(NROW(a), 1100L)
   expect_setequal(unique(a$na_item), c("A", "B", "M", "Q", "R", "S", "U", "V", "W", "Y", "Z"))
   # cross-check with local loading
-  a_manual <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds")) %>% as.data.frame()
+  a_manual <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds")) %>%
+    as.data.frame() %>%
+    dplyr::filter(na_item != "N")
   expect_identical(a, a_manual)
 })

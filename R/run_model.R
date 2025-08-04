@@ -232,13 +232,16 @@ run_model <- function(specification,
   freq_output <- check_frequencies(full_data, quiet = quiet)
   full_data <- freq_output$full_data
   frequency <- freq_output$frequency
-  cvar_freq <- dplyr::case_when(
-    frequency == "3 months" ~ "4",
-    frequency == "month" ~ "12",
-    TRUE ~ "unknown seasonality"
-  )
-  if (cvar_freq == "unknown seasonality") {
-    stop("Unknown seasonality for CVAR seasonal dummies.")
+  # check cvar frequency only if have cvar modules
+  if (any(module_order$cvar != "")) {
+    cvar_freq <- dplyr::case_when(
+      frequency == "3 months" ~ "4",
+      frequency == "month" ~ "12",
+      TRUE ~ "unknown seasonality"
+    )
+    if (cvar_freq == "unknown seasonality") {
+      stop("Unknown seasonality for CVAR seasonal dummies.")
+    }
   }
 
   # check for duplicates in the data
