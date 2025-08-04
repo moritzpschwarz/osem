@@ -12,6 +12,11 @@
 #'
 #' @return A tibble that appends the order of the modules to be run to the input tibble/data.frame. Variable rows from the same cvar system are collapsed to a single row.
 #'
+#' @details
+#' For backwards compatibility, we still allow for specifications table that
+#' only specify "type", "dependent", and "independent" columns. In these cases,
+#' we add empty columns "lag" and "cvar".
+#'
 #' @examples
 #' config_table_small <- dplyr::tibble(
 #'   type = c("d", "d", "n"),
@@ -33,7 +38,16 @@
 #'
 check_config_table <- function(config_table, quiet = TRUE) {
   if (!setequal(colnames(config_table), c("type", "dependent", "independent", "lag", "cvar"))) {
-    stop("config_table does not contain all required columns.")
+    # for backwards compatibility, allow subset of columns, then add empty "lag" and "cvar" columns
+    if (setequal(colnames(config_table), c("type", "dependent", "independent"))) {
+      config_table <- config_table %>%
+        dplyr::mutate(
+          lag = "",
+          cvar = ""
+        )
+    } else {
+      stop("config_table does not contain all required columns.")
+    }
   }
 
   # check that CVAR system specifies same regressors
@@ -103,7 +117,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
     dplyr::mutate(rhs_vars_contemp = list(setdiff(.data$rhs_vars, .data$lag_vars))) %>%
     # unnest, so have one row per LHS-RHS variable
     dplyr::ungroup() %>%
-    tidyr::unnest(.data$rhs_vars_contemp, keep_empty = TRUE)
+    tidyr::unnest("rhs_vars_contemp", keep_empty = TRUE)
   # result: tbl where each row is an edge: LHS and contemporaneous RHS pair per row
 
   # extract all nodes/variables
@@ -114,7 +128,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
     dplyr::mutate(exog = !(.data$name %in% config_table$dependent)) %>%
     dplyr::left_join(
       config_table %>%
-        dplyr::select(name = .data$dependent, .data$cvar),
+        dplyr::select(name = "dependent", "cvar"),
       by = "name"
     ) %>%
     # will be NA if it is only a RHS var (purely exogenous)
@@ -123,7 +137,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
 
   # focus on nodes that have incoming edges (ignore pure AR or if only lagged RHS vars)
   edge_tbl <- node_edge_tbl %>%
-    tidyr::drop_na(.data$rhs_vars_contemp) # drop nodes without incoming edges
+    tidyr::drop_na("rhs_vars_contemp") # drop nodes without incoming edges
 
   # create graph from edges
   g_full <- edge_tbl %>%
@@ -131,7 +145,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
       from = .data$rhs_vars_contemp,
       to = .data$dependent
     ) %>%
-    dplyr::select(.data$from, .data$to) %>%
+    dplyr::select("from", "to") %>%
     igraph::graph_from_data_frame(d = ., directed = TRUE, vertices = node_tbl)
 
   # check that there are no cycles -> is it a directed, acyclical graph?

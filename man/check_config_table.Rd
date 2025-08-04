@@ -24,6 +24,11 @@ A tibble that appends the order of the modules to be run to the input tibble/dat
 \description{
 Check the configuration of the model contained in the config table
 }
+\details{
+For backwards compatibility, we still allow for specifications table that
+only specify "type", "dependent", and "independent" columns. In these cases,
+we add empty columns "lag" and "cvar".
+}
 \examples{
 config_table_small <- dplyr::tibble(
   type = c("d", "d", "n"),
