@@ -16,12 +16,12 @@ testdata <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.
                           #HICP_Gas = rnorm(mean = 200, n = length(time)),
                           # simulate an AR1 process with rho = 0.3 and call it HICP_Gas
                           HICP_Gas = as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 30, mean = 200)),
-                          L1.HICP_Gas = lag(HICP_Gas),
+                          L1.HICP_Gas = dplyr::lag(HICP_Gas),
                           FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas -0.2 * L1.HICP_Gas +
                             as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 0.2, mean = 0)))
 #rnorm(length(time), mean = 0, sd = 0.2))
 testdata_2 <- testdata %>%
-  dplyr::mutate(L2.HICP_Gas = lag(L1.HICP_Gas))
+  dplyr::mutate(L2.HICP_Gas = dplyr::lag(L1.HICP_Gas))
 
 testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
 
@@ -45,8 +45,8 @@ test_that("Super Exogeneity Tests", {
 
   expect_true(!is.null(mod$module_collection$diagnostics[[1]]$super.exogeneity))
   expect_s3_class(mod$module_collection$diagnostics[[1]]$super.exogeneity, "htest")
-  expect_equal(mod$module_collection$diagnostics[[1]]$super.exogeneity$statistic, c("F-Stat" = 6.996028))
-  expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.024863487)
+  expect_equal(mod$module_collection$diagnostics[[1]]$super.exogeneity$statistic, c("F-Stat" = 16.569103))
+  expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.008857416)
 
 
   # run it with a tighter significance to ensure at least one variable is not testable
@@ -88,7 +88,7 @@ test_that("Super Exogeneity Tests", {
 
   expect_true(!is.null(mod$module_collection$diagnostics[[1]]$super.exogeneity))
   expect_s3_class(mod$module_collection$diagnostics[[1]]$super.exogeneity, "htest")
-  expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.024863487)
+  expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.043121409)
 
   # TODO disabling currently due to issue within isat() related to zoo
   # # run a super exogeneity test without the current value

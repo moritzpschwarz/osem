@@ -272,7 +272,7 @@ test_that("Check that a missing dictionary entry is not triggering an error for 
                             #HICP_Gas = rnorm(mean = 200, n = length(time)),
                             # simulate an AR1 process with rho = 0.3 and call it HICP_Gas
                             HICP_Gas = as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 30, mean = 200)),
-                            L1.HICP_Gas = lag(HICP_Gas),
+                            L1.HICP_Gas = dplyr::lag(HICP_Gas),
                             FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas -0.2 * L1.HICP_Gas +
                               as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 0.2, mean = 0)))
 
@@ -325,7 +325,7 @@ test_that("Check the keep argument",{
                             #HICP_Gas = rnorm(mean = 200, n = length(time)),
                             # simulate an AR1 process with rho = 0.3 and call it HICP_Gas
                             HICP_Gas = as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 30, mean = 200)),
-                            L1.HICP_Gas = lag(HICP_Gas),
+                            L1.HICP_Gas = dplyr::lag(HICP_Gas),
                             test = rnorm(length(time)),
                             FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas -0.2 * L1.HICP_Gas +
                               as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 0.2, mean = 0)))
