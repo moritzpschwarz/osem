@@ -545,7 +545,7 @@ test_that("The change from inputdata_directory to input worked",{
 
   testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
 
-  expect_error(run_model(specification = specification,
+  expect_warning(run_model(specification = specification,
                          dictionary = dict,
                          inputdata_directory = testdata,
                          primary_source = "local",
@@ -561,6 +561,60 @@ test_that("The change from inputdata_directory to input worked",{
                           primary_source = "local",
                           present = FALSE,
                           quiet = TRUE))
+
+
+
+  # test the functionality of inputdata_direcotry + warning
+  specification <- dplyr::tibble(
+    type = c(
+      "n",
+      "n"
+    ),
+    dependent = c(
+      "EmiN2OTotal",
+      "EmiCH4Livestock"
+    ),
+    independent = c(
+      "EmiCO2Combustion",
+      ""
+    )
+  )
+
+  # specify inputdata_directory should work but cause a warning
+  expect_warning(run_model(specification = specification,
+                           inputdata_directory = test_path("testdata", "complete"),
+                           primary_source = "local",
+                           plot = FALSE,
+                           present = FALSE,
+                           quiet = TRUE), regexp = "is deprecated. Use 'input' instead.")
+
+  # specify both input and inputdata_directory - should still work but cause a warning
+  expect_warning(run_model(specification = specification,
+                           input =  test_path("testdata", "complete", "emico2combustion.csv"),
+                           inputdata_directory = test_path("testdata", "complete"),
+                           primary_source = "local",
+                           plot = FALSE,
+                           present = FALSE,
+                           quiet = TRUE), regexp = "is deprecated. Use 'input' instead.")
+
+
+  # specify both input (as a list) and inputdata_directory - should still work but cause a warning
+  expect_warning(run_model(specification = specification,
+                           input =  list(test_path("testdata", "complete", "emico2combustion.csv"),
+                                         test_path("testdata", "complete", "emin2ototal.rds")),
+                           inputdata_directory = test_path("testdata", "complete"),
+                           primary_source = "local",
+                           plot = FALSE,
+                           present = FALSE,
+                           quiet = TRUE), regexp = "is deprecated. Use 'input' instead.")
+
+ # specifiying inputdata_directoy incorrectly should not work
+  expect_error(run_model(specification = specification,
+                           inputdata_directory = test_path("testdata", "complete", "emico2combustion.csv"),
+                           primary_source = "local",
+                           plot = FALSE,
+                           present = FALSE,
+                           quiet = TRUE), regexp = "must be a character path to a directory, not to a file")
 
 
 })

@@ -36,7 +36,8 @@
 #' then \code{\link[gets]{isat}} is first carried out just for SIS (if activated using 'sis = TRUE'),
 #' then the SIS breaks are pre-entered to another \code{\link[gets]{isat}} estimation but not selected over.
 #' After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.
-#' @param inputdata_directory Deprecated. Use 'input' instead.
+#' @param inputdata_directory Deprecated. Use 'input' instead. Functionality of specifying a directory
+#' is retained for now but this argument will be removed in the future.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
 #' @param plot Logical with default = TRUE. Should plots be displayed?
@@ -168,7 +169,25 @@ run_model <- function(specification,
 
   if (!missing(inputdata_directory)) {
     if(!is.null(inputdata_directory)){
-      stop("'inputdata_directory' is deprecated. Use 'input' instead.")
+
+      if (is.character(inputdata_directory)) {
+        if (file.exists(inputdata_directory) & !dir.exists(inputdata_directory)) {
+          stop("The variable 'inputdata_directory' must be a character path to a directory, not to a file.")
+        }
+
+        files <- list.files(path = inputdata_directory, pattern = "\\.(Rds|RDS|rds|csv|xlsx|xls)$")
+        files <- paste0(inputdata_directory, "/", files)
+      }
+      if (is.data.frame(inputdata_directory)){
+        files <- inputdata_directory
+      }
+
+      if(!is.null(input)){
+        input <- unique(append(input, files))
+      } else {
+        input <- files
+      }
+      warning("'inputdata_directory' is deprecated. Use 'input' instead. Functionality is for now being retained but this will be removed in the future.")
     }
   }
 
