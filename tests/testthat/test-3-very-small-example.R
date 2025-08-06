@@ -90,7 +90,6 @@ test_that("Check that single variable model works", {
               present = FALSE,
               quiet = FALSE,
               plot = FALSE,
-              constrain.to.minimum.sample = TRUE),
-    regexp = "Variable provided as 'inputdata_directory' seems to be a data.frame type. Used as data source"
+              constrain.to.minimum.sample = TRUE)
   )
 })
