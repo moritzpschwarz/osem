@@ -49,25 +49,25 @@ annually <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), length.o
 test_that("Test the reaction of the model for different frequencies",{
 
   model_d <- run_model(specification = specification,
-                       inputdata_directory = daily,
+                       input = daily,
                        primary_source = "local",
                        max.ar = 1, max.dl = 0,
                        quiet = TRUE)
 
   model_m <- run_model(specification = specification,
-                       inputdata_directory = monthly,
+                       input = monthly,
                        primary_source = "local",
                        max.ar = 1, max.dl = 0,
                        quiet = TRUE)
 
   model_q <- run_model(specification = specification,
-                       inputdata_directory = quarterly,
+                       input = quarterly,
                        primary_source = "local",
                        max.ar = 1, max.dl = 0,
                        quiet = TRUE)
 
   model_a <- run_model(specification = specification,
-                       inputdata_directory = annually,
+                       input = annually,
                        primary_source = "local",
                        max.ar = 1, max.dl = 0,
                        quiet = TRUE)
@@ -97,7 +97,7 @@ test_that("Aggregation (Quarterly to Annual)", {
                        dplyr::filter(na_item != "HICP_Gas"), .)
 
   model_aqmix <- run_model(specification = specification,
-                          inputdata_directory = quarterly_mix,
+                          input = quarterly_mix,
                           primary_source = "local",
                           max.ar = 1, max.dl = 0, gets_selection = FALSE, plot = FALSE,
                           quiet = TRUE)
@@ -121,7 +121,7 @@ test_that("Aggregation (Quarterly to Annual)", {
                        dplyr::filter(na_item != "HICP_Gas"), .)
 
   model_aqmix2 <- run_model(specification = specification,
-                           inputdata_directory = quarterly_mix2,
+                           input = quarterly_mix2,
                            primary_source = "local",
                            max.ar = 1, max.dl = 0, gets_selection = FALSE,plot = FALSE,
                            constrain.to.minimum.sample = FALSE, # IMPORTANT HERE
@@ -152,7 +152,7 @@ test_that("Aggregation (Monthly to Quarterly)", {
                        dplyr::filter(na_item != "HICP_Gas"), .)
 
   model_mqmix <- run_model(specification = specification,
-                          inputdata_directory = mq_mix,
+                          input = mq_mix,
                           primary_source = "local",
                           max.ar = 1, max.dl = 0, gets_selection = FALSE, plot = FALSE,
                           quiet = TRUE)
@@ -176,7 +176,7 @@ test_that("Aggregation (Monthly to Quarterly)", {
                        dplyr::filter(na_item != "HICP_Gas"), .)
 
   model_mqmix2 <- run_model(specification = specification,
-                           inputdata_directory = mq_mix2,
+                           input = mq_mix2,
                            primary_source = "local",
                            max.ar = 1, max.dl = 0, gets_selection = FALSE,plot = FALSE,
                            constrain.to.minimum.sample = FALSE, # IMPORTANT HERE
@@ -456,7 +456,7 @@ test_that("Annual Models run with EUROSTAT data",{
                     dictionary = dict_new,
                     #save_to_disk = "data-raw/test/test.xlsx",
                     primary_source = "local",
-                    inputdata_directory = testdata_annual %>% dplyr::mutate(time = as.Date(time)),
+                    input = testdata_annual %>% dplyr::mutate(time = as.Date(time)),
                     max.ar = 1, # for annual models, would not go beyond 1 (otherwise sample is too short)
                     max.dl = 1, # for annual models, would not go beyond 1 (otherwise sample is too short)
                     max.block.size = 5,
@@ -496,7 +496,7 @@ test_that("Mixed Frequency across variables (different variables have different 
 
   expect_error(
     model_mf <- run_model(specification = specification,
-                          inputdata_directory = mixed_freq,
+                          input = mixed_freq,
                           primary_source = "local",
                           max.ar = 1, max.dl = 0,
                           constrain.to.minimum.sample = FALSE,
@@ -529,7 +529,7 @@ test_that("Mixed Frequency within variable (same variables has different mixed f
     dplyr::arrange(na_item, time)
 
   expect_silent(model_mf1 <- run_model(specification = specification,
-                                       inputdata_directory = mixed_freq,
+                                       input = mixed_freq,
                                        primary_source = "local",
                                        max.ar = 1, max.dl = 0,
                                        constrain.to.minimum.sample = FALSE,
@@ -557,7 +557,7 @@ test_that("Mixed Frequency within variable (same variables has different mixed f
     dplyr::arrange(na_item, time)
 
   expect_silent(model_mf2 <- run_model(specification = specification,
-                                       inputdata_directory = mixed_freq,
+                                       input = mixed_freq,
                                        primary_source = "local",
                                        max.ar = 1, max.dl = 0,
                                        constrain.to.minimum.sample = FALSE,
@@ -580,13 +580,13 @@ test_that("Mixed Frequency within variable (same variables has different mixed f
   expect_warning(
     suppressMessages(
       model_mf2 <- run_model(specification = specification,
-                             inputdata_directory = mixed_freq,
+                             input = mixed_freq,
                              primary_source = "local",
                              max.ar = 1, max.dl = 0,
                              constrain.to.minimum.sample = FALSE,
                              quiet = FALSE)),
     regexp = "Some observations were removed from the data due to different frequencies")
-  #regexp = "Variable provided as 'inputdata_directory' seems to be a data.frame type. Used as data source"),
+  #regexp = "Variable provided as 'input' seems to be a data.frame type. Used as data source"),
 
 
   # expect the annual observations to be dropped
@@ -615,7 +615,7 @@ test_that("Mixed Frequency within variable (same variables has different mixed f
     dplyr::arrange(na_item, time)
 
   expect_error(model_mf2 <- run_model(specification = specification,
-                                      inputdata_directory = mixed_freq,
+                                      input = mixed_freq,
                                       primary_source = "local",
                                       max.ar = 1, max.dl = 0,
                                       constrain.to.minimum.sample = FALSE,
@@ -641,7 +641,7 @@ test_that("Mixed Frequency within variable (same variables has different mixed f
 
   expect_error(
     model_mf <- run_model(specification = specification,
-                          inputdata_directory = mixed_freq,
+                          input = mixed_freq,
                           primary_source = "local",
                           max.ar = 1, max.dl = 0,
                           constrain.to.minimum.sample = FALSE,

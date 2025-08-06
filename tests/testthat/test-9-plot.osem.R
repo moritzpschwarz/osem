@@ -57,7 +57,7 @@ testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to
 
 mod <- run_model(specification = specification,
                  dictionary = dict,
-                 inputdata_directory = testdata,
+                 input = testdata,
                  primary_source = "local",
                  present = FALSE,
                  quiet = TRUE, saturation = "IIS")

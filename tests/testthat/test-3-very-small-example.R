@@ -26,7 +26,6 @@ test_that("no errors when running very simple model", {
     a <- run_model(
       specification = spec,
       dictionary = NULL,
-      inputdata_directory = NULL,
       primary_source = "download",
       save_to_disk = NULL,
       present = FALSE,
@@ -39,7 +38,6 @@ test_that("no errors when running very simple model", {
     a <- run_model(
       specification = spec,
       dictionary = NULL,
-      inputdata_directory = NULL,
       primary_source = "local",
       save_to_disk = NULL,
       present = FALSE,
@@ -50,7 +48,6 @@ test_that("no errors when running very simple model", {
   )
 
 })
-
 
 
 test_that("Check that single variable model works", {
@@ -88,7 +85,7 @@ test_that("Check that single variable model works", {
   expect_output(
     run_model(specification = specification,
               dictionary = dict,
-              inputdata_directory = testdata_modified_long,
+              input = testdata_modified_long,
               primary_source = "local",
               present = FALSE,
               quiet = FALSE,

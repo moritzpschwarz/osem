@@ -61,7 +61,7 @@ spec <- dplyr::tibble(
 
 mod <- run_model(specification = spec,
                  dictionary = dict,
-                 inputdata_directory = df,
+                 input = df,
                  primary_source = "local",
                  present = FALSE,
                  quiet = TRUE, saturation = "IIS")
@@ -144,7 +144,7 @@ test_that("Testing insample forecasting error messages",{
 
   model <- run_model(specification = specification,
                      dictionary = dict,
-                     inputdata_directory = testdata,
+                     input = testdata,
                      primary_source = "local",
                      present = FALSE,
                      quiet = TRUE,

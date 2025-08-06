@@ -19,7 +19,7 @@ test_that("the order of the equation should not matter", {
   )
 
   modified_4 <- run_model(specification = specification,
-                          inputdata_directory = test_path("testdata", "ragged_edge"),
+                          input = test_path("testdata", "ragged_edge", "ragged_edge_emissions_data.csv"),
                           primary_source = "local",
                           plot = FALSE,
                           quiet = TRUE)
@@ -43,7 +43,7 @@ test_that("the order of the equation should not matter", {
   )
 
   modified_5 <- run_model(specification = specification,
-                          inputdata_directory = test_path("testdata", "ragged_edge"),
+                          input = test_path("testdata", "ragged_edge", "ragged_edge_emissions_data.csv"),
                           primary_source = "local",
                           plot = FALSE,
                           quiet = TRUE)

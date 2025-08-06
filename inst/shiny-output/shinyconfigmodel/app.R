@@ -532,7 +532,7 @@ server <- function(input, output, session) {
       model_output <- run_model(
         specification = rv$specification,
         dictionary = rv$dictionary,
-        inputdata_directory = if (!is.null(rv$inputdata)){rv$inputdata} else {NULL},
+        input = if (!is.null(rv$inputdata)){rv$inputdata} else {NULL},
         primary_source =  "local",#  switching to "download" makes it slower? Could be a setting with a warning "might take longer". Reading the cached files takes long as well.
         save_to_disk = rv$save_file,
         present = FALSE,
@@ -856,7 +856,7 @@ server <- function(input, output, session) {
 
   model <- osem::run_model(specification = spec,
                                       dictionary = dict,
-                                      inputdata_directory = "' , if (is.null(rv$inputdirectory)) { NULL } else { dirname(input$data$datapath) }, '", # this is not working correctly yet with local data, but I was not able to find the issue. Download works as intended.
+                                      input = "' , if (is.null(rv$inputdirectory)) { NULL } else { dirname(input$data$datapath) }, '", # this is not working correctly yet with local data, but I was not able to find the issue. Download works as intended.
                                       primary_source = "', if (is.null(rv$inputdirectory)) { "download" } else { "local" }, '",
                                       save_to_disk = "', rv$save_file, '",
                                       present = FALSE,
