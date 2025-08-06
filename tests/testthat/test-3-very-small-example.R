@@ -49,6 +49,7 @@ test_that("no errors when running very simple model", {
 
 })
 
+
 test_that("Check that single variable model works", {
 
   specification <- dplyr::tibble(
