@@ -295,7 +295,7 @@ estimate_module <- function(clean_data,
       if(exists("best_isat_model.selected.isat") & !is.null(best_isat_model.selected.isat)){best_isat_model.selected.isat$aux$y.name <- y.name}
     }
   }
-  browser()
+
   final_model <- if(gets_selection) {
     if (!is.null(saturation) & !is.null(best_isat_model.selected.isat)) {
       best_isat_model.selected.isat
