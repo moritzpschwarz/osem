@@ -168,7 +168,6 @@ forecast_model <- function(model,
       # use machine precision to determine whether close to zero
       #tolerance <- sqrt(.Machine$double.eps)
       #res_nozero <- as.numeric(isat_obj$residuals)[abs(as.numeric(isat_obj$residuals)) > tolerance] # exclude 0 residuals (due to IIS) to not underestimate uncertainty
-
       iis_index <- gets::isatdates(isat_obj)$iis$index
 
       # Only exclude indices if they exist and are numeric
@@ -183,7 +182,7 @@ forecast_model <- function(model,
         # should not happen, but there might be edge cases
         res_draws <- rep(0, uncertainty_sample * n.ahead)
       } else {
-        res_draws <- sample(res_nozero, size = uncertainty_sample * n.ahead, replace = TRUE)
+        res_draws <- sample(as.numeric(res_nozero), size = uncertainty_sample * n.ahead, replace = TRUE)
       }
 
 
