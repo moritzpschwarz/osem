@@ -42,7 +42,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">load_locally</span><span class="op">(</span><span class="va">to_obtain</span>, <span class="va">inputdata_directory</span>, <span class="va">quiet</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">load_locally</span><span class="op">(</span><span class="va">to_obtain</span>, <span class="va">input</span>, <span class="va">quiet</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -53,10 +53,10 @@
 <dd><p>A data.frame as returned by <code><a href="determine_variables.html">determine_variables()</a></code>.</p></dd>
 
 
-<dt id="arg-inputdata-directory">inputdata_directory<a class="anchor" aria-label="anchor" href="#arg-inputdata-directory"></a></dt>
-<dd><p>A path to .rds, .csv, or .xlsx input files in
-which the data is stored. Can be <code>NULL</code>, in which case data is obtained
-via download if possible.</p></dd>
+<dt id="arg-input">input<a class="anchor" aria-label="anchor" href="#arg-input"></a></dt>
+<dd><p>A character vector of file paths, a data.frame, or a list of
+data.frames or file paths. Required if <code>download == FALSE</code> and at least
+one variable is specified as coming from a local source.</p></dd>
 
 
 <dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>

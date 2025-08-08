@@ -167,10 +167,11 @@ using <code><a href="https://ropengov.github.io/eurostat/reference/get_eurostat.
 using a link,</li>
 <li>
 <code>local</code> if the variable is not available from the above
-two sources and is therefore provided as a local file by the user in the
-directory <code>inputdata_directory</code>. This directory is searched
-for <code>.rds</code>, <code>.csv</code>, and <code>.xlsx</code> files,
-opens them consecutively, and searches for the variable.</li>
+two sources and is therefore provided as a path to a local file or a
+(list of) <code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code>’s by the user using the
+<code>input</code> argument. The argument takes <code>.rds</code>,
+<code>.csv</code>, and <code>.xlsx</code> files, opens them
+consecutively, and searches for the variable.</li>
 <li>
 <code>NA</code> if the variable is constructed as an
 identity/definition</li>
@@ -188,9 +189,8 @@ governs whether download or local input takes precedence for
 <p>This gives rise to the following combinations of obtaining data:</p>
 <ul>
 <li>variables with <code>dictionary$database == "local"</code> are
-always searched for among the local files of
-<code>inputdata_directory</code> and an error is raised if they cannot
-be found there</li>
+always searched for among the files of <code>input</code> and an error
+is raised if they cannot be found there</li>
 <li>variables with <code>dictionary$database == "eurostat"</code> or
 <code>dictionary$database == "egdar"</code>
 <ul>
@@ -218,9 +218,10 @@ vignette.</p>
 <span><span class="co">#&gt;  [1] NA         "eurostat" "eurostat" "eurostat" "eurostat" "eurostat"</span></span>
 <span><span class="co">#&gt;  [7] "eurostat" "eurostat" "eurostat" "eurostat" "edgar"</span></span></code></pre></div>
 <p>To avoid downloading all those variables again, we will specify
-<code>primary_source == "local"</code> and provide a
-<code>inputdata_directory</code> path to the local directory when
-calling <code><a href="../reference/run_model.html">run_model()</a></code>.</p>
+<code>primary_source == "local"</code> and provide a <code>input</code>
+path to local files with a path or by explicitly passing
+<code><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame()</a></code>’s to the function when calling
+<code><a href="../reference/run_model.html">run_model()</a></code>.</p>
 </div>
 </div>
 <div class="section level2">
@@ -231,7 +232,7 @@ object.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">specification</span>,</span>
 <span>                   dictionary <span class="op">=</span> <span class="va">dict</span>,</span>
-<span>                   inputdata_directory <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>                   input <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>                   primary_source <span class="op">=</span> <span class="st">"local"</span>,</span>
 <span>                   save_to_disk <span class="op">=</span> <span class="st">"./Downloaded_Input.xlsx"</span>,</span>
 <span>                   present <span class="op">=</span> <span class="cn">FALSE</span>,</span>
@@ -280,7 +281,7 @@ emissions from combustion activities:</p>
 <span><span class="co"># inspect the estimated equation</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">co2module</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: Wed Aug  6 13:50:11 2025 </span></span>
+<span><span class="co">#&gt; Date: Fri Aug  8 11:10:19 2025 </span></span>
 <span><span class="co">#&gt; Dependent var.: ln.EmiCO2Combustion </span></span>
 <span><span class="co">#&gt; Method: Ordinary Least Squares (OLS)</span></span>
 <span><span class="co">#&gt; Variance-Covariance: Ordinary </span></span>
