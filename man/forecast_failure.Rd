@@ -54,7 +54,7 @@ testdata <- tidyr::pivot_longer(testdata,
 
 model <- run_model(specification = specification,
                   dictionary = dict,
-                  inputdata_directory = testdata,
+                  input = testdata,
                   primary_source = "local",
                   present = FALSE,
                   quiet = TRUE,

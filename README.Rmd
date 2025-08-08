@@ -174,7 +174,7 @@ The next time that we run the same model, we can save some time and just load th
 model_result <- run_model(
   specification = spec,
   primary_source = "local",
-  inputdata_directory = "inst/extdata",
+  input = "inst/extdata/InputData.xlsx",
   trend = TRUE,
   saturation.tpval = 0.01
 )

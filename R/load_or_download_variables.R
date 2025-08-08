@@ -13,9 +13,9 @@
 #' @param primary_source A character of length 1 determining whether the
 #' required variables are first obtained from \code{"download"} and then
 #' \code{"local"}ly or vice versa.
-#' @param inputdata_directory A path to .rds, .csv, or .xlsx input files in
-#' which the data is stored. Can be \code{NULL}, in which case data is obtained
-#' via download if possible.
+#' @param input A character vector of file paths, a data.frame, or a list of
+#' data.frames or file paths. Required if \code{download == FALSE} and at least
+#' one variable is specified as coming from a local source.
 #' @param save_to_disk A path to a directory where the final dataset will be
 #'   saved, including file name and ending. Not saved when \code{NULL}.
 #' @param quiet Logical with default = \code{FALSE}. Should messages be displayed?
@@ -28,7 +28,7 @@
 load_or_download_variables <- function(specification,
                                        dictionary = NULL,
                                        primary_source = c("download", "local"),
-                                       inputdata_directory = NULL,
+                                       input = NULL,
                                        save_to_disk = NULL,
                                        quiet = FALSE,
                                        constrain.to.minimum.sample = TRUE) {
@@ -50,13 +50,20 @@ load_or_download_variables <- function(specification,
                                    dictionary = dictionary)
 
   # if to_obtain$database contains "local" then must have specified directory
-  if ("local" %in% unique(to_obtain$database) && is.null(inputdata_directory)) {
-    stop("At least one of the variables comes from 'local' file but no inputdata_directory has been specified.")
+  if ("local" %in% unique(to_obtain$database) && is.null(input)) {
+    stop("At least one of the variables comes from 'local' file but no input has been specified.")
   }
 
-  if (is.character(inputdata_directory)) {
-    if (file.exists(inputdata_directory) & !dir.exists(inputdata_directory)) {
-      stop("The variable 'inputdata_directory' must be a character path to a directory, not to a file.")
+  if (!is.null(input)) {
+    if (is.character(input)) {
+      if (!all(file.exists(input))) {
+        stop("'input' must be path(s) to existing file(s) when specified as character.")
+      }
+      if (any(dir.exists(input))) {
+        stop("'input' must be path(s) to files, not directories.")
+      }
+    } else if (!is.data.frame(input) && !is.list(input)) {
+      stop("'input' must be a character vector of file paths, a data.frame, or a named list.")
     }
   }
 
@@ -132,7 +139,7 @@ load_or_download_variables <- function(specification,
 
     if ("local" %in% sources) {
       step5 <- load_locally(to_obtain = to_obtain,
-                            inputdata_directory = inputdata_directory,
+                            input = input,
                             quiet = quiet)
       to_obtain <- step5$to_obtain
       full <- dplyr::bind_rows(full, step5$df)
@@ -154,10 +161,10 @@ load_or_download_variables <- function(specification,
     # -> since local loading updates "found", only download if not found locally (local loading takes precedence)
 
     # this might load data even if it has database == "eurostat" or "edgar" (b/c local first)
-    # step1 only makes sense when inputdata_directory has been specified
-    if (!is.null(inputdata_directory)) {
+    # step1 only makes sense when input has been specified
+    if (!is.null(input)) {
       step1 <- load_locally(to_obtain = to_obtain,
-                            inputdata_directory = inputdata_directory,
+                            input = input,
                             quiet = quiet)
       to_obtain <- step1$to_obtain
       full <- dplyr::bind_rows(full, step1$df)
@@ -244,8 +251,10 @@ load_or_download_variables <- function(specification,
   # This must come after saving
   if (constrain.to.minimum.sample) {
     if(!quiet){
-      if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
-        warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+      if(length(availability$n) > 1){
+        if (max(stats::dist(availability$n, method = "maximum") / max(availability$n)) > 0.2) {
+          warning("Unbalanced panel, will lose more than 20\\% of data when making balanced")
+        }
       }
     }
     min_date <- max(availability$min_date) # highest minimum date
@@ -316,7 +325,7 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
     }
     # check whether download worked
     if(is.null(tmp)) {
-      stop("Issue with automatic EUROSTAT download. Likely cause is a lack of/an unstable internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'inputdata_directory'.")
+      stop("Issue with automatic EUROSTAT download. Likely cause is a lack of/an unstable internet connection. Check your internet connection. Also consider saving the downloaded data to disk using 'save_to_disk' and 'input'.")
     }
     # extract each variable that we are looking for in this dataset and apply filters
     indices <- which(to_obtain$database == "eurostat" & to_obtain$dataset_id == eurostat_dataset_ids[i] & to_obtain$found == FALSE)
@@ -331,7 +340,10 @@ download_eurostat <- function(to_obtain, additional_filters, quiet) {
         {if(dplyr::select(., dplyr::any_of("nace_r2")) %>% ncol == 1){dplyr::filter(., .data$nace_r2 == to_obtain$nace_r2[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("ipcc_sector")) %>% ncol == 1){dplyr::filter(., .data$ipcc_sector == to_obtain$ipcc_sector[j])}else{.}} %>%
         {if(dplyr::select(., dplyr::any_of("cpa2_1")) %>% ncol == 1){dplyr::filter(., .data$cpa2_1 == to_obtain$cpa2_1[j])}else{.}} %>%
-        {if(dplyr::select(., dplyr::any_of("siec")) %>% ncol == 1){dplyr::filter(., .data$siec == to_obtain$siec[j])}else{.}}
+        {if(dplyr::select(., dplyr::any_of("siec")) %>% ncol == 1){dplyr::filter(., .data$siec == to_obtain$siec[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("direct")) %>% ncol == 1){dplyr::filter(., .data$direct == to_obtain$direct[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("sector")) %>% ncol == 1){dplyr::filter(., .data$sector == to_obtain$sector[j])}else{.}} %>%
+        {if(dplyr::select(., dplyr::any_of("tra_oper")) %>% ncol == 1){dplyr::filter(., .data$tra_oper == to_obtain$tra_oper[j])}else{.}}
 
       # if user specified additional filters, apply them now
       for (k in seq_along(additional_filters)) {
@@ -525,7 +537,15 @@ download_edgar <- function(to_obtain, quiet) {
         # filter the data
         sub <- tmp %>%
           dplyr::select(dplyr::all_of(c(columns, "ipcc_code_2006_for_standard_report"))) %>%
-          dplyr::filter(.data$Country_code_A3 == countrycode::countrycode(to_obtain$geo[j], "iso2c", "iso3c")) %>%
+
+          # translate country codes for EDGAR
+          dplyr::filter(.data$Country_code_A3 == countrycode::countrycode(
+            sourcevar = dplyr::case_when(
+              to_obtain$geo[j] == "UK" ~ "GB",
+              TRUE ~ to_obtain$geo[j]),
+            origin = "iso2c",
+            destination = "iso3c")) %>%
+
           dplyr::rename(geo = "Country_code_A3") %>%
           dplyr::mutate(geo = to_obtain$geo[j])
         # shape into long format
@@ -626,87 +646,120 @@ download_edgar <- function(to_obtain, quiet) {
 #' downloaded data and \code{$to_obtain} the updated data.frame tracking which
 #' variables still need to be obtained.
 
-load_locally <- function(to_obtain, inputdata_directory, quiet) {
+load_locally <- function(to_obtain, input, quiet) {
+
+  if (!is.null(input)) {
+    if (is.character(input)) {
+      if (!all(file.exists(input))) {
+        stop("'input' must be path(s) to existing file(s) when specified as character.")
+      }
+      if (any(dir.exists(input))) {
+        stop("'input' must be path(s) to files, not directories.")
+      }
+    } else if (!is.data.frame(input) && !is.list(input)) {
+      stop("'input' must be a character vector of file paths, a data.frame, or a named list.")
+    }
+  }
+
+  filepaths <- c()
+  dfs <- list()
+
+  if(is.data.frame(input)){
+    input <- list(input)
+  }
+
+  for(inp in seq_along(input)){
+    cur_input <- input[[inp]]
+    if(is.character(cur_input)){
+      filepaths <- c(filepaths, cur_input)
+    }
+    if(is.data.frame(cur_input)){
+      dfs[[inp]] <- cur_input
+    }
+  }
+
+  # filter on "\\.(Rds|RDS|rds|csv|xlsx|xls)$" in filepaths
+  filepaths <- filepaths[grepl(pattern = "\\.(Rds|RDS|rds|csv|xlsx|xls)$", x = filepaths)]
 
   # initialise empty df
   df_local <- data.frame()
 
-  if (is.data.frame(inputdata_directory)) { # Moritz allowed for direct input of df, keep this for now (but is not in doc?)
+  if(!identical(dfs, list())){
+    for(i in seq_along(dfs)){
+      # determine which codes were found in the dataset
+      codes.found <- unique(dfs[[i]]$na_item)
+      # since found those, can update to_obtain
+      indices <- which(to_obtain$model_varname %in% codes.found & to_obtain$found == FALSE)
+      to_obtain[indices, "found"] <- TRUE
 
-    if(!quiet){
-      cat("Variable provided as 'inputdata_directory' seems to be a data.frame type. Used as data source.\n")
+      # subset the relevant data
+      df_local <- dfs[[i]] %>%
+        dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) %>%  # choose the relevant ones
+        dplyr::mutate(time = as.Date(.data$time)) %>%
+        dplyr::bind_rows(df_local,.) # add to the local df
     }
+  }
 
-    # determine which codes were found in the dataset
-    codes.found <- unique(inputdata_directory$na_item)
-    # since found those, can update to_obtain
-    indices <- which(to_obtain$model_varname %in% codes.found & to_obtain$found == FALSE)
-    to_obtain[indices, "found"] <- TRUE
+  # order different from the download_xxx() functions
+  # here: loop over all files, add them to data if code detected in file & if not found before
 
-    # subset the relevant data
-    df_local <- inputdata_directory %>%
-      dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) %>%  # choose the relevant ones
-      dplyr::mutate(time = as.Date(.data$time))
+  files <- filepaths #list.files(path = cur_input, pattern = "\\.(Rds|RDS|rds|csv|xlsx|xls)$")
 
-  } else {
-
-    # order different from the download_xxx() functions
-    # here: loop over all files, add them to data if code detected in file & if not found before
-
-    files <- list.files(path = inputdata_directory, pattern = "\\.(Rds|RDS|rds|csv|xlsx|xls)$")
+  if(!identical(character(0),  files) & !is.null(files)){
     if(!quiet){
       cat("Local files are used.\n")
       cat("The following files are opened and scanned for relevant data for the model.\n")
-      cat(paste0(files, collapse = " "))
+      cat(paste0(c(basename(files)), collapse = " "))
       cat("\n")
       cat("Note: If these include non-data files (with a likely different structure and hence likely errors), it is recommended to move all data files to a dedicated directory or to save them there using the 'save_to_disk' argument in the first place:\n")
       cat("\n")
       cat("You can quiet this message with quiet = TRUE.")
       cat("\n")
     }
-
-    # loop through local files
-    for (i in seq_along(files)) {
-
-      pth <- file.path(inputdata_directory, files[i])
-      if(grepl("\\.(Rds|RDS|rds)$",pth)){
-        tmp <- readRDS(file = pth)
-      } else if (grepl("\\.(csv)$",pth)){
-        if (!requireNamespace("readr", quietly = TRUE)) {
-          stop("Package \"readr\" must be installed to read in .csv files.")
-        }
-        tmp <- readr::read_csv(pth, show_col_types = FALSE, guess_max = 1000000)
-      } else if (grepl("\\.(xls|xlsx)$",pth)){
-        if (!requireNamespace("readxl", quietly = TRUE)) {
-          stop("Package \"readxl\" must be installed to read in .xls or .xlsx files.")
-        }
-        tmp <- readxl::read_excel(path = pth, guess_max = 1000000)
-      }
-
-      # run a few checks on the loaded data
-      if(!"na_item" %in% names(tmp)){stop(paste0("Locally loaded data not the right format. No 'na_item' column found in file: ",pth,". Set quiet = FALSE to see which files are identified to be loaded." ))}
-      if(!"na_item" %in% names(tmp)){stop(paste0("Locally loaded data not the right format. No 'time' column found in file: ",pth,". Set quiet = FALSE to see which files are identified to be loaded." ))}
-
-      # determine which codes were found in the dataset
-      codes.found <- unique(tmp$na_item)
-
-      # since found those, can update to_obtain
-      indices <- which(to_obtain$model_varname %in% codes.found & to_obtain$found == FALSE)
-      if (length(indices) == 0L) {next} # skip to next iteration if no relevant variables found
-      to_obtain[indices, "found"] <- TRUE
-
-      # subset the relevant data
-      sub <- tmp %>%
-        dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) %>% # choose the relevant ones
-        # ensure column "time" is a Date variable (Moritz had this)
-        dplyr::mutate(time = as.Date(.data$time))
-
-      # add the relevant data
-      df_local <- dplyr::bind_rows(df_local, sub)
-
-    } # end for files
-
   }
+
+
+  # loop through local files
+  for (i in seq_along(files)) {
+
+    pth <- file.path(files[i])
+    if(grepl("\\.(Rds|RDS|rds)$",pth)){
+      tmp <- readRDS(file = pth)
+    } else if (grepl("\\.(csv)$",pth)){
+      if (!requireNamespace("readr", quietly = TRUE)) {
+        stop("Package \"readr\" must be installed to read in .csv files.")
+      }
+      tmp <- readr::read_csv(pth, show_col_types = FALSE, guess_max = 1000000)
+    } else if (grepl("\\.(xls|xlsx)$",pth)){
+      if (!requireNamespace("readxl", quietly = TRUE)) {
+        stop("Package \"readxl\" must be installed to read in .xls or .xlsx files.")
+      }
+      tmp <- readxl::read_excel(path = pth, guess_max = 1000000)
+    }
+
+    # run a few checks on the loaded data
+    if(!"na_item" %in% names(tmp)){stop(paste0("Locally loaded data not the right format. No 'na_item' column found in file: ",pth,". Set quiet = FALSE to see which files are identified to be loaded." ))}
+    if(!"na_item" %in% names(tmp)){stop(paste0("Locally loaded data not the right format. No 'time' column found in file: ",pth,". Set quiet = FALSE to see which files are identified to be loaded." ))}
+
+    # determine which codes were found in the dataset
+    codes.found <- unique(tmp$na_item)
+
+    # since found those, can update to_obtain
+    indices <- which(to_obtain$model_varname %in% codes.found & to_obtain$found == FALSE)
+    if (length(indices) == 0L) {next} # skip to next iteration if no relevant variables found
+    to_obtain[indices, "found"] <- TRUE
+
+    # subset the relevant data
+    sub <- tmp %>%
+      dplyr::filter(.data$na_item %in% to_obtain$model_varname[indices]) %>% # choose the relevant ones
+      # ensure column "time" is a Date variable (Moritz had this)
+      dplyr::mutate(time = as.Date(.data$time))
+
+    # add the relevant data
+    df_local <- dplyr::bind_rows(df_local, sub)
+
+  } # end for files
+
 
   return(list(df = df_local %>% dplyr::distinct(), to_obtain = to_obtain))
 

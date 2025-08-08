@@ -36,7 +36,6 @@ test_that("no errors when running very simple model", {
     a <- run_model(
       specification = spec,
       dictionary = NULL,
-      inputdata_directory = NULL,
       primary_source = "download",
       # save_to_disk = here::here("input_data/test.xlsx"),
       save_to_disk = NULL,
@@ -69,7 +68,6 @@ test_that("no errors when running very simple model", {
     a <- run_model(
       specification = spec,
       dictionary = NULL,
-      inputdata_directory = NULL,
       primary_source = "download",
       save_to_disk = NULL,
       present = FALSE,
@@ -131,7 +129,6 @@ test_that("no errors when running a slightly more complicated model", {
   # b <- run_model(
   #   specification = spec,
   #   dictionary = NULL,
-  #   inputdata_directory = NULL,
   #   filter_list = filter_list,
   #   download = TRUE,
   #   save_to_disk = here::here("input_data/"),
@@ -141,7 +138,6 @@ test_that("no errors when running a slightly more complicated model", {
   expect_silent(d <- run_model(
     specification = spec,
     dictionary = NULL,
-    inputdata_directory = NULL,
     primary_source = "download",
     save_to_disk = NULL,
     present = FALSE,
@@ -205,8 +201,6 @@ test_that("no errors when running a slightly more complicated model", {
   # b <- run_model(
   #   specification = spec,
   #   dictionary = NULL,
-  #   inputdata_directory = NULL,
-  #   filter_list = filter_list,
   #   download = TRUE,
   #   save_to_disk = here::here("input_data/"),
   #   present = FALSE
@@ -215,7 +209,6 @@ test_that("no errors when running a slightly more complicated model", {
   expect_warning(b <- run_model(
     specification = spec,
     dictionary = NULL,
-    inputdata_directory = NULL,
     primary_source = "download",
     save_to_disk = NULL,
     present = FALSE
@@ -223,37 +216,10 @@ test_that("no errors when running a slightly more complicated model", {
 
   expect_output(print(b))
 
-
-
-  # checking what happens when download is false and inputdata is also false
-  # NOTE Jonas: since new download implementation, this is allowed and works now
-  # expect_error(b <- run_model(
-  #   specification = spec,
-  #   dictionary = NULL,
-  #   inputdata_directory = NULL,
-  #   primary_source = "local",
-  #   save_to_disk = NULL,
-  #   present = FALSE
-  # ), "Must specify 'inputdata_directory'")
-
-
-  # checking what happens when download is false and inputdata is also false
-  # NOTE Jonas: since new download implementation, this is allowed and works now
-  # expect_error(b <- run_model(
-  #   specification = spec,
-  #   dictionary = NULL,
-  #   inputdata_directory = NULL,
-  #   primary_source = "local",
-  #   save_to_disk = NULL,
-  #   present = FALSE
-  # ), "Must specify 'inputdata_directory'")
-
-
   # Let's check that an ecm also works
   expect_warning(b <- run_model(
     specification = spec,
     dictionary = NULL,
-    inputdata_directory = NULL,
     primary_source = "download",
     save_to_disk = NULL,
     ardl_or_ecm = "ecm"
@@ -322,8 +288,6 @@ test_that("Incorporate Emissions", {
   # b <- run_model(
   #   specification = spec,
   #   dictionary = NULL,
-  #   inputdata_directory = NULL,
-  #   filter_list = filter_list,
   #   download = TRUE,
   #   save_to_disk = here::here("input_data/"),
   #   present = FALSE
@@ -332,7 +296,6 @@ test_that("Incorporate Emissions", {
   expect_warning(b <- run_model(
     specification = spec,
     dictionary = NULL,
-    inputdata_directory = NULL,
     primary_source = "download",
     save_to_disk = NULL,
     present = FALSE
@@ -430,7 +393,6 @@ test_that("Extensive Model", {
   expect_warning(ab <- run_model(
     specification = spec,
     dictionary = dict_new,
-    inputdata_directory = NULL,
     primary_source = "download",
     save_to_disk = NULL,
     present = FALSE,

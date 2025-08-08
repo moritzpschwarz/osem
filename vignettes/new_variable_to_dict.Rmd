@@ -672,7 +672,7 @@ model <- run_model(specification = specification,
 ```{r, include=FALSE, fig.height=5, out.width="100%"}
 model <- run_model(specification = specification,
                    dictionary = new_dict,
-                   inputdata_directory = model_dat,
+                   input = model_dat,
                    primary_source = "local",
                    plot = FALSE,
 

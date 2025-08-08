@@ -104,7 +104,7 @@ test_that("Test that forecasting works - with fixed data",{
     b <- run_model(
       specification = spec,
       dictionary = NULL,
-      inputdata_directory = sample_input,
+      input = sample_input,
       max.ar = 4,
       max.dl = 4,
       primary_source = "local",
@@ -158,7 +158,7 @@ test_that("Testing nowcasting and dealing with ragged edges works with fixed dat
   expect_silent(
     model <- run_model(specification = specification,
                        dictionary = cur_dict,
-                       inputdata_directory = test_path("testdata", "ragged_edge"),
+                       input = test_path("testdata", "ragged_edge", "ragged_edge_emissions_data.csv"),
                        primary_source = "local",
                        present = FALSE,
                        plot = FALSE,
@@ -453,7 +453,7 @@ test_that("Forecasting example",{
   test <- run_model(specification = specification,
                     dictionary = dict_new,
                     primary_source = "local",
-                    inputdata_directory = testdata_annual %>% dplyr::mutate(time = as.Date(time)),
+                    input = testdata_annual %>% dplyr::mutate(time = as.Date(time)),
                     max.ar = 1, # for annual models, would not go beyond 1 (otherwise sample is too short)
                     max.dl = 1, # for annual models, would not go beyond 1 (otherwise sample is too short)
                     max.block.size = 5,

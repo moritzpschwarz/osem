@@ -35,7 +35,7 @@ test_that("Checking nowcasting issue when one independent variable is not availa
 
   expect_silent(model <- run_model(specification = specification,
                                    dictionary = dict,
-                                   inputdata_directory = testdata_modified_long,
+                                   input = testdata_modified_long,
                                    primary_source = "local",
                                    present = FALSE,
                                    quiet = TRUE,
@@ -101,7 +101,7 @@ test_that("Checking nowcasting issue when no independent variable is available f
 
   expect_silent(model <- run_model(specification = specification,
                                    dictionary = dict,
-                                   inputdata_directory = testdata_modified_long,
+                                   input = testdata_modified_long,
                                    primary_source = "local",
                                    present = FALSE,
                                    plot = FALSE,
@@ -171,7 +171,7 @@ test_that("Checking nowcasting issue when no time period is available for one eq
 
   expect_silent(model <- run_model(specification = specification,
                                    dictionary = dict,
-                                   inputdata_directory = testdata_modified_long,
+                                   input = testdata_modified_long,
                                    primary_source = "local",
                                    present = FALSE,
                                    quiet = TRUE,
@@ -229,7 +229,7 @@ test_that("Testing that scenario changes to the exogenous data work",{
 
   model <- run_model(specification = specification,
                      dictionary = dict,
-                     inputdata_directory = testdata_modified_long,
+                     input = testdata_modified_long,
                      primary_source = "local",
                      present = FALSE,
                      quiet = TRUE,

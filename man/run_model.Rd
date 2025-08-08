@@ -7,7 +7,7 @@
 run_model(
   specification,
   dictionary = NULL,
-  inputdata_directory = paste0(getwd(), "/data/raw"),
+  input = NULL,
   primary_source = c("download", "local"),
   save_to_disk = NULL,
   use_logs = "both",
@@ -26,6 +26,7 @@ run_model(
   present = FALSE,
   quiet = FALSE,
   plot = TRUE,
+  inputdata_directory = NULL,
   cvar.ar = 2,
   coint_seasonal = FALSE,
   coint_deterministic = "const",
@@ -45,8 +46,9 @@ If \code{download == TRUE} then the dictionary also requires a column named
 'dataset_id' that stores the Eurostat dataset id. When \code{NULL}, the
 \link[=dict]{default dictionary} is used.}
 
-\item{inputdata_directory}{A path to .rds input files in which the data is
-stored. Can be \code{NULL} if \code{download == TRUE}.}
+\item{input}{Character vector or list. An argument to directly pass input files for the OSEM model to be run.
+Can include a character path to .xlsx, .csv or .rds input files in which the data is
+stored. Cannot be \code{NULL} if \code{download == FALSE}.}
 
 \item{primary_source}{A string. Determines whether \code{"download"} or
 \code{"local"} data loading takes precedence.}
@@ -111,6 +113,9 @@ These messages are intended to give more information about the estimation
 and data retrieval process.}
 
 \item{plot}{Logical with default = TRUE. Should plots be displayed?}
+
+\item{inputdata_directory}{Deprecated. Use 'input' instead. Functionality of specifying a directory
+is retained for now but this argument will be removed in the future.}
 
 \item{cvar.ar}{Number of lags of the VAR system in levels. Must be > 2.}
 
