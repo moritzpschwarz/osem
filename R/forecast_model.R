@@ -169,7 +169,15 @@ forecast_model <- function(model,
       #tolerance <- sqrt(.Machine$double.eps)
       #res_nozero <- as.numeric(isat_obj$residuals)[abs(as.numeric(isat_obj$residuals)) > tolerance] # exclude 0 residuals (due to IIS) to not underestimate uncertainty
 
-      res_nozero <- isat_obj$residuals[-gets::isatdates(isat_obj)$iis$index]
+      iis_index <- gets::isatdates(isat_obj)$iis$index
+
+      # Only exclude indices if they exist and are numeric
+      if (!is.null(iis_index) && length(iis_index) > 0 && is.numeric(iis_index)) {
+        res_nozero <- isat_obj$residuals[-iis_index]
+      } else {
+        res_nozero <- isat_obj$residuals
+      }
+
       if (length(res_nozero) == 0) {
         # if all observations in isat are saturated - all observations are IIS
         # should not happen, but there might be edge cases
