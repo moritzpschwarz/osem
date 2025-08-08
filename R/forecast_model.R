@@ -170,7 +170,14 @@ forecast_model <- function(model,
       #res_nozero <- as.numeric(isat_obj$residuals)[abs(as.numeric(isat_obj$residuals)) > tolerance] # exclude 0 residuals (due to IIS) to not underestimate uncertainty
 
       res_nozero <- setdiff(isat_obj$residuals, isat_obj$residuals[gets::isatdates(isat_obj)$iis$index])
-      res_draws <- sample(res_nozero, size = uncertainty_sample * n.ahead, replace = TRUE)
+      if (length(res_nozero) == 0) {
+        # if all observations in isat are saturated - all observations are IIS
+        # should not happen, but there might be edge cases
+        res_draws <- rep(0, uncertainty_sample * n.ahead)
+      } else {
+        res_draws <- sample(res_nozero, size = uncertainty_sample * n.ahead, replace = TRUE)
+      }
+
 
       # create a tibble with all res_draws with the same number of rows as n.ahead
       res_names <- paste0("run_", 1:(length(res_draws) / n.ahead))
