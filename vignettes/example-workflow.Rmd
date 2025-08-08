@@ -90,8 +90,8 @@ different values:
 `eurostat::get_eurostat()`,
 * `edgar` if the (emissions) variable is available EDGAR using a link,
 * `local` if the variable is not available from the above two sources and is
-therefore provided as a local file by the user in the directory 
-`inputdata_directory`. This directory is searched for `.rds`, `.csv`,
+therefore provided as a path to a local file or a (list of) `data.frame()`'s by 
+the user using the `input` argument. The argument takes `.rds`, `.csv`,
 and `.xlsx` files, opens them consecutively, and searches for the variable.
 * `NA` if the variable is constructed as an identity/definition
 
@@ -106,7 +106,7 @@ precedence for `eurostat` and `edgar` variables.
 This gives rise to the following combinations of obtaining data:
 
 * variables with `dictionary$database == "local"` are always searched for among
-the local files of `inputdata_directory` and an error is raised if they cannot
+the files of `input` and an error is raised if they cannot
 be found there
 * variables with `dictionary$database == "eurostat"` or 
 `dictionary$database == "egdar"`
@@ -130,8 +130,7 @@ dict %>%
   pull(database)
 ```
 To avoid downloading all those variables again, we will specify 
-`primary_source == "local"` and provide a `inputdata_directory` path to the
-local directory when calling `run_model()`.
+`primary_source == "local"` and provide a `input` path to local files with a path or by explicitly passing `data.frame()`'s to the function when calling `run_model()`.
 
 # Running the Model
 
@@ -956,7 +955,7 @@ dat <- structure(list(time = c("1991-01-01", "1991-04-01", "1991-07-01",
 ```{r run-model, eval = FALSE}
 model <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = NULL,
+                   input = NULL,
                    primary_source = "local",
                    save_to_disk = "./Downloaded_Input.xlsx",
                    present = FALSE,
@@ -969,7 +968,7 @@ class(model)
 ```{r run-model-true, include = FALSE}
 model <- run_model(specification = specification,
                    dictionary = dict,
-                   inputdata_directory = dat,
+                   input = dat,
                    primary_source = "local",
                    present = FALSE,
                    quiet = FALSE, 

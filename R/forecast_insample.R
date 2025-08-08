@@ -67,7 +67,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
         quiet = TRUE,
         plot = FALSE,
 
-        inputdata_directory = model$processed_input_data %>% dplyr::filter(.data$time <= as.Date(time_to_use[j]))
+        input = model$processed_input_data %>% dplyr::filter(.data$time <= as.Date(time_to_use[j]))
       ), silent = TRUE))
 
     if(exists("insample_model")){

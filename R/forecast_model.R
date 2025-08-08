@@ -334,7 +334,7 @@ forecast_model <- function(model,
 
   class(out) <- "osem.forecast"
 
-  try(out$full_forecast_data <- plot(out, return.data = TRUE))
+  try(out$full_forecast_data <- plot(out, return.data = TRUE), silent = TRUE)
 
   if(plot){
     try(print(plot(out)))

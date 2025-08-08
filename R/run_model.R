@@ -12,8 +12,9 @@
 #'   If \code{download == TRUE} then the dictionary also requires a column named
 #'   'dataset_id' that stores the Eurostat dataset id. When \code{NULL}, the
 #'   \link[=dict]{default dictionary} is used.
-#' @param inputdata_directory A path to .rds input files in which the data is
-#'   stored. Can be \code{NULL} if \code{download == TRUE}.
+#' @param input Character vector or list. An argument to directly pass input files for the OSEM model to be run.
+#'   Can include a character path to .xlsx, .csv or .rds input files in which the data is
+#'   stored. Cannot be \code{NULL} if \code{download == FALSE}.
 #' @param primary_source A string. Determines whether \code{"download"} or
 #' \code{"local"} data loading takes precedence.
 #' @param save_to_disk A path to a directory where the final dataset will be
@@ -35,6 +36,8 @@
 #' then \code{\link[gets]{isat}} is first carried out just for SIS (if activated using 'sis = TRUE'),
 #' then the SIS breaks are pre-entered to another \code{\link[gets]{isat}} estimation but not selected over.
 #' After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.
+#' @param inputdata_directory Deprecated. Use 'input' instead. Functionality of specifying a directory
+#' is retained for now but this argument will be removed in the future.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
 #' @param plot Logical with default = TRUE. Should plots be displayed?
@@ -80,7 +83,7 @@
 
 run_model <- function(specification,
                       dictionary = NULL,
-                      inputdata_directory = paste0(getwd(), "/data/raw"),
+                      input = NULL,
                       primary_source = c("download", "local"),
                       save_to_disk = NULL,
 
@@ -103,7 +106,8 @@ run_model <- function(specification,
 
                       present = FALSE,
                       quiet = FALSE,
-                      plot = TRUE
+                      plot = TRUE,
+                      inputdata_directory = NULL
 ) {
 
   primary_source = match.arg(primary_source)
@@ -163,6 +167,30 @@ run_model <- function(specification,
   # # check that the list contains only model objects of type "arx", "getsm", or "isat"
   # if(!is.null(manual_models) & !all(sapply(manual_models, function(x) class(x) %in% c("arx","getsm","isat")))){stop("The list in 'manual_models' must contain only model objects of class 'arx', 'getsm', or 'isat'.")}
 
+  if (!missing(inputdata_directory)) {
+    if(!is.null(inputdata_directory)){
+
+      if (is.character(inputdata_directory)) {
+        if (file.exists(inputdata_directory) & !dir.exists(inputdata_directory)) {
+          stop("The variable 'inputdata_directory' must be a character path to a directory, not to a file.")
+        }
+
+        files <- list.files(path = inputdata_directory, pattern = "\\.(Rds|RDS|rds|csv|xlsx|xls)$")
+        files <- paste0(inputdata_directory, "/", files)
+      }
+      if (is.data.frame(inputdata_directory)){
+        files <- inputdata_directory
+      }
+
+      if(!is.null(input)){
+        input <- unique(append(input, files))
+      } else {
+        input <- files
+      }
+      warning("'inputdata_directory' is deprecated. Use 'input' instead. Functionality is for now being retained but this will be removed in the future.")
+    }
+  }
+
 
   # start of OSEM model -----------------------------------------------------
 
@@ -173,7 +201,7 @@ run_model <- function(specification,
   loaded_data <- load_or_download_variables(specification = module_order,
                                             dictionary = dictionary,
                                             primary_source = primary_source,
-                                            inputdata_directory = inputdata_directory,
+                                            input = input,
                                             save_to_disk = save_to_disk,
                                             quiet = quiet,
                                             constrain.to.minimum.sample = constrain.to.minimum.sample)
@@ -273,7 +301,7 @@ run_model <- function(specification,
   # prepare output of OSEM model
   out <- list()
   out$args <- list(specification = specification, dictionary = dictionary,
-                   inputdata_directory = inputdata_directory,
+                   input = input,
                    primary_source = primary_source,
                    save_to_disk = save_to_disk, present = present,
 

@@ -8,7 +8,7 @@ load_or_download_variables(
   specification,
   dictionary = NULL,
   primary_source = c("download", "local"),
-  inputdata_directory = NULL,
+  input = NULL,
   save_to_disk = NULL,
   quiet = FALSE,
   constrain.to.minimum.sample = TRUE
@@ -27,9 +27,9 @@ id. When \code{NULL}, the \link[=dict]{default dictionary} is used.}
 required variables are first obtained from \code{"download"} and then
 \code{"local"}ly or vice versa.}
 
-\item{inputdata_directory}{A path to .rds, .csv, or .xlsx input files in
-which the data is stored. Can be \code{NULL}, in which case data is obtained
-via download if possible.}
+\item{input}{A character vector of file paths, a data.frame, or a list of
+data.frames or file paths. Required if \code{download == FALSE} and at least
+one variable is specified as coming from a local source.}
 
 \item{save_to_disk}{A path to a directory where the final dataset will be
 saved, including file name and ending. Not saved when \code{NULL}.}
