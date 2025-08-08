@@ -166,8 +166,10 @@ forecast_model <- function(model,
 
       # make samples from the model residuals and add them to the mean prediction
       # use machine precision to determine whether close to zero
-      tolerance <- sqrt(.Machine$double.eps)
-      res_nozero <- as.numeric(isat_obj$residuals)[abs(as.numeric(isat_obj$residuals)) > tolerance] # exclude 0 residuals (due to IIS) to not underestimate uncertainty
+      #tolerance <- sqrt(.Machine$double.eps)
+      #res_nozero <- as.numeric(isat_obj$residuals)[abs(as.numeric(isat_obj$residuals)) > tolerance] # exclude 0 residuals (due to IIS) to not underestimate uncertainty
+
+      res_nozero <- setdiff(isat_obj$residuals, isat_obj$residuals[gets::isatdates(isat_obj)$iis$index])
       res_draws <- sample(res_nozero, size = uncertainty_sample * n.ahead, replace = TRUE)
 
       # create a tibble with all res_draws with the same number of rows as n.ahead
