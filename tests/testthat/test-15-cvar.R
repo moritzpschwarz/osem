@@ -33,7 +33,7 @@ for (t in 2:nobs) {
 
 # combine
 data <- cbind(data_cvar, t(data_ar)) %>%
-  dplyr::mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = nobs))
+  dplyr::mutate(time = seq.Date(from = as.Date("1900-01-01"), by = "quarter", length.out = nobs))
 
 #### Step 2: Unit tests
 test_that("estimate_cvar() raises input errors", {

@@ -68,7 +68,7 @@ data <- data_cvar %>%
   dplyr::mutate(M = 0.1 * dplyr::lag(Y) + 0.1 * dplyr::lag(U) + error) %>%
   dplyr::select(-error) %>%
   tidyr::drop_na() %>%
-  dplyr::mutate(time = seq.Date(from = "1900-01-01", by = "quarter", length.out = nobs - 1))
+  dplyr::mutate(time = seq.Date(from = as.Date("1900-01-01"), by = "quarter", length.out = nobs - 1))
 
 #### Step 2: Unit tests
 test_that("test_unit_roots() raises input error", {
