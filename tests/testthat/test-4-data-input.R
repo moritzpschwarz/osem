@@ -148,8 +148,8 @@ test_that("download_edgar works correctly", {
   # IPCC code allows to sum across sub-codes
   # e.g. code "1.A" sums up all codes "1.A.xxx"
   # check manually whether this worked correctly for EmiCO2Combustion
-  #url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip"
-  #url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v80_FT2022_GHG/IEA_EDGAR_CO2_m_1970_2022.zip"
+  # url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip"
+  # url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v80_FT2022_GHG/IEA_EDGAR_CO2_m_1970_2022.zip"
   url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/EDGAR_2024_GHG/IEA_EDGAR_CO2_m_1970_2023.zip"
   tmp_download <- tempfile(fileext = ".zip")
   download.file(url = url, destfile = tmp_download, mode = "wb")
@@ -268,9 +268,11 @@ test_that("load_locally() works correctly", {
   # should return error because must be file not directory
   expect_error(osem:::load_locally(to_obtain = to_obtain, input = test_path("testdata", "complete"), quiet = FALSE), regexp = " not directories.")
 
-  a <- osem:::load_locally(to_obtain = to_obtain, input = c(test_path("testdata", "complete", "emico2combustion.csv"),
-                                                            test_path("testdata", "complete", "emich4livestock.xlsx"),
-                                                            test_path("testdata", "complete", "emin2ototal.rds")), quiet = FALSE)
+  a <- osem:::load_locally(to_obtain = to_obtain, input = c(
+    test_path("testdata", "complete", "emico2combustion.csv"),
+    test_path("testdata", "complete", "emich4livestock.xlsx"),
+    test_path("testdata", "complete", "emin2ototal.rds")
+  ), quiet = FALSE)
   expect_length(a, 2)
   expect_type(a, "list")
   expect_named(a, c("df", "to_obtain"))
@@ -408,9 +410,11 @@ test_that("load_or_download_variables() works correctly", {
     specification = module_order,
     dictionary = dictionary,
     primary_source = "download", # even though specify download here, will use local directory b/c dictionary specifies "local"
-    input = c(test_path("testdata", "complete", "emico2combustion.csv"),
-              test_path("testdata", "complete", "emich4livestock.xlsx"),
-              test_path("testdata", "complete", "emin2ototal.rds")),
+    input = c(
+      test_path("testdata", "complete", "emico2combustion.csv"),
+      test_path("testdata", "complete", "emich4livestock.xlsx"),
+      test_path("testdata", "complete", "emin2ototal.rds")
+    ),
     save_to_disk = NULL,
     quiet = FALSE,
     constrain.to.minimum.sample = TRUE
@@ -419,9 +423,11 @@ test_that("load_or_download_variables() works correctly", {
     specification = module_order,
     dictionary = dictionary,
     primary_source = "local", # do local loading first, should not matter b/c dictionary specifies "local"
-    input = c(test_path("testdata", "complete", "emico2combustion.csv"),
-              test_path("testdata", "complete", "emich4livestock.xlsx"),
-              test_path("testdata", "complete", "emin2ototal.rds")),
+    input = c(
+      test_path("testdata", "complete", "emico2combustion.csv"),
+      test_path("testdata", "complete", "emich4livestock.xlsx"),
+      test_path("testdata", "complete", "emin2ototal.rds")
+    ),
     save_to_disk = NULL,
     quiet = FALSE,
     constrain.to.minimum.sample = TRUE
@@ -488,8 +494,10 @@ test_that("load_or_download_variables() works correctly", {
     specification = module_order,
     dictionary = dictionary,
     primary_source = "download",
-    input = c(test_path("testdata", "incomplete", "emich4livestock_trunc.rds"),
-              test_path("testdata", "incomplete", "emin2ototal_trunc.rds")),
+    input = c(
+      test_path("testdata", "incomplete", "emich4livestock_trunc.rds"),
+      test_path("testdata", "incomplete", "emin2ototal_trunc.rds")
+    ),
     save_to_disk = NULL,
     quiet = FALSE,
     constrain.to.minimum.sample = FALSE # don't constrain, so can see clearly
@@ -498,8 +506,10 @@ test_that("load_or_download_variables() works correctly", {
     specification = module_order,
     dictionary = dictionary,
     primary_source = "local",
-    input = c(test_path("testdata", "incomplete", "emich4livestock_trunc.rds"),
-              test_path("testdata", "incomplete", "emin2ototal_trunc.rds")),
+    input = c(
+      test_path("testdata", "incomplete", "emich4livestock_trunc.rds"),
+      test_path("testdata", "incomplete", "emin2ototal_trunc.rds")
+    ),
     save_to_disk = NULL,
     quiet = FALSE,
     constrain.to.minimum.sample = FALSE # don't constrain, so can see clearly
@@ -602,7 +612,7 @@ test_that("load_or_download_variables() works with CVAR modules", {
     specification = specification,
     dictionary = dictionary,
     primary_source = "local",
-    inputdata_directory = test_path("testdata", "cvar"),
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
     save_to_disk = NULL,
     quiet = TRUE,
     constrain.to.minimum.sample = FALSE
@@ -620,8 +630,7 @@ test_that("load_or_download_variables() works with CVAR modules", {
 })
 
 
-test_that("The change from inputdata_directory to input worked",{
-
+test_that("The change from inputdata_directory to input worked", {
   specification <- dplyr::tibble(
     type = c(
       "n",
@@ -638,33 +647,39 @@ test_that("The change from inputdata_directory to input worked",{
   )
 
   set.seed(123)
-  testdata <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
-                            FinConsExpGov = rnorm(mean = 100, n = length(time)),
-                            #HICP_Gas = rnorm(mean = 200, n = length(time)),
-                            # simulate an AR1 process with rho = 0.3 and call it HICP_Gas
-                            HICP_Gas = as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 30, mean = 200)),
-                            L1.HICP_Gas = dplyr::lag(HICP_Gas),
-                            FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas -0.2 * L1.HICP_Gas +
-                              as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 0.2, mean = 0)))
+  testdata <- dplyr::tibble(
+    time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
+    FinConsExpGov = rnorm(mean = 100, n = length(time)),
+    # HICP_Gas = rnorm(mean = 200, n = length(time)),
+    # simulate an AR1 process with rho = 0.3 and call it HICP_Gas
+    HICP_Gas = as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 30, mean = 200)),
+    L1.HICP_Gas = dplyr::lag(HICP_Gas),
+    FinConsExpHH = 0.5 + 0.2 * FinConsExpGov + 0.3 * HICP_Gas - 0.2 * L1.HICP_Gas +
+      as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 0.2, mean = 0))
+  )
 
   testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
 
-  expect_warning(run_model(specification = specification,
-                         dictionary = dict,
-                         inputdata_directory = testdata,
-                         primary_source = "local",
-                         present = FALSE,
-                         quiet = TRUE), regexp = "'inputdata_directory' is deprecated. Use 'input' instead")
+  expect_warning(run_model(
+    specification = specification,
+    dictionary = dict,
+    inputdata_directory = testdata,
+    primary_source = "local",
+    present = FALSE,
+    quiet = TRUE
+  ), regexp = "'inputdata_directory' is deprecated. Use 'input' instead")
 
   skip_on_cran()
   skip_on_ci()
   # allow inputdata_directory to be specified, if it is NULL
-  expect_silent(run_model(specification = specification,
-                          dictionary = dict,
-                          inputdata_directory = NULL,
-                          primary_source = "local",
-                          present = FALSE,
-                          quiet = TRUE))
+  expect_silent(run_model(
+    specification = specification,
+    dictionary = dict,
+    inputdata_directory = NULL,
+    primary_source = "local",
+    present = FALSE,
+    quiet = TRUE
+  ))
 
 
 
@@ -685,40 +700,48 @@ test_that("The change from inputdata_directory to input worked",{
   )
 
   # specify inputdata_directory should work but cause a warning
-  expect_warning(run_model(specification = specification,
-                           inputdata_directory = test_path("testdata", "complete"),
-                           primary_source = "local",
-                           plot = FALSE,
-                           present = FALSE,
-                           quiet = TRUE), regexp = "is deprecated. Use 'input' instead.")
+  expect_warning(run_model(
+    specification = specification,
+    inputdata_directory = test_path("testdata", "complete"),
+    primary_source = "local",
+    plot = FALSE,
+    present = FALSE,
+    quiet = TRUE
+  ), regexp = "is deprecated. Use 'input' instead.")
 
   # specify both input and inputdata_directory - should still work but cause a warning
-  expect_warning(run_model(specification = specification,
-                           input =  test_path("testdata", "complete", "emico2combustion.csv"),
-                           inputdata_directory = test_path("testdata", "complete"),
-                           primary_source = "local",
-                           plot = FALSE,
-                           present = FALSE,
-                           quiet = TRUE), regexp = "is deprecated. Use 'input' instead.")
+  expect_warning(run_model(
+    specification = specification,
+    input = test_path("testdata", "complete", "emico2combustion.csv"),
+    inputdata_directory = test_path("testdata", "complete"),
+    primary_source = "local",
+    plot = FALSE,
+    present = FALSE,
+    quiet = TRUE
+  ), regexp = "is deprecated. Use 'input' instead.")
 
 
   # specify both input (as a list) and inputdata_directory - should still work but cause a warning
-  expect_warning(run_model(specification = specification,
-                           input =  list(test_path("testdata", "complete", "emico2combustion.csv"),
-                                         test_path("testdata", "complete", "emin2ototal.rds")),
-                           inputdata_directory = test_path("testdata", "complete"),
-                           primary_source = "local",
-                           plot = FALSE,
-                           present = FALSE,
-                           quiet = TRUE), regexp = "is deprecated. Use 'input' instead.")
+  expect_warning(run_model(
+    specification = specification,
+    input = list(
+      test_path("testdata", "complete", "emico2combustion.csv"),
+      test_path("testdata", "complete", "emin2ototal.rds")
+    ),
+    inputdata_directory = test_path("testdata", "complete"),
+    primary_source = "local",
+    plot = FALSE,
+    present = FALSE,
+    quiet = TRUE
+  ), regexp = "is deprecated. Use 'input' instead.")
 
- # specifiying inputdata_directoy incorrectly should not work
-  expect_error(run_model(specification = specification,
-                           inputdata_directory = test_path("testdata", "complete", "emico2combustion.csv"),
-                           primary_source = "local",
-                           plot = FALSE,
-                           present = FALSE,
-                           quiet = TRUE), regexp = "must be a character path to a directory, not to a file")
-
-
+  # specifiying inputdata_directoy incorrectly should not work
+  expect_error(run_model(
+    specification = specification,
+    inputdata_directory = test_path("testdata", "complete", "emico2combustion.csv"),
+    primary_source = "local",
+    plot = FALSE,
+    present = FALSE,
+    quiet = TRUE
+  ), regexp = "must be a character path to a directory, not to a file")
 })

@@ -18,7 +18,7 @@ test_that("run_model() works with cvar input", {
   a <- expect_no_error(run_model(
     specification = specification,
     dictionary = dictionary,
-    inputdata_directory = test_path("testdata", "cvar"),
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
     primary_source = "local",
     use_logs = "both",
     trend = FALSE,
@@ -37,7 +37,7 @@ test_that("run_model() works with cvar input", {
   b <- expect_no_error(run_model(
     specification = specification,
     dictionary = dictionary,
-    inputdata_directory = test_path("testdata", "cvar"),
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
     primary_source = "local",
     use_logs = "both",
     trend = FALSE,
@@ -56,7 +56,7 @@ test_that("run_model() works with cvar input", {
   c <- expect_no_error(run_model(
     specification = specification,
     dictionary = dictionary,
-    inputdata_directory = test_path("testdata", "cvar"),
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
     primary_source = "local",
     use_logs = "both",
     trend = FALSE,
