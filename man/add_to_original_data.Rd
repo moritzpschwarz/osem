@@ -6,9 +6,9 @@
 \usage{
 add_to_original_data(
   clean_data,
-  isat_object,
+  model_object,
   dep_var_basename = "imports_of_goods_and_services",
-  ardl_or_ecm = "ardl",
+  model_type = "ardl",
   opts_df,
   module
 )
@@ -17,16 +17,14 @@ add_to_original_data(
 \item{clean_data}{An input data.frame or tibble. Must be the output of
 clean_data() to fit all requirements.}
 
-\item{isat_object}{An object of class 'isat'. Most likely should be the
-'best_model' element that is returned by the 'estimate_module()' function.}
+\item{model_object}{Most likely should be returned by the 'estimate_module()'
+function.}
 
 \item{dep_var_basename}{A character string of the name of the dependent
 variable as contained in clean_data() in a level form (i.e. no ln or D in
 front of the name).}
 
-\item{ardl_or_ecm}{Either 'ardl' or 'ecm' to determine whether to estimate
-the model as an Autoregressive Distributed Lag Function (ardl) or as an
-Equilibrium Correction Model (ecm).}
+\item{model_type}{Either 'ardl', 'ecm', or 'cvar'.}
 
 \item{opts_df}{Internal object containing detailed options and information on individual modules.}
 

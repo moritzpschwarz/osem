@@ -1,7 +1,6 @@
-options(timeout=1000)
+options(timeout = 1000)
 
 test_that("no errors when running very simple model", {
-
   skip_on_cran()
   skip_on_ci()
 
@@ -20,6 +19,16 @@ test_that("no errors when running very simple model", {
       "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
       "GValueAdd + Import",
       "FinConsExpHH + GCapitalForm"
+    ),
+    lag = c(
+      "",
+      "",
+      ""
+    ),
+    cvar = c(
+      "",
+      "",
+      ""
     )
   )
 
@@ -28,7 +37,7 @@ test_that("no errors when running very simple model", {
       specification = spec,
       dictionary = NULL,
       primary_source = "download",
-      #save_to_disk = here::here("input_data/test.xlsx"),
+      # save_to_disk = here::here("input_data/test.xlsx"),
       save_to_disk = NULL,
       present = FALSE,
       quiet = TRUE
@@ -49,7 +58,9 @@ test_that("no errors when running very simple model", {
     ),
     independent = c(
       "FinConsExpHH + GCapitalForm"
-    )
+    ),
+    lag = "",
+    cvar = ""
   )
 
 
@@ -65,8 +76,6 @@ test_that("no errors when running very simple model", {
   )
 
   expect_output(print(a))
-
-
 })
 
 test_that("no errors when running a slightly more complicated model", {
@@ -94,6 +103,20 @@ test_that("no errors when running a slightly more complicated model", {
       "FinConsExpHH + GCapitalForm",
       "",
       "FinConsExpGov"
+    ),
+    lag = c(
+      "",
+      "",
+      "",
+      "",
+      ""
+    ),
+    cvar = c(
+      "",
+      "",
+      "",
+      "",
+      ""
     )
   )
 
@@ -153,10 +176,28 @@ test_that("no errors when running a slightly more complicated model", {
       "Emissions",
       "GDP",
       ""
+    ),
+    lag = c(
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ),
+    cvar = c(
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
     )
   )
 
-    # Execute the first time to get the data
+  # Execute the first time to get the data
   # b <- run_model(
   #   specification = spec,
   #   dictionary = NULL,
@@ -175,7 +216,6 @@ test_that("no errors when running a slightly more complicated model", {
 
   expect_output(print(b))
 
-
   # Let's check that an ecm also works
   expect_warning(b <- run_model(
     specification = spec,
@@ -184,8 +224,6 @@ test_that("no errors when running a slightly more complicated model", {
     save_to_disk = NULL,
     ardl_or_ecm = "ecm"
   ), "Unbalanced panel")
-
-
 })
 
 
@@ -220,6 +258,24 @@ test_that("Incorporate Emissions", {
       "FinConsExpGov",
       "GDP",
       ""
+    ),
+    lag = c(
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ),
+    cvar = c(
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
     )
   )
 
@@ -246,21 +302,17 @@ test_that("Incorporate Emissions", {
   ), "Unbalanced panel")
 
   expect_output(print(b))
-
-
-
 })
 
 
 
 test_that("Extensive Model", {
-
   skip_on_cran()
   skip_on_ci()
 
   spec <- dplyr::tibble(
     type = c(
-      #"d",
+      # "d",
       "d",
       "n",
       "n",
@@ -274,7 +326,7 @@ test_that("Extensive Model", {
       "n"
     ),
     dependent = c(
-      #"StatDiscrep",
+      # "StatDiscrep",
       "TOTS",
       "Import",
       "FinConsExpHH",
@@ -284,11 +336,11 @@ test_that("Extensive Model", {
       "GValueAddGov", # as in NAM, technical relationship
       "GValueAddManuf", # more complicated in NAM, see 2.3.3 and 6.3.1
       "DomDemand", # as in NAM
-      "GValueAddConstr" ,
+      "GValueAddConstr",
       "GValueAddWholesaletrade"
     ),
     independent = c(
-      #"TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+      # "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
       "GValueAdd + Import",
       "FinConsExpHH + GCapitalForm",
       "",
@@ -300,15 +352,43 @@ test_that("Extensive Model", {
       "FinConsExpHH + FinConsExpGov + GCapitalForm",
       "DomDemand + LabCostConstr + BuildingPermits", # in NAM some form of YFP2J = 0.3JBOL + 0.2JF P N + 0.3JO + 0.3JOIL. Unclear what this is. Using Building Permits instead
       "DomDemand + Export + LabCostService"
+    ),
+    lag = c(
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ),
+    cvar = c(
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
     )
   )
 
 
   dict %>%
-    dplyr::mutate(p_adj = dplyr::case_when(model_varname == "LabCostManuf" ~ "NV",
-                                           model_varname == "LabCostConstr" ~ "NV",
-                                           model_varname == "LabCostService" ~ "NV",
-                                           TRUE ~ NA)) -> dict_new
+    dplyr::mutate(p_adj = dplyr::case_when(
+      model_varname == "LabCostManuf" ~ "NV",
+      model_varname == "LabCostConstr" ~ "NV",
+      model_varname == "LabCostService" ~ "NV",
+      TRUE ~ NA
+    )) -> dict_new
 
   expect_warning(ab <- run_model(
     specification = spec,
@@ -316,10 +396,9 @@ test_that("Extensive Model", {
     primary_source = "download",
     save_to_disk = NULL,
     present = FALSE,
-    saturation.tpval = 0.1/NROW(clean_data)
+    saturation.tpval = 0.1 / NROW(clean_data)
   ), "Unbalanced panel")
 
   abf <- forecast_model(ab)
   plot(abf, order.as.run = TRUE)
-
 })

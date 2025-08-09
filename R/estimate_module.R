@@ -55,7 +55,8 @@ estimate_module <- function(clean_data,
                             selection.tpval = 0.01,
                             keep,
                             pretest_steps,
-                            quiet = FALSE) {
+                            quiet = FALSE,
+                            module) {
   # Set-up ------------------------------------------------------------------
   log_opts <- use_logs
 
@@ -99,11 +100,19 @@ estimate_module <- function(clean_data,
 
       y.name <- paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename)
 
+      # filter out contemporaneous if lag only
+      if (module$lag != "") {
+        lag_only_vars <- trimws(unlist(strsplit(module$lag, ",")))
+        x_vars_contemp <- setdiff(x_vars_basename, lag_only_vars)
+      } else {
+        x_vars_contemp <- x_vars_basename
+      }
+
       xvars <- clean_data %>%
 
         dplyr::select(
           if(trend){dplyr::all_of("trend")}else{NULL},
-          if(!identical(x_vars_basename,character(0))){dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_basename))}else{NULL},
+          if(!identical(x_vars_contemp,character(0))){dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_contemp))}else{NULL},
           if (i != 0) {
             dplyr::all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
           } else {

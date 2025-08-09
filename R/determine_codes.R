@@ -11,9 +11,19 @@
 #' through the (down)load functions.
 
 determine_variables <- function(specification, dictionary) {
-
   # extract the codes used in the model
-  dep.set <- specification$dependent
+  # cvar rows contain multiple dependent variable entries
+  spec_cvar <- specification %>%
+    dplyr::filter(.data$cvar != "")
+  spec_other <- specification %>%
+    dplyr::filter(.data$cvar == "")
+  dep.set <- spec_other$dependent
+  for (i in seq_along(spec_cvar$dependent)) {
+    vars <- trimws(unlist(strsplit(spec_cvar$dependent[i], ",")))
+    dep.set <- union(dep.set, vars)
+  }
+
+  # regressors
   indep <- specification$independent
   indep.set <- NULL
 
@@ -21,7 +31,8 @@ determine_variables <- function(specification, dictionary) {
     # each element of character vector may contain formula, e.g. "A + B", must split
     vars <- strsplits(
       indep[i],
-      c(" \\- ", " \\+ ", " / ", " \\* "))
+      c(" \\- ", " \\+ ", " / ", " \\* ")
+    )
     indep.set <- union(indep.set, vars)
   }
   indep.set <- gsub(" ", "", indep.set)
@@ -42,18 +53,12 @@ determine_variables <- function(specification, dictionary) {
     dplyr::pull(.data$dependent)
   code.check <- code.check[!code.check %in% idents]
 
-  if(!all(code.check %in% dictionary$model_varname)){
-    stop(paste0("Not all model variables found in the dictionary.", "\n",
-                 "Missing variables: ", paste(setdiff(code.check, to_obtain$model_varname), collapse = ", ")))
+  if (!all(code.check %in% dictionary$model_varname)) {
+    stop(paste0(
+      "Not all model variables found in the dictionary.", "\n",
+      "Missing variables: ", paste(setdiff(code.check, to_obtain$model_varname), collapse = ", ")
+    ))
   }
 
   return(to_obtain)
-
 }
-
-
-
-
-
-
-

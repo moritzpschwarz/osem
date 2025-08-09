@@ -90,7 +90,9 @@ spec <- dplyr::tibble(
     "Export + LabCostManuf", # NAM uses 'export market indicator' not exports - unclear what this is, NAM uses unit labour cost in NOR manufacturing relative to the foreign price level - here is just total labour cost
     "LabCostConstr + BuildingPermits", # in NAM some form of YFP2J = 0.3JBOL + 0.2JF P N + 0.3JO + 0.3JOIL. Unclear what this is. Using Building Permits instead
     "Export + LabCostService"
-  ))
+  ),
+  lag = "",
+  cvar = "")
 ```
 
 To summarise this, we can print out the specification table: 

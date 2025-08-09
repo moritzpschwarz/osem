@@ -29,7 +29,10 @@ Imports:
     utils,
     ggplot2,
     scales,
-    zoo
+    zoo,
+    igraph,
+    vars,
+    urca
 LazyData: true
 Suggests: 
     shiny,
@@ -38,9 +41,9 @@ Suggests:
     writexl,
     DT,
     ggraph,
+    ggforce,
     testthat (>= 3.0.0),
     tidygraph,
-    igraph,
     plotly,
     purrr,
     forecast,
@@ -49,7 +52,8 @@ Suggests:
     statcanR,
     imf.data,
     modelsummary,
-    broom
+    broom,
+    MASS
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Remotes: gsucarrat/gets/gets#70
