@@ -23,71 +23,79 @@ clean_data <- function(raw_data,
                        opts_df,
                        module,
                        use_logs) {
-
   raw_data %>%
     dplyr::select("na_item", "time", "values") %>%
     tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
-
     dplyr::arrange(.data$time) -> raw_data_processed
 
   # save the relevant information whether Log or asinh transformation is needed in opts_df
-  if(use_logs == "none"){
+  if (use_logs == "none") {
     raw_data_processed %>%
       dplyr::mutate(dplyr::across(-"time", ~NA)) %>%
       dplyr::select(-"time") %>%
       dplyr::distinct() %>%
       tidyr::nest() %>%
       setNames("log_opts") %>%
-      dplyr::bind_cols(module,.) -> log_opts_new
+      dplyr::bind_cols(module, .) -> log_opts_new
   }
 
-  if(use_logs == "y"){
+  if (use_logs == "y") {
+    # since module$dependent may contain multiple variables for CvAR, need to extract them separately
+    depvars <- trimws(unlist(strsplit(module$dependent, ",")))
     raw_data_processed %>%
-      dplyr::mutate(dplyr::across(-"time", ~dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
-      dplyr::mutate(dplyr::across(-dplyr::all_of(module$dependent), ~NA)) %>%
+      dplyr::mutate(dplyr::across(-"time", ~ dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
+      dplyr::mutate(dplyr::across(-dplyr::all_of(depvars), ~NA)) %>%
       dplyr::select(-"time") %>%
       dplyr::distinct() %>%
       tidyr::nest() %>%
       setNames("log_opts") %>%
-      dplyr::bind_cols(module,.) -> log_opts_new
+      dplyr::bind_cols(module, .) -> log_opts_new
   }
 
-  if(use_logs == "x"){
+  if (use_logs == "x") {
     raw_data_processed %>%
-      dplyr::mutate(dplyr::across(-"time", ~dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
+      dplyr::mutate(dplyr::across(-"time", ~ dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
       dplyr::mutate(dplyr::across(dplyr::all_of(module$dependent), ~NA)) %>%
       dplyr::select(-"time") %>%
       dplyr::distinct() %>%
       tidyr::nest() %>%
       setNames("log_opts") %>%
-      dplyr::bind_cols(module,.) -> log_opts_new
+      dplyr::bind_cols(module, .) -> log_opts_new
   }
 
-  if(use_logs == "both"){
+  if (use_logs == "both") {
     raw_data_processed %>%
-      dplyr::mutate(dplyr::across(-"time", ~dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
+      dplyr::mutate(dplyr::across(-"time", ~ dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
       dplyr::select(-"time") %>%
       dplyr::distinct() %>%
       tidyr::nest() %>%
       setNames("log_opts") %>%
-      dplyr::bind_cols(module,.) -> log_opts_new
+      dplyr::bind_cols(module, .) -> log_opts_new
   }
 
-  if(!"log_opts" %in% names(opts_df)){opts_df <- opts_df %>% dplyr::mutate(log_opts = NA)}
+  if (!"log_opts" %in% names(opts_df)) {
+    opts_df <- opts_df %>% dplyr::mutate(log_opts = NA)
+  }
 
   opts_df %>%
     dplyr::mutate(log_opts = dplyr::case_when(.data$index == module$index ~ log_opts_new$log_opts, TRUE ~ .data$log_opts)) -> opts_df
 
+  # TODO: this seems to be done always, even when not use_logs == "both"; wasteful
   raw_data_processed %>%
     dplyr::mutate(
-      dplyr::across(-"time", .fns = ~ if (any(. <= 0, na.rm = TRUE)) {asinh(.)} else {log(.)}, .names = "ln.{.col}"),
+      dplyr::across(-"time", .fns = ~ if (any(. <= 0, na.rm = TRUE)) {
+        asinh(.)
+      } else {
+        log(.)
+      }, .names = "ln.{.col}"),
       dplyr::across(-"time", list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
     ) -> intermed
 
   to_be_added <- dplyr::tibble(.rows = nrow(intermed))
+  # TODO: this could be skipped for CVAR because functions create lags/FD directly
   for (i in 1:max(max.ar, max.dl)) {
     intermed %>%
-      dplyr::mutate(dplyr::across(-"time", ~ dplyr::lag(., n = i), .names = paste0("L",i,".{.col}")), .keep = "none") %>%      # dplyr::mutate(dplyr::across(c(dplyr::starts_with("D."), dplyr::starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
+      dplyr::mutate(dplyr::across(-"time", ~ dplyr::lag(., n = i), .names = paste0("L", i, ".{.col}")), .keep = "none") %>% # dplyr::mutate(dplyr::across(c(dplyr::starts_with("D."), dplyr::starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
       # dplyr::select(c(dplyr::starts_with("D."), dplyr::starts_with("ln."))) %>%
       # dplyr::rename_with(.fn = ~ paste0("L", i, ".", .)) %>%
       dplyr::bind_cols(to_be_added, .) -> to_be_added
@@ -102,12 +110,17 @@ clean_data <- function(raw_data,
       select_columns = "q", remove_first_dummy = TRUE,
       remove_selected_columns = TRUE
     ) %>%
-    {if(trend){dplyr::mutate(.,trend = as.numeric(as.factor(.data$time)),.after = "time")} else {.}} -> cleaned_data
+    {
+      if (trend) {
+        dplyr::mutate(., trend = as.numeric(as.factor(.data$time)), .after = "time")
+      } else {
+        .
+      }
+    } -> cleaned_data
 
   out <- list()
   out$df <- cleaned_data
   out$opts_df <- opts_df
 
   return(out)
-
 }

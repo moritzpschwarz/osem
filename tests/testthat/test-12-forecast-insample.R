@@ -3,7 +3,7 @@
 save_png <- function(code, width = 400, height = 400) {
   path <- tempfile(fileext = ".png")
 
-  if(ggplot2::is_ggplot(code)){
+  if (ggplot2::is_ggplot(code)) {
     ggplot2::ggsave(filename = path, plot = code, width = 7, height = 5)
   } else {
     png(path, width = width, height = height)
@@ -19,7 +19,7 @@ expect_snapshot_plot <- function(name, code) {
   # Other packages might affect results
   skip_if_not_installed("ggplot2", "2.0.0")
   # Or maybe the output is different on some operation systems
-  #skip_on_os("windows")
+  # skip_on_os("windows")
   skip_on_ci()
   # You'll need to carefully think about and experiment with these skips
 
@@ -59,20 +59,22 @@ spec <- dplyr::tibble(
   )
 )
 
-mod <- run_model(specification = spec,
-                 dictionary = dict,
-                 input = df,
-                 primary_source = "local",
-                 present = FALSE,
-                 quiet = TRUE, saturation = "IIS")
+mod <- run_model(
+  specification = spec,
+  dictionary = dict,
+  input = df,
+  primary_source = "local",
+  present = FALSE,
+  quiet = TRUE, saturation = "IIS"
+)
 
 set.seed(1298)
-mod_insfc <- forecast_insample(mod, sample_share = 0.95, quiet = TRUE,plot = FALSE,
-                               exog_fill_method = c("AR","auto"))
+mod_insfc <- forecast_insample(mod,
+  sample_share = 0.95, quiet = TRUE, plot = FALSE,
+  exog_fill_method = c("AR", "auto")
+)
 
 test_that("Testing general insample forecasting", {
-
-
   # testing the output
   expect_s3_class(mod_insfc$central, "tbl_df")
   expect_s3_class(mod_insfc, "osem.forecast.insample")
@@ -85,22 +87,28 @@ test_that("Testing general insample forecasting", {
   expect_output(print(mod_insfc, plot = FALSE), "AR Model run with auto.arima")
   expect_output(print(mod_insfc, plot = FALSE), "Outlier and Step Shift Corrected")
 
-  expect_identical(round(mod_insfc$central$values,4),
-                   c(18848.7039, 17813.3682, 17057.7254, 16122.894, 36483.1274,
-                     36460.9715, 36606.3708, 36698.6771, 40878.7839, 39650.6983, 38892.9975,
-                     37953.3681, 24200.5961, 17198.5765, 15322.7043, 22854.2847, 18834.5303,
-                     18447.7795, 18216.5211, 18036.0675, 36483.1274, 36460.9715, 36606.3708,
-                     36698.6771, 40864.6234, 40294.6977, 40099.8152, 39994.3761, 24200.5961,
-                     17198.5765, 15322.7043, 22854.2847, 19094.9165, 17749.3509, 16505.3234,
-                     35448.4381, 35440.3447, 35577.0081, 40883.3706, 39169.0473, 37732.6796,
-                     17588.2429, 15369.8796, 22675.5375, 19873.3993, 19175.4593, 18695.2089,
-                     35448.4381, 35440.3447, 35577.0081, 41684.1266, 40688.8358, 40142.6319,
-                     17588.2429, 15369.8796, 22675.5375, 20697.2741, 21421.1899, 36533.2545,
-                     37264.5981, 45604.978, 46962.4844, 16104.8977, 24249.7797, 19447.7447,
-                     19039.9766, 36533.2545, 37264.5981, 44510.5183, 44801.2147, 16104.8977,
-                     24249.7797, 19797.1984, 38374.0713, 45805.7061, 24294.673, 18827.5626,
-                     38374.0713, 44906.5244, 24294.673))
-
+  expect_identical(
+    mod_insfc$central %>%
+      dplyr::arrange(method, dep_var, time, start, end) %>%
+      dplyr::pull(values) %>%
+      round(digits = 4),
+    c(
+      24200.5961, 17198.5765, 17588.2429, 15322.7043, 15369.8796, 16104.8977,
+      22854.2847, 22675.5375, 24249.7797, 24294.6730, 36483.1274, 36460.9715,
+      35448.4381, 36606.3708, 35440.3447, 36533.2545, 36698.6771, 35577.0081,
+      37264.5981, 38374.0713, 18848.7039, 17813.3682, 19094.9165, 17057.7254,
+      17749.3509, 20697.2741, 16122.8940, 16505.3234, 21421.1899, 19797.1984,
+      40878.7839, 39650.6983, 40883.3706, 38892.9975, 39169.0473, 45604.9780,
+      37953.3681, 37732.6796, 46962.4844, 45805.7061, 24200.5961, 17198.5765,
+      17588.2429, 15322.7043, 15369.8796, 16104.8977, 22854.2847, 22675.5375,
+      24249.7797, 24294.6730, 36483.1274, 36460.9715, 35448.4381, 36606.3708,
+      35440.3447, 36533.2545, 36698.6771, 35577.0081, 37264.5981, 38374.0713,
+      18834.5303, 18447.7795, 19873.3993, 18216.5211, 19175.4593, 19447.7447,
+      18036.0675, 18695.2089, 19039.9766, 18827.5626, 40864.6234, 40294.6977,
+      41684.1266, 40099.8152, 40688.8358, 44510.5183, 39994.3761, 40142.6319,
+      44801.2147, 44906.5244
+    )
+  )
 
   expect_error(plot(mod_insfc, first_date = "asd"))
   expect_error(plot(mod_insfc, first_date_insample_model = "asd"))
@@ -108,20 +116,13 @@ test_that("Testing general insample forecasting", {
 
   skip_on_ci()
   skip_on_cran()
-  expect_snapshot_plot("insample_forecast",code = plot(mod_insfc))
-
-
-
-
-
+  expect_snapshot_plot("insample_forecast", code = plot(mod_insfc))
 })
 
 
 
 
-test_that("Testing insample forecasting error messages",{
-
-
+test_that("Testing insample forecasting error messages", {
   specification <- dplyr::tibble(
     type = c(
       "n"
@@ -135,24 +136,26 @@ test_that("Testing insample forecasting error messages",{
   )
 
   set.seed(123)
-  testdata <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
-                            FinConsExpGov = rnorm(mean = 100, n = length(time)),
-                            HICP_Gas = rnorm(mean = 200, n = length(time)),
-                            FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time), mean = 0, sd = 0.2))
+  testdata <- dplyr::tibble(
+    time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
+    FinConsExpGov = rnorm(mean = 100, n = length(time)),
+    HICP_Gas = rnorm(mean = 200, n = length(time)),
+    FinConsExpHH = 0.5 + 0.2 * FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time), mean = 0, sd = 0.2)
+  )
   testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
 
 
-  model <- run_model(specification = specification,
-                     dictionary = dict,
-                     input = testdata,
-                     primary_source = "local",
-                     present = FALSE,
-                     quiet = TRUE,
-                     saturation = "IIS")
+  model <- run_model(
+    specification = specification,
+    dictionary = dict,
+    input = testdata,
+    primary_source = "local",
+    present = FALSE,
+    quiet = TRUE,
+    saturation = "IIS"
+  )
 
   expect_error(forecast_insample(model, sample_share = 0.99, quiet = TRUE),
-               regexp = "Not enough models available for insample comparison")
-
-
-
+    regexp = "Not enough models available for insample comparison"
+  )
 })

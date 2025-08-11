@@ -21,7 +21,11 @@ run_module(
   opts_df,
   keep,
   pretest_steps,
-  quiet
+  quiet,
+  cvar.ar = 4,
+  freq = NULL,
+  coint_deterministic = "const",
+  coint_significance = "5pct"
 )
 }
 \arguments{
@@ -85,6 +89,17 @@ then the SIS breaks are pre-entered to another \code{\link[gets]{isat}} estimati
 After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.}
 
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
+
+\item{cvar.ar}{Number of lags of the VAR system in levels. Must be > 2.}
+
+\item{freq}{Data frequency if want to include seasonal dummies, NULL
+otherwise.}
+
+\item{coint_deterministic}{Character specifying whether and if yes which
+deterministic component to include in the cointegrating relationship.}
+
+\item{coint_significance}{Significance level for the rank test for
+cointegration. Can only be one of “1pct”, “5pct”, “10pct”.}
 }
 \value{
 Returns a list with two named elements.

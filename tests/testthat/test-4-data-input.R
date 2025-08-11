@@ -3,7 +3,6 @@
 # since downloading is involved, run these tests only locally
 
 test_that("download_eurostat works correctly", {
-
   skip_on_cran()
   skip_on_ci()
 
@@ -31,13 +30,17 @@ test_that("download_eurostat works correctly", {
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
   additional_filters <- character() # no additional filters
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                          dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
 
   # basic functionality
-  a <- osem:::download_eurostat(to_obtain = to_obtain,
-                                additional_filters = additional_filters,
-                                quiet = FALSE)
+  a <- osem:::download_eurostat(
+    to_obtain = to_obtain,
+    additional_filters = additional_filters,
+    quiet = FALSE
+  )
   # expected:
   # download 4 datasets from eurostat: namq_10_a10, namq_10_gdp, prc_hicp_midx, nrg_chdd_m
   # list with two entries: a df and updated "to_obtain" where the eurostat vars are found == TRUE
@@ -58,11 +61,15 @@ test_that("download_eurostat works correctly", {
   dictionary$time <- lubridate::NA_Date_
   dictionary[, "time"] <- as.Date("2022-10-01")
   additional_filters <- c("time")
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                          dictionary = dictionary)
-  a <- osem:::download_eurostat(to_obtain = to_obtain,
-                                additional_filters = additional_filters,
-                                quiet = FALSE)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
+  a <- osem:::download_eurostat(
+    to_obtain = to_obtain,
+    additional_filters = additional_filters,
+    quiet = FALSE
+  )
   # expected as before:
   # download 4 datasets from eurostat: namq_10_a10, namq_10_gdp, prc_hicp_midx, nrg_chdd_m
   # list with two entries: a df and updated "to_obtain" where the eurostat vars are found == TRUE
@@ -76,13 +83,10 @@ test_that("download_eurostat works correctly", {
   expect_true(all(a$to_obtain[which(to_obtain$database == "eurostat"), "found"]))
   expect_false(all(a$to_obtain[which(to_obtain$database != "eurostat"), "found"]))
   expect_identical(unique(a$df$time), as.Date("2022-10-01"))
-
-
 })
 
 
 test_that("download_edgar works correctly", {
-
   skip_on_cran()
   skip_on_ci()
 
@@ -117,8 +121,10 @@ test_that("download_edgar works correctly", {
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict %>% dplyr::mutate(geo = "AT")
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                          dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
 
   # basic functionality
   a <- osem:::download_edgar(to_obtain = to_obtain, quiet = FALSE)
@@ -138,56 +144,68 @@ test_that("download_edgar works correctly", {
   # IPCC code allows to sum across sub-codes
   # e.g. code "1.A" sums up all codes "1.A.xxx"
   # check manually whether this worked correctly for EmiCO2Combustion
-  #url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip"
-  #url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v80_FT2022_GHG/IEA_EDGAR_CO2_m_1970_2022.zip"
+  # url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v70_FT2021_GHG/v70_FT2021_CO2_m_2000_2021.zip"
+  # url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/v80_FT2022_GHG/IEA_EDGAR_CO2_m_1970_2022.zip"
   url <- "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/EDGAR/datasets/EDGAR_2024_GHG/IEA_EDGAR_CO2_m_1970_2023.zip"
   tmp_download <- tempfile(fileext = ".zip")
   download.file(url = url, destfile = tmp_download, mode = "wb")
   tmp_extract <- tempdir()
   unzip(zipfile = tmp_download, files = "IEA_EDGAR_CO2_m_1970_2023.xlsx", exdir = tmp_extract)
-  tmp <- readxl::read_excel(path = file.path(tmp_extract, "IEA_EDGAR_CO2_m_1970_2023.xlsx"),
-                            sheet = "IPCC 2006",
-                            skip = 9)
+  tmp <- readxl::read_excel(
+    path = file.path(tmp_extract, "IEA_EDGAR_CO2_m_1970_2023.xlsx"),
+    sheet = "IPCC 2006",
+    skip = 9
+  )
   manual <- tmp %>%
     dplyr::select("Country_code_A3", "Year", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "ipcc_code_2006_for_standard_report") %>%
     dplyr::filter(Country_code_A3 == "AUT") %>%
     dplyr::rename(geo = Country_code_A3) %>%
     dplyr::mutate(geo = "AT") %>%
-    tidyr::pivot_longer(cols = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
-                        names_to = "Month",
-                        values_to = "values") %>%
-    dplyr::mutate(Month = dplyr::case_when(Month == "Jan" ~ "01",
-                                           Month == "Feb" ~ "02",
-                                           Month == "Mar" ~ "03",
-                                           Month == "Apr" ~ "04",
-                                           Month == "May" ~ "05",
-                                           Month == "Jun" ~ "06",
-                                           Month == "Jul" ~ "07",
-                                           Month == "Aug" ~ "08",
-                                           Month == "Sep" ~ "09",
-                                           Month == "Oct" ~ "10",
-                                           Month == "Nov" ~ "11",
-                                           Month == "Dec" ~ "12",
-                                           TRUE ~ "error")) %>%
+    tidyr::pivot_longer(
+      cols = c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"),
+      names_to = "Month",
+      values_to = "values"
+    ) %>%
+    dplyr::mutate(Month = dplyr::case_when(
+      Month == "Jan" ~ "01",
+      Month == "Feb" ~ "02",
+      Month == "Mar" ~ "03",
+      Month == "Apr" ~ "04",
+      Month == "May" ~ "05",
+      Month == "Jun" ~ "06",
+      Month == "Jul" ~ "07",
+      Month == "Aug" ~ "08",
+      Month == "Sep" ~ "09",
+      Month == "Oct" ~ "10",
+      Month == "Nov" ~ "11",
+      Month == "Dec" ~ "12",
+      TRUE ~ "error"
+    )) %>%
     dplyr::mutate(time = as.Date(paste(Year, Month, "01", sep = "-"))) %>%
     dplyr::select(-Year, -Month) %>%
     dplyr::filter(ipcc_code_2006_for_standard_report %in% c("1.A.1.a", "1.A.1.bc", "1.A.2", "1.A.3.a", "1.A.3.b_noRES", "1.A.3.c", "1.A.3.d", "1.A.3.e", "1.A.4")) %>%
-    dplyr::summarise(values = sum(values), .by = c("geo", "time")) %>%
-    dplyr::mutate(year = lubridate::year(time),
-                  quarter = lubridate::quarter(time)) %>%
-    dplyr::summarise(values = sum(values),
-                     nobs = dplyr::n(),
-                     time = min(time), .by = c("geo", "year", "quarter")) %>%
+    dplyr::summarise(
+      values = sum(values),
+      .by = c("geo", "time")
+    ) %>%
+    dplyr::mutate(
+      year = lubridate::year(time),
+      quarter = lubridate::quarter(time)
+    ) %>%
+    dplyr::summarise(
+      values = sum(values),
+      nobs = dplyr::n(),
+      time = min(time),
+      .by = c("geo", "year", "quarter")
+    ) %>%
     dplyr::filter(nobs == 3L) %>%
     dplyr::select(-year, -quarter, -nobs) %>%
     dplyr::mutate(na_item = "EmiCO2Combustion") %>%
-    dplyr::relocate("time","geo","na_item","values")
+    dplyr::relocate("time", "geo", "na_item", "values")
   expect_identical(a$df %>% dplyr::filter(na_item == "EmiCO2Combustion"), manual)
-
 })
 
 test_that("load_locally() works correctly", {
-
   skip_on_cran()
   skip_on_ci()
 
@@ -234,29 +252,35 @@ test_that("load_locally() works correctly", {
   # make the edgar emissions data to be loaded locally
   indices <- which(dictionary$model_varname %in% c("EmiCO2Combustion", "EmiN2OTotal", "EmiCH4Livestock"))
   dictionary[indices, "database"] <- "local"
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                          dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
 
   # basic functionality
 
   # should return error because must be file not directory
   expect_error(osem:::load_locally(to_obtain = to_obtain, input = test_path("testdata", "complete"), quiet = FALSE), regexp = " not directories.")
 
-  a <- osem:::load_locally(to_obtain = to_obtain, input = c(test_path("testdata", "complete", "emico2combustion.csv"),
-                                                            test_path("testdata", "complete", "emich4livestock.xlsx"),
-                                                            test_path("testdata", "complete", "emin2ototal.rds")), quiet = FALSE)
+  a <- osem:::load_locally(to_obtain = to_obtain, input = c(
+    test_path("testdata", "complete", "emico2combustion.csv"),
+    test_path("testdata", "complete", "emich4livestock.xlsx"),
+    test_path("testdata", "complete", "emin2ototal.rds")
+  ), quiet = FALSE)
   expect_length(a, 2)
   expect_type(a, "list")
   expect_named(a, c("df", "to_obtain"))
   expect_true(all(a$to_obtain[which(to_obtain$database == "local"), "found"]))
   expect_false(all(a$to_obtain[which(to_obtain$database != "local"), "found"]))
-  expect_identical(NROW(a$df), 3L*88L) # each df should be 88 rows
+  expect_identical(NROW(a$df), 3L * 88L) # each df should be 88 rows
 
   # internally, Moritz has allowed for input to be a data.frame
   # check that this also works as intended
   # reset
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                          dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
   # create data.frame
   x <- readRDS(test_path("testdata", "complete", "emin2ototal.rds"))
   # a <- osem:::load_locally(to_obtain = to_obtain, input = list(x,
@@ -270,11 +294,9 @@ test_that("load_locally() works correctly", {
   expect_true(a$to_obtain[which(to_obtain$model_varname == "EmiN2OTotal"), "found", drop = TRUE])
   expect_false(all(a$to_obtain[which(to_obtain$model_varname != "EmiN2OTotal"), "found"]))
   expect_identical(NROW(a$df), 88L) # each df should be 88 rows, only loaded 1
-
 })
 
 test_that("load_or_download_variables() works correctly", {
-
   skip_on_cran()
   skip_on_ci()
 
@@ -310,8 +332,10 @@ test_that("load_or_download_variables() works correctly", {
   )
 
   # check that obtained all variables
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                          dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
   expect_setequal(unique(to_obtain$model_varname), unique(a$na_item))
 
   # specification 2: requires only edgar download
@@ -327,7 +351,9 @@ test_that("load_or_download_variables() works correctly", {
     independent = c(
       "EmiCO2Combustion",
       ""
-    )
+    ),
+    lag = c("", ""),
+    cvar = c("", "")
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
@@ -343,8 +369,10 @@ test_that("load_or_download_variables() works correctly", {
   )
 
   # check that obtained all variables
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                          dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
   expect_setequal(unique(to_obtain$model_varname), unique(a$na_item))
 
   # specification 3: requires only local loading
@@ -372,9 +400,11 @@ test_that("load_or_download_variables() works correctly", {
     specification = module_order,
     dictionary = dictionary,
     primary_source = "download", # even though specify download here, will use local directory b/c dictionary specifies "local"
-    input = c(test_path("testdata", "complete", "emico2combustion.csv"),
-              test_path("testdata", "complete", "emich4livestock.xlsx"),
-              test_path("testdata", "complete", "emin2ototal.rds")),
+    input = c(
+      test_path("testdata", "complete", "emico2combustion.csv"),
+      test_path("testdata", "complete", "emich4livestock.xlsx"),
+      test_path("testdata", "complete", "emin2ototal.rds")
+    ),
     save_to_disk = NULL,
     quiet = FALSE,
     constrain.to.minimum.sample = TRUE
@@ -383,17 +413,21 @@ test_that("load_or_download_variables() works correctly", {
     specification = module_order,
     dictionary = dictionary,
     primary_source = "local", # do local loading first, should not matter b/c dictionary specifies "local"
-    input = c(test_path("testdata", "complete", "emico2combustion.csv"),
-              test_path("testdata", "complete", "emich4livestock.xlsx"),
-              test_path("testdata", "complete", "emin2ototal.rds")),
+    input = c(
+      test_path("testdata", "complete", "emico2combustion.csv"),
+      test_path("testdata", "complete", "emich4livestock.xlsx"),
+      test_path("testdata", "complete", "emin2ototal.rds")
+    ),
     save_to_disk = NULL,
     quiet = FALSE,
     constrain.to.minimum.sample = TRUE
   )
 
   # check that obtained all variables
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                          dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
   expect_setequal(unique(to_obtain$model_varname), unique(a$na_item))
   expect_identical(a, b)
 
@@ -437,8 +471,10 @@ test_that("load_or_download_variables() works correctly", {
   # make the "EmiCH4Livestock" to be loaded locally
   indices <- which(dictionary$model_varname == "EmiCH4Livestock")
   dictionary[indices, "database"] <- "local"
-  to_obtain <- osem:::determine_variables(specification = module_order,
-                                          dictionary = dictionary)
+  to_obtain <- osem:::determine_variables(
+    specification = module_order,
+    dictionary = dictionary
+  )
 
   # should see difference in EmiN2OTotal; EmiCH4Livestock should always be from local
   # use incomplete directory so that we know they come from the local data
@@ -446,8 +482,10 @@ test_that("load_or_download_variables() works correctly", {
     specification = module_order,
     dictionary = dictionary,
     primary_source = "download",
-    input = c(test_path("testdata", "incomplete", "emich4livestock_trunc.rds"),
-              test_path("testdata", "incomplete", "emin2ototal_trunc.rds")),
+    input = c(
+      test_path("testdata", "incomplete", "emich4livestock_trunc.rds"),
+      test_path("testdata", "incomplete", "emin2ototal_trunc.rds")
+    ),
     save_to_disk = NULL,
     quiet = FALSE,
     constrain.to.minimum.sample = FALSE # don't constrain, so can see clearly
@@ -456,8 +494,10 @@ test_that("load_or_download_variables() works correctly", {
     specification = module_order,
     dictionary = dictionary,
     primary_source = "local",
-    input = c(test_path("testdata", "incomplete", "emich4livestock_trunc.rds"),
-              test_path("testdata", "incomplete", "emin2ototal_trunc.rds")),
+    input = c(
+      test_path("testdata", "incomplete", "emich4livestock_trunc.rds"),
+      test_path("testdata", "incomplete", "emin2ototal_trunc.rds")
+    ),
     save_to_disk = NULL,
     quiet = FALSE,
     constrain.to.minimum.sample = FALSE # don't constrain, so can see clearly
@@ -512,12 +552,71 @@ test_that("load_or_download_variables() works correctly", {
     recently <- (Sys.time() < info$mtime + 60) # adds 60 seconds
     expect_true(recently)
   }
+})
 
+test_that("determine_variables() works with CVAR modules", {
+  # specification with two systems
+  specification <- dplyr::tibble(
+    type = c("n", "n", "n", "n", "n", "n", "d", "n", "n", "n", "n"),
+    dependent = c("Y", "Z", "U", "V", "W", "M", "T", "Q", "S", "A", "B"),
+    independent = c("U", "U", "", "U + W", "U + V", "Y + U", "U + V + W", "", "R", "", ""),
+    lag = c("", "", "", "W", "", "U, Y", "", "", "", "", ""),
+    cvar = c("system1", "system1", "", "", "", "", "", "", "", "system2", "system2")
+  )
+  # fun takes output of check_config_table() as input (from within load_or_download_variables())
+  module_order <- osem:::check_config_table(specification)
+  dictionary <- dplyr::tibble(
+    model_varname = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    full_name = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    database = c("local", "local", "local", "local", "local", "local", "local", "local", NA, "local", "local", "local")
+  )
+  a <- osem:::determine_variables(dictionary = dictionary, specification = module_order)
+  expect_s3_class(a, c("tbl", "data.frame"))
+  # we need to find A, B, M, Q, R, S, U, V, W, Y, Z = 11 vars (T is given as identity with db NA)
+  expect_identical(dim(a), c(11L, 4L))
+  expect_setequal(a$model_varname, c("A", "B", "M", "Q", "R", "S", "U", "V", "W", "Y", "Z"))
+  expect_identical(a$database, rep("local", times = 11))
+  expect_identical(a$found, rep(FALSE, times = 11)) # initial state is set to FALSE
+})
+
+test_that("load_or_download_variables() works with CVAR modules", {
+  # specification with two systems
+  specification <- dplyr::tibble(
+    type = c("n", "n", "n", "n", "n", "n", "d", "n", "n", "n", "n"),
+    dependent = c("Y", "Z", "U", "V", "W", "M", "T", "Q", "S", "A", "B"),
+    independent = c("U", "U", "", "U + W", "U + V", "Y + U", "U + V + W", "", "R", "", ""),
+    lag = c("", "", "", "W", "", "U, Y", "", "", "", "", ""),
+    cvar = c("system1", "system1", "", "", "", "", "", "", "", "system2", "system2")
+  )
+  dictionary <- dplyr::tibble(
+    model_varname = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    full_name = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "A", "B"),
+    database = c("local", "local", "local", "local", "local", "local", "local", "local", NA, "local", "local", "local"),
+    geo = "DE"
+  )
+  expect_silent(a <- osem:::load_or_download_variables(
+    specification = specification,
+    dictionary = dictionary,
+    primary_source = "local",
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
+    save_to_disk = NULL,
+    quiet = TRUE,
+    constrain.to.minimum.sample = FALSE
+  ))
+  # resulting data should contain all variables (except T), 100 obs each -> 1100 obs
+  # and have 4 columns: time, na_item, value, geo
+  expect_named(a, c("time", "na_item", "values", "geo"))
+  expect_identical(NROW(a), 1100L)
+  expect_setequal(unique(a$na_item), c("A", "B", "M", "Q", "R", "S", "U", "V", "W", "Y", "Z"))
+  # cross-check with local loading
+  a_manual <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds")) %>%
+    as.data.frame() %>%
+    dplyr::filter(na_item != "N")
+  expect_identical(a, a_manual)
 })
 
 
-test_that("The change from inputdata_directory to input worked",{
-
+test_that("The change from inputdata_directory to input worked", {
   specification <- dplyr::tibble(
     type = c(
       "n",
@@ -534,33 +633,39 @@ test_that("The change from inputdata_directory to input worked",{
   )
 
   set.seed(123)
-  testdata <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
-                            FinConsExpGov = rnorm(mean = 100, n = length(time)),
-                            #HICP_Gas = rnorm(mean = 200, n = length(time)),
-                            # simulate an AR1 process with rho = 0.3 and call it HICP_Gas
-                            HICP_Gas = as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 30, mean = 200)),
-                            L1.HICP_Gas = dplyr::lag(HICP_Gas),
-                            FinConsExpHH  = 0.5 + 0.2*FinConsExpGov + 0.3 * HICP_Gas -0.2 * L1.HICP_Gas +
-                              as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 0.2, mean = 0)))
+  testdata <- dplyr::tibble(
+    time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2023-10-01"), by = "quarter"),
+    FinConsExpGov = rnorm(mean = 100, n = length(time)),
+    # HICP_Gas = rnorm(mean = 200, n = length(time)),
+    # simulate an AR1 process with rho = 0.3 and call it HICP_Gas
+    HICP_Gas = as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 30, mean = 200)),
+    L1.HICP_Gas = dplyr::lag(HICP_Gas),
+    FinConsExpHH = 0.5 + 0.2 * FinConsExpGov + 0.3 * HICP_Gas - 0.2 * L1.HICP_Gas +
+      as.numeric(arima.sim(n = length(time), list(ar = 0.8), sd = 0.2, mean = 0))
+  )
 
   testdata <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
 
-  expect_warning(run_model(specification = specification,
-                         dictionary = dict,
-                         inputdata_directory = testdata,
-                         primary_source = "local",
-                         present = FALSE,
-                         quiet = TRUE), regexp = "'inputdata_directory' is deprecated. Use 'input' instead")
+  expect_warning(run_model(
+    specification = specification,
+    dictionary = dict,
+    inputdata_directory = testdata,
+    primary_source = "local",
+    present = FALSE,
+    quiet = TRUE
+  ), regexp = "'inputdata_directory' is deprecated. Use 'input' instead")
 
   skip_on_cran()
   skip_on_ci()
   # allow inputdata_directory to be specified, if it is NULL
-  expect_silent(run_model(specification = specification,
-                          dictionary = dict,
-                          inputdata_directory = NULL,
-                          primary_source = "local",
-                          present = FALSE,
-                          quiet = TRUE))
+  expect_silent(run_model(
+    specification = specification,
+    dictionary = dict,
+    inputdata_directory = NULL,
+    primary_source = "local",
+    present = FALSE,
+    quiet = TRUE
+  ))
 
 
 
@@ -581,40 +686,48 @@ test_that("The change from inputdata_directory to input worked",{
   )
 
   # specify inputdata_directory should work but cause a warning
-  expect_warning(run_model(specification = specification,
-                           inputdata_directory = test_path("testdata", "complete"),
-                           primary_source = "local",
-                           plot = FALSE,
-                           present = FALSE,
-                           quiet = TRUE), regexp = "is deprecated. Use 'input' instead.")
+  expect_warning(run_model(
+    specification = specification,
+    inputdata_directory = test_path("testdata", "complete"),
+    primary_source = "local",
+    plot = FALSE,
+    present = FALSE,
+    quiet = TRUE
+  ), regexp = "is deprecated. Use 'input' instead.")
 
   # specify both input and inputdata_directory - should still work but cause a warning
-  expect_warning(run_model(specification = specification,
-                           input =  test_path("testdata", "complete", "emico2combustion.csv"),
-                           inputdata_directory = test_path("testdata", "complete"),
-                           primary_source = "local",
-                           plot = FALSE,
-                           present = FALSE,
-                           quiet = TRUE), regexp = "is deprecated. Use 'input' instead.")
+  expect_warning(run_model(
+    specification = specification,
+    input = test_path("testdata", "complete", "emico2combustion.csv"),
+    inputdata_directory = test_path("testdata", "complete"),
+    primary_source = "local",
+    plot = FALSE,
+    present = FALSE,
+    quiet = TRUE
+  ), regexp = "is deprecated. Use 'input' instead.")
 
 
   # specify both input (as a list) and inputdata_directory - should still work but cause a warning
-  expect_warning(run_model(specification = specification,
-                           input =  list(test_path("testdata", "complete", "emico2combustion.csv"),
-                                         test_path("testdata", "complete", "emin2ototal.rds")),
-                           inputdata_directory = test_path("testdata", "complete"),
-                           primary_source = "local",
-                           plot = FALSE,
-                           present = FALSE,
-                           quiet = TRUE), regexp = "is deprecated. Use 'input' instead.")
+  expect_warning(run_model(
+    specification = specification,
+    input = list(
+      test_path("testdata", "complete", "emico2combustion.csv"),
+      test_path("testdata", "complete", "emin2ototal.rds")
+    ),
+    inputdata_directory = test_path("testdata", "complete"),
+    primary_source = "local",
+    plot = FALSE,
+    present = FALSE,
+    quiet = TRUE
+  ), regexp = "is deprecated. Use 'input' instead.")
 
- # specifiying inputdata_directoy incorrectly should not work
-  expect_error(run_model(specification = specification,
-                           inputdata_directory = test_path("testdata", "complete", "emico2combustion.csv"),
-                           primary_source = "local",
-                           plot = FALSE,
-                           present = FALSE,
-                           quiet = TRUE), regexp = "must be a character path to a directory, not to a file")
-
-
+  # specifiying inputdata_directoy incorrectly should not work
+  expect_error(run_model(
+    specification = specification,
+    inputdata_directory = test_path("testdata", "complete", "emico2combustion.csv"),
+    primary_source = "local",
+    plot = FALSE,
+    present = FALSE,
+    quiet = TRUE
+  ), regexp = "must be a character path to a directory, not to a file")
 })

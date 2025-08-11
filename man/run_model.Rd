@@ -26,7 +26,11 @@ run_model(
   present = FALSE,
   quiet = FALSE,
   plot = TRUE,
-  inputdata_directory = NULL
+  inputdata_directory = NULL,
+  cvar.ar = 2,
+  coint_seasonal = FALSE,
+  coint_deterministic = "const",
+  coint_significance = "5pct"
 )
 }
 \arguments{
@@ -110,7 +114,19 @@ and data retrieval process.}
 
 \item{plot}{Logical with default = TRUE. Should plots be displayed?}
 
-\item{inputdata_directory}{Deprecated. Use 'input' instead.}
+\item{inputdata_directory}{Deprecated. Use 'input' instead. Functionality of specifying a directory
+is retained for now but this argument will be removed in the future.}
+
+\item{cvar.ar}{Number of lags of the VAR system in levels. Must be > 2.}
+
+\item{coint_seasonal}{Logical value whether cointegration analysis should
+include seasonal dummies.}
+
+\item{coint_deterministic}{Character specifying whether and if yes which
+deterministic component to include in the cointegrating relationship.}
+
+\item{coint_significance}{Significance level for the rank test for
+cointegration. Can only be one of “1pct”, “5pct”, “10pct”.}
 }
 \value{
 An object of class \link[=new_osem]{osem}, which is a named list
