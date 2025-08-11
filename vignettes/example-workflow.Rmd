@@ -60,9 +60,7 @@ specification <- dplyr::tibble(
       "GValueAdd + Import",
       "FinConsExpHH + GCapitalForm",
       "HDD + HICP_Energy + GValueAdd"
-    ),
-    lag = "",
-    cvar = ""
+    )
   )
 print(specification)
 ```

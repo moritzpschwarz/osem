@@ -99,7 +99,7 @@ otherwise.}
 deterministic component to include in the cointegrating relationship.}
 
 \item{coint_significance}{Significance level for the rank test for
-cointegration.}
+cointegration. Can only be one of “1pct”, “5pct”, “10pct”.}
 }
 \value{
 Returns a list with two named elements.

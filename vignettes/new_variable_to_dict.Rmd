@@ -336,7 +336,7 @@ $$
 EmiCO2IndustryProcess = HICP_{Gas} + HICP_{Electricity} + IndProdIdx
 $$
 
-This is then the specification that we will run - with the type being `n` that denotes an estimated equation and will therefore be estimated: 
+This is then the specification that we will run. Here, the type is set to `n`, which denotes an endogenously modelled (estimated) equation. This is in contrast to `d`, which is used for definitions or identities (i.e., equations that are not estimated but are defined by relationships). 
 
 ```{r}
 specification <- dplyr::tibble(
@@ -348,12 +348,6 @@ specification <- dplyr::tibble(
   ),
   independent = c(
     "HICP_Gas + HICP_Electricity + IndProdIdx"
-  ),
-  lag = c(
-    ""
-  ),
-  cvar = c(
-    ""
   )
 )
 specification

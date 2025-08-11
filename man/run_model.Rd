@@ -126,7 +126,7 @@ include seasonal dummies.}
 deterministic component to include in the cointegrating relationship.}
 
 \item{coint_significance}{Significance level for the rank test for
-cointegration.}
+cointegration. Can only be one of “1pct”, “5pct”, “10pct”.}
 }
 \value{
 An object of class \link[=new_osem]{osem}, which is a named list
@@ -162,16 +162,6 @@ spec <- dplyr::tibble(
     "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
     "GValueAdd + Import",
     "FinConsExpHH + GCapitalForm"
-  ),
-  lag = c(
-    "",
-    "",
-    ""
-  ),
-  cvar = c(
-    "",
-    "",
-    ""
   )
 )
 \donttest{

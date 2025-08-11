@@ -25,9 +25,7 @@ test_that("download_eurostat works correctly", {
       "GValueAdd + Import",
       "FinConsExpHH + GCapitalForm",
       "HDD + CDD + HICP_Energy + GValueAdd"
-    ),
-    lag = c("", "", "", ""),
-    cvar = c("", "", "", "")
+    )
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
@@ -119,9 +117,7 @@ test_that("download_edgar works correctly", {
       "HDD + CDD + HICP_Energy + GValueAdd",
       "HICP_Energy",
       "GValueAdd"
-    ),
-    lag = c("", "", "", "", "", ""),
-    cvar = c("", "", "", "", "", "")
+    )
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict %>% dplyr::mutate(geo = "AT")
@@ -249,9 +245,7 @@ test_that("load_locally() works correctly", {
       "HDD + CDD + HICP_Energy + GValueAdd",
       "HICP_Energy",
       "GValueAdd"
-    ),
-    lag = c("", "", "", "", "", ""),
-    cvar = c("", "", "", "", "", "")
+    )
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
@@ -322,9 +316,7 @@ test_that("load_or_download_variables() works correctly", {
       "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
       "GValueAdd + Import",
       "FinConsExpHH + GCapitalForm"
-    ),
-    lag = c("", "", ""),
-    cvar = c("", "", "")
+    )
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
@@ -396,9 +388,7 @@ test_that("load_or_download_variables() works correctly", {
     independent = c(
       "EmiCO2Combustion",
       ""
-    ),
-    lag = c("", ""),
-    cvar = c("", "")
+    )
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
@@ -474,9 +464,7 @@ test_that("load_or_download_variables() works correctly", {
       "FinConsExpHH + GCapitalForm",
       "HDD + CDD + HICP_Energy + GValueAdd",
       "EmiCH4Livestock" # this will be database == "local", so should always be local
-    ),
-    lag = c("", "", "", "", ""),
-    cvar = c("", "", "", "", "")
+    )
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict
@@ -541,9 +529,7 @@ test_that("load_or_download_variables() works correctly", {
       "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
       "GValueAdd + Import",
       "FinConsExpHH + GCapitalForm"
-    ),
-    lag = c("", "", ""),
-    cvar = c("", "", "")
+    )
   )
   module_order <- osem:::check_config_table(specification)
   dictionary <- osem::dict

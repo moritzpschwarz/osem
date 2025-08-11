@@ -19,7 +19,7 @@
 #' @param coint_deterministic Character specifying whether and if yes which
 #' deterministic component to include in the cointegrating relationship.
 #' @param coint_significance Significance level for the rank test for
-#' cointegration.
+#' cointegration. Can only be one of “1pct”, “5pct”, “10pct”.
 #'
 #' @inheritParams run_model
 #'

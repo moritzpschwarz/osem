@@ -7,7 +7,9 @@
 #' @param dep_var_basename A character string of the name of the dependent
 #'   variable as contained in clean_data() in a level form (i.e. no ln or D in
 #'   front of the name).
-#' @param model_type Either 'ardl', 'ecm', or 'cvar'.
+#' @param model_type Either 'ardl', 'ecm', or 'cvar' to determine whether to estimate
+#'   the model as an Autoregressive Distributed Lag Function (ardl), as an
+#'   Equilibrium Correction Model (ecm), or as a cointegrated vector autoregression.
 #' @param opts_df Internal object containing detailed options and information on individual modules.
 #' @inheritParams run_module
 #' @return A tibble with the fitted values as one column.
