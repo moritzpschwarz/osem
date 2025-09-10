@@ -45,14 +45,14 @@ otherwise.}
 deterministic component to include in the cointegrating relationship.}
 
 \item{coint_significance}{Significance level for the rank test for
-cointegration.}
+cointegration. Can only be one of “1pct”, “5pct”, “10pct”.}
 
 \item{quiet}{Logical with default = FALSE. Should messages be displayed?
 These messages are intended to give more information about the estimation
 and data retrieval process.}
 }
 \value{
-A list containing unit root tests for the variables involved, the
+A list with class 'osem.cvar' containing unit root tests for the variables involved, the
 resulting CVAR model, and the argument setting:
 \item{cointtest}{An object of \link[urca]{ca.jo-class} with the
 cointegration test result.}

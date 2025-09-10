@@ -35,6 +35,11 @@ for (t in 2:nobs) {
 data <- cbind(data_cvar, t(data_ar)) %>%
   dplyr::mutate(time = seq.Date(from = as.Date("1900-01-01"), by = "quarter", length.out = nobs))
 
+# data %>%
+#   tidyr::pivot_longer(-time) %>%
+#   ggplot(aes(x = time, y = value, color = name)) +
+#   geom_line()
+
 #### Step 2: Unit tests
 test_that("estimate_cvar() raises input errors", {
   expect_error(

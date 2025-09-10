@@ -23,7 +23,7 @@
 #'
 #' @inheritParams run_model
 #'
-#' @return A list containing unit root tests for the variables involved, the
+#' @return A list with class 'osem.cvar' containing unit root tests for the variables involved, the
 #' resulting CVAR model, and the argument setting:
 #' \item{cointtest}{An object of \link[urca]{ca.jo-class} with the
 #' cointegration test result.}
@@ -95,6 +95,8 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
     x = yvars, type = "trace", ecdet = coint_deterministic, K = cvar.ar,
     season = freq, dumvar = xvars, spec = "transitory"
   )
+  #urca::summary(cointtest)
+
   # automated rank selection
   coint_cv <- cointtest@cval
   coint_stat <- cointtest@teststat
@@ -146,5 +148,8 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
     coint_deterministic = coint_deterministic,
     coint_significance = coint_significance
   )
+
+  class(out) <- "osem.cvar"
+
   return(out)
 }

@@ -156,7 +156,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
 
   if (!quiet) {
     # plot the graph (if pkgs in Suggests: are installed)
-    if (requireNamespace("tidygraph") & requireNamespace("ggraph") & requireNamespace("ggforce")) {
+    if (requireNamespace("tidygraph", quietly = TRUE) & requireNamespace("ggraph", quietly = TRUE) & requireNamespace("ggforce", quietly = TRUE)) {
       g_tbl <- tidygraph::as_tbl_graph(g_full) %>%
         dplyr::mutate(node_type = ifelse(.data$exog, "exog", "endog"))
       ggraph::ggraph(g_tbl, layout = "sugiyama") +

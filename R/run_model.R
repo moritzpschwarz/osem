@@ -153,7 +153,7 @@ run_model <- function(specification,
 
   # Checking saturation and selection options
   if (!is.logical(gets_selection)) {
-    stop("'gets_selection' must be logical  (so either TRUE or FALSE).")
+    stop("'gets_selection' must be logical (so either TRUE or FALSE).")
   }
   if (!is.null(saturation) & !all(saturation %in% c("IIS", "SIS", "TIS"))) {
     stop("'saturation' must be either NULL to disable Indicator Saturation or a character vector that can take the values 'IIS', 'SIS', or 'TIS'. These can also be combined e.g. c('IIS', 'TIS').")
@@ -376,7 +376,13 @@ run_model <- function(specification,
     gets_selection = gets_selection,
     selection.tpval = selection.tpval,
     constrain.to.minimum.sample = constrain.to.minimum.sample,
-    pretest_steps = pretest_steps
+    pretest_steps = pretest_steps,
+    quiet = quiet,
+    keep = keep,
+    cvar.ar = cvar.ar,
+    coint_seasonal = coint_seasonal,
+    coint_deterministic = coint_deterministic,
+    coint_significance = coint_significance
   )
   out$module_order <- module_order
   out$module_collection <- module_collection
