@@ -81,7 +81,7 @@ test_that("rejects cycles", {
     lag         = "",
     cvar        = ""
   )
-  expect_error(check_config_table(cfg), "Contemporaneous simultaneity detected")
+  expect_error(osem:::check_config_table(cfg), "Contemporaneous simultaneity detected")
 
   # long indirect simultaneity
   cfg <- dplyr::tibble(
@@ -91,7 +91,7 @@ test_that("rejects cycles", {
     lag         = "",
     cvar        = ""
   )
-  expect_error(check_config_table(cfg), "Contemporaneous simultaneity detected")
+  expect_error(osem:::check_config_table(cfg), "Contemporaneous simultaneity detected")
 })
 
 test_that("valid configurations are not rejected and correctly ordered", {
@@ -106,7 +106,7 @@ test_that("valid configurations are not rejected and correctly ordered", {
   cfg <- cfg[c(4, 5, 1, 3, 2), ] # reshuffle, so not already ordered
   out <- check_config_table(cfg)
   expect_identical(out$dependent, c("B", "C", "D", "E", "F"))
-  expect_setequal(colnames(out), c("order", "type", "dependent", "independent", "lag", "cvar", "index"))
+  expect_setequal(colnames(out), c("order", "type", "dependent", "independent", "lag", "cvar", "block_order", "sub_order", "index"))
 
   # direct simultaneity broken when lag only is specified
   cfg <- dplyr::tibble(
@@ -116,7 +116,7 @@ test_that("valid configurations are not rejected and correctly ordered", {
     lag         = c("", "A"),
     cvar        = ""
   )
-  expect_no_error(check_config_table(cfg))
+  expect_no_error(osem:::check_config_table(cfg))
 
   # more complex example with CVARs and lags
   # systems should be reduced to single row; dependent should contain both vars separated by comma
@@ -129,7 +129,7 @@ test_that("valid configurations are not rejected and correctly ordered", {
   )
   out <- check_config_table(cfg)
   expect_identical(NROW(out), NROW(cfg) - 2L) # dimension reduced because of system
-  expect_setequal(colnames(out), c("order", "type", "dependent", "independent", "lag", "cvar", "index"))
+  expect_setequal(colnames(out), c("order", "type", "dependent", "independent", "lag", "cvar", "block_order", "sub_order", "index"))
   # valid ordering is not unique (and I believe topo_sort() can sometimes pick different ones)
   # Check that the set of variables is correct, regardless of order
   expected_vars <- c("M", "Q", "U", "S", "X,Y", "V", "A,B", "W", "T")
@@ -335,7 +335,7 @@ test_that("clean_data() works with CVAR", {
   )
   expect_named(a, c("df", "opts_df"))
   expect_identical(mdl[, 1:7], a$opts_df[, 1:7])
-  expect_named(a$opts_df, c("order", "type", "dependent", "independent", "lag", "cvar", "index", "log_opts"))
+  expect_named(a$opts_df, c("order", "type", "dependent", "independent", "lag", "cvar", "block_order", "sub_order", "index", "log_opts"))
   expect_type(a$opts_df$log_opts, "list")
   expect_length(a$opts_df$log_opts, 1L)
   expect_s3_class(a$opts_df$log_opts[[1]], "tbl")
@@ -485,8 +485,8 @@ test_that("run_module() works with CVAR", {
   expect_identical(a$indep, "U")
   expect_identical(a$diagnostics, list(super.exogeneity = NA)) # should always be NA
   # first module run, so now should have added "log_opts" column to opts_df
-  expect_named(a$opts_df, c("order", "type", "dependent", "independent", "lag", "cvar", "index", "log_opts"))
-  expect_identical(a$opts_df[, 1:7], mdl)
+  expect_named(a$opts_df, c("order", "type", "dependent", "independent", "lag", "cvar", "block_order", "sub_order", "index", "log_opts"))
+  expect_identical(a$opts_df[, 1:9], mdl)
   expect_type(a$opts_df %>% dplyr::pull(log_opts), "list")
   expect_s3_class(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), c("data.frame", "tibble"))
   expect_identical(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), dplyr::tibble(Y = NA, Z = NA, U = NA))
@@ -518,8 +518,8 @@ test_that("run_module() works with CVAR", {
   expect_identical(a$indep, "U")
   expect_identical(a$diagnostics, list(super.exogeneity = NA)) # should always be NA
   # first module run, so now should have added "log_opts" column to opts_df
-  expect_named(a$opts_df, c("order", "type", "dependent", "independent", "lag", "cvar", "index", "log_opts"))
-  expect_identical(a$opts_df[, 1:7], mdl)
+  expect_named(a$opts_df, c("order", "type", "dependent", "independent", "lag", "cvar", "block_order", "sub_order", "index", "log_opts"))
+  expect_identical(a$opts_df[, 1:9], mdl)
   expect_type(a$opts_df %>% dplyr::pull(log_opts), "list")
   expect_s3_class(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), c("data.frame", "tibble"))
   expect_identical(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), dplyr::tibble(Y = "log", Z = "asinh", U = "asinh"))
