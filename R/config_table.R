@@ -214,13 +214,13 @@ check_config_table <- function(config_table, quiet = TRUE) {
     dplyr::select("name", "scc_group") %>%
     dplyr::inner_join(., ., by = "scc_group", relationship = "many-to-many") %>%
     dplyr::filter(.data$name.x < .data$name.y) %>%
-    dplyr::select(from = .data$name.x, to = .data$name.y)
+    dplyr::select(from = "name.x", to = "name.y")
   # create all pairs within CVAR groups
   cvar_pairs <- block_df %>%
     dplyr::select("name", "cvar_group") %>%
     dplyr::inner_join(., ., by = "cvar_group", relationship = "many-to-many") %>%
     dplyr::filter(.data$name.x < .data$name.y) %>%
-    dplyr::select(from = .data$name.x, to = .data$name.y)
+    dplyr::select(from = "name.x", to = "name.y")
   # combine get the unique set
   block_relations <- dplyr::bind_rows(scc_pairs, cvar_pairs) %>%
     dplyr::distinct()
@@ -304,7 +304,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
     dplyr::select(-c("data")) %>%
     dplyr::ungroup() %>%
     dplyr::arrange(.data$order, .data$sub_order) %>%
-    dplyr::rename(block_order = .data$order) %>%
+    dplyr::rename(block_order = "order") %>%
     dplyr::relocate("block_order", .before = "sub_order") %>%
     dplyr::mutate(order = 1:dplyr::n()) %>%
     dplyr::relocate("order")
