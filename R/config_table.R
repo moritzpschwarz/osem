@@ -116,9 +116,9 @@ check_config_table <- function(config_table, quiet = TRUE) {
     # remove vars that are only added as lags
     dplyr::mutate(rhs_vars_contemp = list(setdiff(.data$rhs_vars, .data$lag_vars))) %>%
     # unnest, so have one row per LHS-RHS variable
-    dplyr::ungroup() %>%
-    tidyr::unnest("rhs_vars_contemp", keep_empty = TRUE)
-  # result: tbl where each row is an edge: LHS and contemporaneous RHS pair per row
+    dplyr::ungroup()
+  # result: tbl where each row is a module, RHS vars are still in list
+  # tidyr::unnest("rhs_vars_contemp", keep_empty = TRUE)
 
   # extract all nodes/variables
   # want to show all nodes and later determine order for all vars including AR models
@@ -135,21 +135,23 @@ check_config_table <- function(config_table, quiet = TRUE) {
     # turn the non-subsystem vars with cvar == "" into NA too
     dplyr::mutate(cvar = dplyr::na_if(.data$cvar, ""))
 
-  # focus on nodes that have incoming edges (ignore pure AR or if only lagged RHS vars)
-  edge_tbl <- node_edge_tbl %>%
+  # for Cholesky, focus on contemporaneous edges
+  # also, focus on nodes that have incoming edges (ignore pure AR or if only lagged RHS vars)
+  edge_tbl_contemp <- node_edge_tbl %>%
+    tidyr::unnest("rhs_vars_contemp", keep_empty = TRUE) %>%
     tidyr::drop_na("rhs_vars_contemp") # drop nodes without incoming edges
 
   # create graph from edges
-  g_full <- edge_tbl %>%
+  contemp_edges <- edge_tbl_contemp %>%
     dplyr::mutate(
       from = .data$rhs_vars_contemp,
       to = .data$dependent
     ) %>%
-    dplyr::select("from", "to") %>%
-    igraph::graph_from_data_frame(d = ., directed = TRUE, vertices = node_tbl)
+    dplyr::select("from", "to")
+  g_contemp <- igraph::graph_from_data_frame(d = contemp_edges, directed = TRUE, vertices = node_tbl)
 
-  # check that there are no cycles -> is it a directed, acyclical graph?
-  if (!igraph::is_dag(g_full)) {
+  # check that there are no (contemporaneous) cycles -> is it a directed, acyclical graph?
+  if (!igraph::is_dag(g_contemp)) {
     # wait for "simple_cycles()" function from igraph to tell user where cycle exists
     stop("Contemporaneous simultaneity detected. Model cannot be identified with Cholesky ordering.")
   }
@@ -157,7 +159,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
   if (!quiet) {
     # plot the graph (if pkgs in Suggests: are installed)
     if (requireNamespace("tidygraph", quietly = TRUE) & requireNamespace("ggraph", quietly = TRUE) & requireNamespace("ggforce", quietly = TRUE)) {
-      g_tbl <- tidygraph::as_tbl_graph(g_full) %>%
+      g_tbl <- tidygraph::as_tbl_graph(g_contemp) %>%
         dplyr::mutate(node_type = ifelse(.data$exog, "exog", "endog"))
       ggraph::ggraph(g_tbl, layout = "sugiyama") +
         ggraph::geom_node_circle(ggplot2::aes(r = 0.2, fill = .data$node_type), colour = "black") +
@@ -179,63 +181,166 @@ check_config_table <- function(config_table, quiet = TRUE) {
     }
   }
 
-  #### Part 2 - determine a possible Cholesky ordering -------------------------
+  #### Part 2 - build full dependency graph
+  edge_tbl_full <- node_edge_tbl %>%
+    tidyr::unnest("rhs_vars", keep_empty = TRUE) %>%
+    tidyr::drop_na("rhs_vars") # drop nodes without incoming edges
 
-  # collapse sub-system CVAR nodes into a single node
-  # igraph needs a numeric vector of length = #nodes, same numbers get contracted
-  # step 1: vector of names: dependent if is.na(cvar), otherwise the cvar value
-  subsystems <- ifelse(is.na(igraph::V(g_full)$cvar), igraph::V(g_full)$name, igraph::V(g_full)$cvar)
-  # step 2: make numeric
-  subsystems <- as.integer(factor(subsystems))
-  # step 3: store original member name as attribute
+  # create graph from edges
+  g_full <- edge_tbl_full %>%
+    dplyr::mutate(
+      from = .data$rhs_vars,
+      to = .data$dependent
+    ) %>%
+    dplyr::select("from", "to") %>%
+    igraph::graph_from_data_frame(d = ., directed = TRUE, vertices = node_tbl)
+
+  #### Part 3 - identify "cycles" in lags using strongly connected components (SCC)
+  scc_blocks <- igraph::components(g_full, mode = "strong")$membership
+
+  #### Part 4 - identify all CVAR systems
+  cvar_blocks <- igraph::V(g_full)$cvar # may be NA, create new name then for those
+  cvar_blocks[is.na(cvar_blocks)] <- paste0("single_", igraph::V(g_full)$name[is.na(cvar_blocks)])
+
+  #### Part 5 - identify joint blocks
+  # vars should be in same block if are in same CVAR system or same SCC system (or both)
+  block_df <- dplyr::tibble(
+    name = igraph::V(g_full)$name,
+    scc_group = scc_blocks,
+    cvar_group = cvar_blocks
+  )
+  # create all pairs within SCC groups
+  scc_pairs <- block_df %>%
+    dplyr::select(name, scc_group) %>%
+    dplyr::inner_join(., ., by = "scc_group", relationship = "many-to-many") %>%
+    dplyr::filter(name.x < name.y) %>%
+    dplyr::select(from = name.x, to = name.y)
+  # create all pairs within CVAR groups
+  cvar_pairs <- block_df %>%
+    dplyr::select(name, cvar_group) %>%
+    dplyr::inner_join(., ., by = "cvar_group", relationship = "many-to-many") %>%
+    dplyr::filter(name.x < name.y) %>%
+    dplyr::select(from = name.x, to = name.y)
+  # combine get the unique set
+  block_relations <- dplyr::bind_rows(scc_pairs, cvar_pairs) %>%
+    dplyr::distinct()
+  # create graph
+  g_blocks <- igraph::graph_from_data_frame(block_relations, directed = FALSE, vertices = node_tbl)
+  final_grouping <- igraph::components(g_blocks, mode = "weak")$membership
+
+  #### Part 6 - determine order of blocks
+  # store original member name as attribute
   igraph::V(g_full)$members <- igraph::V(g_full)$name
-  # step 4: contract the nodes of the same sub-system
-  g_sub <- igraph::contract(g_full, subsystems, vertex.attr.comb = list(
-    name = "first",
+  # contract nodes of same block
+  g_components <- igraph::contract(g_full, final_grouping, vertex.attr.comb = list(
+    name = function(x) paste(sort(x), collapse = ","),
     cvar = "first",
-    exog = "first",
-    # keep original member list
-    members = function(x) paste(x, collapse = ",")
+    exog = "first"
   )) %>%
-    igraph::simplify(remove.multiple = TRUE, remove.loops = FALSE) # remove multiple vertices from/into the cvar sub-systems
-  # step 5: rename subsystem node
-  igraph::V(g_sub)$name <- ifelse(is.na(igraph::V(g_sub)$cvar), igraph::V(g_sub)$name, igraph::V(g_sub)$cvar)
-
-  # double check but this should not have changed whether the model is a DAG
-  stopifnot(igraph::is_dag(g_sub))
-
+    igraph::simplify(remove.multiple = TRUE, remove.loops = TRUE)
   # determine order
-  # topological sorting of a DAG: linear ordering of nodes s.t. each node comes before all nodes to which it has edges (sort by outgoing edges)
+  # topological sorting of a DAG: linear ordering of blocks s.t. each block comes before all blocks to which it has edges (sort by outgoing edges)
   # caution: ordering may not be unique! I think this matters for the interpretation of the shock order of Cholesky ordering
-  ordering <- igraph::topo_sort(g_sub, mode = "out")
+  ordering <- igraph::topo_sort(g_components, mode = "out")
+
+  # the blocks include simultaneous systems but between blocks should be a linear ordering
+  stopifnot(igraph::is_dag(g_components))
+
+  #### Part 7 - create final ordering and output table
+
   # remove purely exogenous variables (they are not a row in the config_table)
-  ordering_modelled <- ordering[!igraph::V(g_sub)$exog[ordering]]
-  # expand the CVAR sub-systems into their members again
-  members <- igraph::V(g_sub)$members[ordering_modelled] # elements of CVAR are separated by comma
+  ordering_modelled <- ordering[!igraph::V(g_components)$exog[ordering]]
+  # expand the blocks into their members again
+  members <- igraph::V(g_components)$name[ordering_modelled] # elements of blocks are separated by comma
   members <- strsplit(members, ",")
   # create the numeric ordering vector: increasing ordering, multiple same number for CVAR system
   ordering_numeric <- rep(seq_along(members), times = lengths(members))
   # create lookup table
   ordering_lookup <- setNames(ordering_numeric, unlist(members))
-  # add ordering to config_table
-  config_table %>%
+  # add ordering to config_table based on block ordering
+  final_table <- config_table %>%
     dplyr::mutate(order = ordering_lookup[.data$dependent]) %>%
-    dplyr::arrange(.data$order) %>%
-    # code below can be taken out if want to keep separate rows for cvar system variables
-    dplyr::group_by(.data$order) %>%
+    dplyr::arrange(.data$order)
+  # issue: within a block, we still need to determine the sub-ordering
+  final_table_with_sub_order <- final_table %>%
+    # for each group
+    dplyr::group_by(order) %>%
+    # combine each order-group into a single row using a tibble
+    tidyr::nest() %>%
+    # iterate through each row/tibble (for single modules this tibble has only one row, otherwise more)
+    dplyr::mutate(data_with_sub_order = purrr::map(data, function(block_df) {
+      # function to operate on the tibbles
+      # extract the variables contained in this block
+      block_vars <- block_df$dependent
+      if (nrow(block_df) == 1) { # if only one row, sub-order is trivially 1 & can end
+        return(block_df %>% dplyr::mutate(sub_order = 1))
+      }
+      # if more than one variable in this block, need to determine order of estimation
+      # retain any contemporaneous edges between members of a block
+      internal_edges <- contemp_edges %>%
+        dplyr::filter(from %in% block_vars, to %in% block_vars)
+      # create graph from edges between members of a block
+      internal_graph <- igraph::graph_from_data_frame(internal_edges, directed = TRUE, vertices = block_vars)
+      # now need to determine order within the block
+      # set up zero empty vector, name it, copy internal graph
+      sub_orders <- rep(0, length(block_vars))
+      names(sub_orders) <- block_vars
+      g_temp <- internal_graph
+      current_level <- 1
+      while (igraph::vcount(g_temp) > 0) { # while still nodes/vars in this block
+        # determine all nodes with no internal incoming edges, they can be done first
+        # NOTE: cvar systems don't show up as contemporaneous edges (equ. for X does not specify Y as indep. & vice versa)
+        level_nodes <- igraph::V(g_temp)$name[igraph::degree(g_temp, mode = "in") == 0]
+        if (length(level_nodes) == 0) stop("Internal cycle detected. Should not occur.")
+        sub_orders[level_nodes] <- current_level # give them current level (starting with 1)
+        g_temp <- igraph::delete_vertices(g_temp, level_nodes) # delete those variables from the graph
+        current_level <- current_level + 1 # increase order number for next iteration
+      }
+      block_df %>%
+        dplyr::mutate(sub_order = sub_orders[dependent]) # add sub_order vector as new column to tibble
+    })) %>%
+    # convert to normal tibble using the new tibbles
+    tidyr::unnest(cols = c(data_with_sub_order)) %>%
+    dplyr::select(-data) %>%
+    dplyr::ungroup() %>%
+    dplyr::arrange(.data$order, .data$sub_order) %>%
+    dplyr::rename(block_order = .data$order) %>%
+    dplyr::relocate("block_order", .before = "sub_order") %>%
+    dplyr::mutate(order = 1:dplyr::n()) %>%
+    dplyr::relocate("order")
+  # I think cvar systems should always have the same sub_order number
+  cvar_sub_order_check <- final_table_with_sub_order %>%
+    dplyr::filter(.data$cvar != "" & !is.na(.data$cvar)) %>%
+    dplyr::group_by(.data$cvar) %>%
+    dplyr::summarise(sub_order_num = dplyr::n_distinct(.data$sub_order)) %>%
+    dplyr::pull(sub_order_num)
+  if (any(cvar_sub_order_check > 1)) {
+    stop("Let the developers know about this. This should not happen.")
+  }
+  # contract cvar system as a single row again b/c estimation has to be jointly
+  # cannot simply group by cvar yet because all that are not cvar vars have "" or NA
+  out <- final_table_with_sub_order %>%
+    dplyr::mutate(
+      contraction = dplyr::if_else(!is.na(.data$cvar) & .data$cvar != "", cvar, dependent)
+    ) %>%
+    dplyr::group_by(.data$contraction) %>%
     dplyr::summarise(
       type = dplyr::first(.data$type),
-      dependent = if (dplyr::first(.data$cvar) == "") {
-        dplyr::first(.data$dependent)
-      } else {
-        paste(.data$dependent, collapse = ",")
-      },
+      dependent = paste(sort(.data$dependent), collapse = ","),
       independent = dplyr::first(.data$independent),
       lag = dplyr::first(.data$lag),
       cvar = dplyr::first(.data$cvar),
-      order = dplyr::first(.data$order)
+      block_order = dplyr::first(.data$block_order),
+      sub_order = dplyr::first(.data$sub_order)
     ) %>%
     dplyr::ungroup() %>%
+    dplyr::select(-"contraction") %>%
+    # sort now that have combined cvar systems
+    dplyr::arrange(block_order, sub_order) %>%
+    dplyr::mutate(order = 1:dplyr::n()) %>%
+    dplyr::relocate("order")
+  # final clean-up
+  out %>%
     # this is from old code (wasn't explained why we need this)
     dplyr::mutate(
       independent = gsub("\\+", " + ", .data$independent),
