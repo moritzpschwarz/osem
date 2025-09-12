@@ -148,6 +148,47 @@ test_that("valid configurations are not rejected and correctly ordered", {
   expect_true(which(out$dependent == "U") < which(out$dependent == "T"))
   expect_true(which(out$dependent == "V") < which(out$dependent == "T"))
   expect_true(which(out$dependent == "W") < which(out$dependent == "T"))
+
+  # more complex example with CVARs with weakly exogenous regressor (lagged feedback present), lags
+  # systems should be reduced to single row; dependent should contain both vars separated by comma
+  cfg <- dplyr::tibble(
+    type = c("n", "n", "n", "n", "n", "n", "d", "n", "n", "n", "n", "n", "n", "n"),
+    dependent = c("X", "Y", "U", "V", "W", "M", "T", "Q", "S", "A", "B", "C", "D", "E"),
+    independent = c("U", "U", "", "U + W", "U + V", "Y + U", "U + V + W", "", "R", "X", "X", "E", "E", "C"),
+    lag = c("", "", "", "W", "", "U, Y", "", "", "", "", "", "", "", "C"),
+    cvar = c("system1", "system1", "", "", "", "", "", "", "", "system2", "system2", "system3", "system3", "")
+  )
+  out <- check_config_table(cfg)
+  expect_identical(NROW(out), NROW(cfg) - 3L) # dimension reduced because of system
+  expect_setequal(colnames(out), c("order", "type", "dependent", "independent", "lag", "cvar", "block_order", "sub_order", "index"))
+  # valid ordering is not unique (and I believe topo_sort() can sometimes pick different ones)
+  # Check that the set of variables is correct, regardless of order
+  expected_vars <- c("M", "Q", "U", "S", "X,Y", "V", "A,B", "W", "T", "C,D", "E")
+  expect_setequal(out$dependent, expected_vars)
+  # V must come after its parent U
+  expect_true(which(out$dependent == "U") < which(out$dependent == "V"))
+  # W must come after its parents U and V
+  expect_true(which(out$dependent == "U") < which(out$dependent == "W"))
+  expect_true(which(out$dependent == "V") < which(out$dependent == "W"))
+  # The "X,Y" system must come after its parent U
+  expect_true(which(out$dependent == "U") < which(out$dependent == "X,Y"))
+  # The "A,B" system must come after its parent "X,Y" system
+  expect_true(which(out$dependent == "X,Y") < which(out$dependent == "A,B"))
+  expect_true(which(out$cvar == "system1") < which(out$cvar == "system2"))
+  # The T identity must come after its parents U, V, W
+  expect_true(which(out$dependent == "U") < which(out$dependent == "T"))
+  expect_true(which(out$dependent == "V") < which(out$dependent == "T"))
+  expect_true(which(out$dependent == "W") < which(out$dependent == "T"))
+  # The "X,Y" system must come before the system "A,B"
+  expect_true(which(out$dependent == "X,Y") < which(out$dependent == "A,B"))
+  ### forecasting implies more structure on the ordering
+  # C, D, E should be same block b/c C&D are CVAR with E weakly exog; E should come before C&D b/c it has lagged feedback from C
+  expect_true(which(out$dependent == "E") < which(out$dependent == "C,D"))
+  # X&Y and U should come before M
+  expect_true(which(out$dependent == "X,Y") < which(out$dependent == "M"))
+  expect_true(which(out$dependent == "U") < which(out$dependent == "M"))
+  # V should come before W
+  expect_true(which(out$dependent == "V") < which(out$dependent == "W"))
 })
 
 # "legacy tests" that Moritz had put in the config_table.R file, now extended by columns lag and cvar
