@@ -211,16 +211,16 @@ check_config_table <- function(config_table, quiet = TRUE) {
   )
   # create all pairs within SCC groups
   scc_pairs <- block_df %>%
-    dplyr::select(name, scc_group) %>%
+    dplyr::select("name", "scc_group") %>%
     dplyr::inner_join(., ., by = "scc_group", relationship = "many-to-many") %>%
-    dplyr::filter(name.x < name.y) %>%
-    dplyr::select(from = name.x, to = name.y)
+    dplyr::filter(.data$name.x < .data$name.y) %>%
+    dplyr::select(from = .data$name.x, to = .data$name.y)
   # create all pairs within CVAR groups
   cvar_pairs <- block_df %>%
-    dplyr::select(name, cvar_group) %>%
+    dplyr::select("name", "cvar_group") %>%
     dplyr::inner_join(., ., by = "cvar_group", relationship = "many-to-many") %>%
-    dplyr::filter(name.x < name.y) %>%
-    dplyr::select(from = name.x, to = name.y)
+    dplyr::filter(.data$name.x < .data$name.y) %>%
+    dplyr::select(from = .data$name.x, to = .data$name.y)
   # combine get the unique set
   block_relations <- dplyr::bind_rows(scc_pairs, cvar_pairs) %>%
     dplyr::distinct()
@@ -268,7 +268,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
     # combine each order-group into a single row using a tibble
     tidyr::nest() %>%
     # iterate through each row/tibble (for single modules this tibble has only one row, otherwise more)
-    dplyr::mutate(data_with_sub_order = purrr::map(data, function(block_df) {
+    dplyr::mutate(data_with_sub_order = purrr::map(.data$data, function(block_df) {
       # function to operate on the tibbles
       # extract the variables contained in this block
       block_vars <- block_df$dependent
@@ -278,7 +278,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
       # if more than one variable in this block, need to determine order of estimation
       # retain any contemporaneous edges between members of a block
       internal_edges <- contemp_edges %>%
-        dplyr::filter(from %in% block_vars, to %in% block_vars)
+        dplyr::filter(.data$from %in% block_vars, .data$to %in% block_vars)
       # create graph from edges between members of a block
       internal_graph <- igraph::graph_from_data_frame(internal_edges, directed = TRUE, vertices = block_vars)
       # now need to determine order within the block
@@ -297,11 +297,11 @@ check_config_table <- function(config_table, quiet = TRUE) {
         current_level <- current_level + 1 # increase order number for next iteration
       }
       block_df %>%
-        dplyr::mutate(sub_order = sub_orders[dependent]) # add sub_order vector as new column to tibble
+        dplyr::mutate(sub_order = sub_orders[.data$dependent]) # add sub_order vector as new column to tibble
     })) %>%
     # convert to normal tibble using the new tibbles
-    tidyr::unnest(cols = c(data_with_sub_order)) %>%
-    dplyr::select(-data) %>%
+    tidyr::unnest(cols = "data_with_sub_order") %>%
+    dplyr::select(-c("data")) %>%
     dplyr::ungroup() %>%
     dplyr::arrange(.data$order, .data$sub_order) %>%
     dplyr::rename(block_order = .data$order) %>%
@@ -313,7 +313,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
     dplyr::filter(.data$cvar != "" & !is.na(.data$cvar)) %>%
     dplyr::group_by(.data$cvar) %>%
     dplyr::summarise(sub_order_num = dplyr::n_distinct(.data$sub_order)) %>%
-    dplyr::pull(sub_order_num)
+    dplyr::pull("sub_order_num")
   if (any(cvar_sub_order_check > 1)) {
     stop("Let the developers know about this. This should not happen.")
   }
@@ -321,7 +321,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
   # cannot simply group by cvar yet because all that are not cvar vars have "" or NA
   out <- final_table_with_sub_order %>%
     dplyr::mutate(
-      contraction = dplyr::if_else(!is.na(.data$cvar) & .data$cvar != "", cvar, dependent)
+      contraction = dplyr::if_else(!is.na(.data$cvar) & .data$cvar != "", .data$cvar, .data$dependent)
     ) %>%
     dplyr::group_by(.data$contraction) %>%
     dplyr::summarise(
@@ -336,7 +336,7 @@ check_config_table <- function(config_table, quiet = TRUE) {
     dplyr::ungroup() %>%
     dplyr::select(-"contraction") %>%
     # sort now that have combined cvar systems
-    dplyr::arrange(block_order, sub_order) %>%
+    dplyr::arrange(.data$block_order, .data$sub_order) %>%
     dplyr::mutate(order = 1:dplyr::n()) %>%
     dplyr::relocate("order")
   # final clean-up
