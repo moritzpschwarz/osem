@@ -11,6 +11,8 @@
 #' downloaded data and \code{$to_obtain} the updated data.frame tracking which
 #' variables still need to be obtained.
 
+
+##TODO have check for frequency
 download_statcan <- function(to_obtain, column_filters, quiet) {
 
   # initialise empty df
@@ -68,7 +70,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
           dplyr::mutate(year = lubridate::year(.data$REF_DATE),
                         quarter = lubridate::quarter(.data$REF_DATE)) %>%
           dplyr::group_by(dplyr::across(dplyr::all_of(groupby_columns))) %>%
-          dplyr::summarise(VALUE = sum(.data$VALUE),
+          dplyr::summarise(VALUE = sum(.data$VALUE) / 3, #make the data quarterly,
                            n = dplyr::n(), # record how many months are available in each quarter
                            REF_DATE = min(.data$REF_DATE)) %>%
           dplyr::ungroup()  #%>%
