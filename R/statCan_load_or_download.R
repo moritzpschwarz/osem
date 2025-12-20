@@ -70,7 +70,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
           dplyr::mutate(year = lubridate::year(.data$REF_DATE),
                         quarter = lubridate::quarter(.data$REF_DATE)) %>%
           dplyr::group_by(dplyr::across(dplyr::all_of(groupby_columns))) %>%
-          dplyr::summarise(VALUE = sum(.data$VALUE) / 3, #make the data quarterly,
+          dplyr::summarise(VALUE = sum(.data$VALUE), #make the data quarterly,
                            n = dplyr::n(), # record how many months are available in each quarter
                            REF_DATE = min(.data$REF_DATE)) %>%
           dplyr::ungroup()  #%>%
