@@ -37,7 +37,10 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       dplyr::filter(.data$index == mvar_model_index) %>%
       .$log_opts %>%
       .[[1]] %>%
-      {if(is.null(.)){
+
+      {if(is.data.frame(.)){.[,mvar]} else {.}} %>%
+
+      {if(is.null(.) | is.na(.)){
         "none"
       } else {
         dplyr::select(.,dplyr::all_of(mvar)) %>%
