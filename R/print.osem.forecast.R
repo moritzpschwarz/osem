@@ -11,7 +11,6 @@
 
 print.osem.forecast <- function(x, plot = TRUE, full_names = FALSE, ...){
 
-
   cat("OSEM Model Forecast Output\n")
   cat("-----------------------\n")
 
@@ -53,22 +52,41 @@ print.osem.forecast <- function(x, plot = TRUE, full_names = FALSE, ...){
   } else {
     log_opts_processed <- dplyr::tibble(dep_var = x$orig_model$opts_df$dependent, log_opt = "none")
   }
+  # CENTRAL FORECASTS --------
 
   x$forecast %>%
+
+    # deal with multiple dependent variables
+    tidyr::separate_longer_delim(cols = "dep_var", delim = ",") %>%
+    dplyr::mutate(help_index_multiple_dep = dplyr::n(), .by = "order") %>%
+    dplyr::mutate(
+      central.estimate = purrr::map2(.data$central.estimate, .data$help_index_multiple_dep,
+                                     function(cent_est, n_dep){cent_est[,c(1,n_dep + 1)]}),
+      all.estimates = purrr::map2(.data$all.estimates, .data$help_index_multiple_dep,function(all_est, n_dep){
+        if("dep_var" %in% names(all_est)){
+          # filter out the dep_vars using n_dep in order of occurrence
+          all_est %>%
+            dplyr::filter(all_est %>%
+                            dplyr::distinct(.data$dep_var) %>%
+                            dplyr::pull("dep_var") %>% .[[n_dep]] == .data$dep_var) %>%
+            dplyr::select(-"dep_var")
+        } else {
+          all_est
+        }
+      })
+    ) %>%
+
     dplyr::select("dep_var", "central.estimate") %>%
     tidyr::unnest("central.estimate") %>%
-    dplyr::select(-"dep_var") %>%
-    tidyr::pivot_longer(-c("time"), names_to = "dep_var") %>%
+    tidyr::pivot_longer(-c("time","dep_var")) %>%
     tidyr::drop_na() %>%
     dplyr::full_join(log_opts_processed, by = "dep_var") %>%
     dplyr::mutate(value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
                                            .data$log_opt == "asinh" ~ sinh(.data$value),
                                            .data$log_opt == "none" ~ .data$value)) %>%
-    dplyr::select(-c("log_opt")) %>%
+    dplyr::select(-c("name", "log_opt")) %>%
     tidyr::pivot_wider(id_cols = "time", names_from = "dep_var") %>%
     dplyr::rename("Date" = "time") %>%
-    # remove fully empty rows
-    dplyr::filter(!dplyr::if_all(-.data$Date, is.na)) %>%
     dplyr::arrange(.data$Date) -> fcast_table
 
 

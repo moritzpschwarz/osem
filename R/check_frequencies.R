@@ -18,7 +18,8 @@ check_frequencies <- function(full_data, quiet){
                   diff = dplyr::case_when(.data$diff_num == 1 ~ "day",
                                           .data$diff_num %in% c(28:31) ~ "month",
                                           .data$diff_num %in% c(90:92) ~ "3 months",
-                                          .data$diff_num %in% c(365:366) ~ "year"),
+                                          .data$diff_num %in% c(365:366) ~ "year",
+                                          !is.na(.data$diff_num) ~ "uncertain"),
                   .by = "na_item")  -> frq_df
 
 
@@ -84,7 +85,7 @@ check_frequencies <- function(full_data, quiet){
     dplyr::distinct(.data$diff) %>%
     dplyr::pull(.data$diff) -> frequency
 
-  if(length(frequency) > 1){
+  if(length(frequency[!is.na(frequency)]) > 1){
 
     # if(!quiet){
     #   warning(paste0("\n",

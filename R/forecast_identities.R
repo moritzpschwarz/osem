@@ -40,11 +40,12 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
 
       {if(is.data.frame(.)){.[,mvar]} else {.}} %>%
 
-      {if(is.null(.) | is.na(.)){
+      {if(is.null(.)){
         "none"
-      } else {
-        dplyr::select(.,dplyr::all_of(mvar)) %>%
-          dplyr::pull()}}
+      } else if(is.na(.)){
+        "none"} else {
+          dplyr::select(.,dplyr::all_of(mvar)) %>%
+            dplyr::pull()}}
 
     mvar_euname <- model$module_collection %>%
       dplyr::filter(.data$index == mvar_model_index) %>%
