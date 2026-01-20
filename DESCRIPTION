@@ -49,7 +49,6 @@ Suggests:
     forecast,
     knitr,
     rmarkdown,
-    statcanR,
     imf.data,
     modelsummary,
     broom,
