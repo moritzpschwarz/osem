@@ -80,7 +80,9 @@
 #'   )
 #' )
 #' \donttest{
-#' run_model(specification = spec)
+#' run_model(specification = spec,
+#'           primary_source = "local",
+#'           input = sample_input)
 #' }
 run_model <- function(specification,
                       dictionary = NULL,

@@ -165,6 +165,8 @@ spec <- dplyr::tibble(
   )
 )
 \donttest{
-run_model(specification = spec)
+run_model(specification = spec,
+          primary_source = "local",
+          input = sample_input)
 }
 }
