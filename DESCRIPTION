@@ -3,9 +3,9 @@ Title: Open-Source Empirical Macro (OSEM) Model to forecast macro-economic as we
 Version: 0.0.3
 Date: 2025-02-05
 Authors@R: c(
-    person("Jonas", "Kurle", role = c("aut"), comment = c(ORCID = "0000-0003-2197-2012")),
-    person("Moritz", "Schwarz", , "moritz.schwarz@scmo.eu", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0003-0340-3780"))
+    person(given = "Jonas", family = "Kurle", role = c("aut"), comment = c(ORCID = "0000-0003-2197-2012")),
+    person(given = "Moritz", family = "Schwarz", email = "moritz.schwarz@scmo.eu", role = c("aut", "cre"),
+       comment = c(ORCID = "0000-0003-0340-3780"))
            )
 Description: This package provides the Open Source Empirical Macro (OSEM) Model to forecast macro-economic as well as climate and energy variables. 
 License: AGPL (>= 3)
