@@ -64,7 +64,7 @@ independent = c(
 )
 \donttest{
 a <- run_model(specification = spec,
-primary_source = "local", input = sample_input)
+               input = sample_input)
 plot(forecast_model(a))
 }
 
