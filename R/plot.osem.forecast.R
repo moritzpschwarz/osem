@@ -37,7 +37,7 @@
 #' )
 #'\donttest{
 #' a <- run_model(specification = spec,
-#                 primary_source = "local",
+#'                primary_source = "local",
 #'                input = sample_input)
 #' plot(forecast_model(a))
 #'}
