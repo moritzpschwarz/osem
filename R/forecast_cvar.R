@@ -1,4 +1,19 @@
-
+#' Forecast CVAR Model (internal)
+#'
+#' This internal function generates forecasts from a CVAR (Cointegrated Vector Autoregression) model within the OSEM framework.
+#'
+#' @param model The overall 'osem' model as returned by \code{\link[osem]{run_model}}
+#' @param i Index of the CVAR model within the module collection
+#' @param exog_df_ready Data frame of exogenous variables prepared for forecasting
+#' @param full_exog_predicted_data Full data frame of predicted exogenous variables
+#' @param n.ahead Number of steps ahead to forecast
+#' @param current_spec Current module specification
+#' @param prediction_list List of predictions from previous modules
+#' @param uncertainty_sample Number of uncertainty samples to generate
+#' @param nowcasted_data Nowcasted data for the current module
+#'
+#' @returns  A list with class 'osem.forecast.module' containing the central and all estimates forecasts.
+#'
 forecast_cvar <- function(model,
                           i,
                           exog_df_ready,
@@ -91,92 +106,22 @@ forecast_cvar <- function(model,
       mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
         setNames(mvar_name)
 
-      # if (!mvar_name %in% x_names_vec_nolag) {
-      #   if (paste0("ln.",mvar_name) %in% x_names_vec_nolag) {
-      #
-      #     log_possible <- all(mvar_tibble[, mvar_euname, drop = TRUE] > 0)
-      #     # TODO record that log_possible chose asinh
-      #     if(log_possible){
-      #       mvar_tibble %>%
-      #         dplyr::mutate(dplyr::across(dplyr::all_of(mvar_euname), log, .names = "ln.{.col}")) %>%
-      #         dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
-      #       mvar_all.estimates.tibble %>%
-      #         dplyr::mutate(dplyr::across(dplyr::all_of(paste0(mvar_euname, ".all")), ~purrr::map(.,log), .names = "ln.{.col}")) %>%
-      #         dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname,".all"))) -> mvar_all.estimates.tibble
-      #     } else {
-      #       mvar_tibble %>%
-      #         dplyr::mutate(dplyr::across(dplyr::all_of(mvar_euname), asinh, .names = "ln.{.col}")) %>%
-      #         dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
-      #       mvar_all.estimates.tibble %>%
-      #         dplyr::mutate(dplyr::across(dplyr::all_of(paste0(mvar_euname, ".all")), ~purrr::map(.,asinh), .names = "ln.{.col}")) %>%
-      #         dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname,".all"))) -> mvar_all.estimates.tibble
-      #     }
-      #   } else {
-      #     stop("Error occurred in adding missing/lower estimated variables (likely identities) to a subsequent/higher model. This is likely being caused by either log specification or lag specifiction. Check code.")
-      #   }
-      # }
-
       # this first adds the correct time dimension to mvar_tibble
       exog_df_ready %>%
         dplyr::select("time") %>%
         dplyr::slice((dplyr::n() - (nrow(mvar_tibble)-1)) : dplyr::n()) %>%
         dplyr::bind_cols(mvar_tibble) -> mvar_tibble_time
-
-      #mvar_tibble <- mvar_tibble_time
-
-      # if the variable is already there (e.g. through nowcasting) then combine them
-      #if(all(names(mvar_tibble) %in% names(current_pred_raw))){
-
-      # # now we rename it to then be able to join it
-      # dplyr::rename_with(.cols = dplyr::all_of(names(mvar_tibble)), .fn = ~paste0("new.",.)) %>%
-      #
-      # # then we join it
-      # dplyr::full_join(current_pred_raw %>%
-      #                    dplyr::select("time", dplyr::all_of(names(mvar_tibble))), by = "time") %>%
-      #
-      # dplyr::arrange(.data$time) %>%
-      #
-      # # and combine the two columns so that each value is filled
-      # dplyr::transmute(!!dplyr::sym(names(mvar_tibble)) := dplyr::case_when(
-      #   is.na(.[[names(mvar_tibble)]]) ~ .[[paste0("new.",names(mvar_tibble))]],
-      #   TRUE ~ .[[names(mvar_tibble)]]
-      # )) -> mvar_tibble
-
-      # now we do the same for the all estimates
-      # mvar_tibble_time %>%
-      #   dplyr::bind_cols(mvar_all.estimates.tibble) %>%
-      #   dplyr::rename_with(.cols = dplyr::all_of(names(mvar_all.estimates.tibble)), .fn = ~paste0("new.",.)) %>%
-      #   dplyr::full_join(current_pred_raw_all %>%
-      #                      dplyr::select("time", dplyr::all_of(names(mvar_tibble))), by = "time") %>%
-      #
-      #   dplyr::arrange(.data$time) %>%
-      #
-      #   dplyr::transmute(!!dplyr::sym(names(mvar_all.estimates.tibble)) := dplyr::case_when(
-      #     is.na(.[[names(mvar_tibble)]]) ~ .[[paste0("new.",names(mvar_all.estimates.tibble))]],
-      #     TRUE ~ purrr::map(.[[names(mvar_tibble)]], ~ .x)  # Wrap each individual value in a list
-      #   )) -> mvar_all.estimates.tibble
-
-      #   current_pred_raw %>%
-      #     dplyr::select(-dplyr::all_of(names(mvar_tibble))) -> current_pred_raw
-      #
-      #   current_pred_raw_all %>%
-      #     dplyr::select(-dplyr::all_of(names(mvar_tibble))) -> current_pred_raw_all
-      #
-      # }
-      #
-      # current_pred_raw <- dplyr::bind_cols(current_pred_raw,mvar_tibble)
-      # current_pred_raw_all <- dplyr::bind_cols(current_pred_raw_all,mvar_all.estimates.tibble)
     }
   }
 
   # central estimate
-  cvar_pred <- predict(varm, dumvar = as.matrix(mvar_tibble))
+  cvar_pred <- stats::predict(varm, dumvar = as.matrix(mvar_tibble))
 
   dplyr::tibble(names = names(cvar_pred$fcst),
                 models = cvar_pred$fcst) %>%
-    dplyr::mutate(fcst_values = purrr::map(models, ~ .x[,"fcst"])) %>%
+    dplyr::mutate(fcst_values = purrr::map(.data$models, ~ .x[,"fcst"])) %>%
     dplyr::select(-"models") %>%
-    tidyr::unnest(fcst_values)  -> cvar_forecasts
+    tidyr::unnest(.data$fcst_values)  -> cvar_forecasts
 
   cvar_forecasts <- dplyr::tibble(
     names = names(cvar_pred$fcst),
@@ -184,13 +129,13 @@ forecast_cvar <- function(model,
   ) %>%
     dplyr::mutate(
       # Add time index and extract all columns as tibbles
-      fcst_df = purrr::map(models, ~ {
+      fcst_df = purrr::map(.data$models, ~ {
         dplyr::as_tibble(.x) %>%
           dplyr::mutate(time = seq_len(nrow(.x)))
       })
     ) %>%
-    dplyr::select(-models) %>%
-    tidyr::unnest(fcst_df)
+    dplyr::select(-"models") %>%
+    tidyr::unnest(.data$fcst_df)
 
   # all estimates - cycle through mvar_all.estimates
   for (j in seq(uncertainty_sample)) {
@@ -206,7 +151,7 @@ forecast_cvar <- function(model,
       dplyr::rename_with(.cols = 2, ~gsub("\\.all","",.)) -> mvar_all.estimates.single.time
 
     # predict
-    cvar_pred.all <- predict(varm, dumvar = as.matrix(mvar_all.estimates.single.time[,2]))
+    cvar_pred.all <- stats::predict(varm, dumvar = as.matrix(mvar_all.estimates.single.time[,2]))
 
     # store results
     if(j == 1){
@@ -216,13 +161,13 @@ forecast_cvar <- function(model,
       ) %>%
         dplyr::mutate(
           # Add time index and extract all columns as tibbles
-          fcst_df = purrr::map(models, ~ {
+          fcst_df = purrr::map(.data$models, ~ {
             dplyr::as_tibble(.x) %>%
               dplyr::mutate(time = seq_len(nrow(.x)))
           })
         ) %>%
-        dplyr::select(-models) %>%
-        tidyr::unnest(fcst_df) %>%
+        dplyr::select(-"models") %>%
+        tidyr::unnest(.data$fcst_df) %>%
         dplyr::mutate(iteration = j)
     } else {
       cvar_forecasts.j <- dplyr::tibble(
@@ -231,13 +176,13 @@ forecast_cvar <- function(model,
       ) %>%
         dplyr::mutate(
           # Add time index and extract all columns as tibbles
-          fcst_df = purrr::map(models, ~ {
+          fcst_df = purrr::map(.data$models, ~ {
             dplyr::as_tibble(.x) %>%
               dplyr::mutate(time = seq_len(nrow(.x)))
           })
         ) %>%
-        dplyr::select(-models) %>%
-        tidyr::unnest(fcst_df) %>%
+        dplyr::select(-"models") %>%
+        tidyr::unnest(.data$fcst_df) %>%
         dplyr::mutate(iteration = j)
 
       cvar_forecasts.all <- dplyr::bind_rows(cvar_forecasts.all, cvar_forecasts.j)

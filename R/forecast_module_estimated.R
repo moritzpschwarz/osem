@@ -1,3 +1,20 @@
+#' Forecast module for estimated relationships
+#'
+#' This internal function handles forecasts from estimated models (ISAT and CVAR).
+#'
+#' @param model The full OSEM model object
+#' @param i The order of the current module being forecasted
+#' @param exog_df_ready The exogenous data frame prepared for forecasting
+#' @param exog_df_ready_full The full exogenous data frame prepared for forecasting
+#' @param n.ahead Number of steps ahead to forecast
+#' @param current_spec The current module specification
+#' @param prediction_list The collection of all predictions
+#' @param uncertainty_sample The uncertainty sample for forecasts
+#' @param nowcasted Nowcasted data for the forecast period
+#' @param ci.levels Confidence interval levels for the forecasts
+#'
+#' @returns A tibble containing the updated prediction_list object with forecasts for the current module
+#'
 forecast_module_estimated <- function(model,
                                      i,
                                      exog_df_ready,
@@ -58,7 +75,7 @@ forecast_module_estimated <- function(model,
     pred_obj$all %>%
       tidyr::pivot_wider(id_cols = c("time","na_item"), names_from = "iteration", names_prefix = "run_", values_from = "fcst") %>%
       dplyr::mutate(time = rep(exog_df_ready$time,dplyr::n()/length(exog_df_ready$time))) %>%
-      dplyr::rename(dep_var = na_item) -> pred_draw_matrix
+      dplyr::rename(dep_var = "na_item") -> pred_draw_matrix
 
     #prediction_list[prediction_list$order == i, "predict.isat_object"] <- NULL
     #prediction_list[prediction_list$order == i, "data"] <- NULL

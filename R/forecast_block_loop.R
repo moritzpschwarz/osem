@@ -1,3 +1,22 @@
+#' Forecast a lagged relationship using a block forecast (internal)
+#'
+#' This internal function generates forecasts from an an estimated model within
+#' the OSEM framework (see \code{\link[gets]{isat}}) where relationships are only
+#' entering each other in a lagged form, requiring forecasting in a loop.
+#'
+#' @param model The overall 'osem' model as returned by \code{\link[osem]{run_model}}
+#' @param i The order of the current module to be forecasted
+#' @param exog_df_ready The exogenous data frame prepared for forecasting
+#' @param exog_df_ready_full The full exogenous data frame prepared for forecasting
+#' @param n.ahead Number of steps ahead to forecast
+#' @param current_spec The current specification for the module being forecasted
+#' @param prediction_list The collection of all predictions
+#' @param uncertainty_sample The number of uncertainty samples to draw for the prediction
+#' @param nowcasted The confidence interval levels for the prediction
+#' @param ci.levels The nowcasted data for the model
+#'
+#' @returns A tibble containing the updated prediction_list object with forecasts for the current module
+#'
 forecast_block_loop <- function(
     model,
     i,
@@ -26,55 +45,6 @@ forecast_block_loop <- function(
 
   mod_model <- model
 
-  # sub_order_dep_data_collection <- dplyr::tibble()
-  # for(j in sub_order_in_cur_block){
-  #
-  #   # in estimation of V = lag(W), W would not be in the data for module V
-  #   # therefore we need to add that data to
-  #   # ensure that the variable is in the data
-  #
-  #   sub_order_dep <- mod_model$module_collection %>%
-  #     dplyr::filter(.data$block_order %in% cur_block_order,
-  #                   .data$sub_order %in% j) %>%
-  #     dplyr::pull("dep") %>%
-  #     dplyr::first()
-  #
-  #   sub_order_data <- mod_model$module_collection %>%
-  #     dplyr::filter(.data$block_order %in% cur_block_order,
-  #                   .data$sub_order %in% j) %>%
-  #     dplyr::pull("dataset") %>%
-  #     dplyr::first()
-  #
-  #   sub_order_dep_data <- sub_order_data %>%
-  #     dplyr::select("time",dplyr::all_of(sub_order_dep))
-  #
-  #   if(nrow(sub_order_dep_data_collection)==0){
-  #     sub_order_dep_data_collection <- sub_order_dep_data
-  #   } else {
-  #     sub_order_dep_data_collection <- sub_order_dep_data_collection %>%
-  #       dplyr::full_join(sub_order_dep_data, by = "time")
-  #   }
-  # }
-  #
-  # #overall_block_data <- list()
-  # for(j in sub_order_in_cur_block){
-  #
-  #   init_dat <- mod_model$module_collection[mod_model$module_collection$block_order %in% cur_block_order &
-  #                                             mod_model$module_collection$sub_order %in% j, "dataset"][[1]][[1]]
-  #
-  #   vars_to_add <- names(sub_order_dep_data_collection)[!names(sub_order_dep_data_collection) %in% names(init_dat)]
-  #
-  #   if(!identical(vars_to_add, character(0))){
-  #     # if there are no variables to add, then skip
-  #     # add the variable that is not in there from sub_order_dep_data_collection
-  #     new_dat <- init_dat %>%
-  #       dplyr::full_join(sub_order_dep_data_collection %>% dplyr::select("time", dplyr::all_of(vars_to_add)), by = "time")
-  #
-  #     mod_model$module_collection[mod_model$module_collection$block_order %in% cur_block_order &
-  #                                   mod_model$module_collection$sub_order %in% j, "dataset"][[1]][[1]] <- new_dat
-  #   }
-  # }
-
   # now run in steps of 1 to n.ahead alternating between the sub-orders
 
   for(k in 1:n.ahead){
@@ -102,6 +72,9 @@ forecast_block_loop <- function(
 
       prediction_list_mod <- prediction_list
 
+      # modify the prediction_list to only keep first k rows for the current order_i
+      # this is essential to make sure that the forecast_module_estimated() function works correctly
+      # this allows it to go step by step
       slice_or_pad <- function(x, k) {
         if (is.null(x)) {return(NULL)}
         if (identical(x, NA_complex_)) {return(NA_complex_)}

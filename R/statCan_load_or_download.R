@@ -30,7 +30,10 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
 
     #download data table according to data_base_id
     id_identified <- dataset_id[i,1, drop = TRUE]
-    suppressWarnings(suppressMessages(df <- statcanR::statcan_data(id_identified,"eng")))
+    #suppressWarnings(suppressMessages(df <- statcanR::statcan_data(id_identified,"eng")))
+
+    stop("The statcanR package is no longer maintained and has been removed from CRAN. Functionality not available. Download the data manually and use it as local data.")
+
     df <- as.data.frame(df)
 
     #get the dictionary coordinates that use the following dataset_id

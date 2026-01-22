@@ -43,8 +43,30 @@
 #' )
 #'
 #' \donttest{
-#' a <- run_model(specification = spec)
-#' forecast_model(a)
+#'spec <- dplyr::tibble(
+#'  type = c(
+#'    "d",
+#'    "d",
+#'    "n"
+#'  ),
+#'  dependent = c(
+#'    "StatDiscrep",
+#'    "TOTS",
+#'    "Import"
+#'  ),
+#'  independent = c(
+#'    "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+#'    "GValueAdd + Import",
+#'    "FinConsExpHH + GCapitalForm"
+#'  )
+#')
+#'
+#'
+#'a <- run_model(specification = spec,
+#'               input = sample_input,
+#'               primary_source = "local",
+#'               constrain.to.minimum.sample = FALSE)
+#'forecast_model(a)
 #' }
 forecast_model <- function(model,
                            exog_predictions = NULL,
@@ -128,7 +150,7 @@ forecast_model <- function(model,
       block_forecasting_req <- model$module_order %>%
         dplyr::mutate(block_elements = dplyr::n(), .by = "block_order") %>%
         dplyr::filter(.data$order == i) %>%
-        dplyr::pull(block_elements) > 1
+        dplyr::pull("block_elements") > 1
 
       if (block_forecasting_req){
 
@@ -171,7 +193,7 @@ forecast_model <- function(model,
     } else {
       ## 2b. Start of loop for identities  ------------------------------------------------
 
-      identity_setup <- forecast_identities(
+      identity_setup <- forecast_module_identity(
         model = model,
         exog_df_ready = exog_df_ready,
         current_spec = current_spec,

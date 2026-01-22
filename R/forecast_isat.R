@@ -1,3 +1,21 @@
+#' Forecast ISAT Module (internal)
+#'
+#' This internal function generates forecasts from an ISAT (Indiactor Saturation) model within the OSEM framework (see \code{\link[gets]{isat}}).
+#'
+#' @param model The overall 'osem' model as returned by \code{\link[osem]{run_model}}
+#' @param i The index of the current module within the model's module collection
+#' @param isat_obj The model with class \code{isat} object for the current module
+#' @param exog_df_ready The exogenous data frame prepared for forecasting
+#' @param exog_df_ready_full The full exogenous data frame prepared for forecasting
+#' @param n.ahead Number of steps ahead to forecast
+#' @param current_spec The current specification for the module being forecasted
+#' @param prediction_list The collection of all predictions
+#' @param uncertainty_sample The number of uncertainty samples to draw for the prediction
+#' @param ci.levels The confidence interval levels for the prediction
+#' @param nowcasted The nowcasted data for the model
+#'
+#' @returns A tibble containing the updated prediction_list object with forecasts for the current module
+#'
 forecast_isat <- function(
     model,
     i,

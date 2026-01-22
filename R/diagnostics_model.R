@@ -90,21 +90,21 @@ diagnostics_model <- function(model) {
 
       # AR test
       ar_pval <- tryCatch({
-        mh <- mahalanobis(resid_mat, center = colMeans(resid_mat), cov = cov(resid_mat))
-        Box.test(mh, lag = 12, type = "Ljung-Box")$p.value
+        mh <- stats::mahalanobis(resid_mat, center = colMeans(resid_mat), cov = stats::cov(resid_mat))
+        stats::Box.test(mh, lag = 12, type = "Ljung-Box")$p.value
       }, error = function(e) NA)
 
       # ARCH test (Engle)
       arch_pval <- tryCatch({
         u2 <- rowSums(resid_mat^2)
-        aux_df <- embed(u2, 13)
+        aux_df <- stats::embed(u2, 13)
         y <- aux_df[, 1]
         X <- aux_df[, -1]
-        fit <- lm(y ~ X)
+        fit <- stats::lm(y ~ X)
         R2 <- summary(fit)$r.squared
         n <- nrow(X)
         stat <- R2 * n
-        pchisq(stat, df = ncol(X), lower.tail = FALSE)
+        stats::pchisq(stat, df = ncol(X), lower.tail = FALSE)
       }, error = function(e) NA)
 
       diag[i, "AR"]   <- ar_pval
