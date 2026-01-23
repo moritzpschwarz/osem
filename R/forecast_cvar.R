@@ -135,7 +135,7 @@ forecast_cvar <- function(model,
       })
     ) %>%
     dplyr::select(-"models") %>%
-    tidyr::unnest(.data$fcst_df)
+    tidyr::unnest("fcst_df")
 
   # all estimates - cycle through mvar_all.estimates
   for (j in seq(uncertainty_sample)) {
@@ -167,7 +167,7 @@ forecast_cvar <- function(model,
           })
         ) %>%
         dplyr::select(-"models") %>%
-        tidyr::unnest(.data$fcst_df) %>%
+        tidyr::unnest("fcst_df") %>%
         dplyr::mutate(iteration = j)
     } else {
       cvar_forecasts.j <- dplyr::tibble(
@@ -182,7 +182,7 @@ forecast_cvar <- function(model,
           })
         ) %>%
         dplyr::select(-"models") %>%
-        tidyr::unnest(.data$fcst_df) %>%
+        tidyr::unnest("fcst_df") %>%
         dplyr::mutate(iteration = j)
 
       cvar_forecasts.all <- dplyr::bind_rows(cvar_forecasts.all, cvar_forecasts.j)
