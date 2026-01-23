@@ -26,6 +26,14 @@ test_that("run_model() works with cvar input", {
     present = FALSE,
     quiet = TRUE
   ))
+
+  expect_no_error(a_fcst <- forecast_model(a, quiet = TRUE))
+  expect_equal(round(a_fcst$forecast$central.estimate[[1]]$ln.N, 5),
+               c(0.87678, -0.00039, -0.70809, -0.62825, -0.56928, -0.5588, -0.57479,
+                 -0.58751, -0.51246, -0.52348))
+  expect_no_error(print(a_fcst))
+
+
   # both lag only
   specification <- dplyr::tibble(
     type = "n",
@@ -45,6 +53,13 @@ test_that("run_model() works with cvar input", {
     present = FALSE,
     quiet = TRUE
   ))
+
+  expect_no_error(b_fcst <- forecast_model(a, quiet = TRUE))
+  expect_equal(round(b_fcst$forecast$central.estimate[[1]]$ln.N, 5),
+               c(0.87678, -0.00039, -0.70809, -0.62825, -0.56928, -0.5588, -0.57479,
+                 -0.58751, -0.51246, -0.52348))
+  expect_no_error(print(b_fcst))
+
   # Y lag only but U contemporaneous
   specification <- dplyr::tibble(
     type = "n",
@@ -64,4 +79,13 @@ test_that("run_model() works with cvar input", {
     present = FALSE,
     quiet = TRUE
   ))
+
+
+
+  expect_no_error(c_fcst <- forecast_model(a, quiet = TRUE))
+  expect_equal(round(c_fcst$forecast$central.estimate[[1]]$ln.N, 5),
+               c(0.87678, -0.00039, -0.70809, -0.62825, -0.56928, -0.5588, -0.57479,
+                 -0.58751, -0.51246, -0.52348))
+  expect_no_error(print(c_fcst))
+
 })
