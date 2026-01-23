@@ -42,8 +42,6 @@ forecast_setup_estimated_relationships <- function(model,
   extracted_info$pred_ar_needed -> pred_ar_needed
   extracted_info$pred_dl_needed -> pred_dl_needed
 
-
-
   # Deal with current_spec not being fully exogenous --------
 
   previous_dependent_vars <- model$module_order$dependent[model$module_order$order < i]
@@ -213,7 +211,15 @@ forecast_setup_estimated_relationships <- function(model,
 
   # checking the data for nowcasted data --------
   initial_input_data <- model$processed_input_data %>%
-    tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values")
+    tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
+    dplyr::mutate(
+      dplyr::across(-"time", .fns = ~ if (any(. <= 0, na.rm = TRUE)) {
+        asinh(.)
+      } else {
+        log(.)
+      }, .names = "ln.{.col}"),
+      dplyr::across(-"time", list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
+    )
 
   from_input_data <- names(initial_input_data)[!names(initial_input_data) %in% names(data_obj)]
 

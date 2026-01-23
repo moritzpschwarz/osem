@@ -156,9 +156,9 @@ forecast_model <- function(model,
 
         # check that block is not already filled
         if(!identical(NA_complex_, prediction_list %>%
-                     dplyr::filter(.data$order == i) %>%
-                     dplyr::pull("predict.isat_object") %>%
-                     dplyr::first())){
+                      dplyr::filter(.data$order == i) %>%
+                      dplyr::pull("predict.isat_object") %>%
+                      dplyr::first())){
           next
         }
 
