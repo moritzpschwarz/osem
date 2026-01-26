@@ -27,7 +27,7 @@ test_that("run_model() works with cvar input", {
     quiet = TRUE
   ))
 
-  expect_no_error(a_fcst <- forecast_model(a, quiet = TRUE))
+  expect_no_error(a_fcst <- forecast_model(a, quiet = TRUE, plot = FALSE))
   fcst_table <- dplyr::bind_rows(a_fcst$forecast$central.estimate) %>%
     tidyr::pivot_longer(-time) %>%
     tidyr::drop_na() %>%
@@ -75,6 +75,7 @@ test_that("run_model() works with cvar input", {
 })
 
 test_that("run_model() works with cvar input", {
+
   specification <- dplyr::tibble(
     type = c("n", "n", "n"),
     dependent = c("U", "Y", "Z"),
@@ -93,4 +94,42 @@ test_that("run_model() works with cvar input", {
     present = FALSE,
     quiet = TRUE
   ))
+})
+
+test_that("run_model() works with only a cvar model", {
+
+  specification <- dplyr::tibble(
+    type = c("n", "n"),
+    dependent = c("Y", "Z"),
+    independent = c("U", "U"),
+    lag = c("", ""),
+    cvar = c("system1", "system1")
+  )
+  expect_no_error(d <- run_model(
+    specification = specification,
+    dictionary = dictionary,
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
+    primary_source = "local",
+    use_logs = "both",
+    trend = FALSE,
+    save_to_disk = NULL,
+    present = FALSE,
+    quiet = TRUE
+  ))
+
+  expect_no_error(d_fcst <- forecast_model(d, quiet = TRUE, plot = FALSE))
+  fcst_table <- dplyr::bind_rows(d_fcst$forecast$central.estimate) %>%
+    tidyr::pivot_longer(-time) %>%
+    tidyr::drop_na() %>%
+    tidyr::pivot_wider(id_cols = "time") %>%
+    dplyr::mutate(dplyr::across(-"time", ~ round(. , 5)))
+
+  expect_equal(
+    fcst_table,
+    structure(list(time = structure(c(-16436, -16346, -16255, -16163, -16071, -15981, -15890, -15798, -15706, -15616), class = "Date"),
+                   ln.Y = c(1.69509, 1.75508, 1.79805, 1.83847, 1.86813, 1.88651, 1.89985, 1.9176, 1.92999, 1.93657),
+                   ln.Z = c(1.00993, 0.99992, 0.99271, 1.00891, 1.01148, 1.00589, 1.00463, 1.02105, 1.02305, 1.01939)),
+              row.names = c(NA, -10L), class = c("tbl_df", "tbl",
+                                                 "data.frame"))
+  )
 })

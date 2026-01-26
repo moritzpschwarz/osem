@@ -105,9 +105,11 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     dplyr::rename(na_item = "dep_var") %>%
     #dplyr::select(-"dep_var") %>%
     tidyr::pivot_longer(-c("time", "na_item"), names_to = "dep_var") %>%
+    dplyr::mutate(dep_var = gsub("^ln\\.|^D\\.|^D\\.ln\\.|^ln\\.D\\.","",.data$dep_var)) %>%
     tidyr::drop_na("value") %>%
-    dplyr::mutate(dep_var = .data$na_item,
-                  na_item = NULL) %>%
+    # dplyr::mutate(dep_var = .data$na_item,
+    #               na_item = NULL) %>%
+    dplyr::select(-"na_item") %>%
     dplyr::full_join(log_opts_processed, by = "dep_var") %>%
     dplyr::mutate(value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
                                            .data$log_opt == "asinh" ~ sinh(.data$value),
@@ -129,7 +131,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     {if("dep_var" %in% names(.)){
       # if the dep_var column exists, combine with na_item - use dep_var over na_item
       dplyr::mutate(.,na_item = dplyr::case_when(
-        !is.na(.data$dep_var) ~ .data$dep_var, TRUE ~ .data$na_item)) %>%
+        !is.na(.data$dep_var) ~ gsub("ln.|D.|D.ln.|ln.D.","",.data$dep_var), TRUE ~ .data$na_item)) %>%
         dplyr::select(-"dep_var")} else {.}} %>%
 
     dplyr::rename("dep_var" = "na_item") %>%
@@ -139,6 +141,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
                                                                               .data$log_opt == "asinh" ~ sinh(.),
                                                                               .data$log_opt == "none" ~ .))) %>%
     dplyr::select(-"log_opt") -> all_forecasts_unnested
+
 
   if(nrow(all_forecasts_unnested) > 0){
     all_forecasts_unnested %>%
