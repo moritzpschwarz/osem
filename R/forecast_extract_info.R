@@ -146,25 +146,6 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
     current_pred_raw_all <- current_pred_raw
   }
 
-  # CVAR case
-  if(inherits(isat_obj,what = "osem.cvar")){
-
-    browser()
-
-
-
-
-
-  #  stop("CVAR not yet implemented in forecast_extract_info")
-
-
-
-    y_names_vec <- isat_obj$args$dep_vars_basename
-    x_names_vec <- isat_obj$args$x_vars_basename
-  }
-
-
-
   out <- list()
   out$y_names_vec <- y_names_vec
   out$x_names_vec <- x_names_vec

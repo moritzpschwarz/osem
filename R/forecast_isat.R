@@ -1,6 +1,6 @@
 #' Forecast ISAT Module (internal)
 #'
-#' This internal function generates forecasts from an ISAT (Indiactor Saturation) model within the OSEM framework (see \code{\link[gets]{isat}}).
+#' This internal function generates forecasts from an ISAT (Indicator Saturation) model within the OSEM framework (see \code{\link[gets]{isat}}).
 #'
 #' @param model The overall 'osem' model as returned by \code{\link[osem]{run_model}}
 #' @param i The index of the current module within the model's module collection
@@ -19,7 +19,6 @@
 forecast_isat <- function(
     model,
     i,
-    isat_obj,
     exog_df_ready,
     exog_df_ready_full,
     n.ahead,

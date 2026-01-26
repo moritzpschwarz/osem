@@ -1,6 +1,6 @@
 #' Forecast a lagged relationship using a block forecast (internal)
 #'
-#' This internal function generates forecasts from an an estimated model within
+#' This internal function generates forecasts from an estimated model within
 #' the OSEM framework (see \code{\link[gets]{isat}}) where relationships are only
 #' entering each other in a lagged form, requiring forecasting in a loop.
 #'
@@ -12,8 +12,8 @@
 #' @param current_spec The current specification for the module being forecasted
 #' @param prediction_list The collection of all predictions
 #' @param uncertainty_sample The number of uncertainty samples to draw for the prediction
-#' @param nowcasted The confidence interval levels for the prediction
-#' @param ci.levels The nowcasted data for the model
+#' @param nowcasted The nowcasted data for the model
+#' @param ci.levels The confidence interval levels for the prediction
 #'
 #' @returns A tibble containing the updated prediction_list object with forecasts for the current module
 #'
