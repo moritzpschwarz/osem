@@ -7,7 +7,6 @@
 forecast_isat(
   model,
   i,
-  isat_obj,
   exog_df_ready,
   exog_df_ready_full,
   n.ahead,
@@ -22,8 +21,6 @@ forecast_isat(
 \item{model}{The overall 'osem' model as returned by \code{\link[osem]{run_model}}}
 
 \item{i}{The index of the current module within the model's module collection}
-
-\item{isat_obj}{The model with class \code{isat} object for the current module}
 
 \item{exog_df_ready}{The exogenous data frame prepared for forecasting}
 
@@ -45,5 +42,5 @@ forecast_isat(
 A tibble containing the updated prediction_list object with forecasts for the current module
 }
 \description{
-This internal function generates forecasts from an ISAT (Indiactor Saturation) model within the OSEM framework (see \code{\link[gets]{isat}}).
+This internal function generates forecasts from an ISAT (Indicator Saturation) model within the OSEM framework (see \code{\link[gets]{isat}}).
 }

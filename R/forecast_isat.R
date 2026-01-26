@@ -4,7 +4,6 @@
 #'
 #' @param model The overall 'osem' model as returned by \code{\link[osem]{run_model}}
 #' @param i The index of the current module within the model's module collection
-#' @param isat_obj The model with class \code{isat} object for the current module
 #' @param exog_df_ready The exogenous data frame prepared for forecasting
 #' @param exog_df_ready_full The full exogenous data frame prepared for forecasting
 #' @param n.ahead Number of steps ahead to forecast
