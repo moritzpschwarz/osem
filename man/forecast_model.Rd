@@ -71,7 +71,29 @@ spec <- dplyr::tibble(
 )
 
 \donttest{
-a <- run_model(specification = spec)
+spec <- dplyr::tibble(
+ type = c(
+   "d",
+   "d",
+   "n"
+ ),
+ dependent = c(
+   "StatDiscrep",
+   "TOTS",
+   "Import"
+ ),
+ independent = c(
+   "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
+   "GValueAdd + Import",
+   "FinConsExpHH + GCapitalForm"
+ )
+)
+
+
+a <- run_model(specification = spec,
+              input = sample_input,
+              primary_source = "local",
+              constrain.to.minimum.sample = FALSE)
 forecast_model(a)
 }
 }

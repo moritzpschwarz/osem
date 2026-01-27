@@ -7,7 +7,7 @@
 #' @inheritParams forecast_model
 #' @return A list that is then used by forecast_model to set-up the final prediction object. The list contains the identity estimate.
 #'
-forecast_identities <- function(model, exog_df_ready, current_spec, prediction_list, uncertainty_sample){
+forecast_module_identity <- function(model, exog_df_ready, current_spec, prediction_list, uncertainty_sample){
 
 
   # Assembling the data -----------------------------------------------------
@@ -37,11 +37,15 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       dplyr::filter(.data$index == mvar_model_index) %>%
       .$log_opts %>%
       .[[1]] %>%
+
+      {if(is.data.frame(.)){.[,mvar]} else {.}} %>%
+
       {if(is.null(.)){
         "none"
-      } else {
-        dplyr::select(.,dplyr::all_of(mvar)) %>%
-          dplyr::pull()}}
+      } else if(is.na(.)){
+        "none"} else {
+          dplyr::select(.,dplyr::all_of(mvar)) %>%
+            dplyr::pull()}}
 
     mvar_euname <- model$module_collection %>%
       dplyr::filter(.data$index == mvar_model_index) %>%

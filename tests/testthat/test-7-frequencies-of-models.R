@@ -97,10 +97,10 @@ test_that("Aggregation (Quarterly to Annual)", {
                        dplyr::filter(na_item != "HICP_Gas"), .)
 
   model_aqmix <- run_model(specification = specification,
-                          input = quarterly_mix,
-                          primary_source = "local",
-                          max.ar = 1, max.dl = 0, gets_selection = FALSE, plot = FALSE,
-                          quiet = TRUE)
+                           input = quarterly_mix,
+                           primary_source = "local",
+                           max.ar = 1, max.dl = 0, gets_selection = FALSE, plot = FALSE,
+                           quiet = TRUE)
 
   times_in_aqmix_model <- model_aqmix$full_data %>% tidyr::drop_na("values") %>% dplyr::filter(.data$na_item == "HICP_Gas") %>% dplyr::pull("time")
 
@@ -121,11 +121,11 @@ test_that("Aggregation (Quarterly to Annual)", {
                        dplyr::filter(na_item != "HICP_Gas"), .)
 
   model_aqmix2 <- run_model(specification = specification,
-                           input = quarterly_mix2,
-                           primary_source = "local",
-                           max.ar = 1, max.dl = 0, gets_selection = FALSE,plot = FALSE,
-                           constrain.to.minimum.sample = FALSE, # IMPORTANT HERE
-                           quiet = TRUE)
+                            input = quarterly_mix2,
+                            primary_source = "local",
+                            max.ar = 1, max.dl = 0, gets_selection = FALSE,plot = FALSE,
+                            constrain.to.minimum.sample = FALSE, # IMPORTANT HERE
+                            quiet = TRUE)
 
   times_in_aqmix_model2 <- model_aqmix2$full_data %>% tidyr::drop_na("values") %>% dplyr::filter(.data$na_item == "HICP_Gas") %>% dplyr::pull("time")
 
@@ -146,16 +146,16 @@ test_that("Aggregation (Monthly to Quarterly)", {
   # this dataset also contains one month of Q2 of 2012, which should be removed (because summative aggregation to Q2 of 2012 is not possible)
   set.seed(990)
   mq_mix <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = max(quarterly$time), by = "month"),
-                                 HICP_Gas = rnorm(mean = 200/12, n = length(time))) %>%
+                          HICP_Gas = rnorm(mean = 200/12, n = length(time))) %>%
     tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
     dplyr::bind_rows(quarterly %>%
                        dplyr::filter(na_item != "HICP_Gas"), .)
 
   model_mqmix <- run_model(specification = specification,
-                          input = mq_mix,
-                          primary_source = "local",
-                          max.ar = 1, max.dl = 0, gets_selection = FALSE, plot = FALSE,
-                          quiet = TRUE)
+                           input = mq_mix,
+                           primary_source = "local",
+                           max.ar = 1, max.dl = 0, gets_selection = FALSE, plot = FALSE,
+                           quiet = TRUE)
 
   times_in_mqmix_model <- model_mqmix$full_data %>% tidyr::drop_na("values") %>% dplyr::filter(.data$na_item == "HICP_Gas") %>% dplyr::pull("time")
 
@@ -170,17 +170,17 @@ test_that("Aggregation (Monthly to Quarterly)", {
   # but if we add two more observations to the monthly values, now we should have one more Q
   set.seed(990)
   mq_mix2 <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2012-06-01"), by = "month"),
-                          HICP_Gas = rnorm(mean = 200/12, n = length(time))) %>%
+                           HICP_Gas = rnorm(mean = 200/12, n = length(time))) %>%
     tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values") %>%
     dplyr::bind_rows(quarterly %>%
                        dplyr::filter(na_item != "HICP_Gas"), .)
 
   model_mqmix2 <- run_model(specification = specification,
-                           input = mq_mix2,
-                           primary_source = "local",
-                           max.ar = 1, max.dl = 0, gets_selection = FALSE,plot = FALSE,
-                           constrain.to.minimum.sample = FALSE, # IMPORTANT HERE
-                           quiet = TRUE)
+                            input = mq_mix2,
+                            primary_source = "local",
+                            max.ar = 1, max.dl = 0, gets_selection = FALSE,plot = FALSE,
+                            constrain.to.minimum.sample = FALSE, # IMPORTANT HERE
+                            quiet = TRUE)
 
   times_in_mqmix_model2 <- model_mqmix2$full_data %>% tidyr::drop_na("values") %>% dplyr::filter(.data$na_item == "HICP_Gas") %>% dplyr::pull("time")
 
@@ -481,6 +481,18 @@ test_that("Annual Models run with EUROSTAT data",{
 
 test_that("Mixed Frequency across variables (different variables have different mixed frequencies)",{
 
+  specification <- dplyr::tibble(
+    type = c(
+      "n"
+    ),
+    dependent = c(
+      "FinConsExpHH"
+    ),
+    independent = c(
+      "FinConsExpGov + HICP_Gas"
+    )
+  )
+
   mixed_freq <- dplyr::tibble(time = seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "year"),
                               FinConsExpGov = rnorm(mean = 100, n = length(time)),
                               HICP_Gas = rnorm(mean = 200, n = length(time)),
@@ -596,8 +608,6 @@ test_that("Mixed Frequency within variable (same variables has different mixed f
   expect_equal(seq.Date(from = as.Date("2005-01-01"), length.out = time_to_sim, by = "3 months"), model_mf2_times)
 
 
-
-
   ###
   # slightly more complex case: add a single annual observation to the end of an otherwise quarterly series
   # should fail as the final observations always takes the difference from the second-to-last observations
@@ -620,9 +630,6 @@ test_that("Mixed Frequency within variable (same variables has different mixed f
                                       max.ar = 1, max.dl = 0,
                                       constrain.to.minimum.sample = FALSE,
                                       quiet = TRUE), regexp = "Mixed frequency models are not yet implemented.")
-
-
-
 
 
   ###

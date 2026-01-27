@@ -34,29 +34,3 @@ a Date that indicates the first insample forecast to show in the plot. By defaul
 \description{
 Plot an Insample-Forecast of the OSEM Model
 }
-\examples{
-spec <- dplyr::tibble(
-type = c(
-  "d",
-  "d",
-  "n"
-),
-dependent = c(
-  "StatDiscrep",
-  "TOTS",
-  "Import"
-),
-independent = c(
-  "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
-  "GValueAdd + Import",
-  "FinConsExpHH + GCapitalForm"
-)
-)
-\donttest{
-a <- run_model(specification = spec, dictionary = NULL,
-primary_source = "download",
-save_to_disk = NULL, present = FALSE)
-plot(forecast_model(a))
-}
-
-}

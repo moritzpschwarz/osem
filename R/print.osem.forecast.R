@@ -11,7 +11,6 @@
 
 print.osem.forecast <- function(x, plot = TRUE, full_names = FALSE, ...){
 
-
   cat("OSEM Model Forecast Output\n")
   cat("-----------------------\n")
 
@@ -33,17 +32,50 @@ print.osem.forecast <- function(x, plot = TRUE, full_names = FALSE, ...){
   # get log information
   if(!is.null(x$orig_model$opts_df[["log_opts"]])){
     x$orig_model$opts_df %>%
-      dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
-        opts[,dep, drop = TRUE]
+      tidyr::nest(dependent = "dependent") %>%
+      # separate any comma separated rows in dependent
+      dplyr::mutate(dependent = purrr::map(.data$dependent, function(dep_row){
+        dep_val <- dep_row$dependent
+        if(grepl(",",  dep_val)){
+          dep_vars <- trimws(unlist(strsplit(dep_val, ",")))
+          return(dep_vars)
+        } else {
+          return(dep_val)
+        }
       })) %>%
+      tidyr::unnest("dependent") %>%
+
+      dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){as.character(opts[,dep, drop = TRUE])})) %>%
       tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
       tidyr::replace_na(list(log_opts_dependent = "none")) %>%
       dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
   } else {
     log_opts_processed <- dplyr::tibble(dep_var = x$orig_model$opts_df$dependent, log_opt = "none")
   }
+  # CENTRAL FORECASTS --------
 
   x$forecast %>%
+
+    # deal with multiple dependent variables
+    tidyr::separate_longer_delim(cols = "dep_var", delim = ",") %>%
+    dplyr::mutate(help_index_multiple_dep = dplyr::n(), .by = "order") %>%
+    dplyr::mutate(
+      central.estimate = purrr::map2(.data$central.estimate, .data$help_index_multiple_dep,
+                                     function(cent_est, n_dep){cent_est[,c(1,n_dep + 1)]}),
+      all.estimates = purrr::map2(.data$all.estimates, .data$help_index_multiple_dep,function(all_est, n_dep){
+        if("dep_var" %in% names(all_est)){
+          # filter out the dep_vars using n_dep in order of occurrence
+          all_est %>%
+            dplyr::filter(all_est %>%
+                            dplyr::distinct(.data$dep_var) %>%
+                            dplyr::pull("dep_var") %>% .[[n_dep]] == .data$dep_var) %>%
+            dplyr::select(-"dep_var")
+        } else {
+          all_est
+        }
+      })
+    ) %>%
+
     dplyr::select("dep_var", "central.estimate") %>%
     tidyr::unnest("central.estimate") %>%
     tidyr::pivot_longer(-c("time","dep_var")) %>%

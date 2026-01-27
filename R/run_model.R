@@ -80,7 +80,9 @@
 #'   )
 #' )
 #' \donttest{
-#' run_model(specification = spec)
+#' run_model(specification = spec,
+#'           primary_source = "local",
+#'           input = sample_input)
 #' }
 run_model <- function(specification,
                       dictionary = NULL,
@@ -246,6 +248,24 @@ run_model <- function(specification,
   # add data that is not directly available but can be calculated from identities
   full_data <- calculate_identities(specification = module_order, data = loaded_data, dictionary = dictionary)
 
+  # check for duplicates in the data
+  if (full_data %>%
+      dplyr::select("na_item", "time") %>%
+      dplyr::filter(duplicated(.)) %>%
+      nrow() > 0) {
+    full_data %>%
+      dplyr::select("na_item", "time") %>%
+      dplyr::filter(duplicated(.)) %>%
+      dplyr::distinct(.data$na_item) %>%
+      dplyr::pull("na_item") -> duplicated_variables
+
+    stop(paste0(
+      "The data contains duplicates. Please remove them. ",
+      "This might be related to an additional filter that is necessary for the eurostat data (e.g. need to select nace_2 for the right value for the sector).\n",
+      "Variables that contain duplicates: ", paste0(duplicated_variables, collapse = ", ")
+    ))
+  }
+
   # check the frequencies of the full data and if necessary aggregate
   freq_output <- check_frequencies(full_data, quiet = quiet)
   full_data <- freq_output$full_data
@@ -262,23 +282,6 @@ run_model <- function(specification,
     }
   }
 
-  # check for duplicates in the data
-  if (full_data %>%
-    dplyr::select("na_item", "time") %>%
-    dplyr::filter(duplicated(.)) %>%
-    nrow() > 0) {
-    full_data %>%
-      dplyr::select("na_item", "time") %>%
-      dplyr::filter(duplicated(.)) %>%
-      dplyr::distinct(.data$na_item) %>%
-      dplyr::pull("na_item") -> duplicated_variables
-
-    stop(paste0(
-      "The data contains duplicates. Please remove them. ",
-      "This might be related to an additional filter that is necessary for the eurostat data (e.g. need to select nace_2 for the right value for the sector).\n",
-      "Variables that contain duplicates: ", paste0(duplicated_variables, collapse = ", ")
-    ))
-  }
 
 
 

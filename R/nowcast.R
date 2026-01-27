@@ -26,8 +26,9 @@ nowcasting <- function(model, exog_df_ready, frequency){
     dplyr::as_tibble() %>%
     dplyr::filter(.data$na_item %in% model$module_collection$dependent) %>%
     tidyr::drop_na("values") %>%
-    dplyr::summarise(max_time = max(.data$time), .by = "na_item") %>%
-    dplyr::filter(.data$max_time != target_time) -> vars_not_full
+    {if(nrow(.) > 0){
+      dplyr::summarise(.,max_time = max(.data$time), .by = "na_item") %>%
+        dplyr::filter(.data$max_time != target_time)} else {.}}  -> vars_not_full
 
   # if all are to the end, then we can skip
   if(nrow(vars_not_full) == 0){return(NULL)} else{
