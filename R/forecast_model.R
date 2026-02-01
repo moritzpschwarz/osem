@@ -237,7 +237,7 @@ forecast_model <- function(model,
   try(out$full_forecast_data <- plot(out, return.data = TRUE), silent = TRUE)
 
   if (plot) {
-    try(print(plot(out)))
+    try(plot(out))
   }
 
   return(out)

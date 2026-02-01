@@ -110,6 +110,25 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
         dplyr::as_tibble()
     }
 
+    # get tis dummies
+    if (!is.null(gets::isatdates(isat_obj)$tis)) {
+
+      tis_indices <- length(isat_obj$aux$y.index) + 1:n.ahead
+
+      tis_pred <- dplyr::tibble(breaks = gets::isatdates(isat_obj)$tis[,"index"],
+                    name = gets::isatdates(isat_obj)$tis[,"breaks"],
+                    vals_ahead = list(tis_indices)) %>%
+        dplyr::mutate(value = purrr::map2(.x = .data$breaks, .y = .data$vals_ahead, .f = function(x,y){y - x})) %>%
+
+        tidyr::unnest("value") %>%
+        dplyr::mutate(index = 1:n.ahead ,.by = .data$name) %>%
+        dplyr::select("index","name", "value") %>%
+
+        tidyr::pivot_wider(names_from = "name", values_from = "value", id_cols = "index") %>%
+        dplyr::select(-"index")
+    }
+
+
     if ("trend" %in% names(coef(isat_obj))) {
       trend_pred <- dplyr::tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead))
     }
@@ -133,6 +152,10 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
 
       {if (!is.null(gets::isatdates(isat_obj)$sis)) {
         dplyr::bind_cols(.,sis_pred)
+      } else { . }} %>%
+
+      {if (!is.null(gets::isatdates(isat_obj)$tis)) {
+        dplyr::bind_cols(.,tis_pred)
       } else { . }} %>%
 
       {if (xlog) {

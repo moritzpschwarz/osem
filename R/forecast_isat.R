@@ -66,8 +66,7 @@ forecast_isat <- function(
                                  )),
                                  n.ahead = n.ahead,
                                  plot = FALSE,
-                                 ci.levels = ci.levels
-  )
+                                 ci.levels = ci.levels)
 
   # make samples from the model residuals and add them to the mean prediction
   # use machine precision to determine whether close to zero

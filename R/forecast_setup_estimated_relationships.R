@@ -23,7 +23,6 @@ forecast_setup_estimated_relationships <- function(model,
                                                    full_exog_predicted_data = NULL) {
 
 
-
   extracted_info <- forecast_extract_info(model = model, i = i, n.ahead = n.ahead, exog_df_ready = exog_df_ready)
 
   extracted_info$y_names_vec -> y_names_vec
@@ -313,7 +312,7 @@ forecast_setup_estimated_relationships <- function(model,
   intermed %>%
     dplyr::left_join(current_pred_raw %>%
                        dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
-                                     dplyr::starts_with("iis"), dplyr::starts_with("sis")),
+                                     dplyr::starts_with("iis"), dplyr::starts_with("sis"), dplyr::starts_with("tis")),
                      by = "time") %>%
 
     # only retain the final n.ahead observations
