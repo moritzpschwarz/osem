@@ -263,7 +263,7 @@ estimate_module <- function(clean_data,
     ar_retained_num <- if(identical(ar_retained,character(0))){NULL}else{as.numeric(gsub("ar","",ar_retained))}
 
     retained.coefs <- row.names(best_isat_model.selected$mean.results)
-    retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^ar[0-9]+", retained.coefs)]
+    retained.coefs <- retained.coefs[!grepl("^mconst|^sis[0-9]+|^iis[0-9]+|^tis[0-9]+|^ar[0-9]+", retained.coefs)]
     retained.xvars <- as.matrix(xvars[,retained.coefs])
 
     retained.xvars <- if (!is.null(retained.xvars)){
