@@ -108,7 +108,7 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
   first_pass <- utils::tail(which(which_reject == FALSE), 1)
   # communicate outcome
   ## which_reject was never FALSE -> rejected all tests
-  if (identical(first_pass, integer(0))) {
+  if (identical(as.integer(first_pass), integer(0))) {
     stop("All trace tests rejected. Specified variables are likely already stationary. Please re-specify the model.")
     ## which_reject was already FALSE for the last element, r = 0 -> no cointegration
   } else if (identical(as.integer(first_pass), length(which_reject))) {
