@@ -79,16 +79,20 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
       decide_unit_roots(alpha = "1pct")
   }
 
+  ###
+  # Remove automatic unit root pretesting, which would stop the estimation early.
+  # Instead provide as diagnostics afterwards.
   # check that all CVAR elements are unit roots
-  y_urreject <- purrr::map_lgl(y_urtest, ~ .$decision$reject_ur)
-  if (length(y_urreject > 0) & any(y_urreject)) {
-    stop(paste0("Not all CVAR variables in CVAR sub-system ", system_name, " are I(1). For the following variables, we reject the unit root hypothesis: ", names(y_urreject[y_urreject]), "."))
-  }
-  # ...and all exogenous regressors stationary
-  x_urreject <- purrr::map_lgl(x_urtest, ~ .$decision$reject_ur)
-  if (length(x_urreject > 0) & !all(x_urreject)) { # only check if have X vars
-    stop(paste0("Not all exogenous regressors in CVAR sub-system ", system_name, " are stationary. For the following variables, we do not reject the unit root hypothesis: ", names(x_urreject[!x_urreject]), "."))
-  }
+  # y_urreject <- purrr::map_lgl(y_urtest, ~ .$decision$reject_ur)
+  # if (length(y_urreject > 0) & any(y_urreject)) {
+  #   stop(paste0("Not all CVAR variables in CVAR sub-system ", system_name, " are I(1). For the following variables, we reject the unit root hypothesis: ", names(y_urreject[y_urreject]), "."))
+  # }
+  # # ...and all exogenous regressors stationary
+  # x_urreject <- purrr::map_lgl(x_urtest, ~ .$decision$reject_ur)
+  # if (length(x_urreject > 0) & !all(x_urreject)) { # only check if have X vars
+  #   stop(paste0("Not all exogenous regressors in CVAR sub-system ", system_name, " are stationary. For the following variables, we do not reject the unit root hypothesis: ", names(x_urreject[!x_urreject]), "."))
+  # }
+  ###
 
   # cointegration test
   cointtest <- urca::ca.jo(
