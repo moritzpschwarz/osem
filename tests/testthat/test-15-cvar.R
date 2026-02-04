@@ -57,24 +57,25 @@ test_that("estimate_cvar() raises input errors", {
     "1pct.*5pct.*10pct"
   )
 })
-test_that("estimate_cvar() raises error if series not suitably integrated/stationary", {
-  # not all variables in the system are I(1)
-  expect_error(
-    estimate_cvar(
-      data, "sys1", "Y,Q", character(0), "none", 2, NULL, "const", "10pct"
-    ),
-    "Not all CVAR variables in CVAR sub-system sys1 are I(1). For the following variables, we reject the unit root hypothesis: Q.",
-    fixed = TRUE
-  )
-  # an I(1) variable is included as exogenous regressor
-  expect_error(
-    estimate_cvar(
-      data, "sys1", "Y,Z", "Z", "none", 2, NULL, "const", "10pct"
-    ),
-    "Not all exogenous regressors in CVAR sub-system sys1 are stationary. For the following variables, we do not reject the unit root hypothesis: Z.",
-    fixed = TRUE
-  )
-})
+# deactivate these tests because this check is currently deactivated
+# test_that("estimate_cvar() raises error if series not suitably integrated/stationary", {
+#   # not all variables in the system are I(1)
+#   expect_error(
+#     estimate_cvar(
+#       data, "sys1", "Y,Q", character(0), "none", 2, NULL, "const", "10pct"
+#     ),
+#     "Not all CVAR variables in CVAR sub-system sys1 are I(1). For the following variables, we reject the unit root hypothesis: Q.",
+#     fixed = TRUE
+#   )
+#   # an I(1) variable is included as exogenous regressor
+#   expect_error(
+#     estimate_cvar(
+#       data, "sys1", "Y,Z", "Z", "none", 2, NULL, "const", "10pct"
+#     ),
+#     "Not all exogenous regressors in CVAR sub-system sys1 are stationary. For the following variables, we do not reject the unit root hypothesis: Z.",
+#     fixed = TRUE
+#   )
+# })
 test_that("estimate_cvar() returns expected output", {
   # general structure
   expect_message(a <- estimate_cvar(data, "sys1", "Y,Z", "Q", "none", 2, NULL, "const", "5pct"))
