@@ -88,7 +88,7 @@ decide_unit_roots <- function(urtest, alpha = c("1pct", "5pct", "10pct")) {
 #' feature.
 #'
 #'
-unit_root_diagnostics <- function(model) {
+diagnostics_unit_root <- function(model) {
 
   # classify variables on whether need to test
   # definition modules do not need to be tested
