@@ -280,24 +280,24 @@ test_that("unit root diagnostics works as intended", {
   expect_identical(urdiag_b %>% dplyr::filter(.data$type == "dependent") %>% dplyr::pull("transformation") %>% unique(), "log")
   expect_identical(urdiag_b %>% dplyr::filter(.data$type == "independent") %>% dplyr::pull("transformation") %>% unique(), "level")
 
-  # # run logs in x
-  # c <- run_model(
-  #   specification = specification,
-  #   dictionary = dictionary,
-  #   input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
-  #   primary_source = "local",
-  #   use_logs = "x",
-  #   trend = FALSE,
-  #   save_to_disk = NULL,
-  #   present = FALSE,
-  #   quiet = TRUE
-  # )
-  # urdiag_c <- diagnostics_unit_root(c)
-  # # some parts should be identical to object urdiag_a from above
-  # expect_identical(urdiag_a[, c("basevarname", "type", "modules")], urdiag_c[, c("basevarname", "type", "modules")])
-  # # transformation should be different
-  # expect_identical(urdiag_c %>% dplyr::filter(.data$type == "dependent") %>% dplyr::pull("transformation") %>% unique(), "level")
-  # expect_identical(urdiag_c %>% dplyr::filter(.data$type == "independent") %>% dplyr::pull("transformation") %>% unique(), "log")
+  # run logs in x
+  c <- run_model(
+    specification = specification,
+    dictionary = dictionary,
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
+    primary_source = "local",
+    use_logs = "x",
+    trend = FALSE,
+    save_to_disk = NULL,
+    present = FALSE,
+    quiet = TRUE
+  )
+  urdiag_c <- diagnostics_unit_root(c)
+  # some parts should be identical to object urdiag_a from above
+  expect_identical(urdiag_a[, c("basevarname", "type", "modules")], urdiag_c[, c("basevarname", "type", "modules")])
+  # transformation should be different
+  expect_identical(urdiag_c %>% dplyr::filter(.data$type == "dependent") %>% dplyr::pull("transformation") %>% unique(), "level")
+  expect_identical(urdiag_c %>% dplyr::filter(.data$type == "independent") %>% dplyr::pull("transformation") %>% unique(), "log")
 
   # run logs in both
   d <- run_model(
