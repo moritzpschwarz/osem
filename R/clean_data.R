@@ -53,9 +53,11 @@ clean_data <- function(raw_data,
   }
 
   if (use_logs == "x") {
+    # since module$dependent may contain multiple variables for CvAR, need to extract them separately
+    depvars <- trimws(unlist(strsplit(module$dependent, ",")))
     raw_data_processed %>%
       dplyr::mutate(dplyr::across(-"time", ~ dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
-      dplyr::mutate(dplyr::across(dplyr::all_of(module$dependent), ~NA)) %>%
+      dplyr::mutate(dplyr::across(dplyr::all_of(depvars), ~NA)) %>%
       dplyr::select(-"time") %>%
       dplyr::distinct() %>%
       tidyr::nest() %>%
