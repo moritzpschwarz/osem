@@ -115,7 +115,7 @@ diagnostics_unit_root <- function(model) {
 
   # check transformations
   ur_diagnostics <- ur_diagnostics %>%
-    dplyr::mutate(transformation = case_when(
+    dplyr::mutate(transformation = dplyr::case_when(
       model$args$use_logs == "both" ~ "log",
       model$args$use_logs == "none" ~ "level",
       model$args$use_logs == "y" & type == "dependent" ~ "log",
@@ -128,7 +128,7 @@ diagnostics_unit_root <- function(model) {
 
   # prepare unit root outputs
   ur_diagnostics <- ur_diagnostics %>%
-    mutate(
+    dplyr::mutate(
       ur_test = vector(mode = "list", length = dplyr::n()),
       ur_decision = NA_character_
     )
@@ -140,7 +140,7 @@ diagnostics_unit_root <- function(model) {
     stopifnot(identical(length(varname), 1L))
     stopifnot(identical(length(trafo), 1L))
     data <- model$processed_input_data %>%
-      dplyr::filter(na_item == varname) %>%
+      dplyr::filter(.data$na_item == varname) %>%
       dplyr::arrange("time")
     if (trafo == "log") {
       data <- data %>%

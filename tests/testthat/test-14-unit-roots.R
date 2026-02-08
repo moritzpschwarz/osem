@@ -187,3 +187,139 @@ test_that("test_unit_roots() makes sensible decisions for artificial data", {
     decide_unit_roots("5pct")
   expect_identical(s$decision$reject_ur, TRUE)
 })
+
+# test unit root diagnostics
+dictionary <- dplyr::tibble(
+  model_varname = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "N", "A", "B"),
+  full_name = c("Y", "Z", "U", "V", "W", "Q", "R", "S", "T", "M", "N", "A", "B"),
+  database = c("local", "local", "local", "local", "local", "local", "local", "local", NA, "local", "local", "local", "local"),
+  geo = "DE",
+  dataset_id = NA,
+  freq = ""
+)
+specification <- dplyr::tibble(
+  type = c("n", "n", "n", "n", "n", "n", "d", "n", "n", "n"),
+  dependent = c("Y", "Z", "U", "V", "W", "M", "T", "Q", "S", "N"),
+  independent = c("U", "U", "", "U + W", "U + V", "Y + U", "U + V + W", "", "R", "R + U"),
+  lag = c("", "", "", "W", "", "U, Y", "", "", "", "U"),
+  cvar = c("system1", "system1", "", "", "", "", "", "", "", "")
+)
+test_that("unit root diagnostics works as intended", {
+  # no logs
+  a <- run_model(
+    specification = specification,
+    dictionary = dictionary,
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
+    primary_source = "local",
+    use_logs = "none",
+    trend = FALSE,
+    save_to_disk = NULL,
+    present = FALSE,
+    quiet = TRUE
+  )
+  urdiag_a <- diagnostics_unit_root(a)
+  # check output is as expected
+  expect_s3_class(urdiag_a, c("tbl_df", "tbl", "data.frame"))
+  expect_identical(dim(urdiag_a), c(14L, 6L))
+  # T variable is only a dependent variable in identity module, should not be part of diagnostics
+  expect_false("T" %in% urdiag_a$basevarname)
+  # R variable is only an independent variable
+  expect_false("R" %in% (urdiag_a %>% dplyr::filter(.data$type == "dependent") %>% dplyr::pull("basevarname")))
+  # dependent endogenous variables: Y, Z, U, V, W, M, Q, S, N
+  expect_setequal(c("Y", "Z", "U", "V", "W", "M", "Q", "S", "N"), (urdiag_a %>% dplyr::filter(.data$type == "dependent") %>% dplyr::pull("basevarname")))
+  # independent vars in endogenous models: U, V, W, Y, R
+  expect_setequal(c("U", "V", "W", "Y", "R"), (urdiag_a %>% dplyr::filter(.data$type == "independent") %>% dplyr::pull("basevarname")))
+  # transformation setting should be "level" everywhere
+  expect_all_equal(urdiag_a$transformation, "level")
+  # ur_test should be lists
+  expect_type(urdiag_a$ur_test, "list")
+  # ur_decision should be character vector, "ur" or "not ur"
+  expect_type(urdiag_a$ur_decision, "character")
+  expect_setequal(unique(urdiag_a$ur_decision), c("ur", "not ur"))
+  # modules should be lists
+  expect_type(urdiag_a$modules, "list")
+  # modules should correspond to the index of the module order
+  ## check for dependent variables
+  urdiag_a_dep <- urdiag_a %>% dplyr::filter(.data$type == "dependent")
+  for (i in 1:NROW(urdiag_a_dep)) {
+    stored_index <- urdiag_a_dep %>% dplyr::slice(i) %>% dplyr::pull("modules") %>% purrr::pluck(1)
+    stored_var <- urdiag_a_dep %>% dplyr::slice(i) %>% dplyr::pull("basevarname")
+    # can do simplified search here because each variable is a unique character (partial matching is no problem)
+    module_row <- grep(stored_var, a$module_order$dependent)
+    module_index <- a$module_order %>% dplyr::slice(module_row) %>% dplyr::pull("index")
+    expect_identical(module_index, stored_index)
+  }
+  ## check for independent variables
+  urdiag_a_indep <- urdiag_a %>% dplyr::filter(.data$type == "independent")
+  for (i in 1:NROW(urdiag_a_indep)) {
+    stored_indices <- urdiag_a_indep %>% dplyr::slice(i) %>% dplyr::pull("modules") %>% purrr::pluck(1)
+    stored_var <- urdiag_a_indep %>% dplyr::slice(i) %>% dplyr::pull("basevarname")
+    # can do simplified search here because each variable is a unique character (partial matching is no problem); have to filter out definitions
+    module_rows <- grep(stored_var, a$module_order %>% dplyr::filter(.data$type == "n") %>% dplyr::pull("independent"))
+    module_indices <- a$module_order %>% dplyr::filter(.data$type == "n") %>% dplyr::slice(module_rows) %>% dplyr::pull("index")
+    expect_identical(module_indices, stored_indices)
+  }
+
+  # run transformation variations
+  # run logs in y
+  b <- run_model(
+    specification = specification,
+    dictionary = dictionary,
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
+    primary_source = "local",
+    use_logs = "y",
+    trend = FALSE,
+    save_to_disk = NULL,
+    present = FALSE,
+    quiet = TRUE
+  )
+  urdiag_b <- diagnostics_unit_root(b)
+  # some parts should be identical to object urdiag_a from above
+  expect_identical(urdiag_a[, c("basevarname", "type", "modules")], urdiag_b[, c("basevarname", "type", "modules")])
+  # transformation should be different
+  expect_identical(urdiag_b %>% dplyr::filter(.data$type == "dependent") %>% dplyr::pull("transformation") %>% unique(), "log")
+  expect_identical(urdiag_b %>% dplyr::filter(.data$type == "independent") %>% dplyr::pull("transformation") %>% unique(), "level")
+
+  # # run logs in x
+  # c <- run_model(
+  #   specification = specification,
+  #   dictionary = dictionary,
+  #   input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
+  #   primary_source = "local",
+  #   use_logs = "x",
+  #   trend = FALSE,
+  #   save_to_disk = NULL,
+  #   present = FALSE,
+  #   quiet = TRUE
+  # )
+  # urdiag_c <- diagnostics_unit_root(c)
+  # # some parts should be identical to object urdiag_a from above
+  # expect_identical(urdiag_a[, c("basevarname", "type", "modules")], urdiag_c[, c("basevarname", "type", "modules")])
+  # # transformation should be different
+  # expect_identical(urdiag_c %>% dplyr::filter(.data$type == "dependent") %>% dplyr::pull("transformation") %>% unique(), "level")
+  # expect_identical(urdiag_c %>% dplyr::filter(.data$type == "independent") %>% dplyr::pull("transformation") %>% unique(), "log")
+
+  # run logs in both
+  d <- run_model(
+    specification = specification,
+    dictionary = dictionary,
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
+    primary_source = "local",
+    use_logs = "both",
+    trend = FALSE,
+    save_to_disk = NULL,
+    present = FALSE,
+    quiet = TRUE
+  )
+  urdiag_d <- diagnostics_unit_root(d)
+  # some parts should be identical to object urdiag_a from above
+  expect_identical(urdiag_a[, c("basevarname", "type", "modules")], urdiag_d[, c("basevarname", "type", "modules")])
+  # transformation should be different
+  expect_identical(urdiag_d %>% dplyr::filter(.data$type == "dependent") %>% dplyr::pull("transformation") %>% unique(), "log")
+  expect_identical(urdiag_d %>% dplyr::filter(.data$type == "independent") %>% dplyr::pull("transformation") %>% unique(), "log")
+
+})
+
+
+
+
