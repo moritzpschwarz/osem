@@ -129,19 +129,7 @@ deterministic component to include in the cointegrating relationship.}
 cointegration. Can only be one of “1pct”, “5pct”, “10pct”.}
 }
 \value{
-An object of class \link[=new_osem]{osem}, which is a named list
-with four elements:
-\describe{
-\item{args}{A named list storing the user arguments for the OSEM
-model.}
-\item{module_order_eurostatvars}{The original specification with translated
-variable names to Eurostat codes and arranged in order of estimation.}
-\item{module_collection}{The above specification with two added columns
-that store the model object for each module and the dataset used for
-estimation, including fitted values for the dependent variable.}
-\item{full_data}{A tibble or data.frame containing the complete original
-data for the OSEM model and the fitted values of each module.}
-}
+An object of class \link[=new_osem]{osem}.
 }
 \description{
 Runs the OSEM model according to the given specification of modules.

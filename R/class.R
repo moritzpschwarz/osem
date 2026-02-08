@@ -2,7 +2,7 @@
 #'
 #' @param x A list storing the osem output.
 #'
-#' @return An object of class \code{"osem"}, which is a named list with four elements:
+#' @return An object of class \code{"osem"}, which is a named list with seven elements:
 #' \describe{
 #'   \item{args}{A named list storing the user arguments for the OSEM
 #'   model.}
@@ -10,8 +10,14 @@
 #'   \item{module_collection}{The above specification with two added columns
 #'   that store the model object for each module and the dataset used for
 #'   estimation, including fitted values for the dependent variable.}
+#'   \item{processed_input_data}{A tibble or data.frame containing the processed
+#'   input data, including variables that are constructed by definition.}
 #'   \item{full_data}{A tibble or data.frame containing the complete original
 #'   data for the OSEM model and the fitted values of each module.}
+#'   \item{dictionary}{A tibble storing information about each variable,
+#'   including from where it is obtained.}
+#'   \item{opts_df}{A tibble storing for each module whether the involved
+#'   variables have been transformed using the log or asinh function.}
 #' }
 #'
 #' @keywords internal
