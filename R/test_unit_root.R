@@ -76,3 +76,120 @@ decide_unit_roots <- function(urtest, alpha = c("1pct", "5pct", "10pct")) {
   )))
   return(out)
 }
+
+#' Provide unit root diagnostics for the data.
+#'
+#' @param model An [`osem`][new_osem] object.
+#'
+#' @return A tibble storing the unit root test results for each variable that
+#' appears in a modelled equation ("d"). Since log transoformations may differ
+#' by whether the variable is a dependent or independent variable, separate
+#' tests are conducted. THe tibble also records in which modules the variables
+#' feature.
+#'
+#'
+unit_root_diagnostics <- function(model) {
+
+  # classify variables on whether need to test
+  # definition modules do not need to be tested
+  # LHS and RHS variables of endogenous modules need to be tested
+  spec <- model$args$specification %>%
+    dplyr::filter(type == "n")
+
+  # extract variables
+  dep <- spec$dependent
+  dep <- trimws(unlist(strsplit(dep, ",")))
+  ## there should be at most one endogenous equation per variable
+  stopifnot(dplyr::n_distinct(dep) == length(dep))
+  indep <- spec$independent
+  indep <- strsplits(indep, splits = c("\\+"))
+  indep <- gsub(" ", "", indep)
+  ## a variable might appear in multiple equations as regressor
+  indep <- unique(indep)
+
+  # combine into dfs
+  ur_diagnostics <- dplyr::bind_rows(
+    dplyr::tibble(basevarname = dep, type = "dependent"),
+    dplyr::tibble(basevarname = indep, type = "independent")
+  )
+
+  # check transformations
+  ur_diagnostics <- ur_diagnostics %>%
+    dplyr::mutate(transformation = case_when(
+      model$args$use_logs == "both" ~ "log",
+      model$args$use_logs == "none" ~ "level",
+      model$args$use_logs == "y" & type == "dependent" ~ "log",
+      model$args$use_logs == "y" & type == "independent" ~ "level",
+      model$args$use_logs == "x" & type == "independent" ~ "log",
+      model$args$use_logs == "x" & type == "dependent" ~ "level",
+      TRUE ~ "error")
+    )
+  if (any(ur_diagnostics$transformation == "error")) {stop("Internal error, please submit an issue on GitHub mentioning unit root diagnostics.")}
+
+  # prepare unit root outputs
+  ur_diagnostics <- ur_diagnostics %>%
+    mutate(
+      ur_test = vector(mode = "list", length = dplyr::n()),
+      ur_decision = NA_character_
+    )
+
+  # conduct tests
+  for (i in 1:NROW(ur_diagnostics)) {
+    varname <- ur_diagnostics %>% dplyr::slice(i) %>% dplyr::pull("basevarname")
+    trafo <- ur_diagnostics %>% dplyr::slice(i) %>% dplyr::pull("transformation")
+    stopifnot(identical(length(varname), 1L))
+    stopifnot(identical(length(trafo), 1L))
+    data <- model$processed_input_data %>%
+      dplyr::filter(na_item == varname) %>%
+      dplyr::arrange("time")
+    if (trafo == "log") {
+      data <- data %>%
+        dplyr::mutate(
+          values = if (any(.data$values <= 0, na.rm = TRUE)) { asinh(.data$values) } else { log(.data$values) }
+        )
+    } # end if log
+    var_ur_test <- test_unit_roots(x = as.numeric(data$values), max.ar = model$args$max.ar, selectlags = "BIC")
+    var_ur_decide <- decide_unit_roots(urtest = var_ur_test, alpha = "1pct")
+    ur_diagnostics$ur_test[[i]] <- var_ur_decide
+    ur_diagnostics[i, "ur_decision"] <- if (identical(var_ur_decide$decision$reject_ur, FALSE)) {
+      "ur"
+    } else {
+      "not ur"
+    }
+  } # end for loop
+
+  # find in which module(s) each variable is used
+  ## initialise storage of results
+  ur_diagnostics <- ur_diagnostics %>%
+    dplyr::mutate(modules = vector(mode = "list", length = dplyr::n()))
+  ## extract variables from specification
+  ## only interested in endogenous equations
+  endogenous_modules <- model$module_order %>%
+    dplyr::filter(type == "n")
+  ## dependent variables
+  depvars_list <- lapply(X = strsplit(endogenous_modules$dependent, ","), FUN = trimws)
+  ## independent variables (list of vectors, each list item corresponds to a module)
+  indepvars_list <- lapply(X = strsplit(endogenous_modules$independent, "\\+"), FUN = trimws)
+
+  ## loop through the variables and search for it as dependent or independent
+  for (i in 1:NROW(ur_diagnostics)) {
+    varname <- ur_diagnostics %>% dplyr::slice(i) %>% dplyr::pull("basevarname")
+    type <- ur_diagnostics %>% dplyr::slice(i) %>% dplyr::pull("type")
+    if (type == "dependent") {
+      # search in dependent variable column
+      where_found <- unlist(lapply(X = depvars_list, FUN = function(x) varname %in% x))
+      modules <- endogenous_modules$index[where_found]
+      stopifnot(length(modules) == 1L)
+    } else if (type == "independent") {
+      # search in independent variable column
+      # have to ensure exact matches, in case nested names (avoid that IncomeHH could be found in RealIncomeHH)
+      where_found <- unlist(lapply(X = indepvars_list, FUN = function(x) varname %in% x))
+      modules <- endogenous_modules$index[where_found]
+      stopifnot(length(modules) >= 1L)
+    }
+    ur_diagnostics$modules[[i]] <- modules
+  }
+  return(ur_diagnostics)
+
+}
+
