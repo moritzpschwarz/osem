@@ -61,4 +61,33 @@ test_that("TIS and Super Saturation works", {
   expect_equal(round(fcst_supersat$forecast$central.estimate[[1]]$ln.FinConsExpHH,5),
                c(4.36491, 4.36776, 4.36644, 4.36394, 4.36487, 4.36401, 4.36321,
                  4.36264, 4.36175, 4.36154))
+
+
+
+  specification <- dplyr::tibble(
+    type = c(
+      "n","n"
+    ),
+    dependent = c(
+      "FinConsExpHH",
+      "FinConsExpGov"
+    ),
+    independent = c(
+      "FinConsExpGov + HICP_Gas",""
+    )
+  )
+
+  test <- run_model(specification = specification,
+                         dictionary = dict,
+                         input = testdata_modified_long,
+                         primary_source = "local",
+                         present = FALSE,
+                         quiet = TRUE,
+                         plot = FALSE,
+                         selection.tpval = 0.001,
+                         saturation = "TIS",
+                         constrain.to.minimum.sample = FALSE)
+
+  forecast_model(test, quiet = TRUE, plot = FALSE)
+
 })

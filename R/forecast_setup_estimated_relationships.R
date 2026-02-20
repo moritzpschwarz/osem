@@ -358,7 +358,7 @@ forecast_setup_estimated_relationships <- function(model,
     dplyr::bind_cols(intermed.all, to_be_added.all) %>%
       dplyr::left_join(current_pred_raw_all %>%
                          dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
-                                       dplyr::starts_with("iis"), dplyr::starts_with("sis")),
+                                       dplyr::starts_with("iis"), dplyr::starts_with("sis"), dplyr::starts_with("tis")),
                        by = "time") %>%
 
       # only retain the final n.ahead observations
