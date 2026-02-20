@@ -70,12 +70,13 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
   names(x_urtest) <- x.names
 
   # run all types of ADF tests
+  # urca package does not allow for NA values in the data (not even at beginning or end) -> trim
   for (i in seq_along(y.names)) {
-    y_urtest[[i]] <- test_unit_roots(x = yvars %>% dplyr::pull(y.names[i]), max.ar = cvar.ar, selectlags = "BIC") %>%
+    y_urtest[[i]] <- test_unit_roots(x = yvars %>% dplyr::pull(y.names[i]) %>% zoo::na.trim(sides = "both"), max.ar = cvar.ar, selectlags = "BIC") %>%
       decide_unit_roots(alpha = "1pct")
   }
   for (i in seq_along(x.names)) { # will be skipped if length(x.names) == 0L
-    x_urtest[[i]] <- test_unit_roots(x = xvars %>% dplyr::pull(x.names[i]), max.ar = cvar.ar, selectlags = "BIC") %>%
+    x_urtest[[i]] <- test_unit_roots(x = xvars %>% dplyr::pull(x.names[i]) %>% zoo::na.trim(sides = "both"), max.ar = cvar.ar, selectlags = "BIC") %>%
       decide_unit_roots(alpha = "1pct")
   }
 
