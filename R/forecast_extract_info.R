@@ -121,7 +121,7 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
         dplyr::mutate(value = purrr::map2(.x = .data$breaks, .y = .data$vals_ahead, .f = function(x,y){y - x})) %>%
 
         tidyr::unnest("value") %>%
-        dplyr::mutate(index = 1:n.ahead ,.by = .data$name) %>%
+        dplyr::mutate(index = 1:n.ahead ,.by = "name") %>%
         dplyr::select("index","name", "value") %>%
 
         tidyr::pivot_wider(names_from = "name", values_from = "value", id_cols = "index") %>%

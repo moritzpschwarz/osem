@@ -43,10 +43,10 @@ test_that("Checking nowcasting issue when one independent variable is not availa
                                    selection.tpval = 0.001,
                                    constrain.to.minimum.sample = FALSE))
 
-  expect_message(f1 <- forecast_model(model, exog_fill_method = "auto", plot = FALSE), regexp = "No exogenous values")
-  expect_message(f2 <- forecast_model(model, exog_fill_method = "AR", plot = FALSE), regexp = "No exogenous values")
-  expect_message(f3 <- forecast_model(model, exog_fill_method = "last", plot = FALSE), regexp = "No exogenous values")
-  expect_message(f3 <- forecast_model(model, exog_fill_method = "last", plot = FALSE), regexp = "Latest Exogenous Data is not available")
+  expect_message(f1 <- forecast_model(model, quiet = TRUE, exog_fill_method = "auto", plot = FALSE), regexp = "No exogenous values")
+  expect_message(f2 <- forecast_model(model, quiet = TRUE, exog_fill_method = "AR", plot = FALSE), regexp = "No exogenous values")
+  expect_message(f3 <- forecast_model(model, quiet = TRUE, exog_fill_method = "last", plot = FALSE), regexp = "No exogenous values")
+  expect_message(f3 <- forecast_model(model, quiet = TRUE, exog_fill_method = "last", plot = FALSE), regexp = "Latest Exogenous Data is not available")
 
   expect_equal(f1$forecast$data[[1]]$time, f2$forecast$data[[1]]$time)
   expect_equal(f1$forecast$data[[1]]$time, f3$forecast$data[[1]]$time)
