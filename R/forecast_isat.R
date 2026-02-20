@@ -96,8 +96,6 @@ forecast_isat <- function(
     dplyr::mutate(dplyr::across(dplyr::everything(), cumsum)) %>%
     as.matrix() -> res_draws_matrix
 
-  pred_draw_matrix <- as.vector(pred_obj$yhat) + res_draws_matrix
-
   ## 2b.ii. Predict uncertainty plume for estimated relationships  ------------------------------------------------
 
   # if there are any list columns then that means that a preceding variable has uncertainty
@@ -196,7 +194,10 @@ forecast_isat <- function(
     dimnames(pred_runs_final_matrix) <- NULL
 
     # now replace the pred_draw_matrix - this one only survives without being overwritten if there is no preceding uncertainty
-    pred_draw_matrix <- pred_runs_final_matrix
+    #pred_draw_matrix <- pred_runs_final_matrix
+    pred_draw_matrix <- pred_runs_final_matrix + res_draws_matrix
+  } else {
+    pred_draw_matrix <- as.vector(pred_obj$yhat) + res_draws_matrix
   }
   outvarname <- paste0(
     if (model$module_collection %>%
