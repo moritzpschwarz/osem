@@ -219,12 +219,15 @@ nowcasting <- function(model, exog_df_ready, frequency){
           dplyr::pull() -> log_opts
 
         # add the data to the full data and the processed input data
-        dplyr::tibble(time = as.Date(cur_target_dates), values = as.numeric(pred_obj)) %>%
-          dplyr::mutate(values = dplyr::case_when(log_opts == "log" ~ exp(.data$values),
-                                                  log_opts == "asinh" ~ sinh(.data$values),
-                                                  log_opts == "none" ~ .data$values),
-                        na_item = dep_var,.after = "time") -> data_to_add
-
+        dplyr::tibble(time = as.Date(cur_target_dates),
+                      values =       if(log_opts == "log"){
+                        exp(as.numeric(pred_obj))
+                      } else if (log_opts == "asinh"){
+                        sinh(as.numeric(pred_obj))
+                      } else if (log_opts == "none"){
+                        as.numeric(pred_obj)
+                      }) %>%
+          dplyr::mutate(na_item = dep_var,.after = "time") -> data_to_add
 
         collected_nowcasts %>%
           dplyr::bind_rows(data_to_add) %>%
