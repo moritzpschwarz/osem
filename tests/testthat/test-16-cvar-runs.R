@@ -96,7 +96,7 @@ test_that("run_model() works with cvar input", {
   ))
 })
 
-test_that("run_model() works with only a cvar model", {
+test_that("run_model() works with a cvar model", {
 
   specification <- dplyr::tibble(
     type = c("n", "n"),
@@ -132,4 +132,38 @@ test_that("run_model() works with only a cvar model", {
               row.names = c(NA, -10L), class = c("tbl_df", "tbl",
                                                  "data.frame"))
   )
+
+
+})
+test_that("run_model() works with an estimated module before  a cvar model",{
+
+  specification <- dplyr::tibble(
+    type = c("n", "n", "n"),
+    dependent = c("Y", "Z", "U"),
+    independent = c("U", "U", ""),
+    lag = c("", "", ""),
+    cvar = c("system1", "system1", "")
+  )
+  expect_no_error(e <- run_model(
+    specification = specification,
+    dictionary = dictionary,
+    input = test_path("testdata", "cvar", "artificial_cvar_data.rds"),
+    primary_source = "local",
+    use_logs = "both",
+    trend = FALSE,
+    save_to_disk = NULL,
+    present = FALSE,
+    quiet = TRUE
+  ))
+
+  set.seed(9987)
+  expect_no_error(e_fcst <- forecast_model(e, quiet = TRUE, plot = FALSE))
+
+  expect_equal(round(e_fcst$forecast$all.estimates[[1]]$run_1,5), c(0.45816, 1.12826, 1.05844, 1.54129, 1.22634, 2.05986, 2.15242,
+                                                                   3.07302, 1.99151, 2.209))
+
+  expect_equal(round(e_fcst$forecast$all.estimates[[2]]$run_90,5), c(1.90568, 2.01171, 2.12816, 2.30608, 2.31315, 2.54282, 2.861,
+                                                                    2.56201, 2.51916, 2.0995, 1.23975, 1.30803, 1.46452, 1.46184,
+                                                                    1.4628, 1.70239, 2.05034, 2.3395, 2.48266, 1.91298))
+
 })

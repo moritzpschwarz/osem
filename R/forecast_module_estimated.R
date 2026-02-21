@@ -69,7 +69,7 @@ forecast_module_estimated <- function(model,
                               uncertainty_sample = uncertainty_sample,
                               nowcasted_data = nowcasted)
     pred_obj$central %>%
-      tidyr::pivot_wider(id_cols = "time", names_from = "names", values_from = "fcst") %>%
+      tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "fcst") %>%
       dplyr::mutate(time = exog_df_ready$time) -> central_estimate
 
     pred_obj$all %>%

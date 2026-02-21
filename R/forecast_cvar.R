@@ -35,7 +35,6 @@ forecast_cvar <- function(model,
     stop("varm must be a 'vec2var' object.")
   }
 
-
   previous_dependent_vars <- model$module_order$dependent[model$module_order$order < i]
   if(any(current_spec$independent %in% previous_dependent_vars)){
 
@@ -122,15 +121,6 @@ forecast_cvar <- function(model,
   mvar_tibble <- exog_df_ready %>%
     dplyr::bind_rows(model$processed_input_data %>%
                        tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values"),.) %>%
-    tidyr::pivot_longer(-"time") %>%
-    {if(ncol(mvar_tibble) > 0){
-      dplyr::bind_rows(., mvar_tibble %>%
-                         dplyr::mutate(time = exog_df_ready$time) %>%
-                         tidyr::pivot_longer(-"time"))}else {.}} %>%
-    tidyr::drop_na() %>%
-
-    tidyr::pivot_wider(id_cols = "time", names_from = "name", values_from = "value") %>%
-
     dplyr::mutate(
       dplyr::across(-c("time", dplyr::starts_with("q_")), .fns = ~ if (any(. <= 0, na.rm = TRUE)) {
         asinh(.)
@@ -139,7 +129,18 @@ forecast_cvar <- function(model,
       }, .names = "ln.{.col}"),
       dplyr::across(-"time", list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
     ) %>%
+
+    tidyr::pivot_longer(-"time") %>%
+    tidyr::drop_na() %>%
     dplyr::filter(.data$time %in% exog_df_ready$time) %>%
+
+    tidyr::pivot_wider(id_cols = "time", names_from = "name", values_from = "value") %>%
+
+
+    {if(ncol(mvar_tibble) > 0){
+      dplyr::full_join(., mvar_tibble %>%
+                         dplyr::mutate(time = exog_df_ready$time), by = "time")
+    } else {.}} %>%
 
     # only select variables needed in varm object
     dplyr::select(dplyr::any_of(colnames(varm$datamat))) %>%
@@ -150,96 +151,183 @@ forecast_cvar <- function(model,
                                    paste0("D.ln.",strsplit(current_spec$dependent,",")[[1]]))))
 
   # central estimate
-  #colnames(varm$datamat)
-
   cvar_pred <- stats::predict(varm, dumvar = as.matrix(mvar_tibble))
 
   cvar_forecasts <- dplyr::tibble(
-    names = names(cvar_pred$fcst),
-    models = cvar_pred$fcst
+    na_item = names(cvar_pred$fcst),
+    model   = cvar_pred$fcst
   ) %>%
     dplyr::mutate(
-      # Add time index and extract all columns as tibbles
-      fcst_df = purrr::map(.data$models, ~ {
-        dplyr::as_tibble(.x) %>%
-          dplyr::mutate(time = seq_len(nrow(.x)))
-      })
+      fcst_df = purrr::map(.data$model, ~ dplyr::as_tibble(.x) %>%
+                             dplyr::mutate(time = dplyr::row_number()) %>%
+                             dplyr::select("time", "fcst"))
     ) %>%
-    dplyr::select(-"models") %>%
+    dplyr::select(-"model") %>%
     tidyr::unnest("fcst_df")
 
+  # sample residuals
+  # res_names <- paste0("run_", 1:uncertainty_sample)
+  index_draws <- sample(1:nrow(varm$resid), size = uncertainty_sample * n.ahead, replace = TRUE)
+
+  # varm$resid[index_draws,] %>%
+  #   dplyr::as_tibble() %>%
+  #   dplyr::mutate(draw = rep(1:uncertainty_sample, each = n.ahead)) %>%
+  #   dplyr::mutate(time_ind = rep(1:n.ahead, uncertainty_sample )) %>%
+  #   tidyr::pivot_longer(-c("draw","time_ind"), names_to = "resid_name", values_to = "resid_value") %>%
+  #   dplyr::mutate(resid_name = stringr::str_remove(resid_name, "^resids of\\s+")) %>%
+  #   dplyr::arrange(.data$draw, .data$resid_name, .data$time_ind) %>%
+  #   dplyr::mutate(resid_value = cumsum(resid_value), .by = c("draw","resid_name")) %>%
+  #
+  #   tidyr::pivot_wider(names_from = "draw", values_from = resid_value,
+  #                      id_cols = c("time_ind","resid_name"), names_prefix = "run_") %>%
+  #   tidyr::nest(data = dplyr::starts_with("run_")) %>%
+  #   tidyr::pivot_wider(names_from = "resid_name", values_from = "data", id_cols = "time_ind", names_glue = "{resid_name}.all") %>%
+  #   dplyr::select(-time_ind) -> res_draws_matrix
+
+  res_draws_matrix <- varm$resid[index_draws, ] %>%
+    dplyr::as_tibble() %>%
+    dplyr::mutate(
+      draw = rep(seq_len(uncertainty_sample), each = n.ahead),
+      time = rep(seq_len(n.ahead), times = uncertainty_sample)
+    ) %>%
+    tidyr::pivot_longer(
+      -c("draw", "time"),
+      names_to = "resid_name",
+      values_to = "resid_value"
+    ) %>%
+    dplyr::mutate(resid_name = stringr::str_remove(resid_name, "^resids of\\s+")) %>%
+    dplyr::arrange(.data$resid_name, .data$draw, .data$time) %>%
+    dplyr::mutate(resid_value = cumsum(.data$resid_value), .by = c("draw","resid_name")) %>%
+    dplyr::mutate(draw = paste0("run_", draw)) %>%
+    dplyr::group_by(time, resid_name) %>%
+    tidyr::nest(data = c(.data$draw, .data$resid_value)) %>%
+    dplyr::ungroup() %>%
+    tidyr::pivot_wider(
+      id_cols = time,
+      names_from = resid_name,
+      values_from = data,
+      names_glue = "{resid_name}.all"
+    )
+
+  # res_draws_matrix %>%
+  #   dplyr::bind_cols(cvar_forecasts %>%
+  #                      dplyr::arrange(.data$time) %>%
+  #                      dplyr::select("time","na_item", "fcst") %>%
+  #                      tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "fcst") %>%
+  #                      dplyr::select(-"time")) -> res_draws_matrix.merged
+  #
+  # # add central forecast
+  # res_draws_matrix.final <- res_draws_matrix.merged %>%
+  #   dplyr::mutate(dplyr::across(dplyr::ends_with(".all"), ~ purrr::map2(
+  #     .x,res_draws_matrix.merged[[sub("\\.all$", "", dplyr::cur_column())]],`+`
+  #   ))) %>%
+  #   dplyr::select(dplyr::ends_with(".all"))
+
+  # res_draws_matrix.final %>%
+  #   tidyr::unnest(ln.Z.all) %>%
+  #   mutate(time = 1:n()) %>% select(-ln.Y.all) %>%
+  #   pivot_longer(-"time", names_prefix = "run_") %>%
+  #   ggplot(aes(x = value, fill = as.character(time), group = as.character(time))) +
+  #   geom_density()
+
   if(ncol(mvar_all.estimates.tibble) == 0){
-    # TODO think about a good implementation here
-    # This happens if there is no uncertainty before the CVAR
-    # CURRENTLY A BAD SOLUTION
-    # The central estimate is taken as the uncertainty
     cvar_forecasts.all <- dplyr::tibble(
       na_item = names(cvar_pred$fcst),
       models = cvar_pred$fcst
     ) %>%
       dplyr::mutate(
-        # Add time index and extract all columns as tibbles
         fcst_df = purrr::map(.data$models, ~ {
           dplyr::as_tibble(.x) %>%
-            dplyr::mutate(time = seq_len(nrow(.x)))
+            dplyr::mutate(time = dplyr::row_number())
         })
       ) %>%
       dplyr::select(-"models") %>%
       tidyr::unnest("fcst_df") %>%
-      dplyr::slice(rep(1:dplyr::n(), uncertainty_sample)) %>%
-      dplyr::mutate(iteration = rep(1:uncertainty_sample, each = nrow(cvar_forecasts)) )
+
+      # add the drawn samples from the CVAR model residuals
+      dplyr::full_join(res_draws_matrix %>%
+                         dplyr::rename_with(~ sub("\\.all$", "", .x)) %>%
+                         tidyr::pivot_longer(-"time", names_to = "na_item", values_to = "resid_draws"),
+                       by = c("na_item","time")) %>%
+
+      # Add time index and extract all columns as tibbles
+      dplyr::mutate(fcst = purrr::map2(.data$fcst, .data$resid_draws, .f = function(fcst,resid){
+        if (is.null(resid) || (length(resid) == 1 && all(is.na(resid)))) {
+          tibble::tibble(draw = NA_character_, resid_value = fcst)
+        } else {
+          resid %>% dplyr::mutate(resid_value = .data$resid_value + fcst)
+        }
+      })) %>%
+      dplyr::select("na_item", "fcst", "time") %>%
+      tidyr::unnest("fcst") %>%
+      dplyr::rename(fcst = resid_value, iteration = draw) %>%
+      dplyr::mutate(iteration = as.integer(gsub("^run_", "", .data$iteration)))
+
+    # cvar_forecasts.all %>%
+    #   ggplot(aes(x = fcst, fill = as.character(time), group = as.character(time))) +
+    #   geom_density() +
+    #   facet_wrap(~na_item, scales = "free")
+
   } else {
     # all estimates - cycle through mvar_all.estimates
-    for (j in seq(uncertainty_sample)) {
-      mvar_all.estimates.tibble %>%
-        dplyr::mutate(dplyr::across(dplyr::all_of(names(mvar_all.estimates.tibble)), ~ purrr::map(.x, ~ .x[[j]]))) -> mvar_all.estimates.single
+    # preallocate list for results (faster than bind_rows inside the loop)
+    cvar_forecasts_list <- vector("list", uncertainty_sample)
+
+    for (j in seq_len(uncertainty_sample)) {
+
+      # pick j-th draw from the stored uncertainties (only in *.all columns)
+      mvar_all.estimates.single <- mvar_all.estimates.tibble %>%
+        dplyr::mutate(
+          dplyr::across(dplyr::ends_with(".all"), ~ purrr::map(.x, \(v) v[[j]]))
+        )
 
       # combine with time index
       exog_df_ready %>%
         dplyr::select("time") %>%
-        dplyr::slice((dplyr::n() - (nrow(mvar_all.estimates.single)-1)) : dplyr::n()) %>%
+        dplyr::slice_tail(n = nrow(mvar_all.estimates.single)) %>%
         dplyr::bind_cols(mvar_all.estimates.single) %>%
-        tidyr::unnest(2) %>%
-        dplyr::rename_with(.cols = 2, ~gsub("\\.all","",.)) -> mvar_all.estimates.single.time
+        tidyr::unnest(dplyr::ends_with(".all")) %>%
+        dplyr::rename_with(.cols = dplyr::ends_with(".all"), ~gsub("\\.all$","",.)) -> mvar_all.estimates.single.time
 
       # predict
-      cvar_pred.all <- stats::predict(varm, dumvar = as.matrix(mvar_all.estimates.single.time[,2]))
+      dumvar_mat <- mvar_all.estimates.single.time %>%
+        dplyr::select(-time) %>%
+        as.matrix()
+
+      cvar_pred.all <- stats::predict(varm, dumvar = dumvar_mat)
 
       # store results
-      if(j == 1){
-        cvar_forecasts.all <- dplyr::tibble(
-          na_item = names(cvar_pred.all$fcst),
-          models = cvar_pred.all$fcst
+      cvar_forecasts_list[[j]] <- dplyr::tibble(
+        na_item = names(cvar_pred.all$fcst),
+        models = cvar_pred.all$fcst
+      ) %>%
+        dplyr::mutate(
+          # Add time index and extract all columns as tibbles
+          fcst_df = purrr::map(.data$models, ~ {
+            dplyr::as_tibble(.x) %>%
+              dplyr::mutate(time = dplyr::row_number())
+          })
         ) %>%
-          dplyr::mutate(
-            # Add time index and extract all columns as tibbles
-            fcst_df = purrr::map(.data$models, ~ {
-              dplyr::as_tibble(.x) %>%
-                dplyr::mutate(time = seq_len(nrow(.x)))
-            })
-          ) %>%
-          dplyr::select(-"models") %>%
-          tidyr::unnest("fcst_df") %>%
-          dplyr::mutate(iteration = j)
-      } else {
-        cvar_forecasts.j <- dplyr::tibble(
-          na_item = names(cvar_pred.all$fcst),
-          models = cvar_pred.all$fcst
-        ) %>%
-          dplyr::mutate(
-            # Add time index and extract all columns as tibbles
-            fcst_df = purrr::map(.data$models, ~ {
-              dplyr::as_tibble(.x) %>%
-                dplyr::mutate(time = seq_len(nrow(.x)))
-            })
-          ) %>%
-          dplyr::select(-"models") %>%
-          tidyr::unnest("fcst_df") %>%
-          dplyr::mutate(iteration = j)
-
-        cvar_forecasts.all <- dplyr::bind_rows(cvar_forecasts.all, cvar_forecasts.j)
-      }
+        dplyr::select(-"models") %>%
+        tidyr::unnest("fcst_df") %>%
+        dplyr::mutate(iteration = j)
     }
+
+    # bind once at the end
+    cvar_forecasts.all <- dplyr::bind_rows(cvar_forecasts_list)
+
+    # now add current uncertainty
+    residual_draws_long <- res_draws_matrix %>%
+      dplyr::rename_with(~ sub("\\.all$", "", .x), dplyr::ends_with(".all")) %>%
+      tidyr::pivot_longer(-"time", names_to  = "na_item", values_to = "resid_draws") %>%
+      tidyr::unnest("resid_draws") %>%                      # exposes draw + resid_value
+      dplyr::mutate(iteration = as.integer(gsub("^run_", "", .data$draw))) %>%
+      dplyr::select(.data$na_item, .data$time, .data$iteration, resid_cum = .data$resid_value)
+
+    cvar_forecasts.all <- cvar_forecasts.all %>%
+      dplyr::left_join(residual_draws_long, by = c("na_item", "time", "iteration")) %>%
+      dplyr::mutate(fcst = .data$fcst + .data$resid_cum) %>%
+      dplyr::select(-c("resid_cum", "lower", "upper", "CI"))
   }
 
   out <- list()
