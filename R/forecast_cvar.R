@@ -179,17 +179,17 @@ forecast_cvar <- function(model,
       names_to = "resid_name",
       values_to = "resid_value"
     ) %>%
-    dplyr::mutate(resid_name = stringr::str_remove(resid_name, "^resids of\\s+")) %>%
+    dplyr::mutate(resid_name = stringr::str_remove(.data$resid_name, "^resids of\\s+")) %>%
     dplyr::arrange(.data$resid_name, .data$draw, .data$time) %>%
     dplyr::mutate(resid_value = cumsum(.data$resid_value), .by = c("draw","resid_name")) %>%
-    dplyr::mutate(draw = paste0("run_", draw)) %>%
-    dplyr::group_by(time, resid_name) %>%
+    dplyr::mutate(draw = paste0("run_", .data$draw)) %>%
+    dplyr::group_by(.data$time, .data$resid_name) %>%
     tidyr::nest(data = c(.data$draw, .data$resid_value)) %>%
     dplyr::ungroup() %>%
     tidyr::pivot_wider(
-      id_cols = time,
-      names_from = resid_name,
-      values_from = data,
+      id_cols = "time",
+      names_from = "resid_name",
+      values_from = "data",
       names_glue = "{resid_name}.all"
     )
 
@@ -216,14 +216,14 @@ forecast_cvar <- function(model,
       # Add time index and extract all columns as tibbles
       dplyr::mutate(fcst = purrr::map2(.data$fcst, .data$resid_draws, .f = function(fcst,resid){
         if (is.null(resid) || (length(resid) == 1 && all(is.na(resid)))) {
-          tibble::tibble(draw = NA_character_, resid_value = fcst)
+          dplyr::tibble(draw = NA_character_, resid_value = fcst)
         } else {
           resid %>% dplyr::mutate(resid_value = .data$resid_value + fcst)
         }
       })) %>%
       dplyr::select("na_item", "fcst", "time") %>%
       tidyr::unnest("fcst") %>%
-      dplyr::rename(fcst = resid_value, iteration = draw) %>%
+      dplyr::rename(fcst = "resid_value", iteration = "draw") %>%
       dplyr::mutate(iteration = as.integer(gsub("^run_", "", .data$iteration)))
 
   } else {
@@ -249,7 +249,7 @@ forecast_cvar <- function(model,
 
       # predict
       dumvar_mat <- mvar_all.estimates.single.time %>%
-        dplyr::select(-time) %>%
+        dplyr::select(-"time") %>%
         as.matrix()
 
       cvar_pred.all <- stats::predict(varm, dumvar = dumvar_mat)

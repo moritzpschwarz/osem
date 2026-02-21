@@ -45,7 +45,7 @@ otherwise.}
 deterministic component to include in the cointegrating relationship.}
 
 \item{coint_significance}{Significance level for the rank test for
-cointegration. Can only be one of “1pct”, “5pct”, “10pct”.}
+cointegration. Can only be one of '1pct', '5pct', '10pct'.}
 
 \item{quiet}{Logical with default = FALSE. Should messages be displayed?
 These messages are intended to give more information about the estimation
