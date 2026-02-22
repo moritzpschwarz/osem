@@ -33,7 +33,9 @@ for (t in 2:nobs) {
 
 # combine
 data <- cbind(data_cvar, t(data_ar)) %>%
-  dplyr::mutate(time = seq.Date(from = as.Date("1900-01-01"), by = "quarter", length.out = nobs))
+  dplyr::mutate(time = seq.Date(from = as.Date("1900-01-01"), by = "quarter", length.out = nobs)) %>%
+  # to create a valid "clean_data" object, has to have an index
+  dplyr::mutate(index = 1:(dplyr::n()))
 
 # data %>%
 #   tidyr::pivot_longer(-time) %>%
@@ -80,8 +82,8 @@ test_that("estimate_cvar() returns expected output", {
   # general structure
   expect_message(a <- estimate_cvar(data, "sys1", "Y,Z", "Q", "none", 2, NULL, "const", "5pct"))
   expect_type(a, "list")
-  expect_length(a, 6L)
-  expect_named(a, c("cointtest", "vecm", "varm", "rank", "urtest", "args"))
+  expect_length(a, 7L)
+  expect_named(a, c("cointtest", "vecm", "varm", "rank", "urtest", "index", "args"))
   expect_s4_class(a$cointtest, "ca.jo")
   expect_type(a$vecm, "list")
   expect_s3_class(a$varm, "vec2var")

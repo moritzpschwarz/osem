@@ -86,12 +86,14 @@ add_to_original_data <- function(clean_data,
       tidyr::pivot_longer(cols = dplyr::everything(), names_to = "na_item", values_to = "transformation")
 
     # for CVAR, have to add multiple fitted values because have multiple depvars
+    # prepare index, lose first K=ar observations
+    index_subset <- model_object$index[-(1:model_object$args$ar)]
     cvar_fitted <- fitted(model_object$varm) %>%
       as.data.frame(.data) %>%
       # remove the "fit of " in varname, add ".hat" at end
       dplyr::rename_with(~ gsub("fit of (ln\\.)?", "", .x)) %>%
-      # add index for merging with full data later; lose first K=ar observations
-      dplyr::mutate(index = (model_object$args$ar + 1):NROW(clean_data))
+      # add index for merging with full data later
+      dplyr::mutate(index = index_subset)
     # should now correspond to "basename", add failsafe:
     if (!setdiff(colnames(cvar_fitted), dep_var_basename) == "index") {
       stop(paste0("Problem in module ", module$order, ". Computation of fitted values failed. Debug at add_to_original_data()."))
