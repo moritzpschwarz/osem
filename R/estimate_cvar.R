@@ -95,6 +95,21 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
   # }
   ###
 
+  # urca pkg removes trailing & leading NAs but not consistently across yvars and xvars
+  # we need to make sure, the vectors are trimmed to the shortest overlapping non-missing sample
+  common_data <- clean_data %>%
+    dplyr::select("index", dplyr::all_of(y.names), dplyr::all_of(x.names)) %>%
+    tidyr::drop_na()
+  index <- common_data %>% dplyr::pull("index")
+  yvars <- common_data %>%
+    dplyr::select(dplyr::all_of(y.names))
+  if (identical(x_vars_basename, character(0))) {
+    xvars <- NULL
+  } else {
+    xvars <- common_data %>%
+      dplyr::select(dplyr::all_of(x.names))
+  }
+
   # cointegration test
   cointtest <- urca::ca.jo(
     x = yvars, type = "trace", ecdet = coint_deterministic, K = cvar.ar,
@@ -143,6 +158,7 @@ estimate_cvar <- function(clean_data, system_name, dep_vars_basename,
     y_urtest = y_urtest,
     x_urtest = x_urtest
   )
+  out$index <- index
   out$args <- list(
     clean_data = clean_data,
     cvar = system_name,

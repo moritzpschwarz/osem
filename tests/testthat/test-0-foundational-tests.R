@@ -426,7 +426,7 @@ test_that("add_to_original_data() works with CVAR", {
   cvar_vecm <- urca::cajorls(cointtest, r = 1)
   cvar_varm <- vars::vec2var(cointtest, r = 1)
   # mimic object that would be returned by estimate_cvar(), but only necessary components for this functions
-  cvar_out <- list(vecm = cvar_vecm, varm = cvar_varm, args = list(ar = K))
+  cvar_out <- list(vecm = cvar_vecm, varm = cvar_varm, index = df_wide$index, args = list(ar = K))
   a <- osem:::add_to_original_data(
     clean_data = df_wide,
     model_object = cvar_out,
@@ -466,7 +466,7 @@ test_that("add_to_original_data() works with CVAR", {
   cvar_vecm <- urca::cajorls(cointtest, r = 1)
   cvar_varm <- vars::vec2var(cointtest, r = 1)
   # mimic object that would be returned by estimate_cvar(), but only necessary components for this functions
-  cvar_out <- list(vecm = cvar_vecm, varm = cvar_varm, args = list(ar = K))
+  cvar_out <- list(vecm = cvar_vecm, varm = cvar_varm, index = df_wide$index, args = list(ar = K))
   a <- osem:::add_to_original_data(
     clean_data = df_wide,
     model_object = cvar_out,
@@ -516,7 +516,7 @@ test_that("run_module() works with CVAR", {
   )
   expect_named(a, c("model", "data", "args", "indep", "dep", "diagnostics", "opts_df"))
   # a$model should be output of estimate_cvar(), check whether all elements are present
-  expect_named(a$model, c("cointtest", "vecm", "varm", "rank", "urtest", "args"))
+  expect_named(a$model, c("cointtest", "vecm", "varm", "rank", "urtest", "index", "args"))
   # data should be output of add_to_original_data()
   expect_s3_class(a$data, c("data.frame", "tbl"))
   expect_true(all(c("index", "time", "trend", "Y", "Z", "U", "Y.hat", "Z.hat", "Y.level.hat", "Z.level.hat") %in% colnames(a$data)))
@@ -549,7 +549,7 @@ test_that("run_module() works with CVAR", {
   )
   expect_named(a, c("model", "data", "args", "indep", "dep", "diagnostics", "opts_df"))
   # a$model should be output of estimate_cvar(), check whether all elements are present
-  expect_named(a$model, c("cointtest", "vecm", "varm", "rank", "urtest", "args"))
+  expect_named(a$model, c("cointtest", "vecm", "varm", "rank", "urtest", "index", "args"))
   # data should be output of add_to_original_data()
   expect_s3_class(a$data, c("data.frame", "tbl"))
   expect_true(all(c("index", "time", "trend", "Y", "Z", "U", "ln.Y", "ln.Z", "Y.hat", "Z.hat", "Y.level.hat", "Z.level.hat") %in% colnames(a$data)))

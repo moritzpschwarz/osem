@@ -87,6 +87,7 @@ decide_unit_roots <- function(urtest, alpha = c("1pct", "5pct", "10pct")) {
 #' tests are conducted. THe tibble also records in which modules the variables
 #' feature.
 #'
+#' @export
 #'
 diagnostics_unit_root <- function(model) {
 

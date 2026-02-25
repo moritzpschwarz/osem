@@ -167,3 +167,30 @@ test_that("run_model() works with an estimated module before  a cvar model",{
                                                                     1.4628, 1.70239, 2.05034, 2.3395, 2.48266, 1.91298))
 
 })
+
+# CVAR with NA values
+test_that("run_model() works with CVAR with NA values", {
+  specification <- dplyr::tibble(
+    type = c("n", "n"),
+    dependent = c("Y", "Z"),
+    independent = c("U", "U"),
+    lag = c("", ""),
+    cvar = c("system1", "system1")
+  )
+  data <- readRDS(test_path("testdata", "cvar", "artificial_cvar_data.rds"))
+  data <- data %>%
+    dplyr::mutate(values = dplyr::if_else(.data$time == as.Date("1900-01-01") & .data$na_item == "Y", NA, .data$values)) %>%
+    dplyr::mutate(values = dplyr::if_else(.data$time == as.Date("1924-10-01") & .data$na_item == "Z", NA, .data$values))
+  expect_no_error(a <- run_model(
+    specification = specification,
+    dictionary = dictionary,
+    input = data,
+    primary_source = "local",
+    use_logs = "both",
+    trend = FALSE,
+    save_to_disk = NULL,
+    present = FALSE,
+    quiet = TRUE
+  ))
+  expect_no_error(e_fcst <- forecast_model(a, quiet = TRUE, plot = FALSE))
+})
