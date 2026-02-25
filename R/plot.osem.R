@@ -8,7 +8,7 @@
 #' @param order.as.run Logical. Should the plots be arranged in the way that the model was run? Default FALSE.
 #' @param interactive Logical. Should the resulting plot be launched in an interactive way (the plotly package is required for this).
 #' @param first_date Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.
-#' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.
+#' @param grepl_variables Regular Expression Character. Can be used to select variables to be plotted.
 #' @param linewidth Numeric. Linewidth argument for the plot. Default is 1.
 #' @param return.data Logical. Do not return a plot but rather just the final dataset that has been created for the plot.
 #' @param ... Additional arguments passed to the plotting function.
