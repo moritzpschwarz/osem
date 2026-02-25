@@ -24,14 +24,18 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
       dplyr::bind_rows(time_samples,.) -> time_samples
   }
 
-  time_samples %>%
-    #dplyr::group_by(.data$dep_var) %>%
-    dplyr::summarise(min = min(.data$time),
-                     max = max(.data$time)) %>%
-    dplyr::distinct(dplyr::across(c("max","min"))) -> time_minmax
+  all_times <- time_samples %>%
+    dplyr::distinct(.data$time) %>%
+    dplyr::arrange(.data$time) %>%
+    dplyr::pull("time")
 
+  # time_samples %>%
+  #   #dplyr::group_by(.data$dep_var) %>%
+  #   dplyr::summarise(min = min(.data$time),
+  #                    max = max(.data$time)) %>%
+  #   dplyr::distinct(dplyr::across(c("max","min"))) -> time_minmax
   # With those times, we can now find the share to forecast
-  all_times <- seq(time_minmax$min,time_minmax$max, by = "quarter")
+  #all_times <- seq(time_minmax$min,time_minmax$max, by = "quarter")
   time_to_use <- all_times[ceiling(length(all_times)*sample_share):length(all_times)]
 
 
@@ -97,7 +101,9 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     start <- time_to_use[i]
     end <- time_to_use[length(time_to_use)]
     if(start == end){next}
-    nsteps <- length(seq.Date(from = as.Date(start), to = as.Date(end), by = "quarter")) - 1
+
+    #nsteps <- length(seq.Date(from = as.Date(start), to = as.Date(end), by = "quarter")) - 1
+    nsteps <- which(time_to_use == end) - which(time_to_use == start)
 
     if(!quiet){print(paste0("Forecast ", i, " from ", start, " to ", end))}
 

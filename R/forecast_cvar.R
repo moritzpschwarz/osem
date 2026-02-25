@@ -236,7 +236,7 @@ forecast_cvar <- function(model,
       # pick j-th draw from the stored uncertainties (only in *.all columns)
       mvar_all.estimates.single <- mvar_all.estimates.tibble %>%
         dplyr::mutate(
-          dplyr::across(dplyr::ends_with(".all"), ~ purrr::map(.x, \(v) v[[j]]))
+          dplyr::across(dplyr::ends_with(".all"), ~ purrr::map(.x, function(v) v[[j]]))
         )
 
       # combine with time index

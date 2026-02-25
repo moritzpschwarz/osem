@@ -213,7 +213,7 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
   transformations <- model$opts_df %>% dplyr::select("dependent", "log_opts")
   fulldata <- model$full_data
   maxtime <- fulldata %>% dplyr::filter(!grepl("\\.hat$", .data$na_item)) %>% tidyr::drop_na() %>% dplyr::pull("time") %>% max()
-  maxhorizon <- seq.Date(maxtime, by = "quarter", length.out = (n.ahead + 1))[n.ahead + 1]
+  maxhorizon <- seq.Date(maxtime, by = check_frequencies(model$processed_input_data)$freq, length.out = (n.ahead + 1))[n.ahead + 1]
 
   # check whether forecast origin same for all
   fulldata %>%
@@ -236,7 +236,7 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
     data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% tidyr::drop_na() %>% dplyr::arrange("time")
     # model identities in levels
     transformations_model <- if (type == "n") {
-      transformations %>% dplyr::filter(.data$dependent == depvar) %>% dplyr::pull("log_opts") %>% purrr::pluck(1) %>% dplyr::pull("depvar")
+      transformations %>% dplyr::filter(.data$dependent == depvar) %>% dplyr::pull("log_opts") %>% purrr::pluck(1) %>% dplyr::pull(depvar)
     } else {
       "level"
     }
