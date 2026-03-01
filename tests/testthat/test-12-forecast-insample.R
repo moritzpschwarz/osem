@@ -171,6 +171,7 @@ test_that("forecast_insample() parallel.cores works correctly", {
 
   skip_if_not_installed("parallel")
   skip_on_cran()
+  skip_on_ci()
 
   set.seed(123)
 

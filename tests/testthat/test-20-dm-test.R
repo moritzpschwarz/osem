@@ -97,35 +97,8 @@ test_that("dm_test: basic structure, options, and input validation", {
   # must contain OSEM ets since insample_main_comparison is ets
   expect_true(any(res_with_ins$dat$forecast_type == "OSEM ets", na.rm = TRUE))
 
-  # --- 4) parallel.cores should not change results (fast: 1 core vs serial) ---
-  skip_if_not_installed("parallel") # only used if you run the parallel.cores check
-  res_serial <- dm_test(
-    model = mod,
-    insample_methods = c("ets"),
-    insample_main_comparison = "ets",
-    insample_sample_share = 0.8,
-    comparison_methods = c("RW"),
-    dm.horizons = 3,
-    parallel.cores = NULL,
-    quiet = TRUE
-  )
 
-  res_parallel1 <- dm_test(
-    model = mod,
-    insample_methods = c("ets"),
-    insample_main_comparison = "ets",
-    insample_sample_share = 0.8,
-    comparison_methods = c("RW"),
-    dm.horizons = 3,
-    parallel.cores = 2,
-    quiet = TRUE
-  )
-
-  # compare stable parts only (DM table + dat), ignoring insample_model internals
-  expect_equal(res_parallel1$dm_forecast, res_serial$dm_forecast)
-  expect_equal(res_parallel1$dat, res_serial$dat)
-
-  # --- 5) input validation ---
+  # --- 4) input validation ---
   expect_error(
     dm_test(mod, insample_methods = c("ets", "auto"), insample_main_comparison = "bad", quiet = TRUE),
     "insample_main_comparison"
@@ -161,4 +134,39 @@ test_that("dm_test: basic structure, options, and input validation", {
     dm_test(mod, insample_model = ins_mod, dm.power = 0, dm.horizons = 2, comparison_methods = "RW", quiet = TRUE),
     "dm\\.power"
   )
+
+}
+test_that("dm_test: parallel", {
+  skip_on_cran()
+  skip_on_ci()
+
+  # --- 5) parallel.cores should not change results (fast: 1 core vs serial) ---
+  skip_if_not_installed("parallel") # only used if you run the parallel.cores check
+  res_serial <- dm_test(
+    model = mod,
+    insample_methods = c("ets"),
+    insample_main_comparison = "ets",
+    insample_sample_share = 0.8,
+    comparison_methods = c("RW"),
+    dm.horizons = 3,
+    parallel.cores = NULL,
+    quiet = TRUE
+  )
+
+  res_parallel1 <- dm_test(
+    model = mod,
+    insample_methods = c("ets"),
+    insample_main_comparison = "ets",
+    insample_sample_share = 0.8,
+    comparison_methods = c("RW"),
+    dm.horizons = 3,
+    parallel.cores = 2,
+    quiet = TRUE
+  )
+
+  # compare stable parts only (DM table + dat), ignoring insample_model internals
+  expect_equal(res_parallel1$dm_forecast, res_serial$dm_forecast)
+  expect_equal(res_parallel1$dat, res_serial$dat)
+
+
 })

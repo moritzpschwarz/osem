@@ -184,7 +184,7 @@ forecast_cvar <- function(model,
     dplyr::mutate(resid_value = cumsum(.data$resid_value), .by = c("draw","resid_name")) %>%
     dplyr::mutate(draw = paste0("run_", .data$draw)) %>%
     dplyr::group_by(.data$time, .data$resid_name) %>%
-    tidyr::nest(data = c(.data$draw, .data$resid_value)) %>%
+    tidyr::nest(data = c("draw", "resid_value")) %>%
     dplyr::ungroup() %>%
     tidyr::pivot_wider(
       id_cols = "time",
@@ -280,7 +280,7 @@ forecast_cvar <- function(model,
       tidyr::pivot_longer(-"time", names_to  = "na_item", values_to = "resid_draws") %>%
       tidyr::unnest("resid_draws") %>%                      # exposes draw + resid_value
       dplyr::mutate(iteration = as.integer(gsub("^run_", "", .data$draw))) %>%
-      dplyr::select(.data$na_item, .data$time, .data$iteration, resid_cum = .data$resid_value)
+      dplyr::select("na_item", "time", "iteration", resid_cum = "resid_value")
 
     cvar_forecasts.all <- cvar_forecasts.all %>%
       dplyr::left_join(residual_draws_long, by = c("na_item", "time", "iteration")) %>%

@@ -321,7 +321,7 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
     } else if (forecast_type == "RW") {
 
       last_row <- data %>%
-        tidyr::drop_na(.data$values) %>%
+        tidyr::drop_na("values") %>%
         dplyr::arrange(.data$time) %>%
         dplyr::slice_tail(n = 1)
 
