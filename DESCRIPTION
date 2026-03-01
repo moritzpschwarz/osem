@@ -1,7 +1,7 @@
 Package: osem
 Title: Open-Source Empirical Macro (OSEM) Model to forecast macro-economic as well as climate and energy variables
-Version: 0.0.3
-Date: 2025-02-05
+Version: 0.0.4
+Date: 2026-03-01
 Authors@R: c(
     person(given = "Jonas", family = "Kurle", role = c("aut"), comment = c(ORCID = "0000-0003-2197-2012")),
     person(given = "Moritz", family = "Schwarz", email = "moritz.schwarz@scmo.eu", role = c("aut", "cre"),
@@ -52,7 +52,8 @@ Suggests:
     imf.data,
     modelsummary,
     broom,
-    MASS
+    MASS, 
+    BVAR
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Remotes: gsucarrat/gets/gets#70
