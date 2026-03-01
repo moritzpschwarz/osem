@@ -79,7 +79,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
           tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
           dplyr::mutate(q = lubridate::quarter(.data$time),
                         q = factor(.data$q, levels = c(1,2,3,4))) %>%
-          dplyr::arrange("time") %>%
+          dplyr::arrange(.data$time) %>%
           {if(nrow(.) > 0){
             fastDummies::dummy_cols(.,
                                     select_columns = "q", remove_first_dummy = FALSE,
@@ -96,7 +96,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
             dplyr::mutate(time = cur_target_dates) %>%
             dplyr::mutate(q = lubridate::quarter(.data$time),
                           q = factor(.data$q, levels = c(1,2,3,4))) %>%
-            dplyr::arrange("time") %>%
+            dplyr::arrange(.data$time) %>%
             dplyr::relocate("time") %>%
             fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE,
                                     remove_selected_columns = TRUE) -> exog_data_nowcasting
@@ -127,7 +127,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
             dplyr::mutate(time = target_dates_missing) %>%
             dplyr::mutate(q = lubridate::quarter(.data$time),
                           q = factor(.data$q, levels = c(1,2,3,4))) %>%
-            dplyr::arrange("time") %>%
+            dplyr::arrange(.data$time) %>%
             dplyr::relocate("time") %>%
             fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE,
                                     remove_selected_columns = TRUE) %>%

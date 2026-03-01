@@ -142,7 +142,7 @@ diagnostics_unit_root <- function(model) {
     stopifnot(identical(length(trafo), 1L))
     data <- model$processed_input_data %>%
       dplyr::filter(.data$na_item == varname) %>%
-      dplyr::arrange("time")
+      dplyr::arrange(.data$time)
     if (trafo == "log") {
       data <- data %>%
         dplyr::mutate(
