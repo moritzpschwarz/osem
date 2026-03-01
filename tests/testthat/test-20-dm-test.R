@@ -134,8 +134,8 @@ test_that("dm_test: basic structure, options, and input validation", {
     dm_test(mod, insample_model = ins_mod, dm.power = 0, dm.horizons = 2, comparison_methods = "RW", quiet = TRUE),
     "dm\\.power"
   )
+})
 
-}
 test_that("dm_test: parallel", {
   skip_on_cran()
   skip_on_ci()
