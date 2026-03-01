@@ -210,39 +210,84 @@ forecast_sensitivity <- function(
                                                                                 .data$log_opt == "none" ~ .))) %>%
       dplyr::select(-"log_opt") -> all_forecasts_unnested_init
 
+    all_forecasts_unnested_mod %>%
+      tidyr::pivot_longer(-c("dep_var", "time")) %>%
+      dplyr::full_join(init$full_forecast_data %>%
+                         dplyr::select(c(dep_var = "na_item", central = "values", "time")),
+                       by = c("time", "dep_var")) %>%
+      dplyr::mutate(value = .data$value - .data$central,
+                    central = NULL) %>%
+
+      dplyr::rename(na_item = "dep_var", values = "value") %>%
+
+      dplyr::mutate(fit = "Forecast Uncertainty")  %>%
+
+      tidyr::drop_na("time","name") %>%
+      dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
+      dplyr::summarise(
+        p95 = stats::quantile(.data$values, probs = 0.95),
+        p05 = stats::quantile(.data$values, probs = 0.05),
+        p975 = stats::quantile(.data$values, probs = 0.975),
+        p025 = stats::quantile(.data$values, probs = 0.025),
+        p75 = stats::quantile(.data$values, probs = 0.75),
+        p25 = stats::quantile(.data$values, probs = 0.25)) %>%
+      dplyr::ungroup() -> all_forecasts_processed_q_mod
+
+    all_forecasts_unnested_init %>%
+      tidyr::pivot_longer(-c("dep_var", "time")) %>%
+      dplyr::full_join(init$full_forecast_data %>%
+                         dplyr::select(c(dep_var = "na_item", central = "values", "time")),
+                       by = c("time", "dep_var")) %>%
+      dplyr::mutate(value = .data$value - .data$central,
+                    central = NULL) %>%
+      dplyr::rename(na_item = "dep_var", values = "value") %>%
+
+      dplyr::mutate(fit = "Forecast Uncertainty")  %>%
+
+      tidyr::drop_na("time","name") %>%
+      dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
+      dplyr::summarise(
+        p95 = stats::quantile(.data$values, probs = 0.95),
+        p05 = stats::quantile(.data$values, probs = 0.05),
+        p975 = stats::quantile(.data$values, probs = 0.975),
+        p025 = stats::quantile(.data$values, probs = 0.025),
+        p75 = stats::quantile(.data$values, probs = 0.75),
+        p25 = stats::quantile(.data$values, probs = 0.25)) %>%
+      dplyr::ungroup() -> all_forecasts_processed_q_init
 
 
-    id <- all_forecasts_unnested_mod %>%
-      dplyr::select("dep_var", "time")
+    # id <- all_forecasts_unnested_mod %>%
+    #   dplyr::select("dep_var", "time")
+    #
+    # mod_alls <- all_forecasts_unnested_mod %>%
+    #   dplyr::select(-c("dep_var", "time"))
+    #
+    # init_alls <- all_forecasts_unnested_init %>%
+    #   dplyr::select(-c("dep_var", "time"))
+    #
+    # all_diffs <- (mod_alls - init_alls) %>% dplyr::bind_cols(id, .)
+    #
+    # if(nrow(all_diffs) > 0){
+    #   all_diffs %>%
+    #     tidyr::pivot_longer(-c("time", "dep_var")) %>%
+    #     dplyr::rename(na_item = "dep_var", values = "value") %>%
+    #
+    #     dplyr::mutate(fit = "Forecast Uncertainty")  %>%
+    #
+    #     tidyr::drop_na("time") %>%
+    #     dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
+    #     dplyr::summarise(
+    #       p95 = stats::quantile(.data$values, probs = 0.95),
+    #       p05 = stats::quantile(.data$values, probs = 0.05),
+    #       p975 = stats::quantile(.data$values, probs = 0.975),
+    #       p025 = stats::quantile(.data$values, probs = 0.025),
+    #       p75 = stats::quantile(.data$values, probs = 0.75),
+    #       p25 = stats::quantile(.data$values, probs = 0.25)) %>%
+    #     dplyr::ungroup() -> all_forecasts_processed_q
+    # }
 
-    mod_alls <- all_forecasts_unnested_mod %>%
-      dplyr::select(-c("dep_var", "time"))
-
-    init_alls <- all_forecasts_unnested_init %>%
-      dplyr::select(-c("dep_var", "time"))
-
-    all_diffs <- (mod_alls - init_alls) %>% dplyr::bind_cols(id, .)
-
-    if(nrow(all_diffs) > 0){
-      all_diffs %>%
-        tidyr::pivot_longer(-c("time", "dep_var")) %>%
-        dplyr::rename(na_item = "dep_var", values = "value") %>%
-
-        dplyr::mutate(fit = "Forecast Uncertainty")  %>%
-
-        tidyr::drop_na("time") %>%
-        dplyr::group_by(.data$na_item, .data$time, .data$fit) %>%
-        dplyr::summarise(
-          p95 = stats::quantile(.data$values, probs = 0.95),
-          p05 = stats::quantile(.data$values, probs = 0.05),
-          p975 = stats::quantile(.data$values, probs = 0.975),
-          p025 = stats::quantile(.data$values, probs = 0.025),
-          p75 = stats::quantile(.data$values, probs = 0.75),
-          p25 = stats::quantile(.data$values, probs = 0.25)) %>%
-        dplyr::ungroup() -> all_forecasts_processed_q
-    }
-
-    return(all_forecasts_processed_q)
+    # return(all_forecasts_processed_q)
+    return(list(mod = all_forecasts_processed_q_mod, init = all_forecasts_processed_q_init))
   }
   process_wrapper <- function(forecast_list, inital_forecast,exclude_zero_change){
 
@@ -264,11 +309,23 @@ forecast_sensitivity <- function(
       dplyr::select(-c("forecasts", "fit", "inital_forecast", "all")) %>%
       dplyr::rename(init = .data$values) -> inital_forecast_tib_central
 
+    # dplyr::tibble(modified = names(forecast_list),
+    #               mod = forecast_list,
+    #               init = list(inital_forecast)) %>%
+    #   dplyr::mutate(all = purrr::map2(.data$mod, .data$init, process_forecasts_all_diff)) %>%
+    #   dplyr::select(-c("mod", "init")) %>%
+    #   tidyr::unnest("all") -> uncertainties
+
     dplyr::tibble(modified = names(forecast_list),
                   mod = forecast_list,
                   init = list(inital_forecast)) %>%
       dplyr::mutate(all = purrr::map2(.data$mod, .data$init, process_forecasts_all_diff)) %>%
       dplyr::select(-c("mod", "init")) %>%
+      dplyr::mutate(all = purrr::map(.data$all, function(x){
+        x$mod %>%
+          dplyr::mutate(fit = "Modified Forecast") %>%
+          dplyr::bind_rows(x$init %>% dplyr::mutate(fit = "Original Forecast"))
+      })) %>%
       tidyr::unnest("all") -> uncertainties
 
     central_modified %>%
@@ -299,9 +356,11 @@ forecast_sensitivity <- function(
 
   }
 
+
   # Applying Process functions -------------------------------------------------------
-  process_wrapper(forecast_list, inital_forecast, exclude_zero_change = exclude_zero_change) -> processed_forecasts
-  if(impulse_response) {process_wrapper(forecast_list_impulse, inital_forecast, exclude_zero_change = exclude_zero_change) -> processed_forecasts_impulse}
+  processed_forecasts <- process_wrapper(forecast_list, inital_forecast, exclude_zero_change = exclude_zero_change)
+
+  if(impulse_response){processed_forecasts_impulse <- process_wrapper(forecast_list_impulse, inital_forecast, exclude_zero_change = exclude_zero_change)}
 
 
   # Figures -----------------------------------------------------------------
@@ -311,9 +370,9 @@ forecast_sensitivity <- function(
 
   if(include_uncertainty){
     forecast_uncertainty <- list(
-      ggplot2::geom_ribbon(data = processed_forecasts$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p025, ymax = .data$p975), fill = "blue", alpha = 0.1, inherit.aes = FALSE),
-      ggplot2::geom_ribbon(data = processed_forecasts$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p05, ymax = .data$p95), fill = "blue", alpha = 0.1, inherit.aes = FALSE),
-      ggplot2::geom_ribbon(data = processed_forecasts$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p25, ymax = .data$p75), fill = "blue", alpha = 0.1, inherit.aes = FALSE))
+      ggplot2::geom_ribbon(data = processed_forecasts$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p025, ymax = .data$p975, fill = .data$fit), alpha = 0.1, inherit.aes = FALSE),
+      ggplot2::geom_ribbon(data = processed_forecasts$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p05, ymax = .data$p95, fill = .data$fit), alpha = 0.1, inherit.aes = FALSE),
+      ggplot2::geom_ribbon(data = processed_forecasts$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p25, ymax = .data$p75, fill = .data$fit), alpha = 0.1, inherit.aes = FALSE))
   } else {
     forecast_uncertainty <- NULL
   }
@@ -332,7 +391,7 @@ forecast_sensitivity <- function(
 
     #ggplot2::scale_color_brewer(palette = "Spectral", name = "Exogenous Variable modified") +
     ggplot2::labs(#title = paste0("Effect of modifying exogenous values by ",size*100,"%."),
-      title = paste0("Effect of modifying exogenous variables (Columns) by ",if(size_type == "pct") {
+      title = paste0("Forecast Difference Response of modifying exogenous variables by ",if(size_type == "pct") {
         paste0(c(size*100, "%.\n"), collapse = "")
       } else {
         paste0(size,".\n")
@@ -352,9 +411,10 @@ forecast_sensitivity <- function(
   if(impulse_response){
 
     if(include_uncertainty){
-      impulse_uncertainty <- list(ggplot2::geom_ribbon(data = processed_forecasts_impulse$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p025, ymax = .data$p975), fill = "blue", alpha = 0.1, inherit.aes = FALSE),
-                                  ggplot2::geom_ribbon(data = processed_forecasts_impulse$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p05, ymax = .data$p95), fill = "blue", alpha = 0.1, inherit.aes = FALSE),
-                                  ggplot2::geom_ribbon(data = processed_forecasts_impulse$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p25, ymax = .data$p75), fill = "blue", alpha = 0.1, inherit.aes = FALSE))
+      impulse_uncertainty <- list(ggplot2::geom_ribbon(data = processed_forecasts_impulse$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p025, ymax = .data$p975, fill = .data$fit), alpha = 0.1, inherit.aes = FALSE),
+                                  ggplot2::geom_ribbon(data = processed_forecasts_impulse$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p05, ymax = .data$p95, fill = .data$fit), alpha = 0.1, inherit.aes = FALSE),
+                                  ggplot2::geom_ribbon(data = processed_forecasts_impulse$uncertainties, ggplot2::aes(x = .data$time, ymin = .data$p25, ymax = .data$p75, fill = .data$fit), alpha = 0.1, inherit.aes = FALSE))
+
     } else {
       impulse_uncertainty <- NULL
     }
@@ -372,10 +432,10 @@ forecast_sensitivity <- function(
 
       ggplot2::scale_color_brewer(palette = "Spectral", name = "Exogenous Variable modified") +
       ggplot2::labs(#title = paste0("Effect of modifying exogenous values by ",size*100,"%."),
-        title = paste0("Impulse response of modifying exogenous variables (Columns) by ",if(size_type == "pct") {
-          paste0(c(size*100, "%.\n"), collapse = "")
+        title = paste0("Forecast Difference Response of modifying exogenous variables by ",if(size_type == "pct") {
+          paste0(c(size*100, "% Impulse.\n"), collapse = "")
         } else {
-          paste0(size,".\n")
+          paste0(size," Impulse.\n")
         }, collapse = ""),
         x = NULL,
         y = NULL) +
