@@ -70,9 +70,15 @@ mod <- run_model(
 
 set.seed(1298)
 mod_insfc <- forecast_insample(mod,
-  sample_share = 0.95, quiet = TRUE, plot = FALSE,
-  exog_fill_method = c("AR", "auto")
+                               sample_share = 0.95, quiet = TRUE, plot = FALSE,
+                               exog_fill_method = c("AR", "auto")
 )
+
+# mod_insfc_par <- forecast_insample(mod,
+#                                sample_share = 0.95, quiet = TRUE, plot = FALSE,
+#                                parallel.cores = parallel::detectCores()-1,
+#                                exog_fill_method = c("AR", "auto")
+# )
 
 test_that("Testing general insample forecasting", {
   # testing the output
@@ -156,6 +162,88 @@ test_that("Testing insample forecasting error messages", {
   )
 
   expect_error(forecast_insample(model, sample_share = 0.99, quiet = TRUE),
-    regexp = "Not enough models available for insample comparison"
+               regexp = "Not enough models available for insample comparison"
+  )
+})
+
+
+test_that("forecast_insample() parallel.cores works correctly", {
+
+  skip_if_not_installed("parallel")
+  skip_on_cran()
+
+  set.seed(123)
+
+  # --- Serial baseline ---
+  res_serial <- forecast_insample(
+    model = mod,
+    parallel.cores = NULL,
+    sample_share = 0.98,
+    exog_fill_method = "ets",
+    quiet = TRUE
+  )
+
+  set.seed(123)
+  # --- Parallel (1 core) ---
+  res_parallel1 <- forecast_insample(
+    model = mod,
+    parallel.cores = 1,
+    sample_share = 0.98,
+    exog_fill_method = "ets",
+    quiet = TRUE
+  )
+
+  # Results identical
+  expect_equal(res_parallel1$central, res_serial$central)
+  expect_equal(res_parallel1$uncertainty, res_serial$uncertainty)
+
+
+  # --- Parallel (2 cores) if available ---
+  ncores <- parallel::detectCores()
+  if (!is.na(ncores) && ncores >= 2) {
+    set.seed(123)
+    res_parallel2 <- forecast_insample(
+      model = mod,
+      parallel.cores = 2,
+      sample_share = 0.98,
+      exog_fill_method = "ets",
+      quiet = TRUE
+    )
+
+    expect_equal(res_parallel2$central, res_serial$central)
+    expect_equal(res_parallel2$uncertainty, res_serial$uncertainty)
+  }
+
+  # --- Structure and ordering checks ---
+  expect_identical(names(res_parallel1), names(res_serial))
+
+  if (!is.null(res_serial$rmsfe_values)) {
+    expect_identical(res_parallel1$rmsfe_values, res_serial$rmsfe_values)
+  }
+
+  if (!is.null(res_serial$forecast_failures)) {
+    expect_identical(res_parallel1$forecast_failures, res_serial$forecast_failures)
+  }
+
+
+  # --- Invalid argument handling ---
+  expect_error(
+    forecast_insample(model = mod, parallel.cores = -1, quiet = TRUE),
+    "parallel.cores"
+  )
+
+  expect_error(
+    forecast_insample(model = mod, parallel.cores = 0, quiet = TRUE),
+    "parallel.cores"
+  )
+
+  expect_error(
+    forecast_insample(model = mod, parallel.cores = 1.5, quiet = TRUE),
+    "parallel.cores"
+  )
+
+  expect_error(
+    forecast_insample(model = mod, parallel.cores = "two", quiet = TRUE),
+    "parallel.cores"
   )
 })

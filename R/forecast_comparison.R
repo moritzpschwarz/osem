@@ -36,7 +36,7 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
     type <- modules[i, "type"][[1]]
     depvar <- modules[i, "dependent"][[1]]
 
-    if (forecast_type == "AR") {
+    if (forecast_type == "ar") {
 
       if (type == "n") { # can extract data from module
         estimated_model <- modules[i, "model"][[1]][[1]]
@@ -57,7 +57,12 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
           fc_level <- fc
         }
       } else if (type == "d") { # do model object to extract data from
-        mintime_model <- fulldata %>% dplyr::filter(.data$na_item == paste0(depvar, ".hat")) %>% tidyr::drop_na() %>% dplyr::pull("time") %>% min() # first model value
+        mintime_model <- fulldata %>%
+          dplyr::filter(.data$na_item == paste0(depvar, ".hat")) %>%
+          tidyr::drop_na() %>%
+          dplyr::pull("time") %>%
+          min() # first model value
+
         data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% dplyr::filter(.data$time >= mintime_model)
         maxtime_model <- data %>% tidyr::drop_na() %>% dplyr::pull("time") %>% max()
         n.ahead_model <- length(seq.Date(maxtime_model, maxhorizon, by = "quarter")) - 1
@@ -79,15 +84,17 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
       } else {
         stop("type not recognized")
       }
-      out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1], values = fc_level)
+      out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1],
+                              values = fc_level)
       out <- dplyr::bind_rows(out, out_model)
 
     } else if (forecast_type == "RW") {
 
-      data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% tidyr::drop_na() %>% dplyr::arrange("time") %>% dplyr::slice_tail(n = 1)
+      data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% tidyr::drop_na() %>% dplyr::arrange(.data$time) %>% dplyr::slice_tail(n = 1)
       maxtime_model <- data %>% dplyr::pull("time")
       n.ahead_model <- length(seq.Date(maxtime_model, maxhorizon, by = "quarter")) - 1
-      out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1], values = data$values)
+      out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1],
+                              values = data$values)
       out <- dplyr::bind_rows(out, out_model)
 
     } else if (forecast_type == "auto"){
@@ -111,7 +118,12 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
           fc_level <- fc
         }
       } else if (type == "d") { # do model object to extract data from
-        mintime_model <- fulldata %>% dplyr::filter(.data$na_item == paste0(depvar, ".hat")) %>% tidyr::drop_na() %>% dplyr::pull("time") %>% min() # first model value
+        mintime_model <- fulldata %>%
+          dplyr::filter(.data$na_item == paste0(depvar, ".hat")) %>%
+          tidyr::drop_na() %>%
+          dplyr::pull("time") %>%
+          min() # first model value
+
         data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% dplyr::filter(.data$time >= mintime_model)
         maxtime_model <- data %>% tidyr::drop_na() %>% dplyr::pull("time") %>% max()
         n.ahead_model <- length(seq.Date(maxtime_model, maxhorizon, by = "quarter")) - 1
@@ -129,7 +141,8 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
       } else {
         stop("type not recognized")
       }
-      out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1], values = fc_level)
+      out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1],
+                              values = fc_level)
       out <- dplyr::bind_rows(out, out_model)
 
     } else if (forecast_type == "ets"){
@@ -153,7 +166,12 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
           fc_level <- fc
         }
       } else if (type == "d") { # do model object to extract data from
-        mintime_model <- fulldata %>% dplyr::filter(.data$na_item == paste0(depvar, ".hat")) %>% tidyr::drop_na() %>% dplyr::pull("time") %>% min() # first model value
+        mintime_model <- fulldata %>%
+          dplyr::filter(.data$na_item == paste0(depvar, ".hat")) %>%
+          tidyr::drop_na() %>%
+          dplyr::pull("time") %>%
+          min() # first model value
+
         data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% dplyr::filter(.data$time >= mintime_model)
         maxtime_model <- data %>% tidyr::drop_na() %>% dplyr::pull("time") %>% max()
         n.ahead_model <- length(seq.Date(maxtime_model, maxhorizon, by = "quarter")) - 1
@@ -171,7 +189,8 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
       } else {
         stop("type not recognized")
       }
-      out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1], values = fc_level)
+      out_model <- data.frame(na_item = depvar, time = seq.Date(maxtime_model, maxhorizon, by = "quarter")[-1],
+                              values = fc_level)
       out <- dplyr::bind_rows(out, out_model)
 
     } else {
@@ -190,6 +209,7 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
 
 #' Creates baseline forecasts for comparison with OSEM
 #' @inheritParams forecast_comparison
+#' @param grepl_variables Optional character vector of variable names to filter the forecast comparison to. If NULL (default), forecasts are created for all variables in the model.
 #'
 #' @return Returns a data frame with the point forecasts.
 #'
@@ -198,14 +218,15 @@ forecast_comparison <- function(model, n.ahead, forecast_type = c("AR", "RW"), l
 #' observation across all modules. For variables whose forecast origin is before that, it creates additional forecasts
 #' up to the forecast origin. Hence, the actual number of forecasted values may differ across variables.
 #'
-#' When the forecast type is "AR", the function first transforms the variable into logs (if only positive values
+#' When the forecast type is "ar", the function first transforms the variable into logs (if only positive values
 #' observed), otherwise using the asinh transformation. Reported forecast values are after conversion back to the level
 #' of the variable.
 #'
 #' In contrast to forecast_comparison(), we use the maximum available data for the univariate forecasts rather than ensuring that the same subsample is used on OSEM and the univariate models.
 
 
-forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), lags = NULL, mc = TRUE) {
+forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
+                                 lags = NULL, mc = TRUE, grepl_variables = NULL) {
 
   # extract model info
   lags <- if (is.null(lags)) {model$args$max.ar} else {lags}
@@ -223,17 +244,30 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
     dplyr::summarise(maxtime = max(.data$time)) %>%
     dplyr::pull("maxtime") %>%
     unique() -> maxtimes
-  stopifnot(length(maxtimes) == 1L)
+
+  if(length(maxtimes) != 1L){
+    return(NULL)
+  }
+  #stopifnot(length(maxtimes) == 1L)
+  #if(length(maxtimes) == 1L){return(NULL)}
 
   # set up forecast output
-  out <- data.frame()
+  out <- dplyr::tibble()
+  #all_forecast_paths <- list()
 
   for (i in 1:NROW(modules)) {
 
     type <- modules[i, "type"][[1]]
     depvar <- modules[i, "dependent"][[1]]
+
+    if(!is.null(grepl_variables)){
+      if(!grepl(grepl_variables, depvar)){
+        next
+      }
+    }
+
     # now use all available data
-    data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% tidyr::drop_na() %>% dplyr::arrange("time")
+    data <- fulldata %>% dplyr::filter(.data$na_item == depvar) %>% tidyr::drop_na() %>% dplyr::arrange(.data$time)
     # model identities in levels
     transformations_model <- if (type == "n") {
       transformations %>% dplyr::filter(.data$dependent == depvar) %>% dplyr::pull("log_opts") %>% purrr::pluck(1) %>% dplyr::pull(depvar)
@@ -255,7 +289,7 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
     # extract y variable
     y <- zoo::zoo(x = data$values_trans, order.by = data$time)
 
-    if (forecast_type == "AR") {
+    if (forecast_type == "ar") {
 
       ar_model <- gets::arx(y = y, mc = mc, ar = 1:lags)
       ar_model$call$mc <- mc
@@ -268,14 +302,48 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
       } else {
         fc_level <- fc
       }
-      out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- dplyr::bind_rows(out, out_model)
+      origin_date <- zoo::index(y[length(y)])
+
+      temp_path <- data.frame(
+        Origin_Date = rep(origin_date, n.ahead),
+        Horizon = 1:n.ahead,
+        na_item = rep(depvar, n.ahead),
+        #time = future_time,
+        values = fc_level,
+        stringsAsFactors = FALSE
+      ) %>%
+        tidyr::pivot_wider(id_cols = c("Origin_Date", "Horizon"),
+                           names_from = "na_item",
+                           values_from = "values")
+
+      out <- out %>% dplyr::bind_rows(temp_path)
 
     } else if (forecast_type == "RW") {
 
-      fc_level <- data %>% tidyr::drop_na() %>% dplyr::arrange("time") %>% dplyr::slice_tail(n = 1) %>% dplyr::pull("values")
-      out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- dplyr::bind_rows(out, out_model)
+      last_row <- data %>%
+        tidyr::drop_na(.data$values) %>%
+        dplyr::arrange(.data$time) %>%
+        dplyr::slice_tail(n = 1)
+
+      fc_level <- last_row %>% dplyr::pull(.data$values)
+      origin_date <- last_row %>% dplyr::pull(.data$time)
+
+      # Future dates: exactly n.ahead quarterly steps after origin_date
+      future_time <- seq.Date(from = origin_date, by = "quarter", length.out = n.ahead + 1L)[-1L]
+
+      temp_path <- data.frame(
+        Origin_Date = rep(origin_date, n.ahead),
+        Horizon = 1:n.ahead,
+        na_item = rep(depvar, n.ahead),
+        #time = future_time,
+        values = rep(fc_level, n.ahead),
+        stringsAsFactors = FALSE
+      ) %>%
+        tidyr::pivot_wider(id_cols = c("Origin_Date", "Horizon"),
+                           names_from = "na_item",
+                           values_from = "values")
+
+      out <- out %>% dplyr::bind_rows(temp_path)
 
     } else if (forecast_type == "auto") {
 
@@ -288,8 +356,25 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
       } else {
         fc_level <- fc$mean
       }
-      out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- dplyr::bind_rows(out, out_model)
+      #out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
+      #out <- dplyr::bind_rows(out, out_model)
+
+      origin_date <- zoo::index(y[length(y)])
+
+      temp_path <- data.frame(
+        Origin_Date = rep(origin_date, n.ahead),
+        Horizon = 1:n.ahead,
+        na_item = rep(depvar, n.ahead),
+        #time = future_time,
+        values = fc_level,
+        stringsAsFactors = FALSE
+      ) %>%
+        tidyr::pivot_wider(id_cols = c("Origin_Date", "Horizon"),
+                           names_from = "na_item",
+                           values_from = "values")
+
+      out <- out %>% dplyr::bind_rows(temp_path)
+
 
     } else if (forecast_type == "ets"){
 
@@ -302,12 +387,233 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("AR", "RW"), 
       } else {
         fc_level <- fc$mean
       }
-      out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
-      out <- dplyr::bind_rows(out, out_model)
+      origin_date <- zoo::index(y[length(y)])
+
+      temp_path <- data.frame(
+        Origin_Date = rep(origin_date, n.ahead),
+        Horizon = 1:n.ahead,
+        na_item = rep(depvar, n.ahead),
+        #time = future_time,
+        values = fc_level,
+        stringsAsFactors = FALSE
+      ) %>%
+        tidyr::pivot_wider(id_cols = c("Origin_Date", "Horizon"),
+                           names_from = "na_item",
+                           values_from = "values")
+
+      out <- out %>% dplyr::bind_rows(temp_path)
+
+      # out_model <- data.frame(na_item = depvar, time = seq.Date(from = maxtime, to = maxhorizon, by = "quarter")[-1], values = fc_level)
+      # out <- dplyr::bind_rows(out, out_model)
+
+    } else if (forecast_type %in% c("VAR", "BVAR")){
+
+      type <- modules[i, "type"][[1]]
+      depvar <- modules[i, "dependent"][[1]]
+      indep <- modules[i, "indep"][[1]][[1]]
+
+      if(identical(indep, character(0))){next}
+
+      # now use all available data
+      data_init <- fulldata %>% dplyr::filter(.data$na_item %in% c(depvar,indep)) %>% tidyr::drop_na() %>% dplyr::arrange(.data$time)
+      # model identities in levels
+      transformations_model <- if (type == "n") {
+        transformations %>%
+          dplyr::filter(.data$dependent == depvar) %>%
+          dplyr::pull("log_opts") %>%
+          purrr::pluck(1) %>%
+          dplyr::as_tibble() %>%
+          tidyr::pivot_longer(cols = dplyr::everything(), names_to = "na_item",
+                              values_to = "transformation")
+      } else {
+        dplyr::tibble(na_item = depvar, transformation = "level")
+      }
+
+      stopifnot(all(transformations_model$transformation %in% c("log", "asinh", "level")))
+
+      data <- data_init %>%
+        dplyr::full_join(transformations_model, by = "na_item") %>%
+        dplyr::mutate(values_trans = .data$values)
+
+      i_log   <- data$transformation == "log"
+      i_asinh <- data$transformation == "asinh"
+      i_level <- data$transformation == "level" | is.na(data$transformation)
+
+      data$values_trans[i_log]   <- log(data$values[i_log])
+      data$values_trans[i_asinh] <- asinh(data$values[i_asinh])
+
+      # does variable exist for maxtime in the data?
+      stopifnot(max(data$time) == maxtime)
+      # extract y variable
+      # y <- zoo::zoo(x = data$values_trans, order.by = data$time)
+
+      check_frequencies(data) -> freqs
+
+      if(length(unique(freqs$frequency)) > 1L){
+        stop("variables have different frequencies, cannot estimate VAR")
+      }
+
+      if(freqs$frequency == "3 months"){
+
+        df <- data %>%
+          dplyr::arrange(.data$time) %>%
+          dplyr::select(-c("transformation")) %>%
+          tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values_trans") %>%
+          dplyr::select(-"time") %>%
+          tidyr::drop_na()
+
+        time <- data %>%
+          dplyr::arrange(.data$time) %>%
+          dplyr::select(-c("transformation")) %>%
+          tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values_trans") %>%
+          dplyr::pull("time")
+
+        start_year <- as.integer(format(min(time), "%Y"))
+        start_qtr  <- ((as.integer(format(min(time), "%m")) - 1) %/% 3) + 1
+
+        if(ncol(df) < 2L){
+          next
+        }
+
+        x_ts <- stats::ts(df, start = c(start_year, start_qtr), frequency = 4)
+      } else if (freqs$frequency == "year"){
+        df <- data %>%
+          dplyr::arrange(.data$time) %>%
+          dplyr::select(-c("transformation")) %>%
+          tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values_trans") %>%
+          dplyr::select(-"time") %>%
+          tidyr::drop_na()
+
+        if(ncol(df) < 2L){
+          next
+        }
+
+        time <- data %>%
+          dplyr::arrange(.data$time) %>%
+          dplyr::select(-c("transformation")) %>%
+          tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values_trans") %>%
+          dplyr::pull("time")
+
+        start_year <- as.integer(format(min(time), "%Y"))
+
+        x_ts <- stats::ts(df, start = start_year, frequency = 1)
+      } else {
+        stop("frequency not recognized")
+      }
+
+      if(forecast_type == "VAR"){
+
+        var_model <- vars::VAR(x_ts, p = lags, type = "const") # assuming fixed lags
+        #var_model <- VAR(train_data, p = VARselect(train_data, lag.max = 8, type = "const")$selection["AIC(n)"], type = "const") # dynamically selecting lags up to 8
+
+        var_forecast <- stats::predict(var_model, n.ahead = n.ahead)
+
+        # Get the date this forecast is being made FROM (the last observation in the training set)
+        #origin_date <- var_data$time[t]
+        origin_date <- maxtime
+
+        # Initialize a temporary dataframe for this specific window's path
+        temp_path <- data.frame(
+          Origin_Date = rep(origin_date, n.ahead),
+          Horizon = 1:n.ahead,
+          dep_var = rep(depvar, n.ahead) # Assuming we want to store the dependent variable's forecasts
+        )
+        # Extract the full 1 to h point forecasts for all variables
+        for (var_name in colnames(x_ts)) {
+          temp_path[[var_name]] <- var_forecast$fcst[[var_name]][, "fcst"]
+        }
+        # Add this window's path to our list
+        #all_forecast_paths[[length(all_forecast_paths) + 1]] <- temp_path
+
+        # use transformations_model to convert back to levels
+        temp_path_unconv <- temp_path %>%
+          tidyr::pivot_longer(cols = -c("Origin_Date", "Horizon", "dep_var"), names_to = "na_item", values_to = "values") %>%
+          dplyr::left_join(transformations_model, by = "na_item")
+
+        i_log   <- temp_path_unconv$transformation == "log"
+        i_asinh <- temp_path_unconv$transformation == "asinh"
+        i_level <- temp_path_unconv$transformation == "level" | is.na(temp_path_unconv$transformation)
+
+        temp_path_unconv$values[i_log]   <- exp(temp_path_unconv$values[i_log])
+        temp_path_unconv$values[i_asinh] <- sinh(temp_path_unconv$values[i_asinh])
+
+        temp_path <- temp_path_unconv %>%
+          tidyr::pivot_wider(id_cols = c("Origin_Date", "Horizon","dep_var"),
+                             names_from = "na_item",
+                             values_from = "values")
+
+        out <- out %>% dplyr::bind_rows(temp_path)
+
+
+      } else if (forecast_type == "BVAR"){
+        # Apply BVAR
+        # Expanding Window Loop for BVAR
+        # Note: MCMC sampling takes more computational time,
+        # so this will run slower than a standard VAR
+        #print(paste0("Estimating BVAR for variable ", depvar, " with ", length(colnames(x_ts)), " variables and ", lags, " lags."))
+        # 1. Calculate the standard deviation of the differences for each column (Getting around default priors issue by mannually calculating psi)
+        manual_psi <- apply(x_ts, 2, function(x) stats::sd(diff(x), na.rm = TRUE))
+
+        # 2. Failsafe: Ensure no variance is exactly zero (which would also crash the prior)
+        manual_psi[manual_psi < 1e-6] <- 1e-6
+
+        # 3. Build a custom prior using our manual psi
+        my_priors <- BVAR::bv_priors(
+          mn = BVAR::bv_minnesota(psi = BVAR::bv_psi(mode = manual_psi))
+        )
+
+        # a. Estimate the BVAR model
+        # We use the default Minnesota Prior here. 'verbose = FALSE' keeps the console clean.
+        bvar_model <- BVAR::bvar(x_ts, lags = lags, priors=my_priors, verbose = FALSE)
+        #bvar_model <- bvar(train_data, lags = var_lag, verbose = FALSE)
+
+        # b. Forecast h steps ahead
+        # This generates draws from the posterior predictive distribution
+        bvar_forecast <- stats::predict(bvar_model, horizon = n.ahead)
+
+        # Get the date this forecast is being made FROM
+        origin_date <- maxtime
+
+        # Initialize a temporary dataframe for this specific window's path
+        temp_path <- data.frame(
+          Origin_Date = rep(origin_date, n.ahead),
+          Horizon = 1:n.ahead,
+          dep_var = rep(depvar, n.ahead) # Assuming we want to store the dependent variable's forecasts
+        )
+
+        # Extract the full 1 to h point forecasts for all variables
+        for (i in 1:ncol(x_ts)) {
+          var_name <- colnames(x_ts)[i]
+          draws_matrix <- matrix(bvar_forecast$fcast[, , i], ncol = n.ahead)
+          temp_path[[var_name]] <- apply(draws_matrix, MARGIN = 2, FUN = stats::median)
+        }
+
+        # use transformations_model to convert back to levels
+        temp_path_unconv <- temp_path %>%
+          tidyr::pivot_longer(cols = -c("Origin_Date", "Horizon", "dep_var"), names_to = "na_item", values_to = "values") %>%
+          dplyr::left_join(transformations_model, by = "na_item")
+
+        i_log   <- temp_path_unconv$transformation == "log"
+        i_asinh <- temp_path_unconv$transformation == "asinh"
+        i_level <- temp_path_unconv$transformation == "level" | is.na(temp_path_unconv$transformation)
+
+        temp_path_unconv$values[i_log]   <- exp(temp_path_unconv$values[i_log])
+        temp_path_unconv$values[i_asinh] <- sinh(temp_path_unconv$values[i_asinh])
+
+        temp_path <- temp_path_unconv %>%
+          tidyr::pivot_wider(id_cols = c("Origin_Date", "Horizon","dep_var"),
+                             names_from = "na_item",
+                             values_from = "values")
+
+
+        out <- out %>% dplyr::bind_rows(temp_path %>% dplyr::mutate(forecast_type = "BVAR"))
+      }
 
     } else {
       stop("unknown model type")
     }
+
+
 
   } # end loop across modules
 
