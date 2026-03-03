@@ -459,14 +459,13 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
           dplyr::arrange(.data$time) %>%
           dplyr::select(-c("transformation")) %>%
           tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values_trans") %>%
-          dplyr::select(-"time") %>%
+          #dplyr::select(-"time") %>%
           tidyr::drop_na()
 
-        time <- data %>%
-          dplyr::arrange(.data$time) %>%
-          dplyr::select(-c("transformation")) %>%
-          tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values_trans") %>%
+        time <- df %>%
           dplyr::pull("time")
+
+        df <- df %>% dplyr::select(-"time")
 
         start_year <- as.integer(format(min(time), "%Y"))
         start_qtr  <- ((as.integer(format(min(time), "%m")) - 1) %/% 3) + 1
@@ -481,18 +480,17 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
           dplyr::arrange(.data$time) %>%
           dplyr::select(-c("transformation")) %>%
           tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values_trans") %>%
-          dplyr::select(-"time") %>%
+          #dplyr::select(-"time") %>%
           tidyr::drop_na()
 
         if(ncol(df) < 2L){
           next
         }
 
-        time <- data %>%
-          dplyr::arrange(.data$time) %>%
-          dplyr::select(-c("transformation")) %>%
-          tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values_trans") %>%
+        time <- df %>%
           dplyr::pull("time")
+
+        df <- df %>% dplyr::select(-"time")
 
         start_year <- as.integer(format(min(time), "%Y"))
 
@@ -503,7 +501,21 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
 
       if(forecast_type == "VAR"){
 
-        var_model <- vars::VAR(x_ts, p = lags, type = "const") # assuming fixed lags
+        max_feasible_lag_vars <- function(x, type = "const") {
+          T <- nrow(x); K <- ncol(x)
+          det_terms <- switch(type,
+                              "const" = 1,
+                              "trend" = 2,     # const + trend
+                              "both"  = 2,     # const + trend (vars treats "both" similarly)
+                              "none"  = 0,
+                              stop("Unsupported type")
+          )
+          # strict: need df > 0: (T - p) - (Kp + det_terms) > 0
+          floor((T - det_terms - 1) / (K + 1))
+        }
+        var_lag <- suppressWarnings(vars::VARselect(x_ts, lag.max = max_feasible_lag_vars(x_ts), type = "const")$selection["AIC(n)"])
+
+        var_model <- vars::VAR(x_ts, p = var_lag, type = "const") # assuming fixed lags
         #var_model <- VAR(train_data, p = VARselect(train_data, lag.max = 8, type = "const")$selection["AIC(n)"], type = "const") # dynamically selecting lags up to 8
 
         var_forecast <- stats::predict(var_model, n.ahead = n.ahead)
@@ -540,12 +552,14 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
         temp_path <- temp_path_unconv %>%
           tidyr::pivot_wider(id_cols = c("Origin_Date", "Horizon","dep_var"),
                              names_from = "na_item",
-                             values_from = "values")
+                             values_from = "values") %>%
+          dplyr::select("Origin_Date", "Horizon","dep_var",dplyr::all_of(depvar))
 
         out <- out %>% dplyr::bind_rows(temp_path)
 
 
       } else if (forecast_type == "BVAR"){
+
         # Apply BVAR
         # Expanding Window Loop for BVAR
         # Note: MCMC sampling takes more computational time,
@@ -603,7 +617,8 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
         temp_path <- temp_path_unconv %>%
           tidyr::pivot_wider(id_cols = c("Origin_Date", "Horizon","dep_var"),
                              names_from = "na_item",
-                             values_from = "values")
+                             values_from = "values") %>%
+          dplyr::select("Origin_Date", "Horizon","dep_var",dplyr::all_of(depvar))
 
 
         out <- out %>% dplyr::bind_rows(temp_path %>% dplyr::mutate(forecast_type = "BVAR"))
