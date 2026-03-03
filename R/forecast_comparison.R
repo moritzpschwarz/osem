@@ -409,8 +409,24 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
     } else if (forecast_type %in% c("VAR", "BVAR")){
 
       type <- modules[i, "type"][[1]]
+
+      # skip identities
+      if(type == "d"){
+        next
+      }
+
       depvar <- modules[i, "dependent"][[1]]
-      indep <- modules[i, "indep"][[1]][[1]]
+      indep <- modules[i,] %>%
+        # make sure each independent variable has a separate row
+        dplyr::mutate(independent = gsub(" ", "", .data$independent)) %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(independent = list(strsplits(.data$independent, c("\\-", "\\+", "/", "\\*")))) %>%
+        # following line added to deal with AR models when ind_vars is a list of NULL
+        dplyr::bind_rows(dplyr::tibble(independent = list(""))) %>%
+        tidyr::unnest("independent", keep_empty = TRUE) %>%
+        tidyr::drop_na("index") %>%
+        dplyr::select("index", "dependent", "independent") %>%
+        dplyr::pull("independent")
 
       if(identical(indep, character(0))){next}
 
@@ -435,8 +451,8 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
         dplyr::full_join(transformations_model, by = "na_item") %>%
         dplyr::mutate(values_trans = .data$values)
 
-      i_log   <- data$transformation == "log"
-      i_asinh <- data$transformation == "asinh"
+      i_log   <- !is.na(data$transformation) & data$transformation == "log"
+      i_asinh <- !is.na(data$transformation) & data$transformation == "asinh"
       i_level <- data$transformation == "level" | is.na(data$transformation)
 
       data$values_trans[i_log]   <- log(data$values[i_log])
@@ -515,7 +531,7 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
         }
         var_lag <- suppressWarnings(vars::VARselect(x_ts, lag.max = max_feasible_lag_vars(x_ts), type = "const")$selection["AIC(n)"])
 
-        var_model <- vars::VAR(x_ts, p = var_lag, type = "const") # assuming fixed lags
+        var_model <- vars::VAR(x_ts, p = min(lags, var_lag), type = "const") # assuming fixed lags
         #var_model <- VAR(train_data, p = VARselect(train_data, lag.max = 8, type = "const")$selection["AIC(n)"], type = "const") # dynamically selecting lags up to 8
 
         var_forecast <- stats::predict(var_model, n.ahead = n.ahead)
@@ -542,8 +558,8 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
           tidyr::pivot_longer(cols = -c("Origin_Date", "Horizon", "dep_var"), names_to = "na_item", values_to = "values") %>%
           dplyr::left_join(transformations_model, by = "na_item")
 
-        i_log   <- temp_path_unconv$transformation == "log"
-        i_asinh <- temp_path_unconv$transformation == "asinh"
+        i_log   <- !is.na(temp_path_unconv$transformation) & temp_path_unconv$transformation == "log"
+        i_asinh <- !is.na(temp_path_unconv$transformation) & temp_path_unconv$transformation == "asinh"
         i_level <- temp_path_unconv$transformation == "level" | is.na(temp_path_unconv$transformation)
 
         temp_path_unconv$values[i_log]   <- exp(temp_path_unconv$values[i_log])
@@ -607,8 +623,8 @@ forecast_comparison2 <- function(model, n.ahead, forecast_type = c("ar", "RW"),
           tidyr::pivot_longer(cols = -c("Origin_Date", "Horizon", "dep_var"), names_to = "na_item", values_to = "values") %>%
           dplyr::left_join(transformations_model, by = "na_item")
 
-        i_log   <- temp_path_unconv$transformation == "log"
-        i_asinh <- temp_path_unconv$transformation == "asinh"
+        i_log   <- !is.na(temp_path_unconv$transformation) & temp_path_unconv$transformation == "log"
+        i_asinh <- !is.na(temp_path_unconv$transformation) & temp_path_unconv$transformation == "asinh"
         i_level <- temp_path_unconv$transformation == "level" | is.na(temp_path_unconv$transformation)
 
         temp_path_unconv$values[i_log]   <- exp(temp_path_unconv$values[i_log])

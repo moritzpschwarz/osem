@@ -17,6 +17,7 @@
 #' @param dm.power A numeric value specifying the power to which forecast errors are raised in the Diebold-Mariano test. Default is 2 (squared errors). Must be a single positive number.
 #' @param lags An integer specifying the number of lags to be used in the comparison methods. Default is 4.
 #' @param grepl_variables A character vector of variable names to be included in the forecast comparisons. If NULL, all variables will be included. Default is NULL.
+#' @param comparison_data A data frame containing pre-prepared forecast errors and related information for the DM test. If provided, the function will use this data instead of running the insample forecasts and preparing the data internally. Default is NULL.
 #' @param quiet A logical value indicating whether to suppress messages during the execution of the function. Default is FALSE.
 #'
 #' @returns A list containing the results of the Diebold-Mariano test for forecast comparisons, including a tibble with DM statistics and p-values for each variable and forecast horizon, as well as the prepared data used for the comparisons.
@@ -36,6 +37,7 @@ dm_test <- function(model,
                     dm.power = 2,
                     lags = 4,
                     grepl_variables = NULL,
+                    comparison_data = NULL,
                     quiet = FALSE
 ) {
 
@@ -97,9 +99,13 @@ dm_test <- function(model,
 
     # forecast::dm.test expects forecast errors (not losses)
     # h = forecast horizon to handle overlap
-    out <- forecast::dm.test(tmp$e1, tmp$e2,
-                             alternative = dm.alternative, h = h,
-                             power = dm.power, varestimator = dm.variance)
+    try(
+      dm.out <- forecast::dm.test(tmp$e1, tmp$e2,
+                                  alternative = dm.alternative, h = h,
+                                  power = dm.power, varestimator = dm.variance),
+      silent = TRUE
+    )
+    if(!exists("dm.out")){return(NULL)}
 
     # Return a tidy tibble
     dplyr::tibble(
@@ -107,8 +113,8 @@ dm_test <- function(model,
       Horizon  = h,
       model_1  = m1,
       model_2  = m2,
-      statistic = unname(out$statistic),
-      p_value   = out$p.value,
+      statistic = unname(dm.out$statistic),
+      p_value   = dm.out$p.value,
       alternative = alternative,
       power = power,
       n = length(tmp$e1)
@@ -129,77 +135,80 @@ dm_test <- function(model,
   }
 
 
-
-
-  if(is.null(insample_model)){
-    if(!quiet){
-      message("Running insample forecasts")
-    }
-    insample_mod <- forecast_insample(model,
-                                      sample_share = insample_sample_share,
-                                      quiet = quiet,
-                                      plot = FALSE,
-                                      parallel.cores = parallel.cores,
-                                      exog_fill_method = insample_methods)
-  } else {
-    insample_mod <- insample_model
-  }
-
-
-  naive_dat <- dplyr::tibble()
-
-  for(j in comparison_methods){
-
-    if(!quiet){
-      message(paste0("Running ",j," forecast comparison"))
-    }
-    for(i in 1:length(insample_mod$all_models)){
-
-      fc_comparison_base <- insample_mod$all_models[i][[1]]
-      naive_dat <- naive_dat %>%
-        dplyr::bind_rows(forecast_comparison2(fc_comparison_base,
-                                              n.ahead = dm.horizons,
-                                              forecast_type = j, lags = lags,
-                                              grepl_variables = grepl_variables))
-    }
-  }
-
-  full_data <- model$processed_input_data
-
-  insample_values <- insample_mod$central %>%
-    dplyr::mutate(forecast_type = paste0("OSEM ",.data$method)) %>%
-    dplyr::mutate(
-      Horizon = q_index(.data$time) - q_index(.data$start),
-      na_item = .data$dep_var
-    ) %>%
-    dplyr::rename(Origin_Date = "start",
-                  value = "values") %>%
-    dplyr::select(-"method", -"end") %>%
-
-    {if(!is.null(grepl_variables)){
-      dplyr::filter(., grepl(paste(grepl_variables, collapse = "|"), .data$na_item))
+  if(is.null(comparison_data)){
+    if(is.null(insample_model)){
+      if(!quiet){
+        message("Running insample forecasts")
+      }
+      insample_mod <- forecast_insample(model,
+                                        sample_share = insample_sample_share,
+                                        quiet = quiet,
+                                        plot = FALSE,
+                                        parallel.cores = parallel.cores,
+                                        exog_fill_method = insample_methods)
     } else {
-      .
-    }}
+      insample_mod <- insample_model
+    }
 
-  dat <- naive_dat %>%
-    {if(!"dep_var" %in% names(naive_dat)){dplyr::mutate(., dep_var = NA_character_)} else {.}} %>%
-    tidyr::pivot_longer(-c("Origin_Date", "Horizon", "dep_var", "forecast_type"), names_to = "na_item") %>%
-    dplyr::mutate(time = q_start(q_index(.data$Origin_Date) + .data$Horizon)) %>%
-    tidyr::drop_na("value") %>%
 
-    dplyr::bind_rows(insample_values) %>%
+    naive_dat <- dplyr::tibble()
 
-    dplyr::inner_join(full_data, by = c("na_item", "time")) %>%
-    dplyr::rename(hist_value = "values") %>%
+    for(j in comparison_methods){
 
-    dplyr::mutate(diff = .data$value - .data$hist_value,
-                  sq_error = .data$diff^2,
-                  dep_var = ifelse(is.na(.data$dep_var), .data$na_item, .data$dep_var)) %>%
+      if(!quiet){
+        message(paste0("Running ",j," forecast comparison"))
+      }
+      for(i in 1:length(insample_mod$all_models)){
 
-    dplyr::full_join(model$module_order %>%
-                       dplyr::select("order", dep_var = "dependent"), by = "dep_var") %>%
-    dplyr::filter(order == min(.data$order), .by = c("Origin_Date", "Horizon", "na_item", "forecast_type"))
+        fc_comparison_base <- insample_mod$all_models[i][[1]]
+
+        naive_dat <- naive_dat %>%
+          dplyr::bind_rows(forecast_comparison2(fc_comparison_base,
+                                                n.ahead = dm.horizons,
+                                                forecast_type = j, lags = lags,
+                                                grepl_variables = grepl_variables))
+      }
+    }
+
+    full_data <- model$processed_input_data
+
+    insample_values <- insample_mod$central %>%
+      dplyr::mutate(forecast_type = paste0("OSEM ",.data$method)) %>%
+      dplyr::mutate(
+        Horizon = q_index(.data$time) - q_index(.data$start),
+        na_item = .data$dep_var
+      ) %>%
+      dplyr::rename(Origin_Date = "start",
+                    value = "values") %>%
+      dplyr::select(-"method", -"end") %>%
+
+      {if(!is.null(grepl_variables)){
+        dplyr::filter(., grepl(paste(grepl_variables, collapse = "|"), .data$na_item))
+      } else {
+        .
+      }}
+
+    dat <- naive_dat %>%
+      {if(!"dep_var" %in% names(naive_dat)){dplyr::mutate(., dep_var = NA_character_)} else {.}} %>%
+      tidyr::pivot_longer(-c("Origin_Date", "Horizon", "dep_var", "forecast_type"), names_to = "na_item") %>%
+      dplyr::mutate(time = q_start(q_index(.data$Origin_Date) + .data$Horizon)) %>%
+      tidyr::drop_na("value") %>%
+
+      dplyr::bind_rows(insample_values) %>%
+
+      dplyr::inner_join(full_data, by = c("na_item", "time")) %>%
+      dplyr::rename(hist_value = "values") %>%
+
+      dplyr::mutate(diff = .data$value - .data$hist_value,
+                    sq_error = .data$diff^2,
+                    dep_var = ifelse(is.na(.data$dep_var), .data$na_item, .data$dep_var)) %>%
+
+      dplyr::full_join(model$module_order %>%
+                         dplyr::select("order", dep_var = "dependent"), by = "dep_var") %>%
+      dplyr::filter(order == min(.data$order), .by = c("Origin_Date", "Horizon", "na_item", "forecast_type"))
+  } else {
+    dat <- comparison_data
+  }
 
   res_dm_forecast <- dplyr::tibble()
 
@@ -216,22 +225,22 @@ dm_test <- function(model,
     for(compare in comparison_methods){
 
       res_dm_forecast_int <- dplyr::tibble()
-        for(h in 1:dm.horizons){
-            intermed <- run_dm_forecast(
-              dat, var, h,
-              m1 = paste0("OSEM ",insample_main_comparison),
-              m2 = compare,
-              power = dm.power, alternative = dm.alternative)
+      for(h in 1:dm.horizons){
+        intermed <- run_dm_forecast(
+          dat, var, h,
+          m1 = paste0("OSEM ",insample_main_comparison),
+          m2 = compare,
+          power = dm.power, alternative = dm.alternative)
 
-            res_dm_forecast_int <- res_dm_forecast_int %>%
-              dplyr::bind_rows(intermed)
-        }
+        res_dm_forecast_int <- res_dm_forecast_int %>%
+          dplyr::bind_rows(intermed)
+      }
       #res_dm_forecast_int <- dplyr::bind_rows(
-        # lapply(1:dm.horizons, function(h) {
-        #   run_dm_forecast(dat, var, h,
-        #                   m1 = paste0("OSEM ",insample_main_comparison), m2 = compare,
-        #                   power = dm.power, alternative = dm.alternative)
-        # }))
+      # lapply(1:dm.horizons, function(h) {
+      #   run_dm_forecast(dat, var, h,
+      #                   m1 = paste0("OSEM ",insample_main_comparison), m2 = compare,
+      #                   power = dm.power, alternative = dm.alternative)
+      # }))
       res_dm_forecast <- dplyr::bind_rows(res_dm_forecast,
                                           res_dm_forecast_int %>%
                                             dplyr::mutate(model_1 = paste0("OSEM ", insample_main_comparison),

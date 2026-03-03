@@ -11,7 +11,8 @@ forecast_insample(
   exog_fill_method = "AR",
   plot = TRUE,
   quiet = FALSE,
-  parallel.cores = NULL
+  parallel.cores = NULL,
+  insample_model_list = NULL
 )
 }
 \arguments{
@@ -27,7 +28,11 @@ forecast_insample(
 
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 
-\item{parallel.cores}{Numeric. The number of cores to use for parallel processing. If NULL (default), the function will not use parallel processing. If the numeric, the function takes the desired number of cores.
+\item{parallel.cores}{Numeric. The number of cores to use for parallel processing. If NULL (default), the function will not use parallel processing. If the numeric, the function takes the desired number of cores.}
+
+\item{insample_model_list}{Option to pre-specify the insample models (e.g. from an existing object of class \code{osem.forecast.insample}). If NULL (default), the function will run the models for the insample forecasting.
+If a list of models is provided, the function will use those models for the insample forecasting and will skip the model running step.
+This can be useful if the user already has the models available and wants to save time by not running them again.
 If a numeric value is provided, it will be used as the number of cores for parallel processing.
 The function will check that the specified number of cores does not exceed the number of available cores and will adjust accordingly if it does.
 If this happens, then the function automatically detect the number of available cores and use one less than that for parallel processing.}

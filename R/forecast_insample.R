@@ -6,6 +6,9 @@
 #' @param sample_share Share of the sample that should be used for the insample forecasting. Must be a numeric and must be either 1 or smaller but larger than 0.
 #' @param exog_fill_method Character vector that contains the methods to fill the exogenous variables. Default is "AR" but can also contain multiple methods, e.g. c("AR","auto").
 #' @param parallel.cores Numeric. The number of cores to use for parallel processing. If NULL (default), the function will not use parallel processing. If the numeric, the function takes the desired number of cores.
+#' @param insample_model_list Option to pre-specify the insample models (e.g. from an existing object of class \code{osem.forecast.insample}). If NULL (default), the function will run the models for the insample forecasting.
+#' If a list of models is provided, the function will use those models for the insample forecasting and will skip the model running step.
+#' This can be useful if the user already has the models available and wants to save time by not running them again.
 #' If a numeric value is provided, it will be used as the number of cores for parallel processing.
 #' The function will check that the specified number of cores does not exceed the number of available cores and will adjust accordingly if it does.
 #' If this happens, then the function automatically detect the number of available cores and use one less than that for parallel processing.
@@ -16,7 +19,7 @@
 #' @export
 #'
 #'
-forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 100, exog_fill_method = "AR", plot = TRUE, quiet = FALSE, parallel.cores = NULL) {
+forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 100, exog_fill_method = "AR", plot = TRUE, quiet = FALSE, parallel.cores = NULL, insample_model_list = NULL) {
 
   # we first must identify the minimum sample across modules
   time_samples <- dplyr::tibble()
@@ -42,128 +45,135 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   #all_times <- seq(time_minmax$min,time_minmax$max, by = "quarter")
   time_to_use <- all_times[ceiling(length(all_times)*sample_share):length(all_times)]
 
-
   # Run the models -----------------------------------------------------------
-  all_models <- vector("list", length(time_to_use))
+  if(is.null(insample_model_list)){
 
-  #n_workers <- max(1L, parallel::detectCores() - 1L)
+    all_models <- vector("list", length(time_to_use))
 
-  # check that parallel.cores is not larger than the number of available cores
-  if(!is.null(parallel.cores)){
-    n_available_cores <- parallel::detectCores()
-    if(!(is.integer(parallel.cores) | suppressWarnings(!is.na(as.integer(parallel.cores))))){
-      stop("The number of parallel cores specified is not numeric. Please provide a numeric value for 'parallel.cores'.")
-    }
-    if(is.integer(parallel.cores) & parallel.cores < 1){
-      stop("The number of parallel cores specified (", parallel.cores, ") is not valid. Please provide a numeric value larger than 0 for 'parallel.cores'.")
-    }
+    #n_workers <- max(1L, parallel::detectCores() - 1L)
 
-    if(parallel.cores > n_available_cores){
-      warning(paste0("The number of parallel cores specified (", parallel.cores, ") is larger than the number of available cores (", n_available_cores, "). Using ", n_available_cores - 1L, " cores instead."))
-      parallel.cores <- max(1L, n_available_cores - 1L)
-    }
+    # check that parallel.cores is not larger than the number of available cores
+    if(!is.null(parallel.cores)){
+      n_available_cores <- parallel::detectCores()
+
+      if(!(is.integer(parallel.cores) | suppressWarnings(!is.na(as.integer(parallel.cores))))){
+        stop("The number of parallel cores specified is not numeric. Please provide a numeric value for 'parallel.cores'.")
+      }
+      if(parallel.cores < 1){
+        stop("The number of parallel cores specified (", parallel.cores, ") is not valid. Please provide a numeric value larger than 0 for 'parallel.cores'.")
+      }
+
+      if(parallel.cores > n_available_cores){
+        warning(paste0("The number of parallel cores specified (", parallel.cores, ") is larger than the number of available cores (", n_available_cores, "). Using ", n_available_cores - 1L, " cores instead."))
+        parallel.cores <- max(1L, n_available_cores - 1L)
+      }
 
 
-    n_workers <- parallel.cores
-    cl <- parallel::makeCluster(n_workers, type = "PSOCK")
-    on.exit(parallel::stopCluster(cl), add = TRUE)
+      n_workers <- parallel.cores
+      cl <- parallel::makeCluster(n_workers, type = "PSOCK")
+      on.exit(parallel::stopCluster(cl), add = TRUE)
 
-    # Make sure workers have required packages
-    parallel::clusterEvalQ(cl, {
-      library(dplyr)
-    })
+      # Make sure workers have required packages
+      parallel::clusterEvalQ(cl, {
+        library(dplyr)
+      })
 
-    # Export objects/functions used in the worker expression
-    parallel::clusterExport(
-      cl,
-      varlist = c("model", "time_to_use", "quiet", "run_model"),
-      envir = environment()
-    )
-
-    all_models <- parallel::parLapply(cl, seq_along(time_to_use), function(j) {
-
-      if (!quiet) message(sprintf("Model Run %d up to %s", j, time_to_use[j]))
-
-      res <- suppressWarnings(
-        try(
-          run_model(
-            specification = model$args$specification,
-            dictionary = model$args$dictionary,
-            trend = model$args$trend,
-            primary_source = "local",
-
-            max.ar = model$args$max.ar,
-            max.dl = model$args$max.dl,
-            max.block.size = model$args$max.block.size,
-
-            ardl_or_ecm = model$args$ardl_or_ecm,
-            use_logs = model$args$use_logs,
-            saturation = model$args$saturation,
-            saturation.tpval = model$args$saturation.tpval,
-            gets_selection = model$args$gets_selection,
-            selection.tpval = model$args$selection.tpval,
-            constrain.to.minimum.sample = model$args$constrain.to.minimum.sample,
-
-            pretest_steps = model$args$pretest_steps,
-
-            present = FALSE,
-            quiet = TRUE,
-            plot = FALSE,
-
-            input = model$processed_input_data %>%
-              dplyr::filter(.data$time <= as.Date(time_to_use[j]))
-          ),
-          silent = TRUE
-        )
+      # Export objects/functions used in the worker expression
+      parallel::clusterExport(
+        cl,
+        varlist = c("model", "time_to_use", "quiet", "run_model"),
+        envir = environment()
       )
 
-      if (inherits(res, "try-error")) NULL else res
-    })
+      all_models <- parallel::parLapply(cl, seq_along(time_to_use), function(j) {
 
-    all_models <- all_models[!vapply(all_models, is.null, logical(1))]
+        if (!quiet) message(sprintf("Model Run %d up to %s", j, time_to_use[j]))
+
+        res <- suppressWarnings(
+          try(
+            run_model(
+              specification = model$args$specification,
+              dictionary = model$args$dictionary,
+              trend = model$args$trend,
+              primary_source = "local",
+
+              max.ar = model$args$max.ar,
+              max.dl = model$args$max.dl,
+              max.block.size = model$args$max.block.size,
+
+              ardl_or_ecm = model$args$ardl_or_ecm,
+              use_logs = model$args$use_logs,
+              saturation = model$args$saturation,
+              saturation.tpval = model$args$saturation.tpval,
+              gets_selection = model$args$gets_selection,
+              selection.tpval = model$args$selection.tpval,
+              constrain.to.minimum.sample = model$args$constrain.to.minimum.sample,
+
+              pretest_steps = model$args$pretest_steps,
+
+              present = FALSE,
+              quiet = TRUE,
+              plot = FALSE,
+
+              input = model$processed_input_data %>%
+                dplyr::filter(.data$time <= as.Date(time_to_use[j]))
+            ),
+            silent = TRUE
+          )
+        )
+
+        if (inherits(res, "try-error")) NULL else res
+      })
+
+      all_models <- all_models[!vapply(all_models, is.null, logical(1))]
+    } else {
+
+      for(j in seq_along(time_to_use)){
+        if (!quiet) message(sprintf("Model Run %d up to %s", j, time_to_use[j]))
+        all_models[[j]] <- suppressWarnings(
+          try(
+            run_model(
+              specification = model$args$specification,
+              dictionary = model$args$dictionary,
+              trend = model$args$trend,
+              primary_source = "local",
+
+              max.ar = model$args$max.ar,
+              max.dl = model$args$max.dl,
+              max.block.size = model$args$max.block.size,
+
+              ardl_or_ecm = model$args$ardl_or_ecm,
+              use_logs = model$args$use_logs,
+              saturation = model$args$saturation,
+              saturation.tpval = model$args$saturation.tpval,
+              gets_selection = model$args$gets_selection,
+              selection.tpval = model$args$selection.tpval,
+              constrain.to.minimum.sample = model$args$constrain.to.minimum.sample,
+
+              pretest_steps = model$args$pretest_steps,
+
+              present = FALSE,
+              quiet = TRUE,
+              plot = FALSE,
+
+              input = model$processed_input_data %>%
+                dplyr::filter(.data$time <= as.Date(time_to_use[j]))
+            ),
+            silent = TRUE
+          )
+        )
+
+        if (inherits(all_models[[j]], "try-error")) all_models[[j]] <- NULL
+      }
+
+    }
+
   } else {
-
-    for(j in seq_along(time_to_use)){
-      if (!quiet) message(sprintf("Model Run %d up to %s", j, time_to_use[j]))
-
-      all_models[[j]] <- suppressWarnings(
-        try(
-          run_model(
-            specification = model$args$specification,
-            dictionary = model$args$dictionary,
-            trend = model$args$trend,
-            primary_source = "local",
-
-            max.ar = model$args$max.ar,
-            max.dl = model$args$max.dl,
-            max.block.size = model$args$max.block.size,
-
-            ardl_or_ecm = model$args$ardl_or_ecm,
-            use_logs = model$args$use_logs,
-            saturation = model$args$saturation,
-            saturation.tpval = model$args$saturation.tpval,
-            gets_selection = model$args$gets_selection,
-            selection.tpval = model$args$selection.tpval,
-            constrain.to.minimum.sample = model$args$constrain.to.minimum.sample,
-
-            pretest_steps = model$args$pretest_steps,
-
-            present = FALSE,
-            quiet = TRUE,
-            plot = FALSE,
-
-            input = model$processed_input_data %>%
-              dplyr::filter(.data$time <= as.Date(time_to_use[j]))
-          ),
-          silent = TRUE
-        )
-      )
-
-      if (inherits(all_models[[j]], "try-error")) all_models[[j]] <- NULL
-    }
-
-
+    all_models <- insample_model_list
   }
+
+  # remove any NULL models from the list
+  all_models <- all_models[!vapply(all_models, is.null, logical(1))]
 
   model$processed_input_data %>%
     dplyr::distinct(dplyr::across("na_item")) %>%
@@ -183,7 +193,8 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   for(i in 1:length(all_models)){
     if(is.null(all_models[[i]])){next}
 
-    start <- time_to_use[i]
+    #start <- time_to_use[i]
+    start <- max(all_models[[i]]$processed_input_data$time)
     end <- time_to_use[length(time_to_use)]
     if(start == end){next}
 
@@ -261,7 +272,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
       forecasted_unknownexogvalues[[i]][[forecast_method]]$forecast %>%
         dplyr::select("dep_var","central.estimate") %>%
-        dplyr::mutate(start = time_to_use[i]) %>%
+        dplyr::mutate(start =  max(all_models[[i]]$processed_input_data$time)) %>%
         dplyr::full_join(log_opts_processed, by = "dep_var") %>%
         tidyr::unnest("central.estimate") %>%
         tidyr::pivot_longer(-c("dep_var", "start", "time","log_opt")) %>%
@@ -277,7 +288,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
       # there would not be any uncertainty
       forecasted_unknownexogvalues[[i]][[forecast_method]]$forecast %>%
         dplyr::select("dep_var","all.estimates") %>%
-        dplyr::mutate(start = time_to_use[i]) %>%
+        dplyr::mutate(start =  max(all_models[[i]]$processed_input_data$time)) %>%
         dplyr::full_join(log_opts_processed, by = "dep_var") %>%
 
         dplyr::mutate(quantiles = purrr::map(.data$all.estimates, function(x){

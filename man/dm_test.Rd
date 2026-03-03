@@ -18,6 +18,7 @@ dm_test(
   dm.power = 2,
   lags = 4,
   grepl_variables = NULL,
+  comparison_data = NULL,
   quiet = FALSE
 )
 }
@@ -47,6 +48,8 @@ dm_test(
 \item{lags}{An integer specifying the number of lags to be used in the comparison methods. Default is 4.}
 
 \item{grepl_variables}{A character vector of variable names to be included in the forecast comparisons. If NULL, all variables will be included. Default is NULL.}
+
+\item{comparison_data}{A data frame containing pre-prepared forecast errors and related information for the DM test. If provided, the function will use this data instead of running the insample forecasts and preparing the data internally. Default is NULL.}
 
 \item{quiet}{A logical value indicating whether to suppress messages during the execution of the function. Default is FALSE.}
 }
