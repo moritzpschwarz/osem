@@ -219,7 +219,7 @@ class(co2module)
 # inspect the estimated equation
 print(co2module)
 #> 
-#> Date: Mon Mar 23 22:06:57 2026 
+#> Date: Mon Mar 23 22:11:44 2026 
 #> Dependent var.: ln.EmiCO2Combustion 
 #> Method: Ordinary Least Squares (OLS)
 #> Variance-Covariance: Ordinary 
