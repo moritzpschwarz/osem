@@ -26,7 +26,11 @@ run_model(
   present = FALSE,
   quiet = FALSE,
   plot = TRUE,
-  inputdata_directory = NULL
+  inputdata_directory = NULL,
+  cvar.ar = 2,
+  coint_seasonal = FALSE,
+  coint_deterministic = "const",
+  coint_significance = "5pct"
 )
 }
 \arguments{
@@ -110,22 +114,22 @@ and data retrieval process.}
 
 \item{plot}{Logical with default = TRUE. Should plots be displayed?}
 
-\item{inputdata_directory}{Deprecated. Use 'input' instead.}
+\item{inputdata_directory}{Deprecated. Use 'input' instead. Functionality of specifying a directory
+is retained for now but this argument will be removed in the future.}
+
+\item{cvar.ar}{Number of lags of the VAR system in levels. Must be > 2.}
+
+\item{coint_seasonal}{Logical value whether cointegration analysis should
+include seasonal dummies.}
+
+\item{coint_deterministic}{Character specifying whether and if yes which
+deterministic component to include in the cointegrating relationship.}
+
+\item{coint_significance}{Significance level for the rank test for
+cointegration. Can only be one of '1pct', '5pct', '10pct'.}
 }
 \value{
-An object of class \link[=new_osem]{osem}, which is a named list
-with four elements:
-\describe{
-\item{args}{A named list storing the user arguments for the OSEM
-model.}
-\item{module_order_eurostatvars}{The original specification with translated
-variable names to Eurostat codes and arranged in order of estimation.}
-\item{module_collection}{The above specification with two added columns
-that store the model object for each module and the dataset used for
-estimation, including fitted values for the dependent variable.}
-\item{full_data}{A tibble or data.frame containing the complete original
-data for the OSEM model and the fitted values of each module.}
-}
+An object of class \link[=new_osem]{osem}.
 }
 \description{
 Runs the OSEM model according to the given specification of modules.
@@ -149,6 +153,8 @@ spec <- dplyr::tibble(
   )
 )
 \donttest{
-run_model(specification = spec)
+run_model(specification = spec,
+          primary_source = "local",
+          input = sample_input)
 }
 }

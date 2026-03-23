@@ -10,32 +10,7 @@
 #' @inheritParams plot.osem.forecast
 #'
 #' @export
-#'
-#' @examples
-#' spec <- dplyr::tibble(
-#' type = c(
-#'   "d",
-#'   "d",
-#'   "n"
-#' ),
-#' dependent = c(
-#'   "StatDiscrep",
-#'   "TOTS",
-#'   "Import"
-#' ),
-#' independent = c(
-#'   "TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export",
-#'   "GValueAdd + Import",
-#'   "FinConsExpHH + GCapitalForm"
-#' )
-#' )
-#'\donttest{
-#' a <- run_model(specification = spec, dictionary = NULL,
-#' primary_source = "download",
-#' save_to_disk = NULL, present = FALSE)
-#' plot(forecast_model(a))
-#'}
-#'
+
 
 plot.osem.forecast.insample <- function(x, title = "OSEM Insample Hindcasts",
                                         first_date = NULL,

@@ -23,7 +23,6 @@ forecast_setup_estimated_relationships <- function(model,
                                                    full_exog_predicted_data = NULL) {
 
 
-
   extracted_info <- forecast_extract_info(model = model, i = i, n.ahead = n.ahead, exog_df_ready = exog_df_ready)
 
   extracted_info$y_names_vec -> y_names_vec
@@ -42,11 +41,24 @@ forecast_setup_estimated_relationships <- function(model,
   extracted_info$pred_ar_needed -> pred_ar_needed
   extracted_info$pred_dl_needed -> pred_dl_needed
 
-
-
   # Deal with current_spec not being fully exogenous --------
 
   previous_dependent_vars <- model$module_order$dependent[model$module_order$order < i]
+
+  # Adaptation for Loop forecast
+  block_order_of_i <- model$module_order$block_order[model$module_order$order == i]
+  previous_dependent_vars_in_block <- model$module_order$dependent[model$module_order$block_order == block_order_of_i]
+  # check for data in prediction list for those
+  prediction_list %>%
+    dplyr::filter(.data$dep_var %in% previous_dependent_vars_in_block) %>%
+    dplyr::mutate(check = !is.na(.data$predict.isat_object)) %>%
+    dplyr::filter(.data$check) %>%
+    dplyr::pull("dep_var") -> previous_dependent_vars_in_block
+
+  if(!identical(character(0), previous_dependent_vars_in_block)){
+    previous_dependent_vars <- union(previous_dependent_vars, previous_dependent_vars_in_block)
+  }
+
   # run this loop if any of the independent variables has already been a dependent variable of a preceding module
   if(any(current_spec$independent %in% previous_dependent_vars)){
 
@@ -197,8 +209,21 @@ forecast_setup_estimated_relationships <- function(model,
   }
 
   # checking the data for nowcasted data --------
+  initial_input_data <- model$processed_input_data %>%
+    tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
+    dplyr::mutate(
+      dplyr::across(-"time", .fns = ~ if (any(. <= 0, na.rm = TRUE)) {
+        asinh(.)
+      } else {
+        log(.)
+      }, .names = "ln.{.col}"),
+      dplyr::across(-"time", list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
+    )
+
+  from_input_data <- names(initial_input_data)[!names(initial_input_data) %in% names(data_obj)]
 
   data_obj %>%
+    dplyr::left_join(initial_input_data %>% dplyr::select("time", dplyr::all_of(from_input_data)), by = "time") %>%
     dplyr::select("time", dplyr::all_of(x_names_vec_nolag), dplyr::all_of(y_names_vec[1])) -> historical_estimation_data
 
   # in this section we check whether any of the missing values are present in nowcasted data
@@ -268,7 +293,7 @@ forecast_setup_estimated_relationships <- function(model,
   # merging nowcasted data with non-x variables (IIS, SIS, etc.) --------
   historical_estimation_data_w_nowcast %>%
     dplyr::bind_rows(current_pred_raw %>%
-                       dplyr::select("time", dplyr::all_of(x_names_vec_nolag))) %>%
+                       dplyr::select("time", dplyr::any_of(x_names_vec_nolag))) %>%
     dplyr::distinct() -> intermed
 
   # add the lagged x-variables
@@ -287,7 +312,7 @@ forecast_setup_estimated_relationships <- function(model,
   intermed %>%
     dplyr::left_join(current_pred_raw %>%
                        dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
-                                     dplyr::starts_with("iis"), dplyr::starts_with("sis")),
+                                     dplyr::starts_with("iis"), dplyr::starts_with("sis"), dplyr::starts_with("tis")),
                      by = "time") %>%
 
     # only retain the final n.ahead observations
@@ -316,7 +341,7 @@ forecast_setup_estimated_relationships <- function(model,
       dplyr::bind_rows(current_pred_raw_all %>%
                          dplyr::rename_with(dplyr::everything(), .fn = ~gsub(".all","",.)) %>%
                          dplyr::mutate(dplyr::across(-"time", .fn = ~as.list(.))) %>%
-                         dplyr::select("time", dplyr::all_of(x_names_vec_nolag))) -> intermed.all
+                         dplyr::select("time", dplyr::any_of(x_names_vec_nolag))) -> intermed.all
 
 
     # same for .all: add the lagged x-variables
@@ -333,13 +358,13 @@ forecast_setup_estimated_relationships <- function(model,
     dplyr::bind_cols(intermed.all, to_be_added.all) %>%
       dplyr::left_join(current_pred_raw_all %>%
                          dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
-                                       dplyr::starts_with("iis"), dplyr::starts_with("sis")),
+                                       dplyr::starts_with("iis"), dplyr::starts_with("sis"), dplyr::starts_with("tis")),
                        by = "time") %>%
 
       # only retain the final n.ahead observations
       dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
 
-      tidyr::drop_na() %>%
+      #tidyr::drop_na() %>%
       dplyr::select(-"time") %>%
       dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
       return() -> pred_df.all

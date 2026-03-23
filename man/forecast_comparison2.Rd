@@ -7,9 +7,10 @@
 forecast_comparison2(
   model,
   n.ahead,
-  forecast_type = c("AR", "RW"),
+  forecast_type = c("ar", "RW"),
   lags = NULL,
-  mc = TRUE
+  mc = TRUE,
+  grepl_variables = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ forecast_comparison2(
 \item{lags}{Number of lags to include in the AR model. Ignore for RW model. Default chooses the same as the max.ar setting of the model object.}
 
 \item{mc}{Logical value whether to include in intercept in the AR model or not.}
+
+\item{grepl_variables}{Optional character vector of variable names to filter the forecast comparison to. If NULL (default), forecasts are created for all variables in the model.}
 }
 \value{
 Returns a data frame with the point forecasts.
@@ -34,7 +37,7 @@ The function first determines the maximum forecast horizon by adding the n.ahead
 observation across all modules. For variables whose forecast origin is before that, it creates additional forecasts
 up to the forecast origin. Hence, the actual number of forecasted values may differ across variables.
 
-When the forecast type is "AR", the function first transforms the variable into logs (if only positive values
+When the forecast type is "ar", the function first transforms the variable into logs (if only positive values
 observed), otherwise using the asinh transformation. Reported forecast values are after conversion back to the level
 of the variable.
 

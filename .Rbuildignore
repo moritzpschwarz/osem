@@ -12,3 +12,4 @@
 ^data-raw$
 ^codecov\.yml$
 ^CONTRIBUTING\.md$
+^dev$

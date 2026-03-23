@@ -17,27 +17,28 @@
 #'
 
 identify_module_data <- function(module, classification, data) {
-
   # extract variable names
   dep <- module$dependent
+  dep <- trimws(unlist(strsplit(dep, ",")))
   indep <- module$independent
   indep <- unlist(strsplits(indep, splits = c("\\+", "\\-", "/", "\\*")))
   indep <- gsub(" ", "", indep)
 
   # if module is an identity/definition module then the dependent variable is not necessary
   if (module$type == "d") {
-
+    stopifnot(length(dep) == 1L) # would be longer than 1 for CVAR, but should not be "d" then
     # original variables
     vars.need.base <- indep
     # in the model, need the predicted values (hat) of the endogenous variables
     # check status of the variables: if x need original data; if n or d, need hat
     vars.need <- classification[classification$var %in% vars.need.base, ] %>%
-      dplyr::mutate(vartrans = dplyr::case_when(class == "n" ~ paste0(var, ".hat"),
-                                  class == "d" ~ paste0(var, ".hat"),
-                                  class == "x" ~ var,
-                                  TRUE ~ NA_character_)) %>%
+      dplyr::mutate(vartrans = dplyr::case_when(
+        class == "n" ~ paste0(var, ".hat"),
+        class == "d" ~ paste0(var, ".hat"),
+        class == "x" ~ var,
+        TRUE ~ NA_character_
+      )) %>%
       dplyr::pull(.data$vartrans)
-
   } else if (module$type == "n") { # module is endogenous and actually modelled
     # for endogenous modelled variables, always use the observed values
     vars.need <- union(dep, indep)
@@ -45,8 +46,10 @@ identify_module_data <- function(module, classification, data) {
 
   # check whether necessary variables are in dataset
   if (!(all(vars.need %in% unique(data$na_item)))) {
-    stop(paste0("Cannot find all required variables in the data for module ", module$order, ".\n",
-                 "Missing variables: ", paste(setdiff(vars.need, unique(data$na_item)), collapse = ", ")))
+    stop(paste0(
+      "Cannot find all required variables in the data for module ", module$order, ".\n",
+      "Missing variables: ", paste(setdiff(vars.need, unique(data$na_item)), collapse = ", ")
+    ))
   }
 
   # extract the necessary data
@@ -54,6 +57,4 @@ identify_module_data <- function(module, classification, data) {
     dplyr::filter(.data$na_item %in% vars.need)
 
   return(sub)
-
 }
-

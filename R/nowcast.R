@@ -26,8 +26,9 @@ nowcasting <- function(model, exog_df_ready, frequency){
     dplyr::as_tibble() %>%
     dplyr::filter(.data$na_item %in% model$module_collection$dependent) %>%
     tidyr::drop_na("values") %>%
-    dplyr::summarise(max_time = max(.data$time), .by = "na_item") %>%
-    dplyr::filter(.data$max_time != target_time) -> vars_not_full
+    {if(nrow(.) > 0){
+      dplyr::summarise(.,max_time = max(.data$time), .by = "na_item") %>%
+        dplyr::filter(.data$max_time != target_time)} else {.}}  -> vars_not_full
 
   # if all are to the end, then we can skip
   if(nrow(vars_not_full) == 0){return(NULL)} else{
@@ -78,7 +79,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
           tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
           dplyr::mutate(q = lubridate::quarter(.data$time),
                         q = factor(.data$q, levels = c(1,2,3,4))) %>%
-          dplyr::arrange("time") %>%
+          dplyr::arrange(.data$time) %>%
           {if(nrow(.) > 0){
             fastDummies::dummy_cols(.,
                                     select_columns = "q", remove_first_dummy = FALSE,
@@ -95,7 +96,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
             dplyr::mutate(time = cur_target_dates) %>%
             dplyr::mutate(q = lubridate::quarter(.data$time),
                           q = factor(.data$q, levels = c(1,2,3,4))) %>%
-            dplyr::arrange("time") %>%
+            dplyr::arrange(.data$time) %>%
             dplyr::relocate("time") %>%
             fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE,
                                     remove_selected_columns = TRUE) -> exog_data_nowcasting
@@ -126,7 +127,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
             dplyr::mutate(time = target_dates_missing) %>%
             dplyr::mutate(q = lubridate::quarter(.data$time),
                           q = factor(.data$q, levels = c(1,2,3,4))) %>%
-            dplyr::arrange("time") %>%
+            dplyr::arrange(.data$time) %>%
             dplyr::relocate("time") %>%
             fastDummies::dummy_cols(select_columns = "q", remove_first_dummy = FALSE,
                                     remove_selected_columns = TRUE) %>%
@@ -218,12 +219,15 @@ nowcasting <- function(model, exog_df_ready, frequency){
           dplyr::pull() -> log_opts
 
         # add the data to the full data and the processed input data
-        dplyr::tibble(time = as.Date(cur_target_dates), values = as.numeric(pred_obj)) %>%
-          dplyr::mutate(values = dplyr::case_when(log_opts == "log" ~ exp(.data$values),
-                                                  log_opts == "asinh" ~ sinh(.data$values),
-                                                  log_opts == "none" ~ .data$values),
-                        na_item = dep_var,.after = "time") -> data_to_add
-
+        dplyr::tibble(time = as.Date(cur_target_dates),
+                      values =       if(log_opts == "log"){
+                        exp(as.numeric(pred_obj))
+                      } else if (log_opts == "asinh"){
+                        sinh(as.numeric(pred_obj))
+                      } else if (log_opts == "none"){
+                        as.numeric(pred_obj)
+                      }) %>%
+          dplyr::mutate(na_item = dep_var,.after = "time") -> data_to_add
 
         collected_nowcasts %>%
           dplyr::bind_rows(data_to_add) %>%

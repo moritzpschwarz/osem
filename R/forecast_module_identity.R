@@ -7,7 +7,7 @@
 #' @inheritParams forecast_model
 #' @return A list that is then used by forecast_model to set-up the final prediction object. The list contains the identity estimate.
 #'
-forecast_identities <- function(model, exog_df_ready, current_spec, prediction_list, uncertainty_sample){
+forecast_module_identity <- function(model, exog_df_ready, current_spec, prediction_list, uncertainty_sample){
 
 
   # Assembling the data -----------------------------------------------------
@@ -37,31 +37,41 @@ forecast_identities <- function(model, exog_df_ready, current_spec, prediction_l
       dplyr::filter(.data$index == mvar_model_index) %>%
       .$log_opts %>%
       .[[1]] %>%
+
+      {if(is.data.frame(.)){.[,mvar]} else {.}} %>%
+
       {if(is.null(.)){
         "none"
-      } else {
-        dplyr::select(.,dplyr::all_of(mvar)) %>%
-          dplyr::pull()}}
+      } else if(is.na(.)){
+        "none"} else {
+          dplyr::select(.,dplyr::all_of(mvar)) %>%
+            dplyr::pull()}}
 
     mvar_euname <- model$module_collection %>%
       dplyr::filter(.data$index == mvar_model_index) %>%
       dplyr::pull("dependent")
 
     ## Get earlier data for individual estimates --------------
-    mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
-      dplyr::mutate(data = dplyr::case_when(mvar_log == "log" ~ exp(data),
-                                            mvar_log == "asinh" ~ sinh(data),
-                                            mvar_log == "none" ~ data)) %>%
-      setNames(mvar_euname)
+    dplyr::tibble(data = if(mvar_log == "log"){
+      exp(as.numeric(mvar_model_obj$yhat))
+    } else if(mvar_log == "asinh"){
+      sinh(as.numeric(mvar_model_obj$yhat))
+    } else if(mvar_log == "none"){
+      as.numeric(mvar_model_obj$yhat)
+    }) %>%
+      setNames(mvar_euname) -> mvar_tibble
 
     ## Get earlier data for all estimates --------------
     prediction_list %>%
       dplyr::filter(.data$index == mvar_model_index) %>%
       dplyr::pull("all.estimates") %>%
       .[[1]] %>%
-      dplyr::mutate(dplyr::across(-"time", ~dplyr::case_when(mvar_log == "log" ~ exp(.),
-                                                             mvar_log == "asinh" ~ sinh(.),
-                                                             mvar_log == "none" ~ .)))-> prediction_list.mvar.all
+
+      {if(mvar_log == "log"){
+        dplyr::mutate(., dplyr::across(-"time", exp))
+      } else if(mvar_log == "asinh"){
+        dplyr::mutate(., dplyr::across(-"time", sinh))
+      } else if(mvar_log == "none"){.}} -> prediction_list.mvar.all
 
     # if the all estimates are not yet stored, use the central estimate
     if(!is.null(prediction_list.mvar.all)){

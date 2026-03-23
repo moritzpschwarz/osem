@@ -20,7 +20,8 @@ estimate_module(
   selection.tpval = 0.01,
   keep,
   pretest_steps,
-  quiet = FALSE
+  quiet = FALSE,
+  module
 )
 }
 \arguments{
@@ -83,6 +84,8 @@ then the SIS breaks are pre-entered to another \code{\link[gets]{isat}} estimati
 After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.}
 
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
+
+\item{module}{A row of the specification table.}
 }
 \value{
 A list containing all estimated models, with the model with the smallest BIC under 'best_model'.

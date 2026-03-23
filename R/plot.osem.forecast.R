@@ -36,9 +36,9 @@
 #' )
 #' )
 #'\donttest{
-#' a <- run_model(specification = spec, dictionary = NULL,
-#' primary_source = "download",
-#' save_to_disk = NULL, present = FALSE)
+#' a <- run_model(specification = spec,
+#'                primary_source = "local",
+#'                input = sample_input)
 #' plot(forecast_model(a))
 #'}
 #'
@@ -76,9 +76,20 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   # get log information
   if(!is.null(x$orig_model$opts_df[["log_opts"]])){
     x$orig_model$opts_df %>%
-      dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
-        opts[,dep, drop = TRUE]
+      tidyr::nest(dependent = "dependent") %>%
+      # separate any comma separated rows in dependent
+      dplyr::mutate(dependent = purrr::map(.data$dependent, function(dep_row){
+        dep_val <- dep_row$dependent
+        if(grepl(",",  dep_val)){
+          dep_vars <- trimws(unlist(strsplit(dep_val, ",")))
+          return(dep_vars)
+        } else {
+          return(dep_val)
+        }
       })) %>%
+      tidyr::unnest("dependent") %>%
+
+      dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){as.character(opts[,dep, drop = TRUE])})) %>%
       tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
       tidyr::replace_na(list(log_opts_dependent = "none")) %>%
       dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
@@ -91,28 +102,46 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
   x$forecast %>%
     dplyr::select("dep_var", "central.estimate") %>%
     tidyr::unnest("central.estimate") %>%
-    tidyr::pivot_longer(-c("time","dep_var")) %>%
-    tidyr::drop_na() %>%
+    dplyr::rename(na_item = "dep_var") %>%
+    #dplyr::select(-"dep_var") %>%
+    tidyr::pivot_longer(-c("time", "na_item"), names_to = "dep_var") %>%
+    dplyr::mutate(dep_var = gsub("^ln\\.|^D\\.|^D\\.ln\\.|^ln\\.D\\.","",.data$dep_var)) %>%
+    tidyr::drop_na("value") %>%
+    # dplyr::mutate(dep_var = .data$na_item,
+    #               na_item = NULL) %>%
+    dplyr::select(-"na_item") %>%
     dplyr::full_join(log_opts_processed, by = "dep_var") %>%
     dplyr::mutate(value = dplyr::case_when(.data$log_opt == "log" ~ exp(.data$value),
                                            .data$log_opt == "asinh" ~ sinh(.data$value),
                                            .data$log_opt == "none" ~ .data$value)) %>%
-    dplyr::select(-c("name", "log_opt")) %>%
+    dplyr::select(-c("log_opt")) %>%
     dplyr::rename(values = "value",
                   na_item = "dep_var") %>%
-    dplyr::mutate(fit = "forecast")-> forecasts_processed
+    tidyr::drop_na("values") %>%
+    dplyr::mutate(fit = "forecast") -> forecasts_processed
 
   # ALL FORECASTS --------
   # Dealing with uncertainty (all forecasts)
   # unnest the set of all estimates from the original object
   x$forecast %>%
-    dplyr::select("dep_var", "all.estimates") %>%
-    dplyr::full_join(log_opts_processed, by = "dep_var") %>%
+    dplyr::select("na_item" = "dep_var", "all.estimates") %>%
     tidyr::unnest("all.estimates") %>%
+
+    # check if dep_var column exists
+    {if("dep_var" %in% names(.)){
+      # if the dep_var column exists, combine with na_item - use dep_var over na_item
+      dplyr::mutate(.,na_item = dplyr::case_when(
+        !is.na(.data$dep_var) ~ gsub("ln.|D.|D.ln.|ln.D.","",.data$dep_var), TRUE ~ .data$na_item)) %>%
+        dplyr::select(-"dep_var")} else {.}} %>%
+
+    dplyr::rename("dep_var" = "na_item") %>%
+    dplyr::full_join(log_opts_processed, by = "dep_var") %>%
+
     dplyr::mutate(dplyr::across(dplyr::starts_with("run_"), ~dplyr::case_when(.data$log_opt == "log" ~ exp(.),
                                                                               .data$log_opt == "asinh" ~ sinh(.),
                                                                               .data$log_opt == "none" ~ .))) %>%
     dplyr::select(-"log_opt") -> all_forecasts_unnested
+
 
   if(nrow(all_forecasts_unnested) > 0){
     all_forecasts_unnested %>%
@@ -331,7 +360,7 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
       dplyr::rename(type = "fit") %>%
       dplyr::arrange(dplyr::desc(.data$time), .data$na_item, .data$type) %>%
       dplyr::relocate(dplyr::any_of(c("time", "na_item", "values", "type", "p95", "p05", "p975",
-                        "p025", "p75", "p25"))) %>% # here any_of because with only identity the percentiles don't exist
+                                      "p025", "p75", "p25"))) %>% # here any_of because with only identity the percentiles don't exist
 
       return()
   } else {

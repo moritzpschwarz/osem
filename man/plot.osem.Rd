@@ -30,7 +30,7 @@
 
 \item{first_date}{Character. First date value to be shown. Must be a character value that can be turned into a date using as.Date() or NULL.}
 
-\item{grepl_variables}{Regular Expression Character. Can be used to select variables to be plotted. Experimental feature so use with care.}
+\item{grepl_variables}{Regular Expression Character. Can be used to select variables to be plotted.}
 
 \item{linewidth}{Numeric. Linewidth argument for the plot. Default is 1.}
 
@@ -63,9 +63,8 @@ independent = c(
 )
 )
 \donttest{
-a <- run_model(specification = spec, dictionary = NULL,
-primary_source = "download",
-save_to_disk = NULL, present = FALSE)
+a <- run_model(specification = spec,
+primary_source = "local", input = sample_input)
 plot(a)
 }
 }

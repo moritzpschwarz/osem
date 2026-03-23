@@ -1,18 +1,18 @@
 Package: osem
 Title: Open-Source Empirical Macro (OSEM) Model to forecast macro-economic as well as climate and energy variables
-Version: 0.0.3
-Date: 2025-02-05
+Version: 0.0.4
+Date: 2026-03-01
 Authors@R: c(
-    person("Jonas", "Kurle", role = c("aut"), comment = c(ORCID = "0000-0003-2197-2012")),
-    person("Moritz", "Schwarz", , "moritz.schwarz@scmo.eu", role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0003-0340-3780"))
+    person(given = "Jonas", family = "Kurle", role = c("aut"), comment = c(ORCID = "0000-0003-2197-2012")),
+    person(given = "Moritz", family = "Schwarz", email = "moritz.schwarz@scmo.eu", role = c("aut", "cre"),
+       comment = c(ORCID = "0000-0003-0340-3780"))
            )
 Description: This package provides the Open Source Empirical Macro (OSEM) Model to forecast macro-economic as well as climate and energy variables. 
 License: AGPL (>= 3)
 Encoding: UTF-8
 URL: http://moritzschwarz.org/osem/
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Depends: 
     R (>= 3.5)
 Imports: 
@@ -29,7 +29,10 @@ Imports:
     utils,
     ggplot2,
     scales,
-    zoo
+    zoo,
+    igraph,
+    vars,
+    urca
 LazyData: true
 Suggests: 
     shiny,
@@ -38,18 +41,19 @@ Suggests:
     writexl,
     DT,
     ggraph,
+    ggforce,
     testthat (>= 3.0.0),
     tidygraph,
-    igraph,
     plotly,
     purrr,
     forecast,
     knitr,
     rmarkdown,
-    statcanR,
     imf.data,
     modelsummary,
-    broom
+    broom,
+    MASS, 
+    BVAR
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Remotes: gsucarrat/gets/gets#70

@@ -27,7 +27,10 @@
 #'   )
 #' )
 #' \donttest{
-#' a <- run_model(specification = spec)
+#' a <- run_model(specification = spec,
+#'               input = sample_input,
+#'               primary_source = "local",
+#'               constrain.to.minimum.sample = FALSE)
 #' model_table(a)
 #' }
 #'

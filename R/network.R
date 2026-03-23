@@ -97,33 +97,45 @@ network <- function(model, layout = "kk") {
     tidygraph::activate(!!as.symbol("nodes")) %>%
     dplyr::inner_join(y = class, by = c("name" = "var"))
 
-  if(model$args[["gets_selection"]]){
-    selection_legend <- ggraph::scale_edge_linetype_manual(name = "Selection",
-                                                           values = c("1" = 1, "2" = 2),
-                                                           labels = c("retained", "dropped"))
-  } else {
-    selection_legend <- ggraph::scale_edge_linetype_manual(name = "Selection",
-                                                           values = c("1" = 1, "2" = 2),
-                                                           labels = c("retained", "dropped"), guide = "none")
-  }
+  selection_legend <- ggraph::scale_edge_linetype_manual(
+    name   = "Selection",
+    values = c(`1` = "solid", `2` = "dashed"),
+    labels = c("retained", "dropped"),
+    guide  = if (isTRUE(model$args[["gets_selection"]])) "legend" else "none"
+  )
 
   out <- ggraph::ggraph(graph_df, layout = layout) +
     ggraph::geom_node_point(ggplot2::aes(color = class), size = 3) +
-    ggraph::geom_edge_link(ggplot2::aes(edge_linetype = as.factor(.data$weight)),
-                           arrow = ggplot2::arrow(length = ggplot2::unit(2, 'mm')),
-                           end_cap = ggraph::circle(4, 'mm'), show.legend = model$args[["gets_selection"]]) +
-    ggraph::geom_edge_loop(ggplot2::aes(edge_linetype = as.factor(.data$weight),
-                                        end_cap = ggraph::circle(1, 'mm'),
-                                        span = 120,
-                                        direction = -45),
-                           arrow = ggplot2::arrow(length = ggplot2::unit(2, 'mm')),
-                           position = "jitter") +
-    ggraph::geom_node_text(ggplot2::aes(label = .data$name), repel = TRUE, size = 3) +
-    ggplot2::scale_color_discrete(name = "Type of Variable",
-                                  labels = c("Definition/Identity", "Endogenous", "Exogenous")) +
+    ggraph::geom_edge_link(
+      ggplot2::aes(edge_linetype = as.factor(.data$weight)),
+      arrow   = ggplot2::arrow(length = ggplot2::unit(2, "mm")),
+      end_cap = ggraph::circle(4, "mm"),
+      show.legend = isTRUE(model$args[["gets_selection"]])
+    ) +
 
+    ggraph::geom_edge_loop(
+      ggplot2::aes(edge_linetype = as.factor(.data$weight)),
+      arrow     = ggplot2::arrow(length = ggplot2::unit(2, "mm")),
+      end_cap   = ggraph::circle(1, "mm"),
+      position  = "jitter",
+      show.legend = FALSE
+    ) +
+    ggraph::geom_node_text(
+      ggplot2::aes(label = name),
+      repel = TRUE,
+      size = 3,
+      #max.overlaps = Inf,
+      force = 2,
+      box.padding = ggplot2::unit(0.5, "lines"),
+      point.padding = ggplot2::unit(0.2, "lines")
+    ) +
+
+
+    ggplot2::scale_color_discrete(
+      name = "Type of Variable",
+      labels = c("Definition/Identity", "Endogenous", "Exogenous")
+    ) +
     selection_legend +
-
     ggplot2::theme(legend.position = "bottom")
 
   return(out)
