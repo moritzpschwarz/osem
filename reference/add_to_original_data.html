@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">osem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,9 +44,9 @@
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">add_to_original_data</span><span class="op">(</span></span>
 <span>  <span class="va">clean_data</span>,</span>
-<span>  <span class="va">isat_object</span>,</span>
+<span>  <span class="va">model_object</span>,</span>
 <span>  dep_var_basename <span class="op">=</span> <span class="st">"imports_of_goods_and_services"</span>,</span>
-<span>  ardl_or_ecm <span class="op">=</span> <span class="st">"ardl"</span>,</span>
+<span>  model_type <span class="op">=</span> <span class="st">"ardl"</span>,</span>
 <span>  <span class="va">opts_df</span>,</span>
 <span>  <span class="va">module</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -61,9 +61,9 @@
 clean_data() to fit all requirements.</p></dd>
 
 
-<dt id="arg-isat-object">isat_object<a class="anchor" aria-label="anchor" href="#arg-isat-object"></a></dt>
-<dd><p>An object of class 'isat'. Most likely should be the
-'best_model' element that is returned by the 'estimate_module()' function.</p></dd>
+<dt id="arg-model-object">model_object<a class="anchor" aria-label="anchor" href="#arg-model-object"></a></dt>
+<dd><p>Most likely should be returned by the 'estimate_module()'
+function.</p></dd>
 
 
 <dt id="arg-dep-var-basename">dep_var_basename<a class="anchor" aria-label="anchor" href="#arg-dep-var-basename"></a></dt>
@@ -72,10 +72,10 @@ variable as contained in clean_data() in a level form (i.e. no ln or D in
 front of the name).</p></dd>
 
 
-<dt id="arg-ardl-or-ecm">ardl_or_ecm<a class="anchor" aria-label="anchor" href="#arg-ardl-or-ecm"></a></dt>
-<dd><p>Either 'ardl' or 'ecm' to determine whether to estimate
-the model as an Autoregressive Distributed Lag Function (ardl) or as an
-Equilibrium Correction Model (ecm).</p></dd>
+<dt id="arg-model-type">model_type<a class="anchor" aria-label="anchor" href="#arg-model-type"></a></dt>
+<dd><p>Either 'ardl', 'ecm', or 'cvar' to determine whether to estimate
+the model as an Autoregressive Distributed Lag Function (ardl), as an
+Equilibrium Correction Model (ecm), or as a cointegrated vector autoregression.</p></dd>
 
 
 <dt id="arg-opts-df">opts_df<a class="anchor" aria-label="anchor" href="#arg-opts-df"></a></dt>
@@ -100,7 +100,7 @@ Equilibrium Correction Model (ecm).</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

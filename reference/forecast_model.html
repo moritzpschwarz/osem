@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">osem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -145,43 +145,62 @@
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">spec</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table namq_10_a10 cached at /tmp/RtmpEegQGl/eurostat/951eb86d9bcb2cfff54f0726789435bb.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table namq_10_gdp cached at /tmp/RtmpEegQGl/eurostat/371e3aed33e75ecc5bb8d4ed696ad9ab.rds</span>
+<span class="r-in"><span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span> type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>   <span class="st">"d"</span>,</span></span>
+<span class="r-in"><span>   <span class="st">"d"</span>,</span></span>
+<span class="r-in"><span>   <span class="st">"n"</span></span></span>
+<span class="r-in"><span> <span class="op">)</span>,</span></span>
+<span class="r-in"><span> dependent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>   <span class="st">"StatDiscrep"</span>,</span></span>
+<span class="r-in"><span>   <span class="st">"TOTS"</span>,</span></span>
+<span class="r-in"><span>   <span class="st">"Import"</span></span></span>
+<span class="r-in"><span> <span class="op">)</span>,</span></span>
+<span class="r-in"><span> independent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>   <span class="st">"TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export"</span>,</span></span>
+<span class="r-in"><span>   <span class="st">"GValueAdd + Import"</span>,</span></span>
+<span class="r-in"><span>   <span class="st">"FinConsExpHH + GCapitalForm"</span></span></span>
+<span class="r-in"><span> <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">spec</span>,</span></span>
+<span class="r-in"><span>              input <span class="op">=</span> <span class="va">sample_input</span>,</span></span>
+<span class="r-in"><span>              primary_source <span class="op">=</span> <span class="st">"local"</span>,</span></span>
+<span class="r-in"><span>              constrain.to.minimum.sample <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> --- Estimation begins ---</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimating Import = FinConsExpHH + GCapitalForm </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing TOTS = GValueAdd + Import </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing StatDiscrep = TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Estimating Import = FinConsExpHH  +  GCapitalForm </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing TOTS = GValueAdd  +  Import </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing StatDiscrep = TOTS  -  FinConsExpHH  -  FinConsExpGov  -  GCapitalForm  -  Export </span>
 <span class="r-plt img"><img src="forecast_model-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu">forecast_model</span><span class="op">(</span><span class="va">a</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> No exogenous values provided. Model will forecast the exogenous values with an AR4 process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').</span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Alternative is exog_fill_method = 'last'.</span>
 <span class="r-plt img"><img src="forecast_model-2.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="forecast_model-3.png" alt="" width="700" height="433"></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> OSEM Model Forecast Output</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> -----------------------</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Forecast Overview:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Forecast Horizon: 2022-04-01 to 2024-07-01</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Forecast Horizon: 2022-07-01 to 2024-10-01</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Forecast Method: AR Model (Outlier and Step Shift Corrected)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Max AR Length: 4</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Central Forecast Estimates: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 10 × 4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    Date        Import     TOTS StatDiscrep</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2022-04-01 <span style="text-decoration: underline;">319</span>475.  <span style="text-decoration: underline;">977</span>166.     -<span style="color: #BB0000; text-decoration: underline;">66</span><span style="color: #BB0000;">441.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2022-07-01 <span style="text-decoration: underline;">327</span>867.  <span style="text-decoration: underline;">987</span>988.     -<span style="color: #BB0000; text-decoration: underline;">64</span><span style="color: #BB0000;">115.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2022-10-01 <span style="text-decoration: underline;">336</span>773.  <span style="text-decoration: underline;">998</span>887.     -<span style="color: #BB0000; text-decoration: underline;">63</span><span style="color: #BB0000;">027.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2023-01-01 <span style="text-decoration: underline;">345</span>730. 1<span style="text-decoration: underline;">009</span>511.     -<span style="color: #BB0000; text-decoration: underline;">61</span><span style="color: #BB0000;">281.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2023-04-01 <span style="text-decoration: underline;">355</span>711. 1<span style="text-decoration: underline;">022</span>435.     -<span style="color: #BB0000; text-decoration: underline;">58</span><span style="color: #BB0000;">539.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2023-07-01 <span style="text-decoration: underline;">364</span>916. 1<span style="text-decoration: underline;">033</span>919.     -<span style="color: #BB0000; text-decoration: underline;">55</span><span style="color: #BB0000;">441.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2023-10-01 <span style="text-decoration: underline;">374</span>874. 1<span style="text-decoration: underline;">045</span>876.     -<span style="color: #BB0000; text-decoration: underline;">53</span><span style="color: #BB0000;">352.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2024-01-01 <span style="text-decoration: underline;">384</span>809. 1<span style="text-decoration: underline;">057</span>423.     -<span style="color: #BB0000; text-decoration: underline;">50</span><span style="color: #BB0000;">562.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2024-04-01 <span style="text-decoration: underline;">395</span>808. 1<span style="text-decoration: underline;">071</span>344.     -<span style="color: #BB0000; text-decoration: underline;">46</span><span style="color: #BB0000;">592.</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2024-07-01 <span style="text-decoration: underline;">405</span>887. 1<span style="text-decoration: underline;">083</span>701.     -<span style="color: #BB0000; text-decoration: underline;">42</span><span style="color: #BB0000;">401.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    Date       Import    TOTS StatDiscrep</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> 2022-07-01 <span style="text-decoration: underline;">46</span>750. <span style="text-decoration: underline;">118</span>296.      -<span style="color: #BB0000; text-decoration: underline;">8</span><span style="color: #BB0000;">925.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> 2022-10-01 <span style="text-decoration: underline;">47</span>461. <span style="text-decoration: underline;">120</span>244.      -<span style="color: #BB0000; text-decoration: underline;">8</span><span style="color: #BB0000;">117.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> 2023-01-01 <span style="text-decoration: underline;">47</span>439. <span style="text-decoration: underline;">121</span>404.      -<span style="color: #BB0000; text-decoration: underline;">7</span><span style="color: #BB0000;">812.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> 2023-04-01 <span style="text-decoration: underline;">47</span>386. <span style="text-decoration: underline;">122</span>288.      -<span style="color: #BB0000; text-decoration: underline;">7</span><span style="color: #BB0000;">748.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> 2023-07-01 <span style="text-decoration: underline;">47</span>720. <span style="text-decoration: underline;">124</span>005.      -<span style="color: #BB0000; text-decoration: underline;">7</span><span style="color: #BB0000;">287.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> 2023-10-01 <span style="text-decoration: underline;">47</span>817. <span style="text-decoration: underline;">125</span>479.      -<span style="color: #BB0000; text-decoration: underline;">6</span><span style="color: #BB0000;">636.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> 2024-01-01 <span style="text-decoration: underline;">48</span>119. <span style="text-decoration: underline;">127</span>175.      -<span style="color: #BB0000; text-decoration: underline;">6</span><span style="color: #BB0000;">181.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> 2024-04-01 <span style="text-decoration: underline;">48</span>028. <span style="text-decoration: underline;">128</span>609.      -<span style="color: #BB0000; text-decoration: underline;">5</span><span style="color: #BB0000;">880.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> 2024-07-01 <span style="text-decoration: underline;">48</span>208. <span style="text-decoration: underline;">130</span>441.      -<span style="color: #BB0000; text-decoration: underline;">5</span><span style="color: #BB0000;">455.</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> 2024-10-01 <span style="text-decoration: underline;">48</span>509. <span style="text-decoration: underline;">132</span>521.      -<span style="color: #BB0000; text-decoration: underline;">4</span><span style="color: #BB0000;">652.</span></span>
+<span class="r-plt img"><img src="forecast_model-3.png" alt="" width="700" height="433"></span>
 <span class="r-plt img"><img src="forecast_model-4.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="forecast_model-5.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
@@ -194,7 +213,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

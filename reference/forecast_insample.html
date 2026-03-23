@@ -9,7 +9,7 @@ The function then runs the model up to the last time point of the sample and for
 
     <a class="navbar-brand me-2" href="../index.html">osem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,7 +51,9 @@ The function then runs the model up to the last time point of the sample and for
 <span>  uncertainty_sample <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  exog_fill_method <span class="op">=</span> <span class="st">"AR"</span>,</span>
 <span>  plot <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  quiet <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  parallel.cores <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  insample_model_list <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -82,6 +84,19 @@ The function then runs the model up to the last time point of the sample and for
 <dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
 <dd><p>Logical. Should messages about the forecast procedure be suppressed?</p></dd>
 
+
+<dt id="arg-parallel-cores">parallel.cores<a class="anchor" aria-label="anchor" href="#arg-parallel-cores"></a></dt>
+<dd><p>Numeric. The number of cores to use for parallel processing. If NULL (default), the function will not use parallel processing. If the numeric, the function takes the desired number of cores.</p></dd>
+
+
+<dt id="arg-insample-model-list">insample_model_list<a class="anchor" aria-label="anchor" href="#arg-insample-model-list"></a></dt>
+<dd><p>Option to pre-specify the insample models (e.g. from an existing object of class <code>osem.forecast.insample</code>). If NULL (default), the function will run the models for the insample forecasting.
+If a list of models is provided, the function will use those models for the insample forecasting and will skip the model running step.
+This can be useful if the user already has the models available and wants to save time by not running them again.
+If a numeric value is provided, it will be used as the number of cores for parallel processing.
+The function will check that the specified number of cores does not exceed the number of available cores and will adjust accordingly if it does.
+If this happens, then the function automatically detect the number of available cores and use one less than that for parallel processing.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -97,7 +112,7 @@ The function then runs the model up to the last time point of the sample and for
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

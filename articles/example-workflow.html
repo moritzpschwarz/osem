@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">osem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -241,7 +241,7 @@ object.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
-<p><img src="example-workflow_files/figure-html/unnamed-chunk-3-1.png" width="672"></p>
+<p><img src="example-workflow_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="" width="672"></p>
 <p>We did not <code>quiet</code> the output, so we get some information
 about the estimation.</p>
 <p>We are told that local files are used, namely the file
@@ -281,7 +281,7 @@ emissions from combustion activities:</p>
 <span><span class="co"># inspect the estimated equation</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">co2module</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Date: Fri Aug  8 14:58:14 2025 </span></span>
+<span><span class="co">#&gt; Date: Mon Mar 23 22:06:57 2026 </span></span>
 <span><span class="co">#&gt; Dependent var.: ln.EmiCO2Combustion </span></span>
 <span><span class="co">#&gt; Method: Ordinary Least Squares (OLS)</span></span>
 <span><span class="co">#&gt; Variance-Covariance: Ordinary </span></span>
@@ -329,7 +329,7 @@ conditional heteroskedasticity pass.</p>
 <code><a href="../reference/network.html">network()</a></code> function.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/network.html">network</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span></span></code></pre></div>
-<p><img src="example-workflow_files/figure-html/network-1.png" width="672">
+<p><img src="example-workflow_files/figure-html/network-1.png" class="r-plt" alt="" width="672">
 Each node represents a module and the different colours represent
 whether the variable is given by a definition/identity, whether it has
 been modelled as an endogenous variable depending on other models, and
@@ -363,7 +363,7 @@ function returns an object of class <code>"osem.forecast"</code>, which
 can also be plotted.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">forecast</span><span class="op">)</span></span></code></pre></div>
-<p><img src="example-workflow_files/figure-html/forecast-plot-1.png" width="672"></p>
+<p><img src="example-workflow_files/figure-html/forecast-plot-1.png" class="r-plt" alt="" width="672"></p>
 </div>
 <div class="section level3">
 <h3 id="diagnostics">Diagnostics<a class="anchor" aria-label="anchor" href="#diagnostics"></a>
@@ -409,7 +409,7 @@ executed:</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

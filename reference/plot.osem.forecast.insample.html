@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">osem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -89,51 +89,6 @@ a Date that indicates the first insample forecast to show in the plot. By defaul
 
 </dl></div>
 
-    <div class="section level2">
-    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="st">"d"</span>,</span></span>
-<span class="r-in"><span>  <span class="st">"d"</span>,</span></span>
-<span class="r-in"><span>  <span class="st">"n"</span></span></span>
-<span class="r-in"><span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>dependent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="st">"StatDiscrep"</span>,</span></span>
-<span class="r-in"><span>  <span class="st">"TOTS"</span>,</span></span>
-<span class="r-in"><span>  <span class="st">"Import"</span></span></span>
-<span class="r-in"><span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>independent <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="st">"TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export"</span>,</span></span>
-<span class="r-in"><span>  <span class="st">"GValueAdd + Import"</span>,</span></span>
-<span class="r-in"><span>  <span class="st">"FinConsExpHH + GCapitalForm"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">spec</span>, dictionary <span class="op">=</span> <span class="cn">NULL</span>,</span></span>
-<span class="r-in"><span>primary_source <span class="op">=</span> <span class="st">"download"</span>,</span></span>
-<span class="r-in"><span>save_to_disk <span class="op">=</span> <span class="cn">NULL</span>, present <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Dataset query already saved in cache_list.json...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Reading cache file /tmp/RtmpEegQGl/eurostat/951eb86d9bcb2cfff54f0726789435bb.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table  namq_10_a10  read from cache file:  /tmp/RtmpEegQGl/eurostat/951eb86d9bcb2cfff54f0726789435bb.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Dataset query already saved in cache_list.json...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Reading cache file /tmp/RtmpEegQGl/eurostat/371e3aed33e75ecc5bb8d4ed696ad9ab.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table  namq_10_gdp  read from cache file:  /tmp/RtmpEegQGl/eurostat/371e3aed33e75ecc5bb8d4ed696ad9ab.rds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> --- Estimation begins ---</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimating Import = FinConsExpHH + GCapitalForm </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing TOTS = GValueAdd + Import </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing StatDiscrep = TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export </span>
-<span class="r-plt img"><img src="plot.osem.forecast.insample-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="forecast_model.html">forecast_model</a></span><span class="op">(</span><span class="va">a</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> No exogenous values provided. Model will forecast the exogenous values with an AR4 process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Alternative is exog_fill_method = 'last'.</span>
-<span class="r-plt img"><img src="plot.osem.forecast.insample-2.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="plot.osem.forecast.insample-3.png" alt="" width="700" height="433"></span>
-<span class="r-plt img"><img src="plot.osem.forecast.insample-4.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span><span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
-</code></pre></div>
-    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
@@ -143,7 +98,7 @@ a Date that indicates the first insample forecast to show in the plot. By defaul
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

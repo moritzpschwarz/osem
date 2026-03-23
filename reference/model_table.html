@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">osem</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,77 +86,55 @@
 <span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
-<span class="r-in"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">spec</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Dataset query already saved in cache_list.json...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Reading cache file /tmp/RtmpEegQGl/eurostat/951eb86d9bcb2cfff54f0726789435bb.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table  namq_10_a10  read from cache file:  /tmp/RtmpEegQGl/eurostat/951eb86d9bcb2cfff54f0726789435bb.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Dataset query already saved in cache_list.json...</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Reading cache file /tmp/RtmpEegQGl/eurostat/371e3aed33e75ecc5bb8d4ed696ad9ab.rds</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Table  namq_10_gdp  read from cache file:  /tmp/RtmpEegQGl/eurostat/371e3aed33e75ecc5bb8d4ed696ad9ab.rds</span>
+<span class="r-in"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_model.html">run_model</a></span><span class="op">(</span>specification <span class="op">=</span> <span class="va">spec</span>,</span></span>
+<span class="r-in"><span>              input <span class="op">=</span> <span class="va">sample_input</span>,</span></span>
+<span class="r-in"><span>              primary_source <span class="op">=</span> <span class="st">"local"</span>,</span></span>
+<span class="r-in"><span>              constrain.to.minimum.sample <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> --- Estimation begins ---</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Estimating Import = FinConsExpHH + GCapitalForm </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing TOTS = GValueAdd + Import </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing StatDiscrep = TOTS - FinConsExpHH - FinConsExpGov - GCapitalForm - Export </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Estimating Import = FinConsExpHH  +  GCapitalForm </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing TOTS = GValueAdd  +  Import </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Constructing StatDiscrep = TOTS  -  FinConsExpHH  -  FinConsExpGov  -  GCapitalForm  -  Export </span>
 <span class="r-plt img"><img src="model_table-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="fu">model_table</span><span class="op">(</span><span class="va">a</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                    | Import    |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +====================+===========+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | ar1                | 0.952***  |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                    | (0.070)   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | ar2                | -0.013    |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                    | (0.066)   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | trend              | 0.000*    |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                    | (0.000)   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | ln.FinConsExpHH    | 0.656***  |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                    | (0.151)   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | L3.ln.FinConsExpHH | -0.326**  |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                    | (0.097)   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | L1.ln.FinConsExpHH | -0.226    |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                    | (0.142)   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | ln.GCapitalForm    | 0.357***  |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                    | (0.038)   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | L2.ln.GCapitalForm | -0.096*   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                    | (0.044)   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | L1.ln.GCapitalForm | -0.313*** |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> |                    | (0.052)   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Num.Obs.           | 122       |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | AIC                | -688.6    |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | BIC                | -646.5    |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +--------------------+-----------+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Log.Lik.           | 359.282   |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +====================+===========+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | + p &lt; 0.1, * p &lt; 0.05, ** p &lt;  |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | 0.01, *** p &lt; 0.001            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +====================+===========+</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | Quarterly Dummies, Impulse     |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | (IIS) and Step Indicators      |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | (SIS) are not shown            |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | individually but were          |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> | activated for all models.      |</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> +====================+===========+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |                 | Import   |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +=================+==========+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | mconst          | -1.322   |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |                 | (0.966)  |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | trend           | 0.004*** |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |                 | (0.000)  |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | ln.FinConsExpHH | 0.663*** |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |                 | (0.091)  |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | ln.GCapitalForm | 0.492*** |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> |                 | (0.042)  |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Num.Obs.        | 50       |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | AIC             | -305.3   |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | BIC             | -290.0   |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +-----------------+----------+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Log.Lik.        | 160.629  |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +=================+==========+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | + p &lt; 0.1, * p &lt; 0.05, **  |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | p &lt; 0.01, *** p &lt; 0.001    |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +=================+==========+</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Quarterly Dummies,         |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Impulse (IIS) and Step     |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | Indicators (SIS) are not   |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | shown individually but     |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | were activated for all     |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> | models.                    |</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> +=================+==========+</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Table: OSEM Model Results </span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
@@ -171,7 +149,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>
