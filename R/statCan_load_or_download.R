@@ -11,6 +11,8 @@
 #' downloaded data and \code{$to_obtain} the updated data.frame tracking which
 #' variables still need to be obtained.
 
+
+##TODO have check for frequency
 download_statcan <- function(to_obtain, column_filters, quiet) {
 
   # initialise empty df
@@ -21,19 +23,17 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
 
   #pulls dataframe of unique database ids
   dataset_id <- to_obtain %>% dplyr::filter(.data$database == "statcan" &
-                                                .data$found == FALSE) %>%
+                                              .data$found == FALSE) %>%
     dplyr::distinct(.data$dataset_id) #%>% dplyr::select("dataset_id")
 
   #iterate over unique database ids and pull the dataset
   #each iteration
   for (i in 1:nrow(dataset_id)) {
 
+
     #download data table according to data_base_id
     id_identified <- dataset_id[i,1, drop = TRUE]
-    #suppressWarnings(suppressMessages(df <- statcanR::statcan_data(id_identified,"eng")))
-
-    stop("The statcanR package is no longer maintained and has been removed from CRAN. Functionality not available. Download the data manually and use it as local data.")
-
+    suppressWarnings(suppressMessages(df <- cansim::get_cansim(id_identified,default_day = "01")))
     df <- as.data.frame(df)
 
     #get the dictionary coordinates that use the following dataset_id
@@ -46,7 +46,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
       #iterate through all the column filter names of the particular dictionary row to build filtered dataframe
       col_filters <- column_filters[as.character(column_filters) %in% names(subset_of_data)]
       for (k in col_filters) {
-          subset_of_data <- subset_of_data %>% dplyr::filter(.,.[[k]] == as.name(to_obtain[idx,k, drop = TRUE]))
+        subset_of_data <- subset_of_data %>% dplyr::filter(.,.[[k]] == as.name(to_obtain[idx,k, drop = TRUE]))
       }
 
       # if after filtering "sub" is not empty, we found the variable and can mark it as such
@@ -60,29 +60,56 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
         dplyr::mutate(na_item = to_obtain$model_varname[idx])
       # dplyr::rename_with(.cols = dplyr::all_of(to_obtain$var_col[idx]), .fn = ~paste0("na_item")) %>%
 
+
+
       # if have monthly data, need to aggregate to quarterly
+      #error in this is does not sum the quarters
       if (to_obtain$freq[idx] == "m") {
         # need to aggregate across all filters
         columns <- colnames(subset_of_data)
         unique_columns <- setdiff(columns, "VALUE") # should be unique across these
         stopifnot(sum(duplicated(subset_of_data[, unique_columns])) == 0L) # sanity check
-        groupby_columns <- union(c("year", "quarter"), setdiff(unique_columns, "REF_DATE")) # want to group_by year-quarter, so exclude time column
+        groupby_columns <- c("year", "quarter","na_item","Date","GEO") # want to group_by year-quarter, so exclude time column
+        # subset_of_data <- subset_of_data %>%
+        #   dplyr::mutate(year = lubridate::year(.data$Date),
+        #                 quarter = lubridate::quarter(.data$Date)) %>%
+        #   dplyr::group_by(dplyr::across(dplyr::all_of(groupby_columns))) %>%
+        #   dplyr::summarise(
+        #     VALUE = if (to_obtain$Quantity[idx] == "Y") {
+        #       sum(.data$VALUE)
+        #     } else {
+        #       sum(.data$VALUE)/3
+        #     },
+        #   n = dplyr::n(), # record how many months are available in each quarter
+        #   Date = min(.data$Date)) %>%
+        #   dplyr::ungroup()  #%>%
+        #   # drop "incomplete" quarters
+        #   subset_of_data <- subset_of_data %>% dplyr::filter(.data$n == 1L) %>%
+        #   dplyr::select(-"year", -"quarter", -"n")
+
         subset_of_data <- subset_of_data %>%
-          dplyr::mutate(year = lubridate::year(.data$REF_DATE),
-                        quarter = lubridate::quarter(.data$REF_DATE)) %>%
-          dplyr::group_by(dplyr::across(dplyr::all_of(groupby_columns))) %>%
-          dplyr::summarise(VALUE = sum(.data$VALUE),
-                           n = dplyr::n(), # record how many months are available in each quarter
-                           REF_DATE = min(.data$REF_DATE)) %>%
-          dplyr::ungroup()  #%>%
-          # drop "incomplete" quarters
-          subset_of_data <- subset_of_data %>% dplyr::filter(.data$n == 3L) %>%
-          dplyr::select(-"year", -"quarter", -"n")
+          dplyr::mutate(
+            year = lubridate::year(.data$Date),
+            quarter = lubridate::quarter(.data$Date)
+          ) %>%
+          dplyr::group_by(year, quarter, GEO, na_item) %>%  # ✅ only needed columns
+          dplyr::summarise(
+            VALUE = if (to_obtain$Quantity[idx] == "Y") {
+              sum(.data$VALUE, na.rm = TRUE)
+            } else {
+              mean(.data$VALUE, na.rm = TRUE)
+            },
+            n = dplyr::n(),
+            Date = min(.data$Date),   # keep a representative date
+            .groups = "drop"
+          ) %>%
+          dplyr::filter(n == 3L) %>%   # keep full quarters only
+          dplyr::select(-year, -quarter, -n)
 
       }
 
       #rename REF_DATE to time
-      subset_of_data <- subset_of_data %>% dplyr::rename("time" = "REF_DATE")
+      subset_of_data <- subset_of_data %>% dplyr::rename("time" = "Date")
 
       # ensure column "time" is a Date variable
       subset_of_data <- subset_of_data %>%
@@ -110,6 +137,8 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
   out <- list()
   out$df = df_statcan
   out$to_obtain = to_obtain
+
+
 
   return(out)
 }
