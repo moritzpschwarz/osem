@@ -45,9 +45,10 @@ add_to_original_data <- function(clean_data,
                       is.na(.data$fitted) & !is.na(dplyr::lead(.data$fitted)) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
                       !is.na(.data$fitted) ~ .data$fitted
                     ),
+                    fitted.na = is.na(.data$fitted),
                     fitted.cumsum = cumsum(.data$fitted.cumsum),
-                    fitted.cumsum = ifelse(is.na(.data$fitted.cumsum), NA, .data$fitted.cumsum)
-      ) -> intermed_ecm
+                    fitted.cumsum = ifelse(.data$fitted.na, NA, .data$fitted.cumsum)) %>%
+        dplyr::select(-"fitted.na") -> intermed_ecm
 
       fitted_vals <- if(is.na(dependent_log_opts)) {
         intermed_ecm$fitted.cumsum
