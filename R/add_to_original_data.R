@@ -7,9 +7,10 @@
 #' @param dep_var_basename A character string of the name of the dependent
 #'   variable as contained in clean_data() in a level form (i.e. no ln or D in
 #'   front of the name).
-#' @param model_type Either 'ardl', 'ecm', or 'cvar' to determine whether to estimate
-#'   the model as an Autoregressive Distributed Lag Function (ardl), as an
-#'   Equilibrium Correction Model (ecm), or as a cointegrated vector autoregression.
+#' @param model_type Either 'ardl', 'ecm', 'diff', or 'cvar' to determine whether
+#'   the model was estimated as an Autoregressive Distributed Lag model, an
+#'   Equilibrium Correction Model, a fully differenced model, or as a cointegrated
+#'   vector autoregression.
 #' @param opts_df Internal object containing detailed options and information on individual modules.
 #' @inheritParams run_module
 #' @return A tibble with the fitted values as one column.
@@ -24,7 +25,8 @@ add_to_original_data <- function(clean_data,
   if (!"index" %in% names(clean_data)) {
     stop("Clean Data Object should have an index i.e. a 1:nrow(clean_data) column that allows us to join the estimated data again with model$aux$y.index.")
   }
-  if (model_type %in% c("ardl", "ecm")) {
+
+  if (model_type %in% c("ardl", "ecm", "diff")) {
     clean_data %>%
       dplyr::full_join(dplyr::tibble(
         time = model_object$aux$y.index,
@@ -38,17 +40,85 @@ add_to_original_data <- function(clean_data,
       dplyr::select(dplyr::all_of(module$dependent)) %>%
       dplyr::pull() -> dependent_log_opts
 
-    if (model_type == "ecm") {
-      dplyr::mutate(intermed_init,
-                    fitted.cumsum = dplyr::case_when(
-                      is.na(.data$fitted) & is.na(dplyr::lead(.data$fitted)) ~ 0,
-                      is.na(.data$fitted) & !is.na(dplyr::lead(.data$fitted)) ~ get(paste0("ln.", dep_var_basename)), # L.imports_of_goods_and_services,
-                      !is.na(.data$fitted) ~ .data$fitted
-                    ),
-                    fitted.na = is.na(.data$fitted),
-                    fitted.cumsum = cumsum(.data$fitted.cumsum),
-                    fitted.cumsum = ifelse(.data$fitted.na, NA, .data$fitted.cumsum)) %>%
-        dplyr::select(-"fitted.na") -> intermed_ecm
+    if (model_type %in% c("ecm", "diff")) {
+      # ECM and fully differenced models are both estimated with a differenced
+      # dependent variable, e.g. D.ln.y or D.y. To add fitted values back to the
+      # original data, we need to cumulate fitted differences into fitted levels.
+      #
+      # For log variables:
+      #   fitted ln(y_t) = actual ln(y_{t-1}) + fitted D.ln(y_t)
+      #
+      # For untransformed variables:
+      #   fitted y_t = actual y_{t-1} + fitted D.y_t
+      #
+      # For asinh variables:
+      #   fitted asinh(y_t) = actual asinh(y_{t-1}) + fitted D.asinh(y_t)
+      #
+      # The previous observed transformed value is used as the initial condition.
+
+      transformed_dep_candidates <- if (is.na(dependent_log_opts)) {
+        dep_var_basename
+      } else if (dependent_log_opts == "log") {
+        c(paste0("ln.", dep_var_basename), dep_var_basename)
+      } else if (dependent_log_opts == "asinh") {
+        c(paste0("asinh.", dep_var_basename), paste0("ln.", dep_var_basename), dep_var_basename)
+      } else {
+        dep_var_basename
+      }
+
+      transformed_dep_var <- transformed_dep_candidates[transformed_dep_candidates %in% names(intermed_init)][1]
+
+      if (is.na(transformed_dep_var) || length(transformed_dep_var) == 0) {
+        stop(paste0(
+          "Could not find the transformed dependent variable needed to reconstruct fitted levels for ",
+          dep_var_basename,
+          ". Checked: ",
+          paste(transformed_dep_candidates, collapse = ", "),
+          "."
+        ))
+      }
+
+      fitted_diff <- intermed_init$fitted
+      actual_transformed <- intermed_init[[transformed_dep_var]]
+
+      fitted_cumsum <- rep(NA_real_, length(fitted_diff))
+      first_fit_pos <- which(!is.na(fitted_diff))[1]
+
+      if (!is.na(first_fit_pos)) {
+        seed_candidates <- which(seq_along(actual_transformed) < first_fit_pos & !is.na(actual_transformed))
+
+        if (length(seed_candidates) > 0) {
+          seed_pos <- max(seed_candidates)
+          current_value <- actual_transformed[seed_pos]
+
+          for (j in first_fit_pos:length(fitted_diff)) {
+            if (!is.na(fitted_diff[j])) {
+              current_value <- current_value + fitted_diff[j]
+              fitted_cumsum[j] <- current_value
+            } else {
+              fitted_cumsum[j] <- NA_real_
+            }
+          }
+        } else if (!is.na(actual_transformed[first_fit_pos]) && !is.na(fitted_diff[first_fit_pos])) {
+          # Fallback if there is no previous observed value. This should rarely
+          # be needed, because differenced models usually lose at least one
+          # initial observation. It reconstructs the starting level from the
+          # observed level and the fitted change at the first fitted period.
+          current_value <- actual_transformed[first_fit_pos] - fitted_diff[first_fit_pos]
+
+          for (j in first_fit_pos:length(fitted_diff)) {
+            if (!is.na(fitted_diff[j])) {
+              current_value <- current_value + fitted_diff[j]
+              fitted_cumsum[j] <- current_value
+            } else {
+              fitted_cumsum[j] <- NA_real_
+            }
+          }
+        }
+      }
+
+      intermed_init %>%
+        dplyr::mutate(fitted.cumsum = fitted_cumsum) -> intermed_ecm
 
       fitted_vals <- if(is.na(dependent_log_opts)) {
         intermed_ecm$fitted.cumsum
@@ -56,6 +126,8 @@ add_to_original_data <- function(clean_data,
         exp(intermed_ecm$fitted.cumsum)
       } else if(dependent_log_opts == "asinh"){
         sinh(intermed_ecm$fitted.cumsum)
+      } else {
+        intermed_ecm$fitted.cumsum
       }
     }
 
@@ -66,11 +138,18 @@ add_to_original_data <- function(clean_data,
         exp(intermed_init$fitted)
       } else if(dependent_log_opts == "asinh"){
         sinh(intermed_init$fitted)
+      } else {
+        intermed_init$fitted
       }
     }
 
     intermed_init %>%
       dplyr::mutate(fitted.level = fitted_vals) -> intermed
+
+    if (model_type %in% c("ecm", "diff")) {
+      intermed <- intermed %>%
+        dplyr::mutate(fitted.cumsum = fitted_cumsum)
+    }
 
     out <- intermed %>%
       dplyr::rename_with(
