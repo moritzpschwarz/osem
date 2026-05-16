@@ -389,15 +389,15 @@ decision_summary <- model$opts_df %>%
     reason = purrr::map_chr(.data$ecm_decision, ~ .x$reason),
     coint_p_value = purrr::map_dbl(
       .data$ecm_decision,
-      ~ if (!is.null(.x$coint_test)) .x$coint_test$p.value else NA_real_
+      ~ {if (!is.null(.x$coint_test)) .x$coint_test$p.value else NA_real_}
     ),
     alpha_hat = purrr::map_dbl(
       .data$ecm_decision,
-      ~ if (!is.null(.x$coint_test)) .x$coint_test$alpha_hat else NA_real_
+      ~ {if (!is.null(.x$coint_test)) .x$coint_test$alpha_hat else NA_real_}
     ),
     nobs_complete = purrr::map_int(
       .data$ecm_decision,
-      ~ if (!is.null(.x$coint_test)) .x$coint_test$nobs_complete else NA_integer_
+      ~ {if (!is.null(.x$coint_test)) .x$coint_test$nobs_complete else NA_integer_}
     )
   ) %>%
   dplyr::select(

@@ -25,7 +25,10 @@ run_module(
   cvar.ar = 4,
   freq = NULL,
   coint_deterministic = "const",
-  coint_significance = "5pct"
+  coint_significance = "5pct",
+  ecm_pretest = "auto",
+  ecm_unit_root_alpha = "5pct",
+  ecm_coint_alpha = 0.05
 )
 }
 \arguments{
@@ -100,6 +103,19 @@ deterministic component to include in the cointegrating relationship.}
 
 \item{coint_significance}{Significance level for the rank test for
 cointegration. Can only be one of '1pct', '5pct', '10pct'.}
+
+\item{ecm_pretest}{Character. How to handle the ECM pretest when 'ardl_or_ecm' = 'ecm'. Must be one of
+'auto', 'diagnostic', or 'none'. Default is 'auto'. If 'auto', OSEM chooses
+between the requested ECM, a fully differenced model, or a levels ARDL based
+on unit-root and single-equation ECM diagnostics. If 'diagnostic', diagnostics
+are stored but the requested ECM is still estimated. If 'none', the requested
+ECM is estimated without pretesting.}
+
+\item{ecm_unit_root_alpha}{Character. Significance level used by the unit-root
+decision rule. Must be one of '1pct', '5pct', or '10pct'. Default is '5pct'.}
+
+\item{ecm_coint_alpha}{Numeric. Significance level used for the single-equation
+ECM level-block diagnostic. Default is 0.05.}
 }
 \value{
 Returns a list with two named elements.

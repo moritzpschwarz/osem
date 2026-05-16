@@ -1,0 +1,1191 @@
+---
+title: "Automatic ECM Selection in OSEM"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Automatic ECM Selection in OSEM}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 9,
+  fig.height = 6,
+  warning = FALSE,
+  message = FALSE
+)
+library(osem)
+```
+
+
+
+This vignette introduces the automatic equilibrium-correction selection logic in OSEM. The goal is to explain the econometric motivation, the algorithm implemented in the package, and the practical implications using a simulated quarterly macro-emissions example.
+
+The implementation discussed here applies to **single-equation OSEM modules**. OSEM also supports jointly estimated cointegrated VARs, but that is a separate modelling route. The logic in this vignette is deliberately designed for users who want to remain in the modular, equation-by-equation OSEM framework.
+
+OSEM is designed around user-specified modules, where each module defines a dependent variable and a set of explanatory variables. The package then translates these specifications into dynamic regressions, optionally with general-to-specific model selection and indicator saturation. The broader OSEM framework is modular and equation-based, with the user specification determining which variables are modelled endogenously, which variables are conditioning variables, and how modules are recursively linked.
+
+# 1. Motivation
+
+Many macroeconomic, energy, and emissions variables are highly persistent. Some behave like stationary variables, while others behave more like integrated processes. If variables are integrated of order one, written \(I(1)\), then estimating unrestricted level relationships without a valid long-run relation can produce misleading regressions.
+
+A standard response is to use an equilibrium-correction model, or ECM. In a single-equation setting, a conditional unrestricted ECM can be written as:
+
+\[
+\Delta y_t =
+c
++ \rho y_{t-1}
++ \theta' x_{t-1}
++ \delta' \Delta x_t
++ \sum_{i=1}^{p-1} \phi_i \Delta y_{t-i}
++ \sum_{j=1}^{q-1} \lambda_j' \Delta x_{t-j}
++ u_t .
+\]
+
+The terms \(y_{t-1}\) and \(x_{t-1}\) form the lagged level block. If these variables are \(I(1)\) but cointegrated, then the level block can be interpreted as an unrestricted version of an equilibrium-correction term. The implied long-run relation is recovered from the coefficients:
+
+\[
+\beta = -\frac{\theta}{\rho},
+\]
+
+so that the model can be rewritten conceptually as:
+
+\[
+\Delta y_t =
+c
++ \alpha (y_{t-1} - \beta' x_{t-1})
++ \text{short-run dynamics}
++ u_t,
+\]
+
+where \(\alpha = \rho\) is the adjustment coefficient.
+
+In a full system setting, cointegration is usually treated as a property of the system. For example, in the Johansen framework, the long-run matrix is decomposed as:
+
+\[
+\Pi = \alpha \beta',
+\]
+
+where \(\beta\) contains the cointegrating vectors and \(\alpha\) contains the adjustment coefficients. PcGive’s system-modelling strategy follows this logic: establish a dynamic system, analyse cointegration, map the system into an \(I(0)\) representation, and then reduce the model.
+
+The single-equation route in OSEM is more limited. It does not estimate a full cointegrated system. Instead, it treats the user-specified module as a **conditional forecasting equation**. This is consistent with OSEM’s recursive specification style, where each equation is estimated individually and the user’s model ordering determines the conditioning structure.
+
+The automatic ECM logic introduced here therefore answers a pragmatic question:
+
+> Given that the user has requested ECM estimation for a single-equation module, should OSEM retain the unrestricted ECM, estimate a levels ARDL, or fall back to a fully differenced dynamic equation?
+
+# 2. Relation to Existing OSEM Functionality
+
+OSEM already translates single-equation modules into generalized ARDL models. The general unrestricted model can include autoregressive terms, contemporaneous and lagged regressors, seasonal dummies, and indicator saturation terms for outliers and structural breaks.
+
+OSEM also allows the user to specify a conditional unrestricted equilibrium-correction form. This does not impose long-run restrictions a priori; instead, if a long-run relationship exists, it can be recovered from the estimated coefficients.
+
+The new automatic ECM logic adds a **pre-estimation decision layer** for single-equation modules requested as ECMs. It uses unit-root diagnostics and a conditional ECM level-block diagnostic to choose among three model forms:
+
+1. **ARDL in levels**, when all variables appear stationary.
+2. **Unrestricted ECM**, when \(y\) and at least one conditioning variable appear \(I(1)\), and the lagged level block supports an equilibrium-correction interpretation.
+3. **Fully differenced dynamic equation**, when variables appear \(I(1)\) but no valid conditional equilibrium-correction relation is detected.
+
+# 3. The Algorithm
+
+Suppose the user specifies a module:
+
+\[
+y_t = f(x_{1t}, x_{2t}, \ldots, x_{kt}).
+\]
+
+OSEM first constructs the transformed level variables implied by the user’s log/asinh settings. For example, with `use_logs = "both"`, the variables tested are:
+
+\[
+\ln y_t,\quad \ln x_{1t},\quad \ldots,\quad \ln x_{kt}.
+\]
+
+The automatic ECM procedure then proceeds as follows.
+
+## 3.1 Classify Integration Orders
+
+For each transformed variable, OSEM runs unit-root diagnostics and classifies the variable as one of:
+
+- `"I0"`
+- `"I1"`
+- `"I2_or_uncertain"`
+- `"uncertain"`
+
+The simplified decision rule is:
+
+| Level test | Difference test | Classification |
+|---|---|---|
+| unit root rejected in levels | not needed | `I0` |
+| unit root not rejected in levels, rejected in first differences | `I1` |
+| unit root not rejected in levels or first differences | `I2_or_uncertain` |
+| insufficient data or internal missingness | `uncertain` |
+
+This is deliberately diagnostic. Unit-root tests can be misleading, especially in the presence of structural breaks, near-unit-root behaviour, or short samples. Human oversight remains important.
+
+## 3.2 Split Regressors by Integration Order
+
+When multiple regressors are present, OSEM distinguishes between:
+
+- \(I(1)\) regressors, which are candidates for the long-run level block;
+- \(I(0)\) regressors, which may enter as stationary controls;
+- uncertain or potentially \(I(2)\) variables, which require caution.
+
+For example, if:
+
+| variable | order |
+|---|---|
+| \(y_t\) | `I1` |
+| \(x_{1t}\) | `I1` |
+| \(x_{2t}\) | `I0` |
+| \(x_{3t}\) | `I1` |
+
+then the long-run level block tested for equilibrium correction is:
+
+\[
+y_{t-1},\ x_{1,t-1},\ x_{3,t-1},
+\]
+
+not \(x_{2,t-1}\). The \(I(0)\) variable \(x_2\) can still enter the equation as a stationary control, but it should not be treated as part of the cointegrating relation.
+
+## 3.3 Decide the Model Form
+
+The automatic decision tree is:
+
+1. If all variables are classified as `I0`, estimate a levels ARDL.
+2. If the dependent variable is not `I1`, do not estimate a standard ECM.
+3. If the dependent variable is `I1` but no regressor is classified as `I1`, estimate a differenced dynamic equation.
+4. If \(y\) and at least one regressor are classified as `I1`, estimate a conditional ECM testing equation.
+5. If the lagged \(I(1)\) level block is significant and the adjustment coefficient on \(y_{t-1}\) is negative, retain ECM.
+6. Otherwise, fall back to a fully differenced dynamic equation.
+
+The level-block diagnostic is:
+
+\[
+H_0: \rho = \theta_1 = \cdots = \theta_m = 0,
+\]
+
+where \(\theta_1, \ldots, \theta_m\) refer only to the \(I(1)\) regressors included in the candidate long-run block.
+
+This is not a full Johansen rank test, and it is not yet a fully formal ARDL bounds test. It is best described as a **conditional ECM level-block diagnostic**.
+
+# 4. Indicator Saturation and GETS Selection
+
+Once the model form has been selected, OSEM proceeds with its normal estimation workflow:
+
+1. build a GUM;
+2. estimate candidate lag lengths;
+3. select the lag structure by BIC;
+4. optionally apply GETS model reduction;
+5. optionally apply indicator saturation.
+
+OSEM’s general-to-specific approach allows selection over autoregressive dynamics, contemporaneous and lagged variables, and indicators. It also supports impulse indicator saturation (IIS), step indicator saturation (SIS), and trend indicator saturation (TIS) to detect outliers, location shifts, and trend breaks.
+
+For ECMs, however, one additional rule is needed:
+
+> If OSEM has selected an ECM, the lagged level block must be protected during GETS selection.
+
+Otherwise the algorithm could decide that an ECM is appropriate, but later model selection could remove the very terms that make the equation an ECM. The implementation therefore constructs an `ecm_keep` vector and passes the relevant lagged level terms to the `keep` argument in `gets()`.
+
+If the selected model form is `"diff"`, no lagged level terms are retained. If the selected model form is `"ardl"`, the model is estimated in levels.
+
+# 5. Ragged Edges and Lag-Only Variables
+
+Real macroeconomic datasets often have ragged edges. Some series start later than others, and some end earlier. The simulation below deliberately includes this.
+
+The current approach treats ragged edges as follows:
+
+- integration classification trims leading and trailing missing values;
+- internal missing gaps are treated as problematic or uncertain;
+- estimation uses the maximum available complete sample within each module.
+
+The implementation also handles lag-only variables. A variable listed in the `lag` column of the specification is excluded from contemporaneous regressors, but can still enter through lagged levels or lagged differences. This matters for policy variables such as carbon prices or energy prices, whose effects may plausibly occur with delays.
+
+For example, if `PriceETS` is marked as lag-only in an ECM equation, then OSEM can include:
+
+\[
+PriceETS_{t-1},\quad \Delta PriceETS_{t-1},\quad \Delta PriceETS_{t-2},
+\]
+
+but excludes:
+
+\[
+\Delta PriceETS_t.
+\]
+
+# 6. A Real-World Style Simulation
+
+We now simulate a small quarterly macro-emissions system. The data are artificial, but the structure is designed to resemble the kinds of series OSEM handles: household consumption, industrial activity, electricity consumption, emissions, prices, income, wealth, and policy variables.
+
+The simulation includes:
+
+- \(I(1)\) macroeconomic levels;
+- stationary controls;
+- cointegrated relations;
+- a difficult differenced electricity-consumption equation;
+- lag-only policy variables;
+- seasonal patterns;
+- COVID-like and energy-crisis shocks;
+- a structural decarbonisation shift;
+- ragged edges.
+
+
+
+
+```{r simulation-function}
+simulate_real_world_ecm_auto_case <- function(nobs = 180, seed = 123) {
+  set.seed(seed)
+
+  time <- seq.Date(
+    from = as.Date("1980-01-01"),
+    by = "quarter",
+    length.out = nobs
+  )
+
+  quarter <- as.integer(format(time, "%m"))
+  quarter <- dplyr::case_when(
+    quarter == 1 ~ 1L,
+    quarter == 4 ~ 2L,
+    quarter == 7 ~ 3L,
+    quarter == 10 ~ 4L
+  )
+
+  q1 <- as.numeric(quarter == 1)
+  q2 <- as.numeric(quarter == 2)
+  q3 <- as.numeric(quarter == 3)
+  q4 <- as.numeric(quarter == 4)
+
+  l_income_hh <- numeric(nobs)
+  l_finwealth_hh <- numeric(nobs)
+  l_hicp <- numeric(nobs)
+  inflation <- numeric(nobs)
+  l_capform <- numeric(nobs)
+  l_price_ets <- numeric(nobs)
+  l_price_oil <- numeric(nobs)
+  l_hicp_electricity <- numeric(nobs)
+
+  l_cons_hh <- numeric(nobs)
+  l_va_industry <- numeric(nobs)
+  l_real_cons_hh <- numeric(nobs)
+  l_real_va_industry <- numeric(nobs)
+  l_electr_cons <- numeric(nobs)
+  l_emi_co2_manind <- numeric(nobs)
+
+  gap_cons <- numeric(nobs)
+  gap_va <- numeric(nobs)
+  gap_emi <- numeric(nobs)
+
+  covid <- as.numeric(time >= as.Date("2020-01-01") & time <= as.Date("2020-10-01"))
+  energy_crisis <- as.numeric(time >= as.Date("2022-01-01"))
+  decarb_shift <- as.numeric(time >= as.Date("2010-01-01"))
+
+  for (t in 2:nobs) {
+    inflation[t] <- 0.35 * inflation[t - 1] +
+      0.010 +
+      0.020 * energy_crisis[t] +
+      rnorm(1, sd = 0.006)
+
+    l_hicp[t] <- l_hicp[t - 1] + inflation[t]
+
+    l_income_hh[t] <- l_income_hh[t - 1] +
+      0.006 -
+      0.035 * covid[t] +
+      0.010 * covid[t - 1] +
+      rnorm(1, sd = 0.012)
+
+    l_finwealth_hh[t] <- l_finwealth_hh[t - 1] +
+      0.004 +
+      0.35 * (l_income_hh[t] - l_income_hh[t - 1]) +
+      rnorm(1, sd = 0.020)
+
+    l_capform[t] <- l_capform[t - 1] +
+      0.004 +
+      0.25 * (l_income_hh[t - 1] - l_income_hh[max(1, t - 2)]) -
+      0.025 * covid[t] +
+      rnorm(1, sd = 0.018)
+
+    l_price_ets[t] <- l_price_ets[t - 1] +
+      0.010 +
+      0.025 * energy_crisis[t] +
+      rnorm(1, sd = 0.035)
+
+    l_price_oil[t] <- 0.80 * l_price_oil[t - 1] +
+      0.10 * energy_crisis[t] +
+      rnorm(1, sd = 0.060)
+
+    l_hicp_electricity[t] <- l_hicp_electricity[t - 1] +
+      0.004 +
+      0.06 * (l_price_oil[t] - l_price_oil[t - 1]) +
+      0.03 * (l_price_ets[t] - l_price_ets[t - 1]) +
+      0.020 * energy_crisis[t] +
+      rnorm(1, sd = 0.012)
+
+    cons_eq <- 0.85 * l_income_hh[t] +
+      0.12 * l_finwealth_hh[t] -
+      0.25 * l_hicp[t] +
+      0.015 * q4[t] -
+      0.020 * covid[t]
+
+    gap_cons[t] <- 0.55 * gap_cons[t - 1] + rnorm(1, sd = 0.012)
+    l_cons_hh[t] <- cons_eq + gap_cons[t]
+
+    l_real_cons_hh[t] <- l_cons_hh[t] - l_hicp[t]
+
+    va_eq <- 0.55 * l_cons_hh[t] +
+      0.40 * l_capform[t] -
+      0.04 * l_price_ets[max(1, t - 2)] -
+      0.030 * covid[t]
+
+    gap_va[t] <- 0.65 * gap_va[t - 1] + rnorm(1, sd = 0.018)
+    l_va_industry[t] <- va_eq + gap_va[t]
+
+    l_real_va_industry[t] <- l_va_industry[t] - l_hicp[t]
+
+    l_electr_cons[t] <- l_electr_cons[t - 1] +
+      0.002 +
+      0.35 * (l_real_cons_hh[t] - l_real_cons_hh[t - 1]) -
+      0.25 * (l_hicp_electricity[t] - l_hicp_electricity[t - 1]) +
+      0.020 * q1[t] -
+      0.015 * q3[t] -
+      0.010 * covid[t] +
+      rnorm(1, sd = 0.008)
+
+    emi_eq <- 0.80 * l_real_va_industry[t] -
+      0.10 * l_hicp[t] -
+      0.06 * l_price_ets[max(1, t - 3)] -
+      0.18 * decarb_shift[t] -
+      0.08 * covid[t]
+
+    gap_emi[t] <- 0.50 * gap_emi[t - 1] + rnorm(1, sd = 0.020)
+    l_emi_co2_manind[t] <- emi_eq + gap_emi[t]
+  }
+
+  out <- dplyr::tibble(
+    time = time,
+
+    IncomeHH = exp(11.5 + l_income_hh),
+    FinWealthHH = exp(12.2 + l_finwealth_hh),
+    HICPlocal = exp(4.6 + l_hicp),
+    CapForm = exp(10.8 + l_capform),
+    PriceETS = exp(3.2 + l_price_ets),
+    PriceOil = exp(4.0 + l_price_oil),
+    HICP_Electricity = exp(4.5 + l_hicp_electricity),
+
+    ConsHH = exp(11.2 + l_cons_hh),
+    RealConsHH = exp(11.0 + l_real_cons_hh),
+    VAIndustry = exp(10.9 + l_va_industry),
+    RealVAIndustry = exp(10.7 + l_real_va_industry),
+    ElectrCons = exp(7.0 + l_electr_cons),
+    EmiCO2ManInd = exp(8.0 + l_emi_co2_manind)
+  )
+
+  out$PriceETS[1:32] <- NA_real_
+  out$HICP_Electricity[1:20] <- NA_real_
+  out$ElectrCons[(nobs - 1):nobs] <- NA_real_
+  out$EmiCO2ManInd[nobs] <- NA_real_
+
+  out$EmiCO2ManInd[which(out$time == as.Date("2009-01-01"))] <-
+    out$EmiCO2ManInd[which(out$time == as.Date("2009-01-01"))] * 0.85
+
+  out
+}
+```
+
+## 6.1 Inspecting the Simulated Data
+
+```{r simulate-data}
+sim_data <- simulate_real_world_ecm_auto_case(nobs = 180, seed = 123)
+
+dplyr::glimpse(sim_data)
+```
+
+```{r plot-levels}
+sim_data |>
+  tidyr::pivot_longer(-time, names_to = "variable", values_to = "value") |>
+  ggplot2::ggplot(ggplot2::aes(x = time, y = value)) +
+  ggplot2::geom_line(na.rm = TRUE) +
+  ggplot2::facet_wrap(~ variable, scales = "free_y", ncol = 3) +
+  ggplot2::theme_minimal() +
+  ggplot2::labs(
+    title = "Simulated quarterly macro-emissions data",
+    x = NULL,
+    y = NULL
+  )
+```
+
+The log plot is often easier to inspect because the variables differ greatly in scale.
+
+```{r plot-logs}
+sim_data |>
+  tidyr::pivot_longer(-time, names_to = "variable", values_to = "value") |>
+  dplyr::mutate(log_value = log(value)) |>
+  ggplot2::ggplot(ggplot2::aes(x = time, y = log_value)) +
+  ggplot2::geom_line(na.rm = TRUE) +
+  ggplot2::facet_wrap(~ variable, scales = "free_y", ncol = 3) +
+  ggplot2::theme_minimal() +
+  ggplot2::labs(
+    title = "Simulated quarterly macro-emissions data, logs",
+    x = NULL,
+    y = "log(value)"
+  )
+```
+
+# 7. Model Specification
+
+The simulated OSEM model has four estimated equations:
+
+1. `ConsHH` depends on household income, local prices, and financial wealth.
+2. `VAIndustry` depends on consumption, capital formation, ETS prices, and oil prices.
+3. `ElectrCons` depends on real consumption, electricity prices, ETS prices, and oil prices.
+4. `EmiCO2ManInd` depends on real industrial activity, local prices, ETS prices, and electricity consumption.
+
+The ETS price is marked as lag-only in several equations. This mimics the idea that policy-price effects may operate with a delay.
+
+```{r helpers}
+make_real_world_ecm_dictionary <- function(vars) {
+  dplyr::tibble(
+    model_varname = vars,
+    full_name = vars,
+    database = "local",
+    geo = "DE",
+    dataset_id = NA_character_,
+    freq = ""
+  )
+}
+
+make_real_world_ecm_input <- function(df) {
+  df |>
+    tidyr::pivot_longer(-time, names_to = "na_item", values_to = "values")
+}
+
+make_real_world_ecm_specification <- function() {
+  dplyr::tibble(
+    type = c("n", "n", "n", "n"),
+    dependent = c(
+      "ConsHH",
+      "VAIndustry",
+      "ElectrCons",
+      "EmiCO2ManInd"
+    ),
+    independent = c(
+      "IncomeHH + HICPlocal + FinWealthHH",
+      "ConsHH + CapForm + PriceETS + PriceOil",
+      "RealConsHH + HICP_Electricity + PriceETS + PriceOil",
+      "RealVAIndustry + HICPlocal + PriceETS + ElectrCons"
+    ),
+    lag = c(
+      "",
+      "PriceETS",
+      "PriceETS",
+      "PriceETS"
+    ),
+    cvar = c("", "", "", "")
+  )
+}
+
+extract_ecm_decision <- function(model, dep_var) {
+  model$opts_df |>
+    dplyr::filter(.data$dependent == dep_var) |>
+    dplyr::pull(.data$ecm_decision) |>
+    purrr::pluck(1)
+}
+
+extract_ecm_selected <- function(model, dep_var) {
+  model$opts_df |>
+    dplyr::filter(.data$dependent == dep_var) |>
+    dplyr::pull(.data$ardl_or_ecm_selected)
+}
+```
+
+```{r specification}
+specification <- make_real_world_ecm_specification()
+
+dictionary <- make_real_world_ecm_dictionary(
+  vars = unique(c(
+    specification$dependent,
+    unlist(strsplit(gsub(" ", "", specification$independent), "\\+"))
+  ))
+)
+
+specification
+```
+
+# 8. Running OSEM with ECM Auto
+
+We now request ECM estimation for the model, but set:
+
+`ecm_pretest = "auto"`
+
+This means each single-equation module can end up as:
+
+- `"ecm"`;
+- `"fully_differenced"`;
+- or `"ardl"`.
+
+```{r run-model, eval = TRUE}
+model <- run_model(
+  specification = specification,
+  dictionary = dictionary,
+  input = make_real_world_ecm_input(sim_data),
+  primary_source = "local",
+  use_logs = "both",
+  ardl_or_ecm = "ecm",
+  ecm_pretest = "auto",
+  trend = TRUE,
+  max.ar = 4,
+  max.dl = 4,
+  saturation = c("IIS", "SIS"),
+  saturation.tpval = 0.01,
+  gets_selection = TRUE,
+  selection.tpval = 0.01,
+  present = FALSE,
+  plot = FALSE,
+  quiet = TRUE
+)
+```
+
+The model stores the final ECM decision in `opts_df`.
+
+```{r inspect-opts, eval = TRUE}
+model$opts_df |>
+  dplyr::select(
+    dependent,
+    independent,
+    lag,
+    ardl_or_ecm_requested,
+    ardl_or_ecm_selected,
+    ecm_decision
+  )
+```
+
+A compact decision summary is often easier to read.
+
+```{r decision-summary, eval = FALSE}
+decision_summary <- model$opts_df |>
+  dplyr::filter(.data$type == "n") |>
+  dplyr::mutate(
+    selected = purrr::map_chr(.data$ecm_decision, ~ .x$selected),
+    reason = purrr::map_chr(.data$ecm_decision, ~ .x$reason),
+    coint_p_value = purrr::map_dbl(
+      .data$ecm_decision,
+      ~ if (!is.null(.x$coint_test)) .x$coint_test$p.value else NA_real_
+    ),
+    alpha_hat = purrr::map_dbl(
+      .data$ecm_decision,
+      ~ if (!is.null(.x$coint_test)) .x$coint_test$alpha_hat else NA_real_
+    ),
+    nobs_complete = purrr::map_int(
+      .data$ecm_decision,
+      ~ if (!is.null(.x$coint_test)) .x$coint_test$nobs_complete else NA_integer_
+    )
+  ) |>
+  dplyr::select(
+    dependent,
+    selected,
+    coint_p_value,
+    alpha_hat,
+    nobs_complete,
+    reason
+  )
+
+decision_summary
+```
+
+# 9. Interpreting the Expected Results
+
+The simulation is designed so that different modules behave differently.
+
+## 9.1 Household Consumption
+
+The consumption equation is generated from a stable long-run relation involving income, financial wealth, and prices:
+
+\[
+\ln ConsHH_t =
+0.85 \ln IncomeHH_t
++ 0.12 \ln FinWealthHH_t
+- 0.25 \ln HICPlocal_t
++ \text{stationary gap}.
+\]
+
+We therefore expect OSEM to detect a valid ECM, provided the unit-root and level-block diagnostics behave as intended.
+
+Expected result:
+
+```{r expected-consumption, eval = TRUE}
+extract_ecm_selected(model, "ConsHH")
+# "ecm"
+```
+
+## 9.2 Industrial Value Added
+
+Industrial value added is generated from a long-run relation involving consumption, capital formation, and lagged ETS prices:
+
+\[
+\ln VAIndustry_t =
+0.55 \ln ConsHH_t
++ 0.40 \ln CapForm_t
+- 0.04 \ln PriceETS_{t-2}
++ \text{stationary gap}.
+\]
+
+The `PriceETS` variable is specified as lag-only. This tests whether OSEM can keep the variable available for integration testing and lagged effects while excluding the contemporaneous term from the estimation design.
+
+Expected result:
+
+```{r expected-va, eval = FALSE}
+extract_ecm_selected(model, "VAIndustry")
+# likely "ecm"
+```
+
+## 9.3 Electricity Consumption
+
+Electricity consumption is deliberately constructed as a difficult case. Its growth rate depends on changes in real consumption and electricity prices, but it does not have a clean long-run cointegrating relation with all supplied regressors:
+
+\[
+\Delta \ln ElectrCons_t =
+0.002
++ 0.35 \Delta \ln RealConsHH_t
+- 0.25 \Delta \ln HICP\_Electricity_t
++ \text{seasonality}
++ u_t.
+\]
+
+A sensible automatic result is often:
+
+```{r expected-electrcons, eval = TRUE}
+extract_ecm_selected(model, "ElectrCons")
+# "fully_differenced"
+```
+
+This is not a failure. It means the module was requested as an ECM, but OSEM did not find enough evidence for an equilibrium-correction interpretation and therefore estimated a differenced dynamic equation.
+
+## 9.4 Manufacturing Emissions
+
+Manufacturing emissions are generated from real industrial activity, local prices, lagged ETS prices, a decarbonisation shift, and a COVID-like shock:
+
+\[
+\ln EmiCO2ManInd_t =
+0.80 \ln RealVAIndustry_t
+- 0.10 \ln HICPlocal_t
+- 0.06 \ln PriceETS_{t-3}
+- 0.18 \cdot 1[t \geq 2010]
++ \text{stationary gap}.
+\]
+
+This equation is more realistic and more difficult. It mixes:
+
+- a long-run activity relation;
+- policy-price lags;
+- a structural emissions-intensity shift;
+- an outlier in 2009;
+- ragged-edge electricity data.
+
+Expected result:
+
+```{r expected-emissions, eval = TRUE}
+extract_ecm_selected(model, "EmiCO2ManInd")
+# likely "ecm", but this is deliberately less deterministic
+```
+
+# 10. Inspecting Individual ECM Decisions
+
+The full decision object for one module contains the requested model form, selected model form, reason, integration diagnostics, and level-block diagnostic.
+
+```{r inspect-one-decision, eval = TRUE}
+extract_ecm_decision(model, "ElectrCons")
+```
+
+For an ECM-retained module, the object will typically include:
+
+- `selected = "ecm"`;
+- a negative `alpha_hat`;
+- a small `coint_test$p.value`;
+- `level_terms`, such as `L1.ln.ConsHH` and `L1.ln.IncomeHH`;
+- the effective complete-case sample used for the diagnostic.
+
+For a differenced module, the object will typically include:
+
+- `selected = "fully_differenced"`;
+- `model_form = "diff"`;
+- a reason explaining why the ECM was not retained.
+
+# 11. Fitted Values and Differenced Models
+
+A practical issue arises when the selected model form is `"diff"`.
+
+The model is estimated using:
+
+\[
+\Delta \ln y_t
+\]
+
+or:
+
+\[
+\Delta y_t.
+\]
+
+But OSEM’s downstream modules and plots usually require fitted values in the original level scale. Therefore, `add_to_original_data()` reconstructs fitted levels from fitted differences.
+
+For log variables:
+
+\[
+\widehat{\ln y_t}
+=
+\ln y_{t_0}
++
+\sum_{\tau=t_0+1}^{t}
+\widehat{\Delta \ln y_\tau},
+\]
+
+and:
+
+\[
+\hat y_t = \exp(\widehat{\ln y_t}).
+\]
+
+For untransformed variables:
+
+\[
+\hat y_t =
+y_{t_0}
++
+\sum_{\tau=t_0+1}^{t}
+\widehat{\Delta y_\tau}.
+\]
+
+This is why the implementation keeps the true internal model form as one of:
+
+- `"ardl"`;
+- `"ecm"`;
+- `"diff"`.
+
+Both ECMs and differenced models are estimated with differenced dependent variables, but they are conceptually distinct.
+
+# 12. Limitations
+
+The automatic ECM logic is deliberately pragmatic. It should be understood as a useful diagnostic and model-routing device, not as a substitute for full system cointegration analysis.
+
+## 12.1 Not a Johansen Procedure
+
+The procedure does not estimate a system cointegration rank. If users want unrestricted system cointegration analysis, they should specify a CVAR module. OSEM already implements the Johansen route for user-designated multi-equation modules.
+
+## 12.2 Not a Fully Formal Bounds Test
+
+The current single-equation diagnostic is a level-block F-test combined with a sign check on the adjustment coefficient. It resembles the logic of ECM or ARDL bounds testing, but it is not yet a full Pesaran-Shin-Smith bounds implementation with deterministic-case-specific critical values. It should therefore be described transparently as a conditional level-block diagnostic.
+
+## 12.3 Dependence on Unit-Root Diagnostics
+
+Unit-root tests are imperfect, especially with structural breaks, short samples, or near-unit-root stationary variables. The automatic decision is therefore stored in `opts_df` so that users can inspect and override it.
+
+## 12.4 User Specification Still Matters
+
+The single-equation ECM option assumes that the user-supplied conditioning set is meaningful. This is consistent with OSEM’s modular design, but it is not a proof of weak exogeneity or structural invariance. When interpreting policy counterfactuals, users should still examine diagnostic tests, super-exogeneity evidence, and the economic plausibility of the module ordering.
+
+## 12.5 ISAT Can Help but Also Complicate Interpretation
+
+Indicator saturation is useful for detecting outliers and shifts, but retained indicators are not automatically explanations. A large number of retained indicators may indicate missing variables, structural change, or an inappropriate functional form. OSEM’s diagnostics should therefore be used as a guide for model refinement, not as an automatic guarantee of model adequacy.
+
+# 13. Towards Testthat Tests
+
+The simulation in this vignette can later be converted into a `testthat` file. However, because unit-root and cointegration diagnostics can be sample-dependent, it is advisable to start with broad expectations rather than overly strict coefficient-level tests.
+
+Useful first tests include:
+
+```{r testthat-sketch, eval = FALSE}
+test_that("ECM auto stores decisions in opts_df", {
+  expect_true("ecm_decision" %in% names(model$opts_df))
+  expect_true("ardl_or_ecm_requested" %in% names(model$opts_df))
+  expect_true("ardl_or_ecm_selected" %in% names(model$opts_df))
+})
+
+test_that("ECM auto retains expected ECM modules", {
+  expect_identical(extract_ecm_selected(model, "ConsHH"), "ecm")
+  expect_identical(extract_ecm_selected(model, "VAIndustry"), "ecm")
+})
+
+test_that("ECM auto allows differenced fallback", {
+  expect_true(
+    extract_ecm_selected(model, "ElectrCons") %in%
+      c("fully_differenced", "ecm")
+  )
+})
+```
+
+As the implementation stabilises, the tests can become stricter. For example, one can assert that the lag-only variable `PriceETS` does not enter contemporaneously but can enter through lagged terms, or that the ECM keep vector protects the lagged level block during GETS selection.
+
+# 14. Summary
+
+The automatic ECM-selection logic adds a transparent decision layer to OSEM’s single-equation estimation workflow.
+
+The main contribution is not to replace system cointegration analysis, but to make single-equation ECM estimation safer:
+
+1. classify integration orders;
+2. test whether the \(I(1)\) level block supports an ECM interpretation;
+3. retain ECM only when the diagnostic evidence is consistent with equilibrium correction;
+4. otherwise estimate a differenced dynamic equation;
+5. preserve the decision in `opts_df`;
+6. protect ECM level terms during GETS selection;
+7. reconstruct fitted levels correctly when the selected model is differenced.
+
+This fits the OSEM philosophy: automate the repetitive parts of empirical modelling, keep the modelling process transparent, and store enough diagnostic information for the user to inspect and revise the specification.
+
+
+
+```{r, echo=FALSE}
+# Decision-tree plot for ECM-auto estimation logic ---------------------------
+
+plot_ecm_auto_decision_tree <- function() {
+  wrap_label <- function(x, width = 28) {
+    vapply(
+      x,
+      function(z) paste(strwrap(z, width = width), collapse = "\n"),
+      character(1)
+    )
+  }
+
+  nodes <- dplyr::tibble(
+    id = c(
+      "start",
+      "choice",
+      "ardl_requested",
+      "ecm_requested",
+      "none",
+      "diagnostic",
+      "auto",
+      "classify",
+      "all_i0",
+      "select_ardl",
+      "bad_integration",
+      "select_diff_1",
+      "dep_i1",
+      "select_diff_2",
+      "any_x_i1",
+      "select_diff_3",
+      "ecm_test",
+      "ecm_evidence",
+      "select_ecm",
+      "select_diff_4",
+      "build_design",
+      "isat",
+      "bic",
+      "gets",
+      "rerun_isat",
+      "output"
+    ),
+    x = c(
+      0,
+      0,
+      -1.25,
+      1.25,
+      0.00,
+      1.25,
+      2.50,
+      1.25,
+      1.25,
+      -1.25,
+      1.25,
+      -1.25,
+      1.25,
+      -1.25,
+      1.25,
+      -1.25,
+      1.25,
+      1.25,
+      0.20,
+      -1.25,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ),
+    y = c(
+      0,
+      -1.15,
+      -2.35,
+      -2.35,
+      -3.65,
+      -3.65,
+      -3.65,
+      -5.05,
+      -6.25,
+      -7.35,
+      -7.35,
+      -8.45,
+      -8.45,
+      -9.55,
+      -9.55,
+      -10.65,
+      -10.65,
+      -11.95,
+      -13.10,
+      -13.10,
+      -14.40,
+      -15.55,
+      -16.70,
+      -17.85,
+      -19.00,
+      -20.15
+    ),
+    label = c(
+      "User supplies module specification: dependent variable, covariates, logs, lag-only variables, and ARDL/ECM choice",
+      "Requested estimation form?",
+      "ARDL requested: no ECM pretest",
+      "ECM requested: choose ecm_pretest mode",
+      "none: estimate requested unrestricted ECM without diagnostics",
+      "diagnostic: classify and test, store diagnostics, but still estimate ECM",
+      "auto: run automatic ECM decision algorithm",
+      "Classify transformed level variables as I(0), I(1), I(2)/uncertain, or uncertain",
+      "Are all module variables classified as I(0)?",
+      "Select levels ARDL",
+      "Any variable classified as I(2)/uncertain or uncertain?",
+      "Select fully differenced dynamic model",
+      "Is the dependent variable classified as I(1)?",
+      "Select fully differenced dynamic model",
+      "Is at least one regressor classified as I(1)?",
+      "Select fully differenced dynamic model",
+      "Run conditional ECM level-block diagnostic: H0 says the lagged I(1) level block is zero; require adjustment coefficient < 0",
+      "Evidence for equilibrium correction?",
+      "Select unrestricted ECM and protect lagged level block during GETS",
+      "Select fully differenced dynamic model",
+      "Build estimation design matrix. Respect lag-only variables and use available complete sample after ragged edges",
+      "Estimate candidate models across distributed-lag orders using ISAT or ARX",
+      "Choose candidate model with lowest BIC",
+      "Apply GETS model selection. If ECM was selected, keep lagged level terms fixed",
+      "Re-run ISAT on retained regressors when saturation is enabled",
+      "Add fitted values back to original data. ARDL uses levels; ECM and differenced models cumulate fitted differences. Store decision in opts_df"
+    ),
+    type = c(
+      "input",
+      "decision",
+      "selected",
+      "decision",
+      "process",
+      "process",
+      "process",
+      "process",
+      "decision",
+      "selected",
+      "decision",
+      "selected",
+      "decision",
+      "selected",
+      "decision",
+      "selected",
+      "diagnostic",
+      "decision",
+      "selected",
+      "selected",
+      "process",
+      "process",
+      "process",
+      "process",
+      "process",
+      "output"
+    )
+  ) |>
+    dplyr::mutate(label = wrap_label(.data$label, width = 28))
+
+  edges <- dplyr::tibble(
+    from = c(
+      "start",
+      "choice",
+      "choice",
+      "ardl_requested",
+      "ecm_requested",
+      "ecm_requested",
+      "ecm_requested",
+      "none",
+      "diagnostic",
+      "auto",
+      "classify",
+      "all_i0",
+      "all_i0",
+      "bad_integration",
+      "bad_integration",
+      "dep_i1",
+      "dep_i1",
+      "any_x_i1",
+      "any_x_i1",
+      "ecm_test",
+      "ecm_evidence",
+      "ecm_evidence",
+      "select_ardl",
+      "select_ecm",
+      "select_diff_1",
+      "select_diff_2",
+      "select_diff_3",
+      "select_diff_4",
+      "build_design",
+      "isat",
+      "bic",
+      "gets",
+      "rerun_isat"
+    ),
+    to = c(
+      "choice",
+      "ardl_requested",
+      "ecm_requested",
+      "select_ardl",
+      "none",
+      "diagnostic",
+      "auto",
+      "build_design",
+      "build_design",
+      "classify",
+      "all_i0",
+      "select_ardl",
+      "bad_integration",
+      "select_diff_1",
+      "dep_i1",
+      "select_diff_2",
+      "any_x_i1",
+      "select_diff_3",
+      "ecm_test",
+      "ecm_evidence",
+      "select_ecm",
+      "select_diff_4",
+      "build_design",
+      "build_design",
+      "build_design",
+      "build_design",
+      "build_design",
+      "build_design",
+      "isat",
+      "bic",
+      "gets",
+      "rerun_isat",
+      "output"
+    ),
+    edge_label = c(
+      "",
+      "ARDL",
+      "ECM",
+      "",
+      "none",
+      "diagnostic",
+      "auto",
+      "",
+      "",
+      "",
+      "",
+      "yes",
+      "no",
+      "yes",
+      "no",
+      "no",
+      "yes",
+      "no",
+      "yes",
+      "",
+      "yes",
+      "no",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    )
+  )
+
+  edge_df <- edges |>
+    dplyr::left_join(
+      nodes |>
+        dplyr::select(.data$id, x_from = .data$x, y_from = .data$y),
+      by = c("from" = "id")
+    ) |>
+    dplyr::left_join(
+      nodes |>
+        dplyr::select(.data$id, x_to = .data$x, y_to = .data$y),
+      by = c("to" = "id")
+    ) |>
+    dplyr::mutate(
+      x_mid = (.data$x_from + .data$x_to) / 2,
+      y_mid = (.data$y_from + .data$y_to) / 2
+    )
+
+  ggplot2::ggplot() +
+    ggplot2::geom_segment(
+      data = edge_df,
+      ggplot2::aes(
+        x = .data$x_from,
+        y = .data$y_from,
+        xend = .data$x_to,
+        yend = .data$y_to
+      ),
+      arrow = ggplot2::arrow(
+        length = grid::unit(0.12, "inches"),
+        type = "closed"
+      ),
+      linewidth = 0.35,
+      colour = "grey35",
+      lineend = "round"
+    ) +
+    ggplot2::geom_label(
+      data = edge_df |>
+        dplyr::filter(.data$edge_label != ""),
+      ggplot2::aes(
+        x = .data$x_mid,
+        y = .data$y_mid,
+        label = .data$edge_label
+      ),
+      size = 2.6,
+      label.size = 0,
+      fill = "white",
+      label.padding = grid::unit(0.10, "lines")
+    ) +
+    ggplot2::geom_label(
+      data = nodes,
+      ggplot2::aes(
+        x = .data$x,
+        y = .data$y,
+        label = .data$label,
+        fill = .data$type
+      ),
+      size = 2.65,
+      lineheight = 0.90,
+      label.size = 0.35,
+      label.r = grid::unit(0.15, "lines"),
+      label.padding = grid::unit(0.22, "lines"),
+      colour = "black"
+    ) +
+    ggplot2::scale_fill_manual(
+      values = c(
+        input = "#E8F0FE",
+        decision = "#FFF4CC",
+        process = "#EAF7EA",
+        diagnostic = "#F3E8FF",
+        selected = "#E8F6F3",
+        output = "#FCE8E6"
+      ),
+      guide = "none"
+    ) +
+    ggplot2::coord_cartesian(
+      xlim = c(-2.25, 3.25),
+      ylim = c(-21.0, 0.7),
+      clip = "off"
+    ) +
+    ggplot2::theme_void() +
+    ggplot2::labs(
+      title = "Automatic ECM Selection and Estimation Flow in OSEM",
+      subtitle = "Single-equation modules: model-form decision, indicator saturation, GETS selection, and fitted-value reconstruction"
+    ) +
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(face = "bold", size = 13, hjust = 0.5),
+      plot.subtitle = ggplot2::element_text(size = 9, hjust = 0.5),
+      plot.margin = ggplot2::margin(10, 18, 10, 18)
+    )
+}
+
+plot_ecm_auto_decision_tree()
+```
+

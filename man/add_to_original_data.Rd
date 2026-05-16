@@ -24,9 +24,10 @@ function.}
 variable as contained in clean_data() in a level form (i.e. no ln or D in
 front of the name).}
 
-\item{model_type}{Either 'ardl', 'ecm', or 'cvar' to determine whether to estimate
-the model as an Autoregressive Distributed Lag Function (ardl), as an
-Equilibrium Correction Model (ecm), or as a cointegrated vector autoregression.}
+\item{model_type}{Either 'ardl', 'ecm', 'diff', or 'cvar' to determine whether
+the model was estimated as an Autoregressive Distributed Lag model, an
+Equilibrium Correction Model, a fully differenced model, or as a cointegrated
+vector autoregression.}
 
 \item{opts_df}{Internal object containing detailed options and information on individual modules.}
 
