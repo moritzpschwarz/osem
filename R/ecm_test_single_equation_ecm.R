@@ -78,7 +78,7 @@ test_single_equation_ecm <- function(clean_data,
   last_complete_time <- if (nobs_complete > 0) df$.time[nobs_complete] else NA
 
   df <- df %>%
-    dplyr::select(-"time")
+    dplyr::select(-.data$.time)
 
   if (NROW(df) <= length(level_terms) + 5) {
     return(list(
