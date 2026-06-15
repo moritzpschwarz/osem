@@ -227,7 +227,9 @@ estimate_module <- function(clean_data,
 
   isat_list <- dplyr::tibble(
     ar = 0:max.ar,
-    BIC = 0,
+    BIC = NA,
+    ar_pvalue = NA,
+    arch_pvalue = NA,
     isat_object = list(NA_complex_)
   )
 
@@ -304,6 +306,12 @@ estimate_module <- function(clean_data,
       intermed.model$aux$y.name <- y.name
     }
 
+    diagnostics <- intermed.model$diagnostics %>%
+      dplyr::as_tibble() %>%
+      dplyr::mutate(diagnostic = row.names(intermed.model$diagnostics), .before = "Chi-sq")
+
+    isat_list[i + 1, "ar_pvalue"] <- if(exists("intermed.model")){diagnostics$`p-value`[diagnostics == "Ljung-Box AR(1)"]}else{NA}
+    isat_list[i + 1, "arch_pvalue"] <- if(exists("intermed.model")){diagnostics$`p-value`[diagnostics == "Ljung-Box ARCH(1)"]}else{NA}
     isat_list[i + 1, "BIC"] <- if(exists("intermed.model")){stats::BIC(intermed.model)}else{NA}
     isat_list[i + 1, "isat_object"] <- if(exists("intermed.model")){dplyr::tibble(isat_object = list(intermed.model))}else{NA}
 
@@ -333,12 +341,19 @@ estimate_module <- function(clean_data,
   }
 
   best_isat_model <- isat_list %>%
-    dplyr::filter(BIC == min(isat_list$BIC, na.rm = TRUE)) %>%
+    dplyr::mutate(diag_ranking = dplyr::case_when((.data$ar_pvalue > 0.05) & (.data$arch_pvalue > 0.05) ~ 1,
+                                                  (.data$ar_pvalue > 0.05) ~ 2,
+                                                  (.data$arch_pvalue > 0.05) ~ 3,
+                                                  TRUE ~ 4)) %>%
+    dplyr::filter(diag_ranking == min(diag_ranking, na.rm = TRUE)) %>%
+    dplyr::filter(BIC == min(dplyr::pick("BIC"), na.rm = TRUE)) %>%
     dplyr::pull(dplyr::all_of("isat_object")) %>%
     dplyr::first()
 
   # gets selection on the best model ----------------------------------------
   if(gets_selection){
+
+    keep <- paste0("^mc$|^ar[0-9]+$|^q_[0-9]+|",keep)
 
     # Keep handling ----------------------------------------------------------
     if(!is.null(keep)){
