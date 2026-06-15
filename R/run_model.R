@@ -99,7 +99,8 @@ run_model <- function(specification,
                       cvar.ar = 2,
                       coint_seasonal = FALSE,
                       coint_deterministic = "const",
-                      coint_significance = "5pct") {
+                      coint_significance = "5pct",
+                      indicator_compression = TRUE) {
   primary_source <- match.arg(primary_source)
 
   if (!(is.data.frame(specification) | is.matrix(specification))) {
@@ -374,7 +375,8 @@ run_model <- function(specification,
     cvar.ar = cvar.ar,
     coint_seasonal = coint_seasonal,
     coint_deterministic = coint_deterministic,
-    coint_significance = coint_significance
+    coint_significance = coint_significance,
+    indicator_compression = indicator_compression
   )
   out$module_order <- module_order
   out$module_collection <- module_collection

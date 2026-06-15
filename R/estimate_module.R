@@ -43,6 +43,11 @@
 #' @param selection.tpval Numeric. The target p-value of the model selection
 #' methods (i.e. general-to-specific modelling, see the 'getsm' function
 #' in the 'gets' package). Default is 0.01.
+#' @param indicator_compression Logical. Whether to compress the indicators selected by the
+#' 'isat' function from the 'gets' package into a smaller number of indicators that still
+#' capture the same outlier and structural break dynamics. Default is TRUE. Indicator compression
+#' is only applied to the best model selected based on BIC and diagnostic tests,
+#' not to all estimated models.
 #' @inheritParams forecast_model
 #' @inheritParams run_module
 #' @inheritParams run_model
@@ -68,6 +73,7 @@ estimate_module <- function(clean_data,
                             selection.tpval = 0.01,
                             keep,
                             pretest_steps,
+                            indicator_compression = TRUE,
                             quiet = FALSE,
                             module) {
   # Set-up ------------------------------------------------------------------
@@ -113,18 +119,45 @@ estimate_module <- function(clean_data,
         selectlags = "BIC"
       )
 
-      level_x_vars_basename <- integration %>%
+      integration_for_decision <- integration
+
+      # Adjust integration orders for the deterministic specification actually used
+      # A trend-stationary variable is only treated as I(0) if the equation is
+      # allowed to contain a deterministic trend. If trend = FALSE, then ECM-auto
+      # treats trend-stationary variables conservatively as "uncertain".
+      if (!trend) {
+
+        integration_for_decision <- integration_for_decision %>%
+          dplyr::mutate(
+            order = dplyr::if_else(
+              .data$stationarity_type == "trend_stationary",
+              "uncertain",
+              .data$order
+            ),
+            reason = dplyr::if_else(
+              .data$stationarity_type == "trend_stationary",
+              paste0(
+                .data$reason,
+                " Trend-stationary variable treated as uncertain because trend = FALSE."
+              ),
+              .data$reason
+            )
+          )
+      }
+
+      ecm_decision$integration <- integration
+      ecm_decision$integration_for_decision <- integration_for_decision
+
+      level_x_vars_basename <- integration_for_decision %>%
         dplyr::filter(.data$type == "independent", .data$order == "I1") %>%
         dplyr::pull(.data$basevarname)
 
-      ecm_decision$integration <- integration
-
-      dep_order <- integration %>%
+      dep_order <- integration_for_decision %>%
         dplyr::filter(.data$type == "dependent") %>%
         dplyr::pull("order") %>%
         dplyr::first()
 
-      x_orders <- integration %>%
+      x_orders <- integration_for_decision %>%
         dplyr::filter(.data$type == "independent") %>%
         dplyr::pull("order")
 
@@ -147,18 +180,25 @@ estimate_module <- function(clean_data,
       }
 
       if (ecm_pretest == "auto") {
-        if (all(integration$order == "I0", na.rm = TRUE)) {
+        if (all(integration_for_decision$order == "I0", na.rm = TRUE)) {
           model_form <- "ardl"
 
           ecm_decision$selected <- "ardl"
           ecm_decision$model_form <- "ardl"
           ecm_decision$reason <- "All module variables were classified as I(0); estimating a levels ARDL."
-        } else if (any(integration$order %in% c("I2_or_uncertain", "uncertain"), na.rm = TRUE)) {
+        } else if (any(integration_for_decision$order %in% c("I2_or_uncertain", "uncertain"), na.rm = TRUE)) {
           model_form <- "diff"
 
           ecm_decision$selected <- "fully_differenced"
           ecm_decision$model_form <- "diff"
-          ecm_decision$reason <- "At least one module variable was classified as I(2) or uncertain; estimating the corresponding first-differenced equation."
+
+          if(!trend & any(integration_for_decision$stationarity_type == "trend_stationary", na.rm = TRUE)){
+            ecm_decision$reason <- "At least one module variable was classified as I(2) or uncertain; estimating the corresponding first-differenced equation. Note that at least one variable was classified as trend-stationary and treated as uncertain because trend = FALSE."
+          } else {
+            ecm_decision$reason <- "At least one module variable was classified as I(2) or uncertain; estimating the corresponding first-differenced equation."
+          }
+
+
         } else if (!identical(dep_order, "I1")) {
           model_form <- "diff"
 
@@ -305,10 +345,11 @@ estimate_module <- function(clean_data,
       intermed.model$aux$args <- if(i != 0){list(ar = 1:i)} else {list(ar = NULL)}
       intermed.model$aux$y.name <- y.name
     }
-
-    diagnostics <- intermed.model$diagnostics %>%
-      dplyr::as_tibble() %>%
-      dplyr::mutate(diagnostic = row.names(intermed.model$diagnostics), .before = "Chi-sq")
+    if(exists("intermed.model")){
+      diagnostics <- intermed.model$diagnostics %>%
+        dplyr::as_tibble() %>%
+        dplyr::mutate(diagnostic = row.names(intermed.model$diagnostics), .before = "Chi-sq")
+    }
 
     isat_list[i + 1, "ar_pvalue"] <- if(exists("intermed.model")){diagnostics$`p-value`[diagnostics == "Ljung-Box AR(1)"]}else{NA}
     isat_list[i + 1, "arch_pvalue"] <- if(exists("intermed.model")){diagnostics$`p-value`[diagnostics == "Ljung-Box ARCH(1)"]}else{NA}
@@ -442,7 +483,7 @@ estimate_module <- function(clean_data,
     }
   }
 
-  final_model <- if(gets_selection) {
+  model_before_compression <- if(gets_selection) {
     if (!is.null(saturation)) {
       best_isat_model.selected.isat
     } else {
@@ -451,6 +492,14 @@ estimate_module <- function(clean_data,
   } else {
     best_isat_model
   }
+
+  if(indicator_compression){
+    compression <- compress_indicators(model_before_compression)
+    final_model <- compression$compressed_model
+  } else {
+    final_model <- model_before_compression
+  }
+
 
   # Super Exogeneity Testing ------------------------------------------------
   try(superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet))
