@@ -34,9 +34,9 @@ decide_unit_roots <- function(urtest, alpha = c("1pct", "5pct", "10pct")) {
   # validate inputs
   alpha <- match.arg(alpha)
   alpha_numeric <- switch(alpha,
-    "1pct" = 0.01,
-    "5pct" = 0.05,
-    "10pct" = 0.1
+                          "1pct" = 0.01,
+                          "5pct" = 0.05,
+                          "10pct" = 0.1
   )
 
   # NOTE: think of equation
@@ -69,11 +69,29 @@ decide_unit_roots <- function(urtest, alpha = c("1pct", "5pct", "10pct")) {
       }
     }
   }
-  out <- c(urtest, list(decision = list(
-    alpha_ur = alpha,
-    reject_ur = reject_ur,
-    when = case
-  )))
+  out <- c(
+    urtest,
+    list(
+      decision = list(
+        alpha_ur = alpha,
+        reject_ur = reject_ur,
+        when = case,
+
+        deterministic = dplyr::case_when(
+          case %in% c("1a", "1c") ~ "trend",
+          case %in% c("2a", "2c") ~ "drift",
+          case %in% c("3a") ~ "none"
+        ),
+
+        stationarity_type = dplyr::case_when(
+          reject_ur & case %in% c("1a", "1c") ~ "trend_stationary",
+          reject_ur & case %in% c("2a", "2c") ~ "drift_stationary",
+          reject_ur & case %in% c("3a") ~ "level_stationary",
+          TRUE ~ NA_character_
+        )
+      )
+    )
+  )
   return(out)
 }
 
