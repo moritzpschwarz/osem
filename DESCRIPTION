@@ -48,7 +48,7 @@ Suggests:
     plotly,
     forecast,
     zip,
-    knitr
+    knitr,
     rmarkdown,
     imf.data,
     modelsummary,
