@@ -57,6 +57,5 @@ Suggests:
     BVAR
 Config/testthat/edition: 3
 VignetteBuilder: knitr
-Remotes: gsucarrat/gets/gets#77
 NeedsCompilation: no
 
