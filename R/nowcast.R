@@ -209,6 +209,7 @@ nowcasting <- function(model, exog_df_ready, frequency){
         pred_obj <- gets::predict.isat(isat_obj,
                                        newmxreg = as.matrix(utils::tail(pred_df %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)), length(cur_target_dates))),
                                        n.ahead = length(cur_target_dates), plot = FALSE,
+                                       quiet = TRUE,
                                        ci.levels = NULL, n.sim = 1)
 
         model$opts_df %>%

@@ -121,18 +121,47 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       to_ar_predict %>%
         dplyr::select(dplyr::any_of(c("q_2", "q_3", "q_4"))) -> x_ar_predict
 
-      isat_ar_predict <- tryCatch(gets::isat(y = y_ar_predict,
-                                             mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+      isat_ar_predict <- tryCatch(
+        gets::isat(y = y_ar_predict,
+                   mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+                   mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
+                   print.searchinfo = FALSE,
+                   sis = TRUE, iis = TRUE),
 
-                                             mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
-                                             print.searchinfo = FALSE, sis = TRUE, iis = TRUE),
-                                  error = function(abcd){
-                                    message(paste0("Exogneous forecasted values for ", names(exog_df_intermed)[col_to_forecast]," will only use SIS, not IIS as too many indicators retained.\n"))
-                                    gets::isat(y = y_ar_predict,
-                                               mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
-                                               mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
-                                               print.searchinfo = FALSE, sis = TRUE, iis = FALSE)
-                                  })
+        error = function(abcd){
+          tryCatch(
+            gets::isat(y = y_ar_predict,
+                       mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+                       mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
+                       print.searchinfo = FALSE,
+                       sis = TRUE, iis = FALSE),
+            message(paste0("Exogneous forecasted values for ", names(exog_df_intermed)[col_to_forecast]," will only use SIS, not IIS as too many indicators retained.\n")),
+            error = function(abcd){
+              tryCatch(
+                # without Indicator Saturation
+                gets::isat(y = y_ar_predict,
+                           mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+                           mc = TRUE, ar = 1:4, plot = FALSE, print.searchinfo = FALSE,
+                           sis = FALSE, iis = FALSE),
+                error = function(abcd){
+                  tryCatch(
+                    # without AR
+                    gets::isat(y = y_ar_predict,
+                               mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+                               mc = TRUE, plot = FALSE, print.searchinfo = FALSE, sis = FALSE, iis = FALSE),
+                    error = function(abcd){
+                      tryCatch(
+                        # just mc model
+                        gets::isat(y = y_ar_predict,
+                                   mc = TRUE, plot = FALSE, print.searchinfo = FALSE, sis = FALSE, iis = FALSE),
+                        error = function(abcd){
+                          message("Failed to create forecast for ", names(exog_df_intermed)[col_to_forecast])
+                          return(NULL)
+                        })
+                    })
+                })
+            })
+        })
 
       # get iis dummies
       if(!is.null(gets::isatdates(isat_ar_predict)$iis)){
@@ -191,7 +220,8 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
 
       gets::predict.isat(object = isat_ar_predict, n.ahead = n.ahead + diff_time_to_max,
-                         newmxreg = x_ar_predict_pred_df %>% dplyr::select(dplyr::any_of(isat_ar_predict$aux$mXnames)) %>% as.matrix) %>%
+                         newmxreg = x_ar_predict_pred_df %>% dplyr::select(dplyr::any_of(isat_ar_predict$aux$mXnames)) %>% as.matrix,
+                         quiet = TRUE) %>%
         as.vector -> pred_values
 
       dplyr::tibble(time = time_to_forecast,
