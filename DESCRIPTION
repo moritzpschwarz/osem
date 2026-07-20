@@ -32,10 +32,11 @@ Imports:
     zoo,
     igraph,
     vars,
-    urca
+    urca,
+    purr
 LazyData: true
 Suggests: 
-    shiny,
+    shiny (>= 1.5.0), 
     readxl,
     readr,
     writexl,
@@ -45,9 +46,9 @@ Suggests:
     testthat (>= 3.0.0),
     tidygraph,
     plotly,
-    purrr,
     forecast,
-    knitr,
+    zip,
+    knitr
     rmarkdown,
     imf.data,
     modelsummary,
@@ -56,4 +57,6 @@ Suggests:
     BVAR
 Config/testthat/edition: 3
 VignetteBuilder: knitr
-Remotes: gsucarrat/gets/gets#70
+Remotes: gsucarrat/gets/gets#77
+NeedsCompilation: no
+
