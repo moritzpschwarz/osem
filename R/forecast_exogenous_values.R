@@ -23,7 +23,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
   if(length(frequency) > 1 | frequency == "month" | frequency == "day"){stop("Mixed frequency forecasts or forecasts with daily or monthly data are not yet implemented.")}
 
-  if (is.null(exog_predictions) & exog_fill_method == "last") {
+  if (is.null(exog_predictions) && exog_fill_method == "last") {
     if(!quiet){
       message("No exogenous values provided. Model will use the last available value.\nAlternative is exog_fill_method = 'AR'.")
     }
@@ -65,7 +65,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
   }
 
-  if (is.null(exog_predictions) & exog_fill_method == "AR") {
+  if (is.null(exog_predictions) && exog_fill_method == "AR") {
     if(!quiet){
       message(paste0("No exogenous values provided. Model will forecast the exogenous values with an AR", ar.fill.max," process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').\nAlternative is exog_fill_method = 'last'."))
     }
@@ -216,7 +216,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       dplyr::arrange(.data$time) -> exog_df_ready
   }
 
-  if (is.null(exog_predictions) & exog_fill_method == "auto") {
+  if (is.null(exog_predictions) && exog_fill_method == "auto") {
     if(!quiet){
       message(paste0("No exogenous values provided. Model will forecast the exogenous values with the auto.arima()."))
     }
@@ -294,7 +294,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
   }
 
 
-  if (is.null(exog_predictions) & exog_fill_method == "ets") {
+  if (is.null(exog_predictions) && exog_fill_method == "ets") {
     if(!quiet){
       message(paste0("No exogenous values provided. Model will forecast the exogenous values with ets()."))
     }
