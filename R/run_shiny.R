@@ -16,27 +16,14 @@
 #' @return Launches a Shiny application and returns invisibly when it exits.
 #'
 #' @export
-#'
-run_shiny <- function(model = NULL,
-                      max_upload_mb = 500,
-                      launch.browser = getOption("shiny.launch.browser", interactive())) {
-  if (!requireNamespace("shiny", quietly = TRUE)) {
-    stop("The OSEM app requires the 'shiny' package.", call. = FALSE)
-  }
-  if (!requireNamespace("DT", quietly = TRUE)) {
-    stop("The OSEM app requires the 'DT' package.", call. = FALSE)
-  }
-  if (!is.null(model) && !inherits(model, "osem")) {
-    stop("'model' must be NULL or an object of class 'osem'.", call. = FALSE)
-  }
-  max_upload_mb <- suppressWarnings(as.numeric(max_upload_mb))
-  if (length(max_upload_mb) != 1L || !is.finite(max_upload_mb) || max_upload_mb <= 0) {
-    stop("'max_upload_mb' must be one positive numeric value.", call. = FALSE)
-  }
-
+run_shiny <- function(
+    model = NULL,
+    max_upload_mb = 500,
+    launch.browser = getOption("shiny.launch.browser", interactive())
+) {
   shiny::runApp(
-    osem_shiny_create_app(
-      initial_model = model,
+    osem_app(
+      model = model,
       max_upload_mb = max_upload_mb
     ),
     launch.browser = launch.browser

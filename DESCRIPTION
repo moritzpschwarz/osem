@@ -33,7 +33,7 @@ Imports:
     igraph,
     vars,
     urca,
-    purr
+    purrr
 LazyData: true
 Suggests: 
     shiny (>= 1.5.0), 
