@@ -80,6 +80,7 @@ run_model <- function(specification,
                       use_logs = "both",
                       trend = TRUE,
                       ardl_or_ecm = "ardl",
+                      ecm_pretest = "auto",
                       max.ar = 4,
                       max.dl = 4,
                       saturation = c("IIS", "SIS"),
@@ -258,20 +259,19 @@ run_model <- function(specification,
   freq_output <- check_frequencies(full_data, quiet = quiet)
   full_data <- freq_output$full_data
   frequency <- freq_output$frequency
-  # check cvar frequency only if have cvar modules
-  if (any(module_order$cvar != "")) {
-    cvar_freq <- dplyr::case_when(
-      frequency == "3 months" ~ "4",
-      frequency == "month" ~ "12",
-      TRUE ~ "unknown seasonality"
-    )
-    if (cvar_freq == "unknown seasonality") {
-      stop("Unknown seasonality for CVAR seasonal dummies.")
+  # check cvar frequency only if have cvar modules & only if coint_seasonal is TRUE
+  if (isTRUE(coint_seasonal)) {
+    if (any(module_order$cvar != "")) {
+      cvar_freq <- dplyr::case_when(
+        frequency == "3 months" ~ "4",
+        frequency == "month" ~ "12",
+        TRUE ~ "unknown seasonality"
+      )
+      if (cvar_freq == "unknown seasonality") {
+        stop("Unknown seasonality for CVAR seasonal dummies.")
+      }
     }
   }
-
-
-
 
   # determine classification of variables: exogenous, endogenous by model, endogenous by identity/definition
   classification <- classify_variables(specification = module_order)
@@ -317,6 +317,7 @@ run_model <- function(specification,
       use_logs = use_logs,
       trend = trend,
       ardl_or_ecm = ardl_or_ecm,
+      ecm_pretest = ecm_pretest,
       max.ar = max.ar,
       max.dl = max.dl,
       saturation = saturation,

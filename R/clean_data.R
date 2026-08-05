@@ -22,7 +22,7 @@ clean_data <- function(raw_data,
                        trend = TRUE,
                        opts_df,
                        module,
-                       use_logs) {
+                       use_logs){
   raw_data %>%
     dplyr::select("na_item", "time", "values") %>%
     tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
@@ -85,17 +85,17 @@ clean_data <- function(raw_data,
   # TODO: this seems to be done always, even when not use_logs == "both"; wasteful
   raw_data_processed %>%
     dplyr::mutate(
-      dplyr::across(-"time", .fns = ~ if (any(. <= 0, na.rm = TRUE)) {
+      dplyr::across(-"time", .fns = ~ {if (any(. <= 0, na.rm = TRUE)) {
         asinh(.)
-      } else {
+      } else{
         log(.)
-      }, .names = "ln.{.col}"),
+      }}, .names = "ln.{.col}"),
       dplyr::across(-"time", list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
     ) -> intermed
 
   to_be_added <- dplyr::tibble(.rows = nrow(intermed))
   # TODO: this could be skipped for CVAR because functions create lags/FD directly
-  for (i in 1:max(max.ar, max.dl)) {
+  for (i in 1:max(max.ar, max.dl)){
     intermed %>%
       dplyr::mutate(dplyr::across(-"time", ~ dplyr::lag(., n = i), .names = paste0("L", i, ".{.col}")), .keep = "none") %>% # dplyr::mutate(dplyr::across(c(dplyr::starts_with("D."), dplyr::starts_with("ln.")), ~ dplyr::lag(., n = i))) %>%
       # dplyr::select(c(dplyr::starts_with("D."), dplyr::starts_with("ln."))) %>%
