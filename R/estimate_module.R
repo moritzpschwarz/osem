@@ -13,6 +13,16 @@
 #' @param ardl_or_ecm Either 'ardl' or 'ecm' to determine whether to estimate
 #' the model as an Autoregressive Distributed Lag Function (ardl) or as an
 #' Equilibrium Correction Model (ecm).
+#' @param ecm_pretest Character. How to handle the ECM pretest when 'ardl_or_ecm' = 'ecm'. Must be one of
+#' 'auto', 'diagnostic', or 'none'. Default is 'auto'. If 'auto', OSEM chooses
+#' between the requested ECM, a fully differenced model, or a levels ARDL based
+#' on unit-root and single-equation ECM diagnostics. If 'diagnostic', diagnostics
+#' are stored but the requested ECM is still estimated. If 'none', the requested
+#' ECM is estimated without pretesting.
+#' @param ecm_unit_root_alpha Character. Significance level used by the unit-root
+#' decision rule. Must be one of '1pct', '5pct', or '10pct'. Default is '5pct'.
+#' @param ecm_coint_alpha Numeric. Significance level used for the single-equation
+#' ECM level-block diagnostic. Default is 0.05.
 #' @param max.ar Integer. The maximum number of lags to use for the AR terms.
 #' as well as for the independent variables.
 #' @param max.dl Integer. The maximum number of lags to use for the independent
@@ -46,6 +56,9 @@ estimate_module <- function(clean_data,
                             use_logs = "both",
                             trend = TRUE,
                             ardl_or_ecm = "ardl",
+                            ecm_pretest = "auto",
+                            ecm_unit_root_alpha = "5pct",
+                            ecm_coint_alpha = 0.05,
                             max.ar = 4,
                             max.dl = 2,
                             saturation = c("IIS", "SIS"),
@@ -59,9 +72,157 @@ estimate_module <- function(clean_data,
                             module) {
   # Set-up ------------------------------------------------------------------
   log_opts <- use_logs
+  level_x_vars_basename <- x_vars_basename
 
   if (!ardl_or_ecm %in% c("ardl", "ecm")) {
     stop("The variable 'ardl_or_ecm' in the 'estimate_module()' or the 'run_model()' function must be either 'ecm' or 'ardl'. You have supplied a different value.")
+  }
+
+  if (!ecm_pretest %in% c("auto", "diagnostic", "none")) {
+    stop("The variable 'ecm_pretest' in the 'estimate_module()' or the 'run_model()' function must be either 'auto', 'diagnostic', or 'none'. You have supplied a different value.")
+  }
+
+  if (!ecm_unit_root_alpha %in% c("1pct", "5pct", "10pct")) {
+    stop("The variable 'ecm_unit_root_alpha' in the 'estimate_module()' or the 'run_model()' function must be either '1pct', '5pct', or '10pct'. You have supplied a different value.")
+  }
+
+  model_form <- ardl_or_ecm
+
+  ecm_decision <- list(
+    requested = ardl_or_ecm,
+    pretest = ecm_pretest,
+    selected = ardl_or_ecm,
+    model_form = ardl_or_ecm,
+    reason = "ECM pretesting was not requested because this module was not estimated as an ECM.",
+    integration = NULL,
+    coint_test = NULL
+  )
+
+  # ECM pretest --------------------------------------------------------------
+  if (ardl_or_ecm == "ecm") {
+    ecm_decision$reason <- "ECM pretesting was disabled; estimating the requested unrestricted ECM."
+
+    if (ecm_pretest != "none") {
+      integration <- classify_module_integration(
+        clean_data = clean_data,
+        dep_var_basename = dep_var_basename,
+        x_vars_basename = x_vars_basename,
+        use_logs = use_logs,
+        max.ar = max.ar,
+        alpha = ecm_unit_root_alpha,
+        selectlags = "BIC"
+      )
+
+      level_x_vars_basename <- integration %>%
+        dplyr::filter(.data$type == "independent", .data$order == "I1") %>%
+        dplyr::pull(.data$basevarname)
+
+      ecm_decision$integration <- integration
+
+      dep_order <- integration %>%
+        dplyr::filter(.data$type == "dependent") %>%
+        dplyr::pull("order") %>%
+        dplyr::first()
+
+      x_orders <- integration %>%
+        dplyr::filter(.data$type == "independent") %>%
+        dplyr::pull("order")
+
+      if (ecm_pretest == "diagnostic") {
+        coint_test <- test_single_equation_ecm(
+          clean_data = clean_data,
+          dep_var_basename = dep_var_basename,
+          x_vars_basename = x_vars_basename,
+          level_x_vars_basename = level_x_vars_basename,
+          use_logs = use_logs,
+          trend = trend,
+          module = module,
+          alpha = ecm_coint_alpha
+        )
+
+        ecm_decision$coint_test <- coint_test
+        ecm_decision$selected <- "ecm"
+        ecm_decision$model_form <- "ecm"
+        ecm_decision$reason <- "Diagnostic ECM pretesting was requested; estimating the requested ECM regardless of the diagnostic decision."
+      }
+
+      if (ecm_pretest == "auto") {
+        if (all(integration$order == "I0", na.rm = TRUE)) {
+          model_form <- "ardl"
+
+          ecm_decision$selected <- "ardl"
+          ecm_decision$model_form <- "ardl"
+          ecm_decision$reason <- "All module variables were classified as I(0); estimating a levels ARDL."
+        } else if (any(integration$order %in% c("I2_or_uncertain", "uncertain"), na.rm = TRUE)) {
+          model_form <- "diff"
+
+          ecm_decision$selected <- "fully_differenced"
+          ecm_decision$model_form <- "diff"
+          ecm_decision$reason <- "At least one module variable was classified as I(2) or uncertain; estimating the corresponding first-differenced equation."
+        } else if (!identical(dep_order, "I1")) {
+          model_form <- "diff"
+
+          ecm_decision$selected <- "fully_differenced"
+          ecm_decision$model_form <- "diff"
+          ecm_decision$reason <- "The dependent variable was not classified as I(1); estimating the corresponding first-differenced equation."
+        } else if (!any(x_orders == "I1", na.rm = TRUE)) {
+          model_form <- "diff"
+
+          ecm_decision$selected <- "fully_differenced"
+          ecm_decision$model_form <- "diff"
+          ecm_decision$reason <- "No conditioning variable was classified as I(1); estimating the corresponding first-differenced equation."
+        } else {
+          coint_test <- test_single_equation_ecm(
+            clean_data = clean_data,
+            dep_var_basename = dep_var_basename,
+            x_vars_basename = x_vars_basename,
+            level_x_vars_basename = level_x_vars_basename,
+            use_logs = use_logs,
+            trend = trend,
+            module = module,
+            alpha = ecm_coint_alpha
+          )
+
+          ecm_decision$coint_test <- coint_test
+
+          if (isTRUE(coint_test$decision)) {
+            model_form <- "ecm"
+
+            ecm_decision$selected <- "ecm"
+            ecm_decision$model_form <- "ecm"
+            ecm_decision$reason <- coint_test$reason
+          } else {
+            model_form <- "diff"
+
+            ecm_decision$selected <- "fully_differenced"
+            ecm_decision$model_form <- "diff"
+            ecm_decision$reason <- coint_test$reason
+          }
+        }
+      }
+    }
+  }
+
+  # ECM keep terms -----------------------------------------------------------
+  # If the final model form is ECM, protect the lagged level block during the
+  # subsequent gets() selection step. Otherwise, the automatic model selection
+  # could remove the terms that give the equation its equilibrium-correction
+  # interpretation.
+  ecm_keep <- NULL
+
+  if (model_form == "ecm") {
+    if (!is.null(ecm_decision$coint_test) && length(ecm_decision$coint_test$level_terms) > 0) {
+      ecm_keep <- ecm_decision$coint_test$level_terms
+    } else {
+      ecm_keep <- c(
+        paste0(ifelse(log_opts %in% c("both", "y"), "L1.ln.", "L1."), dep_var_basename),
+        if (!identical(x_vars_basename, character(0))) {
+          paste0(ifelse(log_opts %in% c("both", "x"), "L1.ln.", "L1."), x_vars_basename)
+        } else {
+          NULL
+        }
+      )
+    }
   }
 
   isat_list <- dplyr::tibble(
@@ -69,124 +230,64 @@ estimate_module <- function(clean_data,
     BIC = 0,
     isat_object = list(NA_complex_)
   )
+
   for (i in 0:max.dl) {
-    if (ardl_or_ecm == "ardl") {
-      # first check whether there is an x variable that is relevant (or whether it is an AR only model)
-      if(!identical(x_vars_basename, character(0))){
+    # Build model design -----------------------------------------------------
+    # The logic for ARDL, ECM, differenced models, and lag-only variables lives
+    # in build_module_design(). This keeps clean_data complete for diagnostics
+    # while restricting only the estimation design matrix.
+    design <- build_module_design(
+      clean_data = clean_data,
+      dep_var_basename = dep_var_basename,
+      x_vars_basename = x_vars_basename,
+      use_logs = use_logs,
+      trend = trend,
+      model_form = model_form,
+      dl_order = i,
+      module = module
+    )
 
-        # grab all starting with a lag (the contemporaneous are added below)
-        xvars_names <- grep("^L[0-9]\\.",
-                            grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
-                            value = TRUE)
-        # remove all differences
-        xvars_names <- xvars_names[!grepl("^L[0-9]\\.D\\.",xvars_names)]
+    yvar <- design$yvar
+    y.name <- design$y.name
+    xvars <- design$xvars
 
-        # check log specification
-        if (log_opts %in% c("y", "none")) {
-          # remove all log variables
-          xvars_names <- xvars_names[!grepl("ln\\.",xvars_names)]
-        } else {
-          # grab only the log variables
-          xvars_names <- xvars_names[grepl("ln\\.",xvars_names)]
-        }
-      } else {
-        # if it is an AR only model
-        xvars_names <- NULL
-      }
-
-      yvar <- clean_data %>%
-        dplyr::select(dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename))) %>%
-        dplyr::pull()
-
-      y.name <- paste0(ifelse(log_opts %in% c("both", "y"), "ln.", ""), dep_var_basename)
-
-      # filter out contemporaneous if lag only
-      if (module$lag != "") {
-        lag_only_vars <- trimws(unlist(strsplit(module$lag, ",")))
-        x_vars_contemp <- setdiff(x_vars_basename, lag_only_vars)
-      } else {
-        x_vars_contemp <- x_vars_basename
-      }
-
-      xvars <- clean_data %>%
-
-        dplyr::select(
-          if(trend){dplyr::all_of("trend")}else{NULL},
-          if(!identical(x_vars_contemp,character(0))){dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "x"), "ln.", ""), x_vars_contemp))}else{NULL},
-          if (i != 0) {
-            dplyr::all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
-          } else {
-            NULL
-          },
-          dplyr::any_of(c("q_2", "q_3", "q_4"))
-        )
-
-      if(i == 0){
-        xvars_initial <- xvars
-      }
-
-    }
-    if (ardl_or_ecm == "ecm") {
-      yvar <- clean_data %>%
-        dplyr::select(dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename))) %>%
-        dplyr::pull()
-
-      y.name <- paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename)
-
-      # TODO: Check log specification and check when model is AR only
-      if(!identical(x_vars_basename, character(0))){
-        xvars_names <- grep("L[0-9]\\.D.",
-                            grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
-                            value = TRUE
-        )
-      } else {
-        xvars_names <- NULL
-      }
-
-      xvars <- clean_data %>%
-        dplyr::select(
-          dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "y"), "L1.ln.", "L1."), dep_var_basename)),
-          if(!identical(x_vars_basename, character(0))){dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "x"), "L1.ln.", "L1."), x_vars_basename))}else{NULL},
-          if(!identical(x_vars_basename, character(0))){dplyr::all_of(paste0(ifelse(log_opts %in% c("both", "x"), "D.ln.", "D."), x_vars_basename))}else{NULL},
-          if (i != 0) {
-            dplyr::all_of(xvars_names[grepl(paste0("^L",1:i, collapse = "|"), xvars_names)])
-          } else {
-            NULL
-          },
-          dplyr::any_of(c("q_2", "q_3", "q_4"))
-        )
-      if(i == 0){
-        xvars_initial <- xvars
-      }
+    if (i == 0) {
+      xvars_initial <- xvars
     }
 
     # ISAT modelling ----------------------------------------------------------
     if (!is.null(saturation)) {
       try(
-        intermed.model <- run_isat(ar = if(i != 0){1:i} else {NULL},
-                                   yvar = yvar,
-                                   y.name = y.name,
-                                   xvars  = xvars,
-                                   mc = TRUE,
-                                   clean_data = clean_data,
-                                   saturation = saturation,
-                                   saturation.tpval = saturation.tpval,
-                                   max.block.size = max.block.size,
-                                   pretest_steps = pretest_steps,
-                                   determine.blocksize = TRUE)
-        , silent = TRUE)
+        intermed.model <- run_isat(
+          ar = if(i != 0){1:i} else {NULL},
+          yvar = yvar,
+          y.name = y.name,
+          xvars  = xvars,
+          mc = TRUE,
+          clean_data = clean_data,
+          saturation = saturation,
+          saturation.tpval = saturation.tpval,
+          max.block.size = max.block.size,
+          pretest_steps = pretest_steps,
+          determine.blocksize = TRUE
+        ),
+        silent = TRUE
+      )
     } else {
 
-      # ARX Modelling -----------------------------------------------------------
+      # ARX Modelling ---------------------------------------------------------
       # Save original arx mc warning setting and disable it here
       tmpmc <- options("mc.warning")
       on.exit(options(tmpmc)) # set the old mc warning on exit
 
       options(mc.warning = FALSE)
 
-      xvar_opts <- if(nrow(zoo::zoo(xvars, order.by = clean_data$time))>0){
+      xvar_opts <- if(nrow(zoo::zoo(xvars, order.by = clean_data$time)) > 0){
         zoo::zoo(xvars, order.by = clean_data$time)
-      } else {NULL}
+      } else {
+        NULL
+      }
+
       intermed.model <- gets::arx(
         y = zoo::zoo(yvar, order.by = clean_data$time),
         mxreg = xvar_opts,
@@ -203,17 +304,19 @@ estimate_module <- function(clean_data,
       intermed.model$aux$y.name <- y.name
     }
 
-
     isat_list[i + 1, "BIC"] <- if(exists("intermed.model")){stats::BIC(intermed.model)}else{NA}
     isat_list[i + 1, "isat_object"] <- if(exists("intermed.model")){dplyr::tibble(isat_object = list(intermed.model))}else{NA}
-    if(exists("intermed.model")){rm(intermed.model)}
+
+    if(exists("intermed.model")){
+      rm(intermed.model)
+    }
   }
 
   if (all(is.na(isat_list$BIC) | is.null(isat_list$BIC) | all(isat_list$isat_object %in% c(list(NA),list(NULL))))){
     dplyr::tibble(time = clean_data$time,
                   y = yvar,
                   xvars_initial) %>%
-      dplyr::rename_with(.cols = "y",.fn = ~paste0(ifelse(log_opts %in% c("both", "y"), "D.ln.", "D."), dep_var_basename)) %>%
+      dplyr::rename_with(.cols = "y",.fn = ~y.name) %>%
       dplyr::select(-c(dplyr::any_of(c("q_1", "q_2", "q_3", "q_4", "trend")))) %>%
       tidyr::pivot_longer(-c("time")) %>%
       ggplot2::ggplot(ggplot2::aes(x = .data$time, y = .data$value, color = .data$name)) +
@@ -234,10 +337,26 @@ estimate_module <- function(clean_data,
     dplyr::pull(dplyr::all_of("isat_object")) %>%
     dplyr::first()
 
-
   # gets selection on the best model ----------------------------------------
   if(gets_selection){
-    if(!is.null(keep)){keep_num <- which(grepl(keep, row.names(best_isat_model$mean.results)))} else {keep_num <- NULL}
+
+    # Keep handling ----------------------------------------------------------
+    if(!is.null(keep)){
+      keep_user_num <- which(grepl(keep, row.names(best_isat_model$mean.results)))
+    } else {
+      keep_user_num <- integer(0)
+    }
+
+    if(!is.null(ecm_keep)){
+      keep_ecm_num <- which(row.names(best_isat_model$mean.results) %in% ecm_keep)
+    } else {
+      keep_ecm_num <- integer(0)
+    }
+
+    keep_num <- unique(c(keep_user_num, keep_ecm_num))
+    if(length(keep_num) == 0){
+      keep_num <- NULL
+    }
 
     try(best_isat_model.selected <- gets::gets(best_isat_model,
                                                print.searchinfo = FALSE,
@@ -299,11 +418,14 @@ estimate_module <- function(clean_data,
       #                                             max.block.size = best_isat_model$aux$args$max.block.size,
       #                                             include.gum = FALSE)
 
-      if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$call$tis <- best_isat_model.selected.isat$aux$args$tis}
-      if(exists("best_isat_model.selected.isat")){best_isat_model.selected.isat$aux$y.name <- y.name}
+      if(exists("best_isat_model.selected.isat")){
+        best_isat_model.selected.isat$call$tis <- best_isat_model.selected.isat$aux$args$tis
+      }
+      if(exists("best_isat_model.selected.isat")){
+        best_isat_model.selected.isat$aux$y.name <- y.name
+      }
     }
   }
-
 
   final_model <- if(gets_selection) {
     if (!is.null(saturation)) {
@@ -317,7 +439,9 @@ estimate_module <- function(clean_data,
 
   # Super Exogeneity Testing ------------------------------------------------
   try(superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet))
-  if(!exists("superex_test")){superex_test <- NA}
+  if(!exists("superex_test")){
+    superex_test <- NA
+  }
 
   # Output ------------------------------------------------------------------
   out <- list()
@@ -333,7 +457,13 @@ estimate_module <- function(clean_data,
                    dep_var_basename = dep_var_basename,
                    x_vars_basename = x_vars_basename,
                    use_logs = use_logs,
-                   ardl_or_ecm = ardl_or_ecm,
+                   ardl_or_ecm = ifelse(model_form == "diff", "ecm", model_form),
+                   ardl_or_ecm_requested = ardl_or_ecm,
+                   ardl_or_ecm_selected = ecm_decision$selected,
+                   model_form = model_form,
+                   ecm_pretest = ecm_pretest,
+                   ecm_decision = ecm_decision,
+                   ecm_keep = ecm_keep,
                    max.ar = max.ar,
                    max.dl = max.dl)
 

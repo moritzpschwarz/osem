@@ -45,7 +45,10 @@ run_module <- function(
     cvar.ar = 4,
     freq = NULL,
     coint_deterministic = "const",
-    coint_significance = "5pct") {
+    coint_significance = "5pct",
+    ecm_pretest = "auto",
+    ecm_unit_root_alpha = "5pct",
+    ecm_coint_alpha = 0.05) {
   raw_data <- identify_module_data(module, classification, data)
 
   # if is identity/definition equation, run simple parse
@@ -73,20 +76,6 @@ run_module <- function(
     clean_df <- clean_data_output$df
     opts_df <- clean_data_output$opts_df
 
-    # can delete contemporaneous values for variables that only enter as lags
-    # TODO: in future should probably do this in clean_data, need to add an argument to it
-    if (module$lag != "") {
-      lag_only_vars <- trimws(unlist(strsplit(module$lag, ",")))
-      if (use_logs %in% c("both", "x")) {
-        lag_only_vars <- paste0("ln.", lag_only_vars)
-      }
-      for (i in seq_along(lag_only_vars)) {
-        clean_df <- clean_df %>%
-          # remove variables that are x variables but not lagged
-          dplyr::select(!(dplyr::contains(lag_only_vars[i]) & !dplyr::matches("^L\\d+\\.")))
-      }
-    }
-
     # extract base variable names (and convert to lower case because janitor::clean_names() does so)
     dep <- module$dependent
     # dep <- tolower(dep)
@@ -102,6 +91,9 @@ run_module <- function(
       use_logs = use_logs,
       trend = trend,
       ardl_or_ecm = ardl_or_ecm,
+      ecm_pretest = ecm_pretest,
+      ecm_unit_root_alpha = ecm_unit_root_alpha,
+      ecm_coint_alpha = ecm_coint_alpha,
       max.ar = max.ar,
       max.dl = max.dl,
       saturation = saturation,
@@ -115,13 +107,28 @@ run_module <- function(
       module = module
     )
 
+    # store ECM decision in opts_df ------------------------------------------
+    if (!"ecm_decision" %in% names(opts_df)) {
+      opts_df$ecm_decision <- vector(mode = "list", length = NROW(opts_df))
+    }
+    if (!"ardl_or_ecm_requested" %in% names(opts_df)) {
+      opts_df$ardl_or_ecm_requested <- NA_character_
+    }
+    if (!"ardl_or_ecm_selected" %in% names(opts_df)) {
+      opts_df$ardl_or_ecm_selected <- NA_character_
+    }
+
+    opts_df$ecm_decision[opts_df$index == module$index] <- list(estimated_module$args$ecm_decision)
+    opts_df$ardl_or_ecm_requested[opts_df$index == module$index] <- estimated_module$args$ardl_or_ecm_requested
+    opts_df$ardl_or_ecm_selected[opts_df$index == module$index] <- estimated_module$args$ardl_or_ecm_selected
+
     moduledata <- add_to_original_data(
       clean_data = clean_df,
       model_object = estimated_module$best_model,
       dep_var_basename = dep,
-      model_type = estimated_module$args$ardl_or_ecm,
       opts_df = opts_df,
-      module = module
+      module = module,
+      model_type = estimated_module$args$model_form
     )
 
     out <- list(

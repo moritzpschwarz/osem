@@ -11,6 +11,9 @@ estimate_module(
   use_logs = "both",
   trend = TRUE,
   ardl_or_ecm = "ardl",
+  ecm_pretest = "auto",
+  ecm_unit_root_alpha = "5pct",
+  ecm_coint_alpha = 0.05,
   max.ar = 4,
   max.dl = 2,
   saturation = c("IIS", "SIS"),
@@ -43,6 +46,19 @@ Default is TRUE.}
 \item{ardl_or_ecm}{Either 'ardl' or 'ecm' to determine whether to estimate
 the model as an Autoregressive Distributed Lag Function (ardl) or as an
 Equilibrium Correction Model (ecm).}
+
+\item{ecm_pretest}{Character. How to handle the ECM pretest when 'ardl_or_ecm' = 'ecm'. Must be one of
+'auto', 'diagnostic', or 'none'. Default is 'auto'. If 'auto', OSEM chooses
+between the requested ECM, a fully differenced model, or a levels ARDL based
+on unit-root and single-equation ECM diagnostics. If 'diagnostic', diagnostics
+are stored but the requested ECM is still estimated. If 'none', the requested
+ECM is estimated without pretesting.}
+
+\item{ecm_unit_root_alpha}{Character. Significance level used by the unit-root
+decision rule. Must be one of '1pct', '5pct', or '10pct'. Default is '5pct'.}
+
+\item{ecm_coint_alpha}{Numeric. Significance level used for the single-equation
+ECM level-block diagnostic. Default is 0.05.}
 
 \item{max.ar}{Integer. The maximum number of lags to use for the AR terms.
 as well as for the independent variables.}
