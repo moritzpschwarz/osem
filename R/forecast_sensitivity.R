@@ -68,7 +68,7 @@ forecast_sensitivity <- function(
     }
 
     exog_data_current <- inital_forecast$exog_data_nowcast %>%
-      dplyr::mutate(dplyr::across(dplyr::all_of(var), ~  if(size_type == "pct"){. * (1 + size)} else if(size_type == "unit") {. + size}))
+      dplyr::mutate(dplyr::across(dplyr::all_of(var), ~ {if(size_type == "pct"){. * (1 + size)} else if(size_type == "unit") {. + size}}))
 
     cur_forecast <- forecast_model(model, quiet = TRUE,
                                    exog_predictions = exog_data_current, plot = FALSE)
@@ -307,7 +307,7 @@ forecast_sensitivity <- function(
                     all = purrr::map(.data$inital_forecast, function(x){x$all_forecasts_processed_q})) %>%
       tidyr::unnest("central") %>%
       dplyr::select(-c("forecasts", "fit", "inital_forecast", "all")) %>%
-      dplyr::rename(init = .data$values) -> inital_forecast_tib_central
+      dplyr::rename(init = "values") -> inital_forecast_tib_central
 
     # dplyr::tibble(modified = names(forecast_list),
     #               mod = forecast_list,

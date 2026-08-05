@@ -33,9 +33,10 @@ download_imf <- function(to_obtain, column_filters, quiet) {
     #get the dictionary coordinates that use the following dataset_id
     indices <- which(to_obtain$database == "imf" & to_obtain$dataset_id == id_identified)
 
-    imf_data <- imf.data::load_datasets(id_identified,use_cache = TRUE)
+    imf_dimensions <- imf.data::list_dimensions(id_identified)
+
     #get the columns that can be filterable
-    query_vars = names(imf_data$dimensions)
+    query_vars = imf_dimensions$id
 
     for (idx in indices) {
       query <- list()
@@ -43,14 +44,28 @@ download_imf <- function(to_obtain, column_filters, quiet) {
 
       for (col in 1:length(col_filters_idx)) {
         filter_name <- column_filters[col]
-        filter = to_obtain[idx,filter_name]
+        filter = to_obtain[[filter_name]][idx]
 
-        if (filter_name %in% query_vars | filter_name == "start_period" | filter_name == "end_period")
-          query <- c(query,filter)
+        if (filter_name %in% query_vars)
+          query[[filter_name]] <- filter
       }
 
+      start_period <- NULL
+      end_period <- NULL
+
+      if ("start_period" %in% column_filters)
+        start_period <- to_obtain[["start_period"]][idx]
+
+      if ("end_period" %in% column_filters)
+        end_period <- to_obtain[["end_period"]][idx]
+
       #run query
-      subset_of_data <- do.call(imf_data$get_series,query)
+      subset_of_data <- imf.data::get_data(
+        dataflow = id_identified,
+        filters = query,
+        start_period = start_period,
+        end_period = end_period
+      )
 
       # if after filtering "sub" is not empty, we found the variable and can mark it as such
       if (NROW(subset_of_data) == 0L) {
@@ -60,8 +75,8 @@ download_imf <- function(to_obtain, column_filters, quiet) {
       }
 
       # need to aggregate across all filters
-      columns <- colnames(subset_of_data) # columns[1] = TIME_PERIOD, columns[2] = 'the unique identifier that represents the values of the data row'
-      value_colname <- columns[2]
+      columns <- colnames(subset_of_data)
+      value_colname <- "OBS_VALUE"
 
       #ensure data is TIME_PERIOD is set to data time
       subset_of_data <- subset_of_data %>%
@@ -78,7 +93,7 @@ download_imf <- function(to_obtain, column_filters, quiet) {
 
       #if the frequency is monthly we need to aggregate the data to a quarterly level
       if (to_obtain$freq[idx] == "M") {
-        unique_columns <- setdiff(columns, columns[2]) # should be unique across these. columns[2] represents the unique value identifier of the dataset
+        unique_columns <- setdiff(columns, value_colname) # should be unique across these. value_colname represents the value column of the dataset
         stopifnot(sum(duplicated(subset_of_data[, unique_columns])) == 0L) # sanity check
         groupby_columns <- union(c("year", "quarter"), setdiff(unique_columns, "TIME_PERIOD")) # want to group_by year-quarter, so exclude time column
         subset_of_data <- subset_of_data %>%
