@@ -27,7 +27,6 @@ Imports:
     magrittr,
     stringr,
     utils,
-    
     ggplot2,
     scales,
     zoo,

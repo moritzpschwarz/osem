@@ -2,31 +2,15 @@
 % Please edit documentation in R/run_shiny.R
 \name{run_shiny}
 \alias{run_shiny}
-\title{Launch the OSEM Shiny workspace}
+\title{Creates and runs the OSEM Shiny App}
 \usage{
-run_shiny(
-  model = NULL,
-  max_upload_mb = 500,
-  launch.browser = getOption("shiny.launch.browser", interactive())
-)
+run_shiny(model = NULL)
 }
 \arguments{
-\item{model}{Optional fitted \link[=new_osem]{osem} object returned by
-\code{\link{run_model}}.}
-
-\item{max_upload_mb}{Positive numeric value giving the maximum upload size
-in megabytes for project, model, data, dictionary, and assumption files.}
-
-\item{launch.browser}{Passed to \code{shiny::runApp()}. Use \code{FALSE}
-when launching the app on a server without opening a local browser.}
-}
-\value{
-Launches a Shiny application and returns invisibly when it exits.
+\item{model}{The model object that is passed by the 'present_model()' function.}
 }
 \description{
-Opens the complete modular OSEM application for project management, data
-ingestion, dictionary and model specification, estimation, results
-exploration, scenario forecasting, and reproducible-code export. When a
-fitted model is supplied, the app opens it together with its stored
-specification, dictionary, settings, and processed input-data snapshot.
+Opens a window for the user to interact with the app. The user can upload
+an \link[=new_osem]{osem} object returned by \code{\link{run_model}} and
+produce graphical and tabular output.
 }
