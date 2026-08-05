@@ -32,8 +32,7 @@ Imports:
     zoo,
     igraph,
     vars,
-    urca,
-    purrr
+    urca
 LazyData: true
 Suggests: 
     shiny (>= 1.5.0), 
@@ -46,8 +45,8 @@ Suggests:
     testthat (>= 3.0.0),
     tidygraph,
     plotly,
+    purrr,
     forecast,
-    zip,
     knitr,
     rmarkdown,
     imf.data,
