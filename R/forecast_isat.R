@@ -64,6 +64,7 @@ forecast_isat <- function(
                                    pred_df %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)),
                                    n.ahead
                                  )),
+                                 quiet = TRUE,
                                  n.ahead = n.ahead,
                                  plot = FALSE,
                                  ci.levels = ci.levels)
@@ -169,6 +170,7 @@ forecast_isat <- function(
                              utils::tail(n.ahead) %>%
                              as.matrix(),
                            n.ahead = n.ahead, plot = FALSE,
+                           quiet = TRUE,
                            ci.levels = ci.levels, n.sim = 1
         )
       })) -> all_preds

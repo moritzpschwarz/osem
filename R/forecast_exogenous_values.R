@@ -23,7 +23,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
   if(length(frequency) > 1 | frequency == "month" | frequency == "day"){stop("Mixed frequency forecasts or forecasts with daily or monthly data are not yet implemented.")}
 
-  if (is.null(exog_predictions) & exog_fill_method == "last") {
+  if (is.null(exog_predictions) && exog_fill_method == "last") {
     if(!quiet){
       message("No exogenous values provided. Model will use the last available value.\nAlternative is exog_fill_method = 'AR'.")
     }
@@ -65,7 +65,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
   }
 
-  if (is.null(exog_predictions) & exog_fill_method == "AR") {
+  if (is.null(exog_predictions) && exog_fill_method == "AR") {
     if(!quiet){
       message(paste0("No exogenous values provided. Model will forecast the exogenous values with an AR", ar.fill.max," process (incl. Q dummies, IIS and SIS w 't.pval = 0.001').\nAlternative is exog_fill_method = 'last'."))
     }
@@ -121,18 +121,47 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       to_ar_predict %>%
         dplyr::select(dplyr::any_of(c("q_2", "q_3", "q_4"))) -> x_ar_predict
 
-      isat_ar_predict <- tryCatch(gets::isat(y = y_ar_predict,
-                                             mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+      isat_ar_predict <- tryCatch(
+        gets::isat(y = y_ar_predict,
+                   mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+                   mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
+                   print.searchinfo = FALSE,
+                   sis = TRUE, iis = TRUE),
 
-                                             mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
-                                             print.searchinfo = FALSE, sis = TRUE, iis = TRUE),
-                                  error = function(abcd){
-                                    message(paste0("Exogneous forecasted values for ", names(exog_df_intermed)[col_to_forecast]," will only use SIS, not IIS as too many indicators retained.\n"))
-                                    gets::isat(y = y_ar_predict,
-                                               mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
-                                               mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
-                                               print.searchinfo = FALSE, sis = TRUE, iis = FALSE)
-                                  })
+        error = function(abcd){
+          tryCatch(
+            gets::isat(y = y_ar_predict,
+                       mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+                       mc = TRUE, ar = 1:4, plot = FALSE, t.pval = 0.001,
+                       print.searchinfo = FALSE,
+                       sis = TRUE, iis = FALSE),
+            message(paste0("Exogneous forecasted values for ", names(exog_df_intermed)[col_to_forecast]," will only use SIS, not IIS as too many indicators retained.\n")),
+            error = function(abcd){
+              tryCatch(
+                # without Indicator Saturation
+                gets::isat(y = y_ar_predict,
+                           mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+                           mc = TRUE, ar = 1:4, plot = FALSE, print.searchinfo = FALSE,
+                           sis = FALSE, iis = FALSE),
+                error = function(abcd){
+                  tryCatch(
+                    # without AR
+                    gets::isat(y = y_ar_predict,
+                               mxreg = if (ncol(x_ar_predict) == 0) {NULL} else{as.matrix(x_ar_predict)},
+                               mc = TRUE, plot = FALSE, print.searchinfo = FALSE, sis = FALSE, iis = FALSE),
+                    error = function(abcd){
+                      tryCatch(
+                        # just mc model
+                        gets::isat(y = y_ar_predict,
+                                   mc = TRUE, plot = FALSE, print.searchinfo = FALSE, sis = FALSE, iis = FALSE),
+                        error = function(abcd){
+                          message("Failed to create forecast for ", names(exog_df_intermed)[col_to_forecast])
+                          return(NULL)
+                        })
+                    })
+                })
+            })
+        })
 
       # get iis dummies
       if(!is.null(gets::isatdates(isat_ar_predict)$iis)){
@@ -191,7 +220,8 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
 
 
       gets::predict.isat(object = isat_ar_predict, n.ahead = n.ahead + diff_time_to_max,
-                         newmxreg = x_ar_predict_pred_df %>% dplyr::select(dplyr::any_of(isat_ar_predict$aux$mXnames)) %>% as.matrix) %>%
+                         newmxreg = x_ar_predict_pred_df %>% dplyr::select(dplyr::any_of(isat_ar_predict$aux$mXnames)) %>% as.matrix,
+                         quiet = TRUE) %>%
         as.vector -> pred_values
 
       dplyr::tibble(time = time_to_forecast,
@@ -216,7 +246,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
       dplyr::arrange(.data$time) -> exog_df_ready
   }
 
-  if (is.null(exog_predictions) & exog_fill_method == "auto") {
+  if (is.null(exog_predictions) && exog_fill_method == "auto") {
     if(!quiet){
       message(paste0("No exogenous values provided. Model will forecast the exogenous values with the auto.arima()."))
     }
@@ -294,7 +324,7 @@ forecast_exogenous_values <- function(model, exog_vars, exog_predictions, exog_f
   }
 
 
-  if (is.null(exog_predictions) & exog_fill_method == "ets") {
+  if (is.null(exog_predictions) && exog_fill_method == "ets") {
     if(!quiet){
       message(paste0("No exogenous values provided. Model will forecast the exogenous values with ets()."))
     }

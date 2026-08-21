@@ -80,10 +80,10 @@ forecast_model <- function(model,
   if (!isa(model, "osem")) {
     stop("Forecasting only possible with an osem object. Execute 'run_model' to get such an object.")
   }
-  if (!is.null(exog_fill_method) & !exog_fill_method %in% c("AR", "last", "auto", "ets")) {
+  if (!is.null(exog_fill_method) && !exog_fill_method %in% c("AR", "last", "auto", "ets")) {
     stop("The method to fill exogenous values 'exog_fill_method' can only be either NULL (when data is provided), or 'AR', 'auto', 'ets', or 'last'.")
   }
-  if (!is.null(ar.fill.max) & (!is.integer(as.integer(ar.fill.max)) | ar.fill.max < 1)) {
+  if (!is.null(ar.fill.max) && (!is.integer(as.integer(ar.fill.max)) | ar.fill.max < 1)) {
     stop("The option 'ar.fill.max' can either be NULL or must be an integer that is larger than 0.")
   }
 

@@ -49,8 +49,10 @@ plot.osem.forecast <- function(x, title = "OSEM Model Forecast", exclude.exogeno
     stop("Input object not of type 'osem.forecast'. Run 'forecast_model' again and use the output of that function.")
   }
 
-  if(!is.null(first_date)){if(!is.character(first_date) | !lubridate::is.Date(as.Date(first_date))){stop("When supplying 'first_date', the it must be a character and must be (able to be converted to) a Date.")}}
-
+  if(!is.null(first_date)){
+    if(!lubridate::is.Date(first_date)){
+      if(!is.character(first_date) | !lubridate::is.Date(as.Date(first_date))){stop("When supplying 'first_date', the it must be a character and must be (able to be converted to) a Date.")}}
+  }
   x$orig_model$full_data %>%
     dplyr::mutate(var = .data$na_item,
                   na_item = gsub("\\.hat","",.data$na_item),

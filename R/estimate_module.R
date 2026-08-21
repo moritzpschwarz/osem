@@ -413,8 +413,12 @@ estimate_module <- function(clean_data,
     if(length(keep_num) == 0){
       keep_num <- NULL
     }
-
-    try(best_isat_model.selected <- gets::gets(best_isat_model,
+    if( "isat" %in% class(best_isat_model)){
+      best_isat_model.arx <- as.arx.isat.osem(best_isat_model)
+    } else {
+      best_isat_model.arx <- best_isat_model
+    }
+    try(best_isat_model.selected <- gets::gets(best_isat_model.arx,
                                                print.searchinfo = FALSE,
                                                t.pval = selection.tpval,
                                                ar.LjungB = NULL,
