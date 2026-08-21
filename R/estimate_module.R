@@ -351,8 +351,8 @@ estimate_module <- function(clean_data,
         dplyr::mutate(diagnostic = row.names(intermed.model$diagnostics), .before = "Chi-sq")
     }
 
-    isat_list[i + 1, "ar_pvalue"] <- if(exists("intermed.model")){diagnostics$`p-value`[diagnostics == "Ljung-Box AR(1)"]}else{NA}
-    isat_list[i + 1, "arch_pvalue"] <- if(exists("intermed.model")){diagnostics$`p-value`[diagnostics == "Ljung-Box ARCH(1)"]}else{NA}
+    isat_list[i + 1, "ar_pvalue"] <- if(exists("intermed.model")){diagnostics$`p-value`[grep("Ljung-Box AR\\(",diagnostics)]}else{NA}
+    isat_list[i + 1, "arch_pvalue"] <- if(exists("intermed.model")){diagnostics$`p-value`[grep("Ljung-Box ARCH\\(",diagnostics)]}else{NA}
     isat_list[i + 1, "BIC"] <- if(exists("intermed.model")){stats::BIC(intermed.model)}else{NA}
     isat_list[i + 1, "isat_object"] <- if(exists("intermed.model")){dplyr::tibble(isat_object = list(intermed.model))}else{NA}
 
