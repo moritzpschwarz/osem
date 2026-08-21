@@ -55,9 +55,12 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
     # check that parallel.cores is not larger than the number of available cores
     if(!is.null(parallel.cores)){
       n_available_cores <- parallel::detectCores()
-
-      if(!(is.integer(parallel.cores) | suppressWarnings(!is.na(as.integer(parallel.cores))))){
-        stop("The number of parallel cores specified is not numeric. Please provide a numeric value for 'parallel.cores'.")
+      # if(!(is.integer(parallel.cores) | suppressWarnings(!is.na(as.integer(parallel.cores))))){
+      #   stop("The number of parallel cores specified is not numeric. Please provide a numeric value for 'parallel.cores'.")
+      # }
+      if(is.character(parallel.cores)){stop("The number of parallel cores specified is not numeric. Please provide a numeric value for 'parallel.cores'.")}
+      if (parallel.cores %% 1 != 0) {
+        stop("The number of parallel cores specified (", parallel.cores, ") is not valid. Please provide a whole number.")
       }
       if(parallel.cores < 1){
         stop("The number of parallel cores specified (", parallel.cores, ") is not valid. Please provide a numeric value larger than 0 for 'parallel.cores'.")

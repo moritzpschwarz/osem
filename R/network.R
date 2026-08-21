@@ -121,7 +121,7 @@ network <- function(model, layout = "kk") {
       show.legend = FALSE
     ) +
     ggraph::geom_node_text(
-      ggplot2::aes(label = name),
+      ggplot2::aes(label = .data$name),
       repel = TRUE,
       size = 3,
       #max.overlaps = Inf,
