@@ -40,6 +40,7 @@ forecast_setup_estimated_relationships <- function(model,
   extracted_info$exog_df_ready -> exog_df_ready
   extracted_info$pred_ar_needed -> pred_ar_needed
   extracted_info$pred_dl_needed -> pred_dl_needed
+  extracted_info$recipe -> recipe
 
   # Deal with current_spec not being fully exogenous --------
 
@@ -75,17 +76,22 @@ forecast_setup_estimated_relationships <- function(model,
         dplyr::pull(.data$predict.isat_object) %>%
         .[[1]] -> mvar_model_obj
 
-      mvar_logs <- model$module_collection %>%
+      upstream_recipe <- model$module_collection %>%
         dplyr::filter(.data$index == mvar_model_index) %>%
         .$model.args %>%
         .[[1]] %>%
-        .$use_logs
+        .$forecast_recipe
 
       mvar_euname <- model$module_collection %>%
         dplyr::filter(.data$index == mvar_model_index) %>%
         dplyr::pull("dependent")
 
-      mvar_name <- paste0(ifelse(mvar_logs %in% c("both","x"), "ln.",""), mvar_euname)
+      current_transformation <- recipe$transformations[[mvar]]
+      upstream_transformation <- upstream_recipe$dependent_transformation
+      mvar_name <- paste0(
+        if (current_transformation %in% c("log", "asinh")) "ln." else "",
+        mvar_euname
+      )
 
       # get the uncertainty around it
       prediction_list %>%
@@ -95,8 +101,17 @@ forecast_setup_estimated_relationships <- function(model,
 
       # if the all estimates are not yet stored, use the central estimate
       if(!is.null(prediction_list.mvar.all)){
-        prediction_list.mvar.all %>%
-          dplyr::select(-"time") -> mvar_all.estimates
+        mvar_all.estimates <- prediction_list.mvar.all %>%
+          dplyr::select(-"time") %>%
+          dplyr::mutate(
+            dplyr::across(
+              dplyr::everything(),
+              ~ transform_osem_values(
+                inverse_transform_osem_values(., upstream_transformation),
+                current_transformation
+              )
+            )
+          )
 
         # name all the individual estimates
         colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
@@ -109,11 +124,20 @@ forecast_setup_estimated_relationships <- function(model,
           setNames(paste0(mvar_name,".all"))
 
       } else {
-        prediction_list %>%
+        mvar_all.estimates <- prediction_list %>%
           dplyr::filter(.data$index == mvar_model_index) %>%
           dplyr::pull("central.estimate") %>%
           .[[1]] %>%
-          dplyr::select(-"time") -> mvar_all.estimates
+          dplyr::select(-"time") %>%
+          dplyr::mutate(
+            dplyr::across(
+              dplyr::everything(),
+              ~ transform_osem_values(
+                inverse_transform_osem_values(., upstream_transformation),
+                current_transformation
+              )
+            )
+          )
 
         # name all the individual estimates
         colnames(mvar_all.estimates) <- paste0(mvar_name,".all.",seq(uncertainty_sample))
@@ -125,33 +149,32 @@ forecast_setup_estimated_relationships <- function(model,
           setNames(paste0(mvar_name,".all"))
       }
 
-      # add the mean yhat estimates and the all estimates together
-      mvar_tibble <- dplyr::tibble(data = as.numeric(mvar_model_obj$yhat)) %>%
+      upstream_central <- prediction_list %>%
+        dplyr::filter(.data$index == mvar_model_index) %>%
+        dplyr::pull("central.estimate") %>%
+        .[[1]] %>%
+        dplyr::select(-"time") %>%
+        dplyr::pull(1)
+
+      # add the mean estimates and the all estimates together
+      mvar_tibble <- dplyr::tibble(
+        data = transform_osem_values(
+          inverse_transform_osem_values(upstream_central, upstream_transformation),
+          current_transformation
+        )
+      ) %>%
         setNames(mvar_name)
 
       if (!mvar_name %in% x_names_vec_nolag) {
-        if (paste0("ln.",mvar_name) %in% x_names_vec_nolag) {
-
-          log_possible <- all(mvar_tibble[, mvar_euname, drop = TRUE] > 0)
-          # TODO record that log_possible chose asinh
-          if(log_possible){
-            mvar_tibble %>%
-              dplyr::mutate(dplyr::across(dplyr::all_of(mvar_euname), log, .names = "ln.{.col}")) %>%
-              dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
-            mvar_all.estimates.tibble %>%
-              dplyr::mutate(dplyr::across(dplyr::all_of(paste0(mvar_euname, ".all")), ~purrr::map(.,log), .names = "ln.{.col}")) %>%
-              dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname,".all"))) -> mvar_all.estimates.tibble
-          } else {
-            mvar_tibble %>%
-              dplyr::mutate(dplyr::across(dplyr::all_of(mvar_euname), asinh, .names = "ln.{.col}")) %>%
-              dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname))) -> mvar_tibble
-            mvar_all.estimates.tibble %>%
-              dplyr::mutate(dplyr::across(dplyr::all_of(paste0(mvar_euname, ".all")), ~purrr::map(.,asinh), .names = "ln.{.col}")) %>%
-              dplyr::select(dplyr::all_of(paste0("ln.",mvar_euname,".all"))) -> mvar_all.estimates.tibble
-          }
-        } else {
-          stop("Error occurred in adding missing/lower estimated variables (likely identities) to a subsequent/higher model. This is likely being caused by either log specification or lag specifiction. Check code.")
-        }
+        stop(
+          "Error occurred in adding lower estimated variable '",
+          mvar,
+          "' to module '",
+          recipe$dependent,
+          "'. The forecast recipe does not contain the expected transformed variable '",
+          mvar_name,
+          "'."
+        )
       }
 
 
@@ -210,13 +233,19 @@ forecast_setup_estimated_relationships <- function(model,
 
   # checking the data for nowcasted data --------
   initial_input_data <- model$processed_input_data %>%
-    tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
+    tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values")
+
+  for (variable in intersect(names(recipe$transformations), names(initial_input_data))) {
+    if (recipe$transformations[[variable]] %in% c("log", "asinh")) {
+      initial_input_data[[paste0("ln.", variable)]] <- transform_osem_values(
+        initial_input_data[[variable]],
+        recipe$transformations[[variable]]
+      )
+    }
+  }
+
+  initial_input_data <- initial_input_data %>%
     dplyr::mutate(
-      dplyr::across(-"time", .fns = ~ if (any(. <= 0, na.rm = TRUE)) {
-        asinh(.)
-      } else {
-        log(.)
-      }, .names = "ln.{.col}"),
       dplyr::across(-"time", list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
     )
 
@@ -261,16 +290,30 @@ forecast_setup_estimated_relationships <- function(model,
               !is.na(.data$values_nowcast) & is.na(.data$values) ~ .data$values_nowcast, TRUE ~ .data$values))
         } else {.}} %>%
 
-        # check if any of the values by na_item are below 0
-        dplyr::mutate(log_possible = all(.data$values > 0, na.rm = TRUE), .by = "na_item") %>%
-        dplyr::mutate(values_to_log = dplyr::case_when(.data$log_possible & !is.na(.data$values) & grepl("^ln.",.data$na_item) ~ .data$values,
-                                                       TRUE ~ NA)) %>%
-        # now we check if we need to log them or use asinh
-        dplyr::mutate(values = dplyr::case_when(!is.na(.data$values_to_log) ~ log(.data$values_to_log),
-                                                !.data$log_possible & !is.na(.data$values) & grepl("^ln.",.data$na_item) ~ asinh(.data$values),
-                                                TRUE ~ .data$values)) %>%
-
-        dplyr::select(-c("log_possible","values_to_log")) %>%
+        dplyr::mutate(
+          transformation = vapply(
+            .data$basename,
+            function(variable) {
+              if (variable %in% names(recipe$transformations)) {
+                recipe$transformations[[variable]]
+              } else {
+                "none"
+              }
+            },
+            character(1)
+          ),
+          values = purrr::pmap_dbl(
+            list(.data$values, .data$transformation, .data$na_item),
+            function(value, transformation, na_item) {
+              if (is.na(value) || !grepl("^ln\\.", na_item)) {
+                value
+              } else {
+                transform_osem_values(value, transformation)
+              }
+            }
+          )
+        ) %>%
+        dplyr::select(-"transformation") %>%
 
         dplyr::select("time", "na_item", new_values = "values") %>%
         tidyr::drop_na() -> values_to_replace
@@ -296,79 +339,28 @@ forecast_setup_estimated_relationships <- function(model,
                        dplyr::select("time", dplyr::any_of(x_names_vec_nolag))) %>%
     dplyr::distinct() -> intermed
 
-  # add the lagged x-variables
-  if(ncol(intermed) > 1){
-    to_be_added <- dplyr::tibble(.rows = nrow(intermed))
-    for (j in pred_dl_needed) {
-      if(j == 0){next}
-      intermed %>%
-        dplyr::transmute(dplyr::across(dplyr::all_of(gsub("L[0-9]+\\.","",j)), ~dplyr::lag(., n = as.numeric(stringr::str_extract(j, "[0-9]+"))))) %>%
-        setNames(j) %>%
-        dplyr::bind_cols(to_be_added, .) -> to_be_added
-    }
-    intermed <- dplyr::bind_cols(intermed, to_be_added)
-  }
+  term_data <- forecast_build_term_data(
+    state_data = intermed,
+    deterministic_data = current_pred_raw,
+    recipe = recipe
+  )
 
-  intermed %>%
-    dplyr::left_join(current_pred_raw %>%
-                       dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
-                                     dplyr::starts_with("iis"), dplyr::starts_with("sis"), dplyr::starts_with("tis")),
-                     by = "time") %>%
+  pred_df <- term_data %>%
+    utils::tail(n.ahead) %>%
+    dplyr::select(-"time")
 
-    # only retain the final n.ahead observations
-    dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
-
-    dplyr::select(-"time") %>%
-    dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) -> pred_df
-
-  # doing the same for all uncertainty samples -------
-
-  # if necessary, repeat creating the pred_df with all estimates
-  chk_any_listcols <- current_pred_raw_all %>%
-    dplyr::summarise_all(class) %>%
-    tidyr::gather("variable", "class") %>%
-    dplyr::mutate(chk = class == "list") %>%
-    dplyr::summarise(chk = any(.data$chk)) %>%
-    dplyr::pull("chk")
-
-  if(chk_any_listcols){
-    ## repeat the above with all
-
-    historical_estimation_data_w_nowcast %>%
-      dplyr::select("time", dplyr::all_of(x_names_vec_nolag)) %>%
-      dplyr::mutate(dplyr::across(dplyr::all_of(x_names_vec_nolag), ~as.list(.))) %>%
-
-      dplyr::bind_rows(current_pred_raw_all %>%
-                         dplyr::rename_with(dplyr::everything(), .fn = ~gsub(".all","",.)) %>%
-                         dplyr::mutate(dplyr::across(-"time", .fn = ~as.list(.))) %>%
-                         dplyr::select("time", dplyr::any_of(x_names_vec_nolag))) -> intermed.all
-
-
-    # same for .all: add the lagged x-variables
-    to_be_added.all <- dplyr::tibble(.rows = nrow(intermed.all))
-
-    for (j in pred_dl_needed) {
-      if(j == 0){next}
-      intermed.all %>%
-        dplyr::transmute(dplyr::across(dplyr::all_of(gsub("L[0-9]+\\.","",j)), ~dplyr::lag(., n = as.numeric(stringr::str_extract(j, "[0-9]+"))))) %>%
-        setNames(j) %>%
-        dplyr::bind_cols(to_be_added.all, .) -> to_be_added.all
-    }
-
-    dplyr::bind_cols(intermed.all, to_be_added.all) %>%
-      dplyr::left_join(current_pred_raw_all %>%
-                         dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
-                                       dplyr::starts_with("iis"), dplyr::starts_with("sis"), dplyr::starts_with("tis")),
-                       by = "time") %>%
-
-      # only retain the final n.ahead observations
-      dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
-
-      #tidyr::drop_na() %>%
-      dplyr::select(-"time") %>%
-      dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) %>%
-      return() -> pred_df.all
-  }
+  # Build one recipe-consistent regressor path per upstream uncertainty draw.
+  # The forecasting recursion consumes these paths in a vectorised matrix
+  # calculation; it does not call predict.isat once per path.
+  pred_df.all <- forecast_build_draw_term_data(
+    state_data = intermed,
+    deterministic_data = current_pred_raw,
+    deterministic_draw_data = current_pred_raw_all,
+    recipe = recipe,
+    n.ahead = n.ahead,
+    uncertainty_sample = uncertainty_sample
+  )
+  chk_any_listcols <- !is.null(pred_df.all)
 
 
   # Final output data -------------------------------------------------------
@@ -382,7 +374,7 @@ forecast_setup_estimated_relationships <- function(model,
                                    by = "time") %>%
 
                   # only retain the final n.ahead observations
-                  dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
+                  dplyr::slice_tail(n = n.ahead) %>%
 
                   # delete all columns that are just NA
                   dplyr::select(-dplyr::where(~all(is.na(.))))
@@ -397,7 +389,9 @@ forecast_setup_estimated_relationships <- function(model,
   out$chk_any_listcols <- chk_any_listcols
   out$current_pred_raw <- current_pred_raw
   out$current_pred_raw_all <- if(exists("current_pred_raw_all")){current_pred_raw_all}
-  out$pred_df.all <- if(exists("pred_df.all")){pred_df.all}
+  out$pred_df.all <- pred_df.all
+  out$state_data <- intermed
+  out$recipe <- recipe
   out$n.ahead <- n.ahead
 
   return(out)
