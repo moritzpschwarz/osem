@@ -75,7 +75,8 @@ estimate_module <- function(clean_data,
                             pretest_steps,
                             indicator_compression = TRUE,
                             quiet = FALSE,
-                            module) {
+                            module,
+                            transformation_map = NULL) {
   # Set-up ------------------------------------------------------------------
   log_opts <- use_logs
   level_x_vars_basename <- x_vars_basename
@@ -272,6 +273,7 @@ estimate_module <- function(clean_data,
     arch_pvalue = NA,
     isat_object = list(NA_complex_)
   )
+  design_term_specs <- list()
 
   for (i in 0:max.dl) {
     # Build model design -----------------------------------------------------
@@ -286,12 +288,14 @@ estimate_module <- function(clean_data,
       trend = trend,
       model_form = model_form,
       dl_order = i,
-      module = module
+      module = module,
+      transformation_map = transformation_map
     )
 
     yvar <- design$yvar
     y.name <- design$y.name
     xvars <- design$xvars
+    design_term_specs[[i + 1L]] <- design$term_spec
 
     if (i == 0) {
       xvars_initial <- xvars
@@ -525,6 +529,19 @@ estimate_module <- function(clean_data,
                    dep_var_basename = dep_var_basename,
                    x_vars_basename = x_vars_basename,
                    use_logs = use_logs,
+                   transformations = transformation_map,
+                   forecast_recipe = compile_forecast_recipe(
+                     model_object = final_model,
+                     model_form = model_form,
+                     dep_var_basename = dep_var_basename,
+                     x_vars_basename = x_vars_basename,
+                     use_logs = use_logs,
+                     transformations = transformation_map,
+                     term_specs = dplyr::bind_rows(design_term_specs),
+                     lag_only_vars = design$lag_only_vars
+                   ),
+                   # Retained for backwards compatibility. New forecasting code
+                   # uses the unambiguous model_form field below.
                    ardl_or_ecm = ifelse(model_form == "diff", "ecm", model_form),
                    ardl_or_ecm_requested = ardl_or_ecm,
                    ardl_or_ecm_selected = ecm_decision$selected,
