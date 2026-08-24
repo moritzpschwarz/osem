@@ -49,7 +49,8 @@ run_module <- function(
     ecm_pretest = "auto",
     ecm_unit_root_alpha = "5pct",
     ecm_coint_alpha = 0.05,
-    indicator_compression = TRUE) {
+    indicator_compression = TRUE,
+    transformation_overrides = NULL) {
 
   raw_data <- identify_module_data(module, classification, data)
 
@@ -73,7 +74,8 @@ run_module <- function(
       raw_data = raw_data, max.ar = max.ar, max.dl = max.dl, trend = trend,
       opts_df = opts_df,
       module = module,
-      use_logs = use_logs
+      use_logs = use_logs,
+      transformation_overrides = transformation_overrides
     )
     clean_df <- clean_data_output$df
     opts_df <- clean_data_output$opts_df
@@ -107,6 +109,7 @@ run_module <- function(
       pretest_steps = pretest_steps,
       quiet = quiet,
       module = module,
+      transformation_map = clean_data_output$transformations,
       indicator_compression = indicator_compression
     )
 
@@ -120,10 +123,14 @@ run_module <- function(
     if (!"ardl_or_ecm_selected" %in% names(opts_df)) {
       opts_df$ardl_or_ecm_selected <- NA_character_
     }
+    if (!"forecast_recipe" %in% names(opts_df)) {
+      opts_df$forecast_recipe <- vector(mode = "list", length = NROW(opts_df))
+    }
 
     opts_df$ecm_decision[opts_df$index == module$index] <- list(estimated_module$args$ecm_decision)
     opts_df$ardl_or_ecm_requested[opts_df$index == module$index] <- estimated_module$args$ardl_or_ecm_requested
     opts_df$ardl_or_ecm_selected[opts_df$index == module$index] <- estimated_module$args$ardl_or_ecm_selected
+    opts_df$forecast_recipe[opts_df$index == module$index] <- list(estimated_module$args$forecast_recipe)
 
     moduledata <- add_to_original_data(
       clean_data = clean_df,
@@ -150,7 +157,8 @@ run_module <- function(
       raw_data = raw_data, max.ar = max.ar, max.dl = max.dl, trend = trend,
       opts_df = opts_df,
       module = module,
-      use_logs = use_logs
+      use_logs = use_logs,
+      transformation_overrides = transformation_overrides
     )
     clean_df <- clean_data_output$df
     opts_df <- clean_data_output$opts_df
