@@ -52,6 +52,11 @@ forecast_module_estimated <- function(model,
     prediction_list[prediction_list$order == i, "data"] <- isat_fcst$final_i_data
     prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(central_estimate = list(isat_fcst$central_estimate))
     prediction_list[prediction_list$order == i, "all.estimates"] <- dplyr::tibble(all_estimates = list(isat_fcst$pred_draw_matrix))
+    if ("forecast.reestimation" %in% names(prediction_list)) {
+      prediction_list[prediction_list$order == i, "forecast.reestimation"] <- dplyr::tibble(
+        forecast.reestimation = list(isat_fcst$reestimation)
+      )
+    }
 
 
   }
