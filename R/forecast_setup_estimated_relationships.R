@@ -88,10 +88,62 @@ forecast_setup_estimated_relationships <- function(model,
 
       current_transformation <- recipe$transformations[[mvar]]
       upstream_transformation <- upstream_recipe$dependent_transformation
-      mvar_name <- paste0(
-        if (current_transformation %in% c("log", "asinh")) "ln." else "",
-        mvar_euname
-      )
+
+      # An upstream forecast can contain non-positive values even when the
+      # variable was positive during estimation. In that case, retain OSEM's
+      # existing forecast-time switch from log() to asinh(), but record it in
+      # the local forecast metadata. The estimated equation is not re-run.
+      upstream_future_values <- prediction_list %>%
+        dplyr::filter(.data$index == mvar_model_index) %>%
+        dplyr::pull("central.estimate") %>%
+        .[[1]] %>%
+        dplyr::select(-"time") %>%
+        dplyr::pull(1) %>%
+        inverse_transform_osem_values(upstream_transformation)
+
+      upstream_future_draws <- prediction_list %>%
+        dplyr::filter(.data$index == mvar_model_index) %>%
+        dplyr::pull("all.estimates") %>%
+        .[[1]]
+
+      if (!is.null(upstream_future_draws)) {
+        upstream_future_draws <- upstream_future_draws %>%
+          dplyr::select(-dplyr::any_of("time")) %>%
+          dplyr::mutate(
+            dplyr::across(
+              dplyr::everything(),
+              ~ inverse_transform_osem_values(., upstream_transformation)
+            )
+          ) %>%
+          unlist(use.names = FALSE)
+      }
+
+      if (
+        identical(current_transformation, "log") &&
+        any(c(upstream_future_values, upstream_future_draws) <= 0, na.rm = TRUE)
+      ) {
+        current_transformation <- "asinh"
+        recipe$forecast_transformations[[mvar]] <- current_transformation
+        recipe$transformations[[mvar]] <- current_transformation
+        recipe$transformation_adjustments <- dplyr::bind_rows(
+          recipe$transformation_adjustments,
+          dplyr::tibble(
+            variable = mvar,
+            estimation = "log",
+            forecasting = "asinh",
+            reason = "Non-positive values in an upstream forecast"
+          )
+        ) %>%
+          dplyr::distinct()
+      }
+
+      if (current_transformation %in% c("log", "asinh")) {
+        transformation_prefix <- "ln."
+      } else {
+        transformation_prefix <- ""
+      }
+
+      mvar_name <- paste0(transformation_prefix, mvar_euname)
 
       # get the uncertainty around it
       prediction_list %>%
