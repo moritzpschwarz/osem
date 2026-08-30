@@ -107,6 +107,7 @@ run_module <- function(
       pretest_steps = pretest_steps,
       quiet = quiet,
       module = module,
+      transformation_map = clean_data_output$transformations,
       indicator_compression = indicator_compression
     )
 

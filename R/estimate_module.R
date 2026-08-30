@@ -75,7 +75,8 @@ estimate_module <- function(clean_data,
                             pretest_steps,
                             indicator_compression = TRUE,
                             quiet = FALSE,
-                            module) {
+                            module,
+                            transformation_map) {
   # Set-up ------------------------------------------------------------------
   log_opts <- use_logs
   level_x_vars_basename <- x_vars_basename
@@ -393,7 +394,7 @@ estimate_module <- function(clean_data,
   # gets selection on the best model ----------------------------------------
   if(gets_selection){
 
-    keep <- paste0("^mc$|^ar[0-9]+$|^q_[0-9]+|",keep)
+    #keep <- paste0("^mc$|^ar[0-9]+$|^q_[0-9]+|",keep)
 
     # Keep handling ----------------------------------------------------------
     if(!is.null(keep)){

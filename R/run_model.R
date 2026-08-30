@@ -337,7 +337,8 @@ run_model <- function(specification,
         NULL
       },
       coint_deterministic = coint_deterministic,
-      coint_significance = coint_significance
+      coint_significance = coint_significance,
+      indicator_compression = indicator_compression
     )
 
     opts_df <- module_estimate$opts_df
@@ -363,6 +364,7 @@ run_model <- function(specification,
     save_to_disk = save_to_disk, present = present,
     trend = trend, max.ar = max.ar, max.dl = max.dl, use_logs = use_logs,
     ardl_or_ecm = ardl_or_ecm,
+    ecm_pretest = ecm_pretest,
     saturation = saturation,
     saturation.tpval = saturation.tpval,
     max.block.size = max.block.size,
