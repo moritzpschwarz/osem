@@ -1,4 +1,4 @@
-test_that("ARDL innovations enter once and propagate only through AR terms", {
+test_that("recursive response lags propagate innovations once", {
   object <- list(aux = list(y = 2))
   recipe <- list(
     response_scale = "level",
