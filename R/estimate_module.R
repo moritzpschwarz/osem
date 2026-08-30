@@ -126,16 +126,15 @@ estimate_module <- function(clean_data,
       # allowed to contain a deterministic trend. If trend = FALSE, then ECM-auto
       # treats trend-stationary variables conservatively as "uncertain".
       if (!trend) {
-
         integration_for_decision <- integration_for_decision %>%
           dplyr::mutate(
             order = dplyr::if_else(
-              .data$stationarity_type == "trend_stationary",
+              .data$stationarity_type %in% "trend_stationary",
               "uncertain",
               .data$order
             ),
             reason = dplyr::if_else(
-              .data$stationarity_type == "trend_stationary",
+              .data$stationarity_type %in% "trend_stationary",
               paste0(
                 .data$reason,
                 " Trend-stationary variable treated as uncertain because trend = FALSE."
