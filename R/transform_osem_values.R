@@ -7,7 +7,9 @@
 #'
 #' @keywords internal
 transform_osem_values <- function(x, transformation = "none") {
-  transformation <- if (is.na(transformation)) "none" else transformation
+  if (is.na(transformation)) {
+    transformation <- "none"
+  }
 
   switch(
     transformation,
@@ -27,7 +29,9 @@ transform_osem_values <- function(x, transformation = "none") {
 #'
 #' @keywords internal
 inverse_transform_osem_values <- function(x, transformation = "none") {
-  transformation <- if (is.na(transformation)) "none" else transformation
+  if (is.na(transformation)) {
+    transformation <- "none"
+  }
 
   switch(
     transformation,
