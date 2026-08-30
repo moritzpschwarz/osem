@@ -32,6 +32,19 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
     )
   }
 
+  # Keep the transformations used for estimation unchanged in the stored
+  # model. The local forecast map can differ if a future value makes log()
+  # impossible. This retains the existing OSEM forecasting behaviour without
+  # re-estimating the equation.
+  recipe$estimation_transformations <- recipe$transformations
+  recipe$forecast_transformations <- recipe$transformations
+  recipe$transformation_adjustments <- dplyr::tibble(
+    variable = character(),
+    estimation = character(),
+    forecasting = character(),
+    reason = character()
+  )
+
   x_vars_basename <- recipe$regressors
   y_vars_basename <- recipe$dependent
   ylog <- recipe$dependent_transformation %in% c("log", "asinh")
@@ -64,10 +77,13 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
     x_names_vec_nolag <- vapply(
       x_vars_basename,
       function(variable) {
-        paste0(
-          if (recipe$transformations[[variable]] %in% c("log", "asinh")) "ln." else "",
-          variable
-        )
+        if (recipe$transformations[[variable]] %in% c("log", "asinh")) {
+          prefix <- "ln."
+        } else {
+          prefix <- ""
+        }
+
+        return(paste0(prefix, variable))
       },
       character(1)
     )
@@ -139,13 +155,57 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
       dplyr::any_of(names(data_obj))
     ) %>%
     dplyr::select(-dplyr::any_of(q_pred_todrop)) %>%
-    {if (exists("trend_pred")) dplyr::bind_cols(., trend_pred) else .} %>%
-    {if (exists("iis_pred")) dplyr::bind_cols(., iis_pred) else .} %>%
-    {if (exists("sis_pred")) dplyr::bind_cols(., sis_pred) else .} %>%
-    {if (exists("tis_pred")) dplyr::bind_cols(., tis_pred) else .}
+    {
+      if (exists("trend_pred")) {
+        dplyr::bind_cols(., trend_pred)
+      } else {
+        .
+      }
+    } %>%
+    {
+      if (exists("iis_pred")) {
+        dplyr::bind_cols(., iis_pred)
+      } else {
+        .
+      }
+    } %>%
+    {
+      if (exists("sis_pred")) {
+        dplyr::bind_cols(., sis_pred)
+      } else {
+        .
+      }
+    } %>%
+    {
+      if (exists("tis_pred")) {
+        dplyr::bind_cols(., tis_pred)
+      } else {
+        .
+      }
+    }
 
   for (variable in x_vars_basename) {
-    transformation <- recipe$transformations[[variable]]
+    transformation <- recipe$forecast_transformations[[variable]]
+
+    if (
+      identical(transformation, "log") &&
+      variable %in% names(current_pred_raw) &&
+      any(current_pred_raw[[variable]] <= 0, na.rm = TRUE)
+    ) {
+      transformation <- "asinh"
+      recipe$forecast_transformations[[variable]] <- transformation
+      recipe$transformations[[variable]] <- transformation
+      recipe$transformation_adjustments <- dplyr::bind_rows(
+        recipe$transformation_adjustments,
+        dplyr::tibble(
+          variable = variable,
+          estimation = "log",
+          forecasting = "asinh",
+          reason = "Non-positive values in the forecast period"
+        )
+      )
+    }
+
     if (
       transformation %in% c("log", "asinh") &&
       variable %in% names(current_pred_raw)
@@ -176,4 +236,3 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
     recipe = recipe
   )
 }
-
