@@ -33,7 +33,12 @@ forecast_recursive_isat <- function(isat_obj,
   lagged_value <- function(history, forecast, horizon, lag) {
     combined <- c(history, forecast[seq_len(max(0L, horizon - 1L))])
     position <- length(combined) - lag + 1L
-    if (position < 1L) NA_real_ else combined[[position]]
+
+    if (position < 1L) {
+      return(NA_real_)
+    } else {
+      return(combined[[position]])
+    }
   }
 
   lagged_draw <- function(history, forecast, horizon, lag) {
@@ -42,10 +47,20 @@ forecast_recursive_isat <- function(isat_obj,
       nrow = length(history),
       ncol = uncertainty_sample
     )
-    prior <- if (horizon > 1L) forecast[seq_len(horizon - 1L), , drop = FALSE] else NULL
+    if (horizon > 1L) {
+      prior <- forecast[seq_len(horizon - 1L), , drop = FALSE]
+    } else {
+      prior <- NULL
+    }
+
     combined <- rbind(history_matrix, prior)
     position <- NROW(combined) - lag + 1L
-    if (position < 1L) rep(NA_real_, uncertainty_sample) else combined[position, ]
+
+    if (position < 1L) {
+      return(rep(NA_real_, uncertainty_sample))
+    } else {
+      return(combined[position, ])
+    }
   }
 
   for (horizon in seq_len(n.ahead)) {
