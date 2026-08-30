@@ -624,7 +624,8 @@ estimate_candidate_as_isat <- function(model_object,
     sis = FALSE,
     tis = FALSE,
     uis = list(dummy),
-    print.searchinfo = FALSE
+    print.searchinfo = FALSE,
+    additional.block.search = TRUE
   )
 
   candidate_model$ISnames <- grep("^(iis|tis|sis)",Xnames, value = TRUE)
