@@ -120,7 +120,11 @@ forecast_model <- function(model,
     dep_var = model$module_order$dependent,
     predict.isat_object = list(NA_complex_),
     data = list(NA_complex_),
-    central.estimate = list(NA_complex_)
+    central.estimate = list(NA_complex_),
+    forecast.metadata = vector(
+      mode = "list",
+      length = NROW(model$module_order)
+    )
   )
 
   ## 2a. Start of main loop ------------------------------------------------
