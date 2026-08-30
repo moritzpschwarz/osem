@@ -172,7 +172,8 @@ estimate_module <- function(clean_data,
           use_logs = use_logs,
           trend = trend,
           module = module,
-          alpha = ecm_coint_alpha
+          alpha = ecm_coint_alpha,
+          transformation_map = transformation_map
         )
 
         ecm_decision$coint_test <- coint_test
@@ -222,7 +223,8 @@ estimate_module <- function(clean_data,
             use_logs = use_logs,
             trend = trend,
             module = module,
-            alpha = ecm_coint_alpha
+            alpha = ecm_coint_alpha,
+            transformation_map = transformation_map
           )
 
           ecm_decision$coint_test <- coint_test
