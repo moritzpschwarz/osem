@@ -48,6 +48,8 @@
 #' capture the same outlier and structural break dynamics. Default is TRUE. Indicator compression
 #' is only applied to the best model selected based on BIC and diagnostic tests,
 #' not to all estimated models.
+#' @param transformation_map A named character vector containing the
+#' transformation applied to each model variable during data preparation.
 #' @inheritParams forecast_model
 #' @inheritParams run_module
 #' @inheritParams run_model

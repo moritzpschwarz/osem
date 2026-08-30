@@ -6,7 +6,7 @@ build_module_design <- function(clean_data,
                                 model_form = c("ardl", "ecm", "diff"),
                                 dl_order = 0,
                                 module,
-                                transformation_map = NULL) {
+                                transformation_map) {
 
   # Read variables that may only enter with a lag ----------------------------
   parse_lag_only_vars <- function(module) {
