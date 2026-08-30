@@ -49,8 +49,7 @@ run_module <- function(
     ecm_pretest = "auto",
     ecm_unit_root_alpha = "5pct",
     ecm_coint_alpha = 0.05,
-    indicator_compression = TRUE,
-    transformation_overrides = NULL) {
+    indicator_compression = TRUE) {
 
   raw_data <- identify_module_data(module, classification, data)
 
@@ -74,8 +73,7 @@ run_module <- function(
       raw_data = raw_data, max.ar = max.ar, max.dl = max.dl, trend = trend,
       opts_df = opts_df,
       module = module,
-      use_logs = use_logs,
-      transformation_overrides = transformation_overrides
+      use_logs = use_logs
     )
     clean_df <- clean_data_output$df
     opts_df <- clean_data_output$opts_df
@@ -157,8 +155,7 @@ run_module <- function(
       raw_data = raw_data, max.ar = max.ar, max.dl = max.dl, trend = trend,
       opts_df = opts_df,
       module = module,
-      use_logs = use_logs,
-      transformation_overrides = transformation_overrides
+      use_logs = use_logs
     )
     clean_df <- clean_data_output$df
     opts_df <- clean_data_output$opts_df
