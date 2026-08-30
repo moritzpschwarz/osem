@@ -9,6 +9,10 @@ compile_forecast_recipe <- function(model_object,
                                     transformations,
                                     term_specs,
                                     lag_only_vars = character(0)) {
+
+  # Identify the terms that survived model selection ------------------------
+  # The design metadata initially describes all candidate terms. Forecasting
+  # only needs the terms retained in the final model.
   selected_terms <- names(stats::coef(model_object))
   if (is.null(selected_terms)) {
     selected_terms <- row.names(model_object$mean.results)
@@ -44,6 +48,10 @@ compile_forecast_recipe <- function(model_object,
   coefficients <- stats::coef(model_object)
   term_specs$coefficient <- as.numeric(coefficients[term_specs$term])
 
+  # Determine the scale of the dependent variable ---------------------------
+  # transformations records the transformation selected when clean_data() was
+  # called. response_scale records whether the fitted equation predicts that
+  # transformed level or its first difference.
   dependent_transformation <- if (
     !is.null(transformations) &&
     dep_var_basename %in% names(transformations) &&
@@ -54,19 +62,31 @@ compile_forecast_recipe <- function(model_object,
     "none"
   }
 
+  if (model_form == "ardl") {
+    response_scale <- "level"
+  } else {
+    response_scale <- "difference"
+  }
+
+  if (dependent_transformation %in% c("log", "asinh")) {
+    transformed_level_name <- paste0("ln.", dep_var_basename)
+  } else {
+    transformed_level_name <- dep_var_basename
+  }
+
+  # Store all information required to reproduce the model matrix ------------
+  # This metadata avoids reconstructing the meaning of selected terms from
+  # regular expressions during forecasting.
   list(
     version = 1L,
     model_form = model_form,
-    response_scale = if (model_form == "ardl") "level" else "difference",
+    response_scale = response_scale,
     dependent = dep_var_basename,
     regressors = x_vars_basename,
     transformations = transformations,
     dependent_transformation = dependent_transformation,
     response_name = model_object$aux$y.name,
-    transformed_level_name = paste0(
-      if (dependent_transformation %in% c("log", "asinh")) "ln." else "",
-      dep_var_basename
-    ),
+    transformed_level_name = transformed_level_name,
     lag_only_vars = lag_only_vars,
     selected_terms = term_specs,
     mXnames = model_object$aux$mXnames,
