@@ -54,10 +54,27 @@ test_that("Error messages for saturation, selection",{
                                  input = testdata,
                                  primary_source = "local",
                                  present = FALSE,
-                                 quiet = TRUE, saturation = c("SIS","TIS")))
+                                 quiet = TRUE,
+                                 saturation = c("SIS","TIS"),
+                                 indicator_compression = FALSE))
 
   expect_equal(nrow(mod$module_order), 1)
   expect_equal(mod$module_collection$model[[1]]$ISnames, c("sis2007-10-01", "sis2008-01-01"))
+
+
+  # now with indicator compression
+  expect_silent(mod <- run_model(specification = specification,
+                                 dictionary = dict,
+                                 input = testdata,
+                                 primary_source = "local",
+                                 present = FALSE,
+                                 quiet = TRUE,
+                                 saturation = c("SIS","TIS"),
+                                 indicator_compression = TRUE))
+
+  expect_equal(nrow(mod$module_order), 1)
+  expect_equal(mod$module_collection$model[[1]]$ISnames, c("iis2007-10-01"))
+
 
 })
 
