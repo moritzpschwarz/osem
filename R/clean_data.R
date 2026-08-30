@@ -22,8 +22,7 @@ clean_data <- function(raw_data,
                        trend = TRUE,
                        opts_df,
                        module,
-                       use_logs,
-                       transformation_overrides = NULL){
+                       use_logs){
   raw_data %>%
     dplyr::select("na_item", "time", "values") %>%
     tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
@@ -35,7 +34,13 @@ clean_data <- function(raw_data,
   transformations <- stats::setNames(
     vapply(
       raw_data_processed[variable_names],
-      function(x) if (any(x <= 0, na.rm = TRUE)) "asinh" else "log",
+      function(x) {
+        if (any(x <= 0, na.rm = TRUE)) {
+          return("asinh")
+        } else {
+          return("log")
+        }
+      },
       character(1)
     ),
     variable_names
@@ -48,32 +53,6 @@ clean_data <- function(raw_data,
     x = setdiff(variable_names, depvars),
     both = variable_names
   )
-
-  if (!is.null(transformation_overrides)) {
-    if (is.list(transformation_overrides)) {
-      transformation_overrides <- unlist(transformation_overrides, use.names = TRUE)
-    }
-    if (is.null(names(transformation_overrides)) || any(names(transformation_overrides) == "")) {
-      stop("'transformation_overrides' must be a named character vector.")
-    }
-    if (!all(transformation_overrides %in% c("none", "log", "asinh"))) {
-      stop("Transformation overrides must be one of 'none', 'log', or 'asinh'.")
-    }
-    unknown_overrides <- setdiff(names(transformation_overrides), variable_names)
-    if (length(unknown_overrides) > 0) {
-      stop(
-        "Unknown variable(s) in 'transformation_overrides': ",
-        paste(unknown_overrides, collapse = ", "),
-        "."
-      )
-    }
-
-    transformations[names(transformation_overrides)] <- transformation_overrides
-    transformed_vars <- union(
-      setdiff(transformed_vars, names(transformation_overrides)[transformation_overrides == "none"]),
-      names(transformation_overrides)[transformation_overrides != "none"]
-    )
-  }
 
   log_opts_values <- stats::setNames(rep(NA_character_, length(variable_names)), variable_names)
   log_opts_values[transformed_vars] <- transformations[transformed_vars]
