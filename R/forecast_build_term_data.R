@@ -5,10 +5,13 @@ forecast_build_term_data <- function(state_data,
                                      deterministic_data,
                                      recipe) {
   transformed_name <- function(variable) {
-    paste0(
-      if (recipe$transformations[[variable]] %in% c("log", "asinh")) "ln." else "",
-      variable
-    )
+    if (recipe$transformations[[variable]] %in% c("log", "asinh")) {
+      prefix <- "ln."
+    } else {
+      prefix <- ""
+    }
+
+    return(paste0(prefix, variable))
   }
 
   out <- state_data %>%
