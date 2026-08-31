@@ -121,9 +121,6 @@ run_module <- function(
     if (!"ardl_or_ecm_selected" %in% names(opts_df)) {
       opts_df$ardl_or_ecm_selected <- NA_character_
     }
-    if (!"forecast_recipe" %in% names(opts_df)) {
-      opts_df$forecast_recipe <- vector(mode = "list", length = NROW(opts_df))
-    }
 
     opts_df$ecm_decision[opts_df$index == module$index] <- list(estimated_module$args$ecm_decision)
     opts_df$ardl_or_ecm_requested[opts_df$index == module$index] <- estimated_module$args$ardl_or_ecm_requested
