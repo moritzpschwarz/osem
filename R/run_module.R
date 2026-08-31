@@ -125,7 +125,6 @@ run_module <- function(
     opts_df$ecm_decision[opts_df$index == module$index] <- list(estimated_module$args$ecm_decision)
     opts_df$ardl_or_ecm_requested[opts_df$index == module$index] <- estimated_module$args$ardl_or_ecm_requested
     opts_df$ardl_or_ecm_selected[opts_df$index == module$index] <- estimated_module$args$ardl_or_ecm_selected
-    opts_df$forecast_recipe[opts_df$index == module$index] <- list(estimated_module$args$forecast_recipe)
 
     moduledata <- add_to_original_data(
       clean_data = clean_df,
