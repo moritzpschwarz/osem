@@ -48,6 +48,8 @@
 #' capture the same outlier and structural break dynamics. Default is TRUE. Indicator compression
 #' is only applied to the best model selected based on BIC and diagnostic tests,
 #' not to all estimated models.
+#' @param transformation_map A named character vector containing the
+#' transformation applied to each model variable during data preparation.
 #' @inheritParams forecast_model
 #' @inheritParams run_module
 #' @inheritParams run_model
@@ -76,7 +78,7 @@ estimate_module <- function(clean_data,
                             indicator_compression = TRUE,
                             quiet = FALSE,
                             module,
-                            transformation_map = NULL) {
+                            transformation_map) {
   # Set-up ------------------------------------------------------------------
   log_opts <- use_logs
   level_x_vars_basename <- x_vars_basename
@@ -127,16 +129,15 @@ estimate_module <- function(clean_data,
       # allowed to contain a deterministic trend. If trend = FALSE, then ECM-auto
       # treats trend-stationary variables conservatively as "uncertain".
       if (!trend) {
-
         integration_for_decision <- integration_for_decision %>%
           dplyr::mutate(
             order = dplyr::if_else(
-              .data$stationarity_type == "trend_stationary",
+              .data$stationarity_type %in% "trend_stationary",
               "uncertain",
               .data$order
             ),
             reason = dplyr::if_else(
-              .data$stationarity_type == "trend_stationary",
+              .data$stationarity_type %in% "trend_stationary",
               paste0(
                 .data$reason,
                 " Trend-stationary variable treated as uncertain because trend = FALSE."
@@ -171,7 +172,8 @@ estimate_module <- function(clean_data,
           use_logs = use_logs,
           trend = trend,
           module = module,
-          alpha = ecm_coint_alpha
+          alpha = ecm_coint_alpha,
+          transformation_map = transformation_map
         )
 
         ecm_decision$coint_test <- coint_test
@@ -221,7 +223,8 @@ estimate_module <- function(clean_data,
             use_logs = use_logs,
             trend = trend,
             module = module,
-            alpha = ecm_coint_alpha
+            alpha = ecm_coint_alpha,
+            transformation_map = transformation_map
           )
 
           ecm_decision$coint_test <- coint_test
@@ -398,7 +401,7 @@ estimate_module <- function(clean_data,
   # gets selection on the best model ----------------------------------------
   if(gets_selection){
 
-    keep <- paste0("^mc$|^ar[0-9]+$|^q_[0-9]+|",keep)
+    #keep <- paste0("^mc$|^ar[0-9]+$|^q_[0-9]+|",keep)
 
     # Keep handling ----------------------------------------------------------
     if(!is.null(keep)){

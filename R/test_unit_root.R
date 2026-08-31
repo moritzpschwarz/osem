@@ -31,6 +31,7 @@ test_unit_roots <- function(x, max.ar, selectlags = c("Fixed", "AIC", "BIC")) {
 #' \code{$decision}.
 #'
 decide_unit_roots <- function(urtest, alpha = c("1pct", "5pct", "10pct")) {
+
   # validate inputs
   alpha <- match.arg(alpha)
   alpha_numeric <- switch(alpha,
@@ -44,27 +45,57 @@ decide_unit_roots <- function(urtest, alpha = c("1pct", "5pct", "10pct")) {
 
   # unit root test in intercept+trend model
   case <- "1a"
-  reject_ur <- urtest$trend@teststat["statistic", "tau3"] < urtest$trend@cval["tau3", alpha]
-  if (!reject_ur) { # test whether trend was incorrectly included
-    # in future, could implement test for a2 = 0 conditional on gamma = 0
-    # test jointly gamma = a2 = 0 (phi3)
-    trend_sign <- urtest$trend@teststat["statistic", "phi3"] > urtest$trend@cval["phi3", alpha]
-    if (trend_sign) { # assume trend significant, test gamma = 0 using std. normal
-      case <- "1c"
-      reject_ur <- urtest$trend@teststat["statistic", "tau3"] < stats::qnorm(p = 1 - alpha_numeric, lower.tail = FALSE)
-    } else { # trend was insignificant, consider simpler model
+  reject_ur <- urtest$trend@teststat["statistic", "tau3"] <
+    urtest$trend@cval["tau3", alpha]
+
+  if (reject_ur) {
+
+    # Given stationarity, test whether the deterministic trend is needed
+    trend_sign <- urtest$trend@testreg$coefficients[
+      "tt", "Pr(>|t|)"
+    ] < alpha_numeric
+
+    if (!trend_sign) {
+
+      # Re-estimate/test using the simpler constant-only specification
       case <- "2a"
-      reject_ur <- urtest$drift@teststat["statistic", "tau2"] < urtest$drift@cval["tau2", alpha]
-      if (!reject_ur) { # test whether drift was incorrectly included
-        # in future, could implement test for a0 = 0 conditional on gamma = 0
-        # test jointly gamma = a0 = 0 (phi1)
-        cons_sign <- urtest$drift@teststat["statistic", "phi1"] > urtest$drift@cval["phi1", alpha]
-        if (cons_sign) { # assume constant significant, test gamma = 0 using std. normal
+      reject_ur <- urtest$drift@teststat["statistic", "tau2"] <
+        urtest$drift@cval["tau2", alpha]
+    }
+
+  } else {
+
+    # Existing unit-root branch
+    trend_sign <- urtest$trend@teststat["statistic", "phi3"] >
+      urtest$trend@cval["phi3", alpha]
+
+    if (trend_sign) {
+      case <- "1c"
+      reject_ur <- urtest$trend@teststat["statistic", "tau3"] <
+        stats::qnorm(
+          p = 1 - alpha_numeric,
+          lower.tail = FALSE
+        )
+    } else {
+      case <- "2a"
+      reject_ur <- urtest$drift@teststat["statistic", "tau2"] <
+        urtest$drift@cval["tau2", alpha]
+
+      if (!reject_ur) {
+        cons_sign <- urtest$drift@teststat["statistic", "phi1"] >
+          urtest$drift@cval["phi1", alpha]
+
+        if (cons_sign) {
           case <- "2c"
-          reject_ur <- urtest$drift@teststat["statistic", "tau2"] < stats::qnorm(p = 1 - alpha_numeric, lower.tail = FALSE)
-        } else { # constant was insignificant, consider simpler model
+          reject_ur <- urtest$drift@teststat["statistic", "tau2"] <
+            stats::qnorm(
+              p = 1 - alpha_numeric,
+              lower.tail = FALSE
+            )
+        } else {
           case <- "3a"
-          reject_ur <- urtest$none@teststat["statistic", "tau1"] < urtest$none@cval["tau1", alpha]
+          reject_ur <- urtest$none@teststat["statistic", "tau1"] <
+            urtest$none@cval["tau1", alpha]
         }
       }
     }
@@ -85,8 +116,7 @@ decide_unit_roots <- function(urtest, alpha = c("1pct", "5pct", "10pct")) {
 
         stationarity_type = dplyr::case_when(
           reject_ur & case %in% c("1a", "1c") ~ "trend_stationary",
-          reject_ur & case %in% c("2a", "2c") ~ "drift_stationary",
-          reject_ur & case %in% c("3a") ~ "level_stationary",
+          reject_ur & case %in% c("2a", "2c", "3a") ~ "level_stationary",
           TRUE ~ NA_character_
         )
       )

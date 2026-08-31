@@ -25,7 +25,8 @@ estimate_module(
   pretest_steps,
   indicator_compression = TRUE,
   quiet = FALSE,
-  module
+  module,
+  transformation_map
 )
 }
 \arguments{
@@ -109,6 +110,9 @@ not to all estimated models.}
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 
 \item{module}{A row of the specification table.}
+
+\item{transformation_map}{A named character vector containing the
+transformation applied to each model variable during data preparation.}
 }
 \value{
 A list containing all estimated models, with the model with the smallest BIC under 'best_model'.

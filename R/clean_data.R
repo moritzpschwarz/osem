@@ -31,7 +31,7 @@ clean_data <- function(raw_data,
   depvars <- trimws(unlist(strsplit(module$dependent, ",")))
   variable_names <- setdiff(names(raw_data_processed), "time")
 
-  transformations <- stats::setNames(
+  available_transformations <- stats::setNames(
     vapply(
       raw_data_processed[variable_names],
       function(x) {
@@ -55,9 +55,9 @@ clean_data <- function(raw_data,
   )
 
   log_opts_values <- stats::setNames(rep(NA_character_, length(variable_names)), variable_names)
-  log_opts_values[transformed_vars] <- transformations[transformed_vars]
+  log_opts_values[transformed_vars] <- available_transformations[transformed_vars]
   model_transformations <- stats::setNames(rep("none", length(variable_names)), variable_names)
-  model_transformations[transformed_vars] <- transformations[transformed_vars]
+  model_transformations[transformed_vars] <- available_transformations[transformed_vars]
 
   log_opts_new <- dplyr::bind_cols(
     module,
@@ -76,7 +76,7 @@ clean_data <- function(raw_data,
   for (variable in variable_names) {
     intermed[[paste0("ln.", variable)]] <- transform_osem_values(
       intermed[[variable]],
-      transformations[[variable]]
+      available_transformations[[variable]]
     )
   }
 
