@@ -5,168 +5,215 @@
 #'
 forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
 
-  # get isat obj
-  model$module_collection %>%
-    dplyr::filter(.data$order == i) %>%
-    dplyr::pull(.data$model) %>% .[[1]] -> isat_obj
+  module_row <- model$module_collection %>%
+    dplyr::filter(.data$order == i)
 
+  isat_obj <- module_row %>%
+    dplyr::pull(.data$model) %>%
+    .[[1]]
 
-  # extract isat object
-  if(inherits(isat_obj,what = "isat")){
+  if (!inherits(isat_obj, "isat")) {
+    stop("Not dealing with an isat object - potentially adjust for arx")
+  }
 
-    # get data obj (that is the data that was used in the estimation)
-    model$module_collection %>%
-      dplyr::filter(.data$order == i) %>%
-      dplyr::pull(.data$dataset) %>% .[[1]] -> data_obj
+  # get data obj (that is the data that was used in the estimation)
+  data_obj <- module_row %>%
+    dplyr::pull(.data$dataset) %>%
+    .[[1]]
 
-    # determine ARDL or ECM
-    is_ardl <- is.null(model$args$ardl_or_ecm) | identical(model$args$ardl_or_ecm,"ARDL")
+  module_args <- module_row %>%
+    dplyr::pull(.data$model.args) %>%
+    .[[1]]
 
-    # determine log y
-    ylog <- model$module_collection %>%
-      dplyr::filter(.data$order == i) %>%
-      dplyr::pull(.data$model.args) %>%
-      .[[1]] %>%
-      .$use_logs %in% c("both","y")
+  recipe <- module_args$forecast_recipe
+  if (is.null(recipe)) {
+    stop(
+      "The estimated module does not contain a forecast recipe. ",
+      "Re-estimate the OSEM model before forecasting."
+    )
+  }
 
-    # determine log x
-    xlog <- model$module_collection %>%
-      dplyr::filter(.data$order == i) %>%
-      dplyr::pull(.data$model.args) %>%
-      .[[1]] %>%
-      .$use_logs %in% c("both","x")
+  # Keep the transformations used for estimation unchanged in the stored
+  # model. The local forecast map can differ if a future value makes log()
+  # impossible. This retains the existing OSEM forecasting behaviour without
+  # re-estimating the equation.
+  recipe$estimation_transformations <- recipe$transformations
+  recipe$forecast_transformations <- recipe$transformations
+  recipe$transformation_adjustments <- dplyr::tibble(
+    variable = character(),
+    estimation = character(),
+    forecasting = character(),
+    reason = character()
+  )
 
-    # determine x vars
-    x_vars_basename <- model$module_collection %>%
-      dplyr::filter(.data$order == i) %>%
-      dplyr::pull(.data$model.args) %>%
-      .[[1]] %>%
-      .$x_vars_basename
+  x_vars_basename <- recipe$regressors
+  y_vars_basename <- recipe$dependent
+  ylog <- recipe$dependent_transformation %in% c("log", "asinh")
+  x_transformations <- recipe$transformations[x_vars_basename]
+  xlog <- any(x_transformations %in% c("log", "asinh"))
+  is_ardl <- identical(recipe$model_form, "ardl")
 
-    y_vars_basename <- model$module_collection %>%
-      dplyr::filter(.data$order == i) %>%
-      dplyr::pull(.data$model.args) %>%
-      .[[1]] %>%
-      .$dep_var_basename
+  # check quarterly dummies to drop
+  q_pred_todrop <- c("q_1", "q_2", "q_3", "q_4")[!c("q_1", "q_2", "q_3", "q_4") %in% colnames(isat_obj$aux$mX)]
 
-    # check quarterly dummies to drop
-    q_pred_todrop <- c("q_1","q_2","q_3","q_4")[!c("q_1","q_2","q_3","q_4") %in% colnames(isat_obj$aux$mX)]
+  mconst <- "mconst" %in% colnames(isat_obj$aux$mX)
 
-    # check if mconst is used
-    if ("mconst" %in% colnames(isat_obj$aux$mX)) {
-      mconst <- TRUE
-    } else {
-      mconst <- FALSE
-    }
+  pred_ar_needed <- recipe$selected_terms$term[
+    recipe$selected_terms$role == "response_lag"
+  ]
+  pred_dl_needed <- recipe$selected_terms$term[
+    recipe$selected_terms$lag > 0L &
+      recipe$selected_terms$role %in% c(
+        "dependent_level",
+        "regressor_level",
+        "regressor_difference"
+      )
+  ]
 
-    # identify any ar terms in the estimated data
-    pred_ar_needed <- colnames(isat_obj$aux$mX)[grepl("ar[0-9]+",colnames(isat_obj$aux$mX))]
-    # identify any dl terms in the estimated data
-    pred_dl_needed <- colnames(isat_obj$aux$mX)[grepl("^L[0-9]+",colnames(isat_obj$aux$mX))]
+  ar_vec <- c(0L, recipe$ar_lags)
+  y_names_vec <- recipe$transformed_level_name
 
-    # this condition checks whether there are any ar terms that need to be created
-    if (!is.null(pred_ar_needed) & !identical(character(0),pred_ar_needed)) {
+  if (length(x_vars_basename) > 0) {
+    x_names_vec_nolag <- vapply(
+      x_vars_basename,
+      function(variable) {
+        if (recipe$transformations[[variable]] %in% c("log", "asinh")) {
+          prefix <- "ln."
+        } else {
+          prefix <- ""
+        }
+        return(paste0(prefix, variable))
+      },
+      character(1)
+    )
+    x_names_vec <- c(x_names_vec_nolag, pred_dl_needed)
+  } else {
+    x_names_vec <- NULL
+    x_names_vec_nolag <- NULL
+  }
 
-      # if we need AR terms, the following loop creates the names of those variables (incl. considering whether they are logged)
-      ar_vec <- 0:max(as.numeric(gsub("ar","",pred_ar_needed)))
-      y_names_vec <- c()
-      for (ar in ar_vec) {
-        # ar = 0
-        y_names_vec <- c(y_names_vec,paste0(paste0(ifelse(ar == 0,"",paste0("L",ar,"."))),ifelse(ylog,"ln.",""),y_vars_basename))
-      }
-    } else {
-      # if we do not need any AR terms then we simply use the standard name (and add ln. if necessary)
-      y_names_vec <- paste0(ifelse(ylog,"ln.",""),y_vars_basename)
-      ar_vec <- 0
-    }
+  isat_dates <- gets::isatdates(isat_obj)
 
-    # TODO: check whether the AR vector is the correct one for the x variables
-    if (!identical(character(0),x_vars_basename)) {
-      x_names_vec_nolag <- paste0(ifelse(xlog,"ln.",""),x_vars_basename)
-      x_names_vec <- c(x_names_vec_nolag, pred_dl_needed)
-    } else {
-      x_names_vec <- NULL
-      x_names_vec_nolag <- NULL
-    }
+  # get iis dummies
+  if (!is.null(isat_dates$iis)) {
+    iis_pred <- matrix(
+      0,
+      nrow = nrow(exog_df_ready),
+      ncol = nrow(isat_dates$iis),
+      dimnames = list(NULL, isat_dates$iis$breaks)
+    ) %>%
+      dplyr::as_tibble()
+  }
 
+  # get sis dummies
+  if (!is.null(isat_dates$sis)) {
+    sis_pred <- matrix(
+      1,
+      nrow = nrow(exog_df_ready),
+      ncol = nrow(isat_dates$sis),
+      dimnames = list(NULL, isat_dates$sis$breaks)
+    ) %>%
+      dplyr::as_tibble()
+  }
 
-    # get iis dummies
-    if (!is.null(gets::isatdates(isat_obj)$iis)) {
-      iis_pred <- matrix(0,
-                         nrow = nrow(exog_df_ready),
-                         ncol = nrow(gets::isatdates(isat_obj)$iis),
-                         dimnames  = list(NULL,
-                                          gets::isatdates(isat_obj)$iis$breaks)) %>%
-        dplyr::as_tibble()
-    }
+  # get tis dummies
+  if (!is.null(isat_dates$tis)) {
+    tis_indices <- length(isat_obj$aux$y.index) + seq_len(n.ahead)
 
-    # get sis dummies
-    if (!is.null(gets::isatdates(isat_obj)$sis)) {
-      sis_pred <- matrix(1,
-                         nrow = nrow(exog_df_ready),
-                         ncol = nrow(gets::isatdates(isat_obj)$sis),
-                         dimnames  = list(NULL,
-                                          gets::isatdates(isat_obj)$sis$breaks)) %>%
-        dplyr::as_tibble()
-    }
+    tis_pred <- dplyr::tibble(
+      breaks = isat_dates$tis[, "index"],
+      name = isat_dates$tis[, "breaks"],
+      vals_ahead = list(tis_indices)
+    ) %>%
+      dplyr::mutate(
+        value = purrr::map2(
+          .x = .data$breaks,
+          .y = .data$vals_ahead,
+          .f = function(x,y){y - x})
+      ) %>%
+      tidyr::unnest("value") %>%
+      dplyr::mutate(index = seq_len(dplyr::n()), .by = "name") %>%
+      dplyr::select("index","name", "value") %>%
 
-    # get tis dummies
-    if (!is.null(gets::isatdates(isat_obj)$tis)) {
+      tidyr::pivot_wider(
+        names_from = "name",
+        values_from = "value",
+        id_cols = "index"
+      ) %>%
+      dplyr::select(-"index")
+  }
 
-      tis_indices <- length(isat_obj$aux$y.index) + 1:n.ahead
+  if ("trend" %in% names(stats::coef(isat_obj))) {
+    trend_pred <- dplyr::tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead))
+  }
 
-      tis_pred <- dplyr::tibble(breaks = gets::isatdates(isat_obj)$tis[,"index"],
-                    name = gets::isatdates(isat_obj)$tis[,"breaks"],
-                    vals_ahead = list(tis_indices)) %>%
-        dplyr::mutate(value = purrr::map2(.x = .data$breaks, .y = .data$vals_ahead, .f = function(x,y){y - x})) %>%
+  # adding together all variables apart from x-variables (so IIS, SIS, trends, etc.)  -------------------------------
+  current_pred_raw <- exog_df_ready %>%
 
-        tidyr::unnest("value") %>%
-        dplyr::mutate(index = 1:n.ahead ,.by = "name") %>%
-        dplyr::select("index","name", "value") %>%
+    # select the relevant variables
+    dplyr::select("time", dplyr::any_of(c("q_1","q_2","q_3","q_4")), dplyr::any_of(names(data_obj))) %>%
 
-        tidyr::pivot_wider(names_from = "name", values_from = "value", id_cols = "index") %>%
-        dplyr::select(-"index")
-    }
+    # drop not used quarterly dummies
+    dplyr::select(-dplyr::any_of(q_pred_todrop)) %>%
 
+    {if (exists("trend_pred")) {
+      dplyr::bind_cols(.,trend_pred)
+    } else { . }} %>%
 
-    if ("trend" %in% names(coef(isat_obj))) {
-      trend_pred <- dplyr::tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead))
-    }
+    {if (exists("iis_pred")) {
+      dplyr::bind_cols(.,iis_pred)
+    } else { . }} %>%
 
-    # adding together all variables apart from x-variables (so IIS, SIS, trends, etc.)  -------------------------------
-    exog_df_ready %>%
+    {if (exists("sis_pred")) {
+      dplyr::bind_cols(.,sis_pred)
+    } else { . }} %>%
 
-      # select the relevant variables
-      dplyr::select("time", dplyr::any_of(c("q_1","q_2","q_3","q_4")), dplyr::any_of(names(data_obj))) %>%
+    {if (exists("tis_pred")) {
+      dplyr::bind_cols(.,tis_pred)
+    } else { . }}
 
-      # drop not used quarterly dummies
-      dplyr::select(-dplyr::any_of(q_pred_todrop)) %>%
+  for (variable in x_vars_basename) {
+    transformation <- recipe$forecast_transformations[[variable]]
 
-      {if ("trend" %in% names(coef(isat_obj))) {
-        dplyr::bind_cols(.,trend_pred)
-      } else { . }} %>%
-
-      {if (!is.null(gets::isatdates(isat_obj)$iis)) {
-        dplyr::bind_cols(.,iis_pred)
-      } else { . }} %>%
-
-      {if (!is.null(gets::isatdates(isat_obj)$sis)) {
-        dplyr::bind_cols(.,sis_pred)
-      } else { . }} %>%
-
-      {if (!is.null(gets::isatdates(isat_obj)$tis)) {
-        dplyr::bind_cols(.,tis_pred)
-      } else { . }} %>%
-
-      {if (xlog) {
-        dplyr::mutate(.,
-                      #dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
-                      #dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
-                      dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = ~ if (any(. <= 0, na.rm = TRUE)) {asinh(.)} else {log(.)}, .names = "ln.{.col}")
+    if (
+      identical(transformation, "log") &&
+      variable %in% names(current_pred_raw) &&
+      any(current_pred_raw[[variable]] <= 0, na.rm = TRUE)
+    ) {
+      transformation <- "asinh"
+      recipe$forecast_transformations[[variable]] <- transformation
+      recipe$transformations[[variable]] <- transformation
+      recipe$transformation_adjustments <- dplyr::bind_rows(
+        recipe$transformation_adjustments,
+        dplyr::tibble(
+          variable = variable,
+          estimation = "log",
+          forecasting = "asinh",
+          reason = "Non-positive values in the forecast period"
         )
-      } else {.}} -> current_pred_raw
+      )
+    }
 
-    current_pred_raw_all <- current_pred_raw
+    # {if (xlog) {
+    #   dplyr::mutate(.,
+    #                 #dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
+    #                 #dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
+    #                 dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = ~ if (any(. <= 0, na.rm = TRUE)) {asinh(.)} else {log(.)}, .names = "ln.{.col}")
+    #   )
+    # } else {.}}
+    #
+    # current_pred_raw_all <- current_pred_raw
+
+
+    if (
+      transformation %in% c("log", "asinh") &&
+      variable %in% names(current_pred_raw)
+    ) {
+      current_pred_raw[[paste0("ln.", variable)]] <- transform_osem_values(
+        current_pred_raw[[variable]],
+        transformation
+      )
+    }
   }
 
   out <- list()
@@ -178,14 +225,14 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
   out$xlog <- xlog
   out$mconst <- mconst
   out$current_pred_raw <- current_pred_raw
-  out$current_pred_raw_all <- current_pred_raw_all
+  out$current_pred_raw_all <- current_pred_raw
   out$is_ardl <- is_ardl
   out$isat_obj <- isat_obj
   out$data_obj <- data_obj
   out$exog_df_ready <- exog_df_ready
   out$pred_ar_needed <- pred_ar_needed
   out$pred_dl_needed <- pred_dl_needed
+  out$recipe <- recipe
 
   return(out)
 }
-
