@@ -45,6 +45,16 @@ forecast_build_term_data <- function(state_data,
       out[[term]] <- values
     } else if (role == "regressor_difference") {
       source_name <- transformed_name(spec$source[[1]])
+      if (!source_name %in% names(state_data)) {
+        stop(
+          "Could not construct forecast term '",
+          term,
+          "' because source variable '",
+          source_name,
+          "' is absent from state_data."
+        )
+      }
+
       values <- c(NA_real_, diff(state_data[[source_name]]))
       if (spec$lag[[1]] > 0L) {
         values <- dplyr::lag(values, n = spec$lag[[1]])

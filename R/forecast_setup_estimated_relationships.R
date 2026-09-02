@@ -433,23 +433,51 @@ forecast_setup_estimated_relationships <- function(model,
                        dplyr::select("time", dplyr::any_of(x_names_vec_nolag))) %>%
     dplyr::distinct() -> intermed
 
-  term_data <- forecast_build_term_data(
-    state_data = intermed,
-    deterministic_data = current_pred_raw,
-    recipe = recipe
-  )
+  deterministic_data <- current_pred_raw %>%
+    dplyr::select(-dplyr::starts_with("q_")) %>%
+    dplyr::mutate(
+      q = factor(
+        lubridate::quarter(.data$time),
+        levels = c(1, 2, 3, 4)
+      )
+    ) %>%
+    fastDummies::dummy_cols(
+      select_columns = "q",
+      remove_first_dummy = TRUE,
+      remove_selected_columns = TRUE
+    )
 
-  pred_df <- term_data %>%
+  deterministic_draw_data <- current_pred_raw_all %>%
+    dplyr::select(-dplyr::starts_with("q_")) %>%
+    dplyr::mutate(
+      q = factor(
+        lubridate::quarter(.data$time),
+        levels = c(1, 2, 3, 4)
+      )
+    ) %>%
+    fastDummies::dummy_cols(
+      select_columns = "q",
+      remove_first_dummy = TRUE,
+      remove_selected_columns = TRUE
+    )
+
+  forecast_build_term_data(
+    state_data = intermed,
+    deterministic_data = deterministic_data,
+    recipe = recipe
+  ) %>%
     utils::tail(n.ahead) %>%
-    dplyr::select(-"time")
+    dplyr::select(
+      dplyr::any_of(isat_obj$aux$mXnames)
+    ) -> pred_df
 
   # Build one recipe-consistent regressor path per upstream uncertainty draw.
   # The forecasting recursion consumes these paths in a vectorised matrix
   # calculation; it does not call predict.isat once per path.
   pred_df.all <- forecast_build_draw_term_data(
     state_data = intermed,
-    deterministic_data = current_pred_raw,
-    deterministic_draw_data = current_pred_raw_all,
+    deterministic_data = deterministic_data,
+    deterministic_draw_data = deterministic_draw_data,
     recipe = recipe,
     n.ahead = n.ahead,
     uncertainty_sample = uncertainty_sample
