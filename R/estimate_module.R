@@ -533,7 +533,7 @@ estimate_module <- function(clean_data,
                    x_vars_basename = x_vars_basename,
                    use_logs = use_logs,
                    transformations = transformation_map,
-                   forecast_recipe = compile_forecast_recipe(
+                   forecast_recipe = forecast_recipe_compile(
                      model_object = final_model,
                      model_form = model_form,
                      dep_var_basename = dep_var_basename,

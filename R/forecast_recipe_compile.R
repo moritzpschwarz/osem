@@ -1,7 +1,7 @@
 #' Compile the information required to forecast an estimated OSEM module
 #'
 #' @keywords internal
-compile_forecast_recipe <- function(model_object,
+forecast_recipe_compile <- function(model_object,
                                     model_form,
                                     dep_var_basename,
                                     x_vars_basename,
