@@ -10,6 +10,11 @@
 #' @inheritParams forecast_model
 #'
 #' @return A list containing, among other elements, the data required to carry out the forecast for this estimated module.
+#' The elements contain:
+#' - current_pred_raw: central future source data, before all required differences/lags are constructed.
+#' - current_pred_raw_all: the same source data, with upstream uncertainty stored in list-columns.
+#' - pred_df: complete prediction-ready regressor data for the central forecast.
+#' - pred_df.all: a list of complete prediction-ready regressor data frames, one per uncertainty run.
 #'
 
 forecast_setup_estimated_relationships <- function(model,

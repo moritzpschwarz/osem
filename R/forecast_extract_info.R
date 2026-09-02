@@ -74,17 +74,20 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
   y_names_vec <- recipe$transformed_level_name
 
   if (length(x_vars_basename) > 0) {
-    x_names_vec_nolag <- vapply(
-      x_vars_basename,
-      function(variable) {
-        if (recipe$transformations[[variable]] %in% c("log", "asinh")) {
-          prefix <- "ln."
-        } else {
-          prefix <- ""
-        }
-        return(paste0(prefix, variable))
-      },
-      character(1)
+    x_names_vec_nolag <- unname(
+      vapply(
+        x_vars_basename,
+        function(variable) {
+          if (recipe$transformations[[variable]] %in% c("log", "asinh")) {
+            prefix <- "ln."
+          } else {
+            prefix <- ""
+          }
+
+          return(paste0(prefix, variable))
+        },
+        character(1)
+      )
     )
     x_names_vec <- c(x_names_vec_nolag, pred_dl_needed)
   } else {
