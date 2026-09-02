@@ -43,9 +43,19 @@ nowcast_setup_estimated_relationships <- function(model,
   extracted_info$pred_ar_needed -> pred_ar_needed
   extracted_info$pred_dl_needed -> pred_dl_needed
 
+  recipe <- model$module_collection %>%
+    dplyr::filter(.data$order == i) %>%
+    dplyr::pull(.data$model.args) %>%
+    .[[1]] %>%
+    .$forecast_recipe
+
   # checking the data for nowcasted data --------
   data_obj %>%
-    dplyr::select("time", dplyr::all_of(x_names_vec_nolag), dplyr::all_of(y_names_vec[1])) -> historical_estimation_data
+    dplyr::select(
+      "time",
+      dplyr::all_of(x_names_vec_nolag),
+      dplyr::any_of(recipe$transformed_level_name)
+    ) -> historical_estimation_data
 
   # in this section we check whether any of the missing values are present in nowcasted data
   # we first check if there is even any historical data used (would not be true for e.g. AR models)
@@ -82,17 +92,30 @@ nowcast_setup_estimated_relationships <- function(model,
         } else {.}} -> missing_vals_intermed
 
       missing_vals_intermed %>%
-        # check if any of the values by na_item are below 0
-        dplyr::mutate(log_possible = all(.data$values > 0, na.rm = TRUE), .by = "na_item") %>%
-        dplyr::mutate(values_to_log = dplyr::case_when(.data$log_possible & !is.na(.data$values) & grepl("^ln.",.data$na_item) ~ .data$values,
-                                                       TRUE ~ NA)) %>%
-        # now we check if we need to log them or use asinh
-        dplyr::mutate(values = dplyr::case_when(!is.na(.data$values_to_log) ~ log(.data$values_to_log),
-                                              !.data$log_possible & !is.na(.data$values) & grepl("^ln.",.data$na_item) ~ asinh(.data$values),
-                                              TRUE ~ .data$values)) %>%
-
-        dplyr::select(-c("log_possible","values_to_log")) %>%
-
+        dplyr::mutate(
+          transformation = vapply(
+            .data$basename,
+            function(variable) {
+              if (variable %in% names(recipe$transformations)) {
+                return(recipe$transformations[[variable]])
+              } else {
+                return("none")
+              }
+            },
+            character(1)
+          ),
+          values = purrr::pmap_dbl(
+            list(.data$values, .data$transformation, .data$na_item),
+            function(value, transformation, na_item) {
+              if (is.na(value) || !grepl("^ln\\.", na_item)) {
+                return(value)
+              } else {
+                return(transform_osem_values(value, transformation))
+              }
+            }
+          )
+        ) %>%
+        dplyr::select(-"transformation") %>%
         dplyr::select("time", "na_item", new_values = "values") %>%
         tidyr::drop_na() -> values_to_replace
 
@@ -117,30 +140,15 @@ nowcast_setup_estimated_relationships <- function(model,
                        dplyr::select("time", dplyr::all_of(x_names_vec_nolag))) %>%
     dplyr::distinct() -> intermed
 
-  # add the lagged x-variables
-  if(ncol(intermed) > 1){
-    to_be_added <- dplyr::tibble(.rows = nrow(intermed))
-    for (j in pred_dl_needed) {
-      if(j == 0){next}
-      intermed %>%
-        dplyr::transmute(dplyr::across(dplyr::all_of(gsub("L[0-9]+\\.","",j)), ~dplyr::lag(., n = as.numeric(stringr::str_extract(j, "[0-9]+"))))) %>%
-        setNames(j) %>%
-        dplyr::bind_cols(to_be_added, .) -> to_be_added
-    }
-    intermed <- dplyr::bind_cols(intermed, to_be_added)
-  }
-
-  intermed %>%
-    dplyr::left_join(current_pred_raw %>%
-                       dplyr::select("time", dplyr::any_of("trend"), dplyr::starts_with("q_"),
-                                     dplyr::starts_with("iis"), dplyr::starts_with("sis")),
-                     by = "time") %>%
-
-    # only retain the final n.ahead observations
-    dplyr::slice(-c(dplyr::n() - n.ahead : dplyr::n())) %>%
-
-    dplyr::select(-"time") %>%
-    dplyr::select(dplyr::any_of(row.names(isat_obj$mean.results))) -> pred_df
+  forecast_build_term_data(
+    state_data = intermed,
+    deterministic_data = current_pred_raw,
+    recipe = recipe
+  ) %>%
+    utils::tail(n.ahead) %>%
+    dplyr::select(
+      dplyr::any_of(isat_obj$aux$mXnames)
+    ) -> pred_df
 
   # Final output data -------------------------------------------------------
 
@@ -164,6 +172,8 @@ nowcast_setup_estimated_relationships <- function(model,
   out$final_i_data <- final_i_data
   out$current_pred_raw <- current_pred_raw
   out$n.ahead <- n.ahead
+  out$recipe <- recipe
+  out$state_data <- intermed
 
   return(out)
 

@@ -120,7 +120,8 @@ forecast_model <- function(model,
     dep_var = model$module_order$dependent,
     predict.isat_object = list(NA_complex_),
     data = list(NA_complex_),
-    central.estimate = list(NA_complex_)
+    central.estimate = list(NA_complex_),
+    forecast.metadata = vector(mode = "list",length = NROW(model$module_order))
   )
 
   ## 2a. Start of main loop ------------------------------------------------
@@ -224,6 +225,7 @@ forecast_model <- function(model,
   out$exog_data <- exog_df_ready
   out$exog_data_nowcast <- exog_df_ready_full
   out$nowcast_data <- nowcasted
+  out$exog_predictions <- exog_predictions
   out$args <- list(
     n.ahead = n.ahead,
     ci.levels = ci.levels,
@@ -231,6 +233,8 @@ forecast_model <- function(model,
     ar.fill.max = ar.fill.max,
     uncertainty_sample = uncertainty_sample
   )
+
+  if(is.null(out$args$exog_fill_method) & !is.null(exog_predictions)){out$args$exog_fill_method <- "Exogenous Forecasts Provided"}
 
   class(out) <- "osem.forecast"
 

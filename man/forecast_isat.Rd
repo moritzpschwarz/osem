@@ -18,29 +18,32 @@ forecast_isat(
 )
 }
 \arguments{
-\item{model}{The overall 'osem' model as returned by \code{\link[osem]{run_model}}}
+\item{model}{A model object of class 'osem'.}
 
-\item{i}{The index of the current module within the model's module collection}
+\item{i}{Current module that is being cycled through}
 
-\item{exog_df_ready}{The exogenous data frame prepared for forecasting}
+\item{exog_df_ready}{Outcome of forecast_exogenous_values() which is the set of forecasted exogenous values}
 
-\item{exog_df_ready_full}{The full exogenous data frame prepared for forecasting}
-
-\item{n.ahead}{Number of steps ahead to forecast}
+\item{n.ahead}{Periods to forecast ahead}
 
 \item{current_spec}{The current specification for the module being forecasted}
 
-\item{prediction_list}{The collection of all predictions}
+\item{prediction_list}{The full list of all predictions. The results of the function will be saved in this list.}
 
-\item{uncertainty_sample}{The number of uncertainty samples to draw for the prediction}
+\item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
 
-\item{ci.levels}{The confidence interval levels for the prediction}
-
-\item{nowcasted}{The nowcasted data for the model}
+\item{ci.levels}{Numeric vector. Vector with confidence intervals to be calculated. Default: c(0.5,0.66,0.95)}
 }
 \value{
-A tibble containing the updated prediction_list object with forecasts for the current module
+A list containing the central path, uncertainty paths, prediction
+object, and data used for the current module.
 }
 \description{
-This internal function generates forecasts from an ISAT (Indicator Saturation) model within the OSEM framework (see \code{\link[gets]{isat}}).
+This internal function generates forecasts from an ISAT (Indicator Saturation)
+model within the OSEM framework (see \code{\link[gets]{isat}}).
+It forecasts an estimated single-equation module. ARDL and fully differenced
+equations use \code{\link[gets]{predict.isat}} for the complete
+forecast horizon. ECM equations are forecast recursively because the
+forecast for one period is needed to construct the lagged dependent level
+for the following period.
 }

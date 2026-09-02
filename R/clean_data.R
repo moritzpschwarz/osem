@@ -28,52 +28,41 @@ clean_data <- function(raw_data,
     tidyr::pivot_wider(id_cols = "time", names_from = "na_item", values_from = "values") %>%
     dplyr::arrange(.data$time) -> raw_data_processed
 
-  # save the relevant information whether Log or asinh transformation is needed in opts_df
-  if (use_logs == "none") {
-    raw_data_processed %>%
-      dplyr::mutate(dplyr::across(-"time", ~NA)) %>%
-      dplyr::select(-"time") %>%
-      dplyr::distinct() %>%
-      tidyr::nest() %>%
-      setNames("log_opts") %>%
-      dplyr::bind_cols(module, .) -> log_opts_new
-  }
+  depvars <- trimws(unlist(strsplit(module$dependent, ",")))
+  variable_names <- setdiff(names(raw_data_processed), "time")
 
-  if (use_logs == "y") {
-    # since module$dependent may contain multiple variables for CvAR, need to extract them separately
-    depvars <- trimws(unlist(strsplit(module$dependent, ",")))
-    raw_data_processed %>%
-      dplyr::mutate(dplyr::across(-"time", ~ dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
-      dplyr::mutate(dplyr::across(-dplyr::all_of(depvars), ~NA)) %>%
-      dplyr::select(-"time") %>%
-      dplyr::distinct() %>%
-      tidyr::nest() %>%
-      setNames("log_opts") %>%
-      dplyr::bind_cols(module, .) -> log_opts_new
-  }
+  available_transformations <- stats::setNames(
+    vapply(
+      raw_data_processed[variable_names],
+      function(x) {
+        if (any(x <= 0, na.rm = TRUE)) {
+          return("asinh")
+        } else {
+          return("log")
+        }
+      },
+      character(1)
+    ),
+    variable_names
+  )
 
-  if (use_logs == "x") {
-    # since module$dependent may contain multiple variables for CvAR, need to extract them separately
-    depvars <- trimws(unlist(strsplit(module$dependent, ",")))
-    raw_data_processed %>%
-      dplyr::mutate(dplyr::across(-"time", ~ dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
-      dplyr::mutate(dplyr::across(dplyr::all_of(depvars), ~NA)) %>%
-      dplyr::select(-"time") %>%
-      dplyr::distinct() %>%
-      tidyr::nest() %>%
-      setNames("log_opts") %>%
-      dplyr::bind_cols(module, .) -> log_opts_new
-  }
+  transformed_vars <- switch(
+    use_logs,
+    none = character(0),
+    y = intersect(variable_names, depvars),
+    x = setdiff(variable_names, depvars),
+    both = variable_names
+  )
 
-  if (use_logs == "both") {
-    raw_data_processed %>%
-      dplyr::mutate(dplyr::across(-"time", ~ dplyr::case_when(any(. <= 0, na.rm = TRUE) ~ "asinh", TRUE ~ "log"))) %>%
-      dplyr::select(-"time") %>%
-      dplyr::distinct() %>%
-      tidyr::nest() %>%
-      setNames("log_opts") %>%
-      dplyr::bind_cols(module, .) -> log_opts_new
-  }
+  log_opts_values <- stats::setNames(rep(NA_character_, length(variable_names)), variable_names)
+  log_opts_values[transformed_vars] <- available_transformations[transformed_vars]
+  model_transformations <- stats::setNames(rep("none", length(variable_names)), variable_names)
+  model_transformations[transformed_vars] <- available_transformations[transformed_vars]
+
+  log_opts_new <- dplyr::bind_cols(
+    module,
+    dplyr::tibble(log_opts = list(dplyr::as_tibble(as.list(log_opts_values))))
+  )
 
   if (!"log_opts" %in% names(opts_df)) {
     opts_df <- opts_df %>% dplyr::mutate(log_opts = NA)
@@ -83,15 +72,18 @@ clean_data <- function(raw_data,
     dplyr::mutate(log_opts = dplyr::case_when(.data$index == module$index ~ log_opts_new$log_opts, TRUE ~ .data$log_opts)) -> opts_df
 
   # TODO: this seems to be done always, even when not use_logs == "both"; wasteful
-  raw_data_processed %>%
+  intermed <- raw_data_processed
+  for (variable in variable_names) {
+    intermed[[paste0("ln.", variable)]] <- transform_osem_values(
+      intermed[[variable]],
+      available_transformations[[variable]]
+    )
+  }
+
+  intermed <- intermed %>%
     dplyr::mutate(
-      dplyr::across(-"time", .fns = ~ {if (any(. <= 0, na.rm = TRUE)) {
-        asinh(.)
-      } else{
-        log(.)
-      }}, .names = "ln.{.col}"),
       dplyr::across(-"time", list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}")
-    ) -> intermed
+    )
 
   to_be_added <- dplyr::tibble(.rows = nrow(intermed))
   # TODO: this could be skipped for CVAR because functions create lags/FD directly
@@ -123,6 +115,7 @@ clean_data <- function(raw_data,
   out <- list()
   out$df <- cleaned_data
   out$opts_df <- opts_df
+  out$transformations <- model_transformations
 
   return(out)
 }

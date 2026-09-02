@@ -5,7 +5,8 @@ test_single_equation_ecm <- function(clean_data,
                                      use_logs = "both",
                                      trend = TRUE,
                                      module,
-                                     alpha = 0.05) {
+                                     alpha = 0.05,
+                                     transformation_map) {
   # Set-up ------------------------------------------------------------------
   x_vars_basename <- x_vars_basename[!is.na(x_vars_basename)]
   x_vars_basename <- x_vars_basename[x_vars_basename != ""]
@@ -44,7 +45,8 @@ test_single_equation_ecm <- function(clean_data,
     trend = trend,
     model_form = "ecm",
     dl_order = 0,
-    module = module
+    module = module,
+    transformation_map = transformation_map
   )
 
   dep_level_term <- paste0(
@@ -78,7 +80,7 @@ test_single_equation_ecm <- function(clean_data,
   last_complete_time <- if (nobs_complete > 0) df$.time[nobs_complete] else NA
 
   df <- df %>%
-    dplyr::select(-.data$.time)
+    dplyr::select(-.time)
 
   if (NROW(df) <= length(level_terms) + 5) {
     return(list(

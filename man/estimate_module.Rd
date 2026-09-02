@@ -23,8 +23,10 @@ estimate_module(
   selection.tpval = 0.01,
   keep,
   pretest_steps,
+  indicator_compression = TRUE,
   quiet = FALSE,
-  module
+  module,
+  transformation_map
 )
 }
 \arguments{
@@ -99,9 +101,18 @@ then \code{\link[gets]{isat}} is first carried out just for SIS (if activated us
 then the SIS breaks are pre-entered to another \code{\link[gets]{isat}} estimation but not selected over.
 After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.}
 
+\item{indicator_compression}{Logical. Whether to compress the indicators selected by the
+'isat' function from the 'gets' package into a smaller number of indicators that still
+capture the same outlier and structural break dynamics. Default is TRUE. Indicator compression
+is only applied to the best model selected based on BIC and diagnostic tests,
+not to all estimated models.}
+
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 
 \item{module}{A row of the specification table.}
+
+\item{transformation_map}{A named character vector containing the
+transformation applied to each model variable during data preparation.}
 }
 \value{
 A list containing all estimated models, with the model with the smallest BIC under 'best_model'.

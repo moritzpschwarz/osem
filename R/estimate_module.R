@@ -43,6 +43,13 @@
 #' @param selection.tpval Numeric. The target p-value of the model selection
 #' methods (i.e. general-to-specific modelling, see the 'getsm' function
 #' in the 'gets' package). Default is 0.01.
+#' @param indicator_compression Logical. Whether to compress the indicators selected by the
+#' 'isat' function from the 'gets' package into a smaller number of indicators that still
+#' capture the same outlier and structural break dynamics. Default is TRUE. Indicator compression
+#' is only applied to the best model selected based on BIC and diagnostic tests,
+#' not to all estimated models.
+#' @param transformation_map A named character vector containing the
+#' transformation applied to each model variable during data preparation.
 #' @inheritParams forecast_model
 #' @inheritParams run_module
 #' @inheritParams run_model
@@ -68,8 +75,10 @@ estimate_module <- function(clean_data,
                             selection.tpval = 0.01,
                             keep,
                             pretest_steps,
+                            indicator_compression = TRUE,
                             quiet = FALSE,
-                            module) {
+                            module,
+                            transformation_map) {
   # Set-up ------------------------------------------------------------------
   log_opts <- use_logs
   level_x_vars_basename <- x_vars_basename
@@ -113,18 +122,44 @@ estimate_module <- function(clean_data,
         selectlags = "BIC"
       )
 
-      level_x_vars_basename <- integration %>%
+      integration_for_decision <- integration
+
+      # Adjust integration orders for the deterministic specification actually used
+      # A trend-stationary variable is only treated as I(0) if the equation is
+      # allowed to contain a deterministic trend. If trend = FALSE, then ECM-auto
+      # treats trend-stationary variables conservatively as "uncertain".
+      if (!trend) {
+        integration_for_decision <- integration_for_decision %>%
+          dplyr::mutate(
+            order = dplyr::if_else(
+              .data$stationarity_type %in% "trend_stationary",
+              "uncertain",
+              .data$order
+            ),
+            reason = dplyr::if_else(
+              .data$stationarity_type %in% "trend_stationary",
+              paste0(
+                .data$reason,
+                " Trend-stationary variable treated as uncertain because trend = FALSE."
+              ),
+              .data$reason
+            )
+          )
+      }
+
+      ecm_decision$integration <- integration
+      ecm_decision$integration_for_decision <- integration_for_decision
+
+      level_x_vars_basename <- integration_for_decision %>%
         dplyr::filter(.data$type == "independent", .data$order == "I1") %>%
         dplyr::pull(.data$basevarname)
 
-      ecm_decision$integration <- integration
-
-      dep_order <- integration %>%
+      dep_order <- integration_for_decision %>%
         dplyr::filter(.data$type == "dependent") %>%
         dplyr::pull("order") %>%
         dplyr::first()
 
-      x_orders <- integration %>%
+      x_orders <- integration_for_decision %>%
         dplyr::filter(.data$type == "independent") %>%
         dplyr::pull("order")
 
@@ -137,7 +172,8 @@ estimate_module <- function(clean_data,
           use_logs = use_logs,
           trend = trend,
           module = module,
-          alpha = ecm_coint_alpha
+          alpha = ecm_coint_alpha,
+          transformation_map = transformation_map
         )
 
         ecm_decision$coint_test <- coint_test
@@ -147,18 +183,25 @@ estimate_module <- function(clean_data,
       }
 
       if (ecm_pretest == "auto") {
-        if (all(integration$order == "I0", na.rm = TRUE)) {
+        if (all(integration_for_decision$order == "I0", na.rm = TRUE)) {
           model_form <- "ardl"
 
           ecm_decision$selected <- "ardl"
           ecm_decision$model_form <- "ardl"
           ecm_decision$reason <- "All module variables were classified as I(0); estimating a levels ARDL."
-        } else if (any(integration$order %in% c("I2_or_uncertain", "uncertain"), na.rm = TRUE)) {
+        } else if (any(integration_for_decision$order %in% c("I2_or_uncertain", "uncertain"), na.rm = TRUE)) {
           model_form <- "diff"
 
           ecm_decision$selected <- "fully_differenced"
           ecm_decision$model_form <- "diff"
-          ecm_decision$reason <- "At least one module variable was classified as I(2) or uncertain; estimating the corresponding first-differenced equation."
+
+          if(!trend & any(integration_for_decision$stationarity_type == "trend_stationary", na.rm = TRUE)){
+            ecm_decision$reason <- "At least one module variable was classified as I(2) or uncertain; estimating the corresponding first-differenced equation. Note that at least one variable was classified as trend-stationary and treated as uncertain because trend = FALSE."
+          } else {
+            ecm_decision$reason <- "At least one module variable was classified as I(2) or uncertain; estimating the corresponding first-differenced equation."
+          }
+
+
         } else if (!identical(dep_order, "I1")) {
           model_form <- "diff"
 
@@ -180,7 +223,8 @@ estimate_module <- function(clean_data,
             use_logs = use_logs,
             trend = trend,
             module = module,
-            alpha = ecm_coint_alpha
+            alpha = ecm_coint_alpha,
+            transformation_map = transformation_map
           )
 
           ecm_decision$coint_test <- coint_test
@@ -227,9 +271,12 @@ estimate_module <- function(clean_data,
 
   isat_list <- dplyr::tibble(
     ar = 0:max.ar,
-    BIC = 0,
+    BIC = NA,
+    ar_pvalue = NA,
+    arch_pvalue = NA,
     isat_object = list(NA_complex_)
   )
+  design_term_specs <- list()
 
   for (i in 0:max.dl) {
     # Build model design -----------------------------------------------------
@@ -244,12 +291,14 @@ estimate_module <- function(clean_data,
       trend = trend,
       model_form = model_form,
       dl_order = i,
-      module = module
+      module = module,
+      transformation_map = transformation_map
     )
 
     yvar <- design$yvar
     y.name <- design$y.name
     xvars <- design$xvars
+    design_term_specs[[i + 1L]] <- design$term_spec
 
     if (i == 0) {
       xvars_initial <- xvars
@@ -303,7 +352,14 @@ estimate_module <- function(clean_data,
       intermed.model$aux$args <- if(i != 0){list(ar = 1:i)} else {list(ar = NULL)}
       intermed.model$aux$y.name <- y.name
     }
+    if(exists("intermed.model")){
+      diagnostics <- intermed.model$diagnostics %>%
+        dplyr::as_tibble() %>%
+        dplyr::mutate(diagnostic = row.names(intermed.model$diagnostics), .before = "Chi-sq")
+    }
 
+    isat_list[i + 1, "ar_pvalue"] <- if(exists("intermed.model")){diagnostics$`p-value`[grep("Ljung-Box AR\\(",diagnostics)]}else{NA}
+    isat_list[i + 1, "arch_pvalue"] <- if(exists("intermed.model")){diagnostics$`p-value`[grep("Ljung-Box ARCH\\(",diagnostics)]}else{NA}
     isat_list[i + 1, "BIC"] <- if(exists("intermed.model")){stats::BIC(intermed.model)}else{NA}
     isat_list[i + 1, "isat_object"] <- if(exists("intermed.model")){dplyr::tibble(isat_object = list(intermed.model))}else{NA}
 
@@ -333,12 +389,19 @@ estimate_module <- function(clean_data,
   }
 
   best_isat_model <- isat_list %>%
-    dplyr::filter(BIC == min(isat_list$BIC, na.rm = TRUE)) %>%
+    dplyr::mutate(diag_ranking = dplyr::case_when((.data$ar_pvalue > 0.05) & (.data$arch_pvalue > 0.05) ~ 1,
+                                                  (.data$ar_pvalue > 0.05) ~ 2,
+                                                  (.data$arch_pvalue > 0.05) ~ 3,
+                                                  TRUE ~ 4)) %>%
+    dplyr::filter(diag_ranking == min(diag_ranking, na.rm = TRUE)) %>%
+    dplyr::filter(BIC == min(dplyr::pick("BIC"), na.rm = TRUE)) %>%
     dplyr::pull(dplyr::all_of("isat_object")) %>%
     dplyr::first()
 
   # gets selection on the best model ----------------------------------------
   if(gets_selection){
+
+    #keep <- paste0("^mc$|^ar[0-9]+$|^q_[0-9]+|",keep)
 
     # Keep handling ----------------------------------------------------------
     if(!is.null(keep)){
@@ -431,7 +494,7 @@ estimate_module <- function(clean_data,
     }
   }
 
-  final_model <- if(gets_selection) {
+  model_before_compression <- if(gets_selection) {
     if (!is.null(saturation)) {
       best_isat_model.selected.isat
     } else {
@@ -440,6 +503,14 @@ estimate_module <- function(clean_data,
   } else {
     best_isat_model
   }
+
+  if(indicator_compression){
+    compression <- compress_indicators(model_before_compression)
+    final_model <- compression$compressed_model
+  } else {
+    final_model <- model_before_compression
+  }
+
 
   # Super Exogeneity Testing ------------------------------------------------
   try(superex_test <- super.exogeneity(final_model, saturation.tpval = saturation.tpval, quiet = quiet))
@@ -461,6 +532,19 @@ estimate_module <- function(clean_data,
                    dep_var_basename = dep_var_basename,
                    x_vars_basename = x_vars_basename,
                    use_logs = use_logs,
+                   transformations = transformation_map,
+                   forecast_recipe = forecast_recipe_compile(
+                     model_object = final_model,
+                     model_form = model_form,
+                     dep_var_basename = dep_var_basename,
+                     x_vars_basename = x_vars_basename,
+                     use_logs = use_logs,
+                     transformations = transformation_map,
+                     term_specs = dplyr::bind_rows(design_term_specs),
+                     lag_only_vars = design$lag_only_vars
+                   ),
+                   # Retained for backwards compatibility. New forecasting code
+                   # uses the unambiguous model_form field below.
                    ardl_or_ecm = ifelse(model_form == "diff", "ecm", model_form),
                    ardl_or_ecm_requested = ardl_or_ecm,
                    ardl_or_ecm_selected = ecm_decision$selected,

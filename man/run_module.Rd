@@ -28,7 +28,8 @@ run_module(
   coint_significance = "5pct",
   ecm_pretest = "auto",
   ecm_unit_root_alpha = "5pct",
-  ecm_coint_alpha = 0.05
+  ecm_coint_alpha = 0.05,
+  indicator_compression = TRUE
 )
 }
 \arguments{
@@ -116,6 +117,12 @@ decision rule. Must be one of '1pct', '5pct', or '10pct'. Default is '5pct'.}
 
 \item{ecm_coint_alpha}{Numeric. Significance level used for the single-equation
 ECM level-block diagnostic. Default is 0.05.}
+
+\item{indicator_compression}{Logical. Whether to compress the indicators selected by the
+'isat' function from the 'gets' package into a smaller number of indicators that still
+capture the same outlier and structural break dynamics. Default is TRUE. Indicator compression
+is only applied to the best model selected based on BIC and diagnostic tests,
+not to all estimated models.}
 }
 \value{
 Returns a list with two named elements.
