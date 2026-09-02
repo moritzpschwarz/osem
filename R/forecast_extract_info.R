@@ -13,9 +13,10 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
     .[[1]]
 
   if (!inherits(isat_obj, "isat")) {
-    return(list(isat_obj = isat_obj))
+    stop("Not dealing with an isat object - potentially adjust for arx")
   }
 
+  # get data obj (that is the data that was used in the estimation)
   data_obj <- module_row %>%
     dplyr::pull(.data$dataset) %>%
     .[[1]]
@@ -52,9 +53,8 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
   xlog <- any(x_transformations %in% c("log", "asinh"))
   is_ardl <- identical(recipe$model_form, "ardl")
 
-  q_pred_todrop <- c("q_1", "q_2", "q_3", "q_4")[
-    !c("q_1", "q_2", "q_3", "q_4") %in% colnames(isat_obj$aux$mX)
-  ]
+  # check quarterly dummies to drop
+  q_pred_todrop <- c("q_1", "q_2", "q_3", "q_4")[!c("q_1", "q_2", "q_3", "q_4") %in% colnames(isat_obj$aux$mX)]
 
   mconst <- "mconst" %in% colnames(isat_obj$aux$mX)
 
@@ -74,18 +74,20 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
   y_names_vec <- recipe$transformed_level_name
 
   if (length(x_vars_basename) > 0) {
-    x_names_vec_nolag <- vapply(
-      x_vars_basename,
-      function(variable) {
-        if (recipe$transformations[[variable]] %in% c("log", "asinh")) {
-          prefix <- "ln."
-        } else {
-          prefix <- ""
-        }
+    x_names_vec_nolag <- unname(
+      vapply(
+        x_vars_basename,
+        function(variable) {
+          if (recipe$transformations[[variable]] %in% c("log", "asinh")) {
+            prefix <- "ln."
+          } else {
+            prefix <- ""
+          }
 
-        return(paste0(prefix, variable))
-      },
-      character(1)
+          return(paste0(prefix, variable))
+        },
+        character(1)
+      )
     )
     x_names_vec <- c(x_names_vec_nolag, pred_dl_needed)
   } else {
@@ -95,6 +97,7 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
 
   isat_dates <- gets::isatdates(isat_obj)
 
+  # get iis dummies
   if (!is.null(isat_dates$iis)) {
     iis_pred <- matrix(
       0,
@@ -105,6 +108,7 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
       dplyr::as_tibble()
   }
 
+  # get sis dummies
   if (!is.null(isat_dates$sis)) {
     sis_pred <- matrix(
       1,
@@ -115,6 +119,7 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
       dplyr::as_tibble()
   }
 
+  # get tis dummies
   if (!is.null(isat_dates$tis)) {
     tis_indices <- length(isat_obj$aux$y.index) + seq_len(n.ahead)
 
@@ -127,12 +132,12 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
         value = purrr::map2(
           .x = .data$breaks,
           .y = .data$vals_ahead,
-          .f = function(x, y) y - x
-        )
+          .f = function(x,y){y - x})
       ) %>%
       tidyr::unnest("value") %>%
       dplyr::mutate(index = seq_len(dplyr::n()), .by = "name") %>%
-      dplyr::select("index", "name", "value") %>%
+      dplyr::select("index","name", "value") %>%
+
       tidyr::pivot_wider(
         names_from = "name",
         values_from = "value",
@@ -142,47 +147,33 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
   }
 
   if ("trend" %in% names(stats::coef(isat_obj))) {
-    trend_pred <- dplyr::tibble(
-      trend = (max(isat_obj$aux$mX[, "trend"]) + 1):
-        (max(isat_obj$aux$mX[, "trend"]) + n.ahead)
-    )
+    trend_pred <- dplyr::tibble(trend = (max(isat_obj$aux$mX[,"trend"]) + 1):(max(isat_obj$aux$mX[,"trend"]) + n.ahead))
   }
 
+  # adding together all variables apart from x-variables (so IIS, SIS, trends, etc.)  -------------------------------
   current_pred_raw <- exog_df_ready %>%
-    dplyr::select(
-      "time",
-      dplyr::any_of(c("q_1", "q_2", "q_3", "q_4")),
-      dplyr::any_of(names(data_obj))
-    ) %>%
+
+    # select the relevant variables
+    dplyr::select("time", dplyr::any_of(c("q_1","q_2","q_3","q_4")), dplyr::any_of(names(data_obj))) %>%
+
+    # drop not used quarterly dummies
     dplyr::select(-dplyr::any_of(q_pred_todrop)) %>%
-    {
-      if (exists("trend_pred")) {
-        dplyr::bind_cols(., trend_pred)
-      } else {
-        .
-      }
-    } %>%
-    {
-      if (exists("iis_pred")) {
-        dplyr::bind_cols(., iis_pred)
-      } else {
-        .
-      }
-    } %>%
-    {
-      if (exists("sis_pred")) {
-        dplyr::bind_cols(., sis_pred)
-      } else {
-        .
-      }
-    } %>%
-    {
-      if (exists("tis_pred")) {
-        dplyr::bind_cols(., tis_pred)
-      } else {
-        .
-      }
-    }
+
+    {if (exists("trend_pred")) {
+      dplyr::bind_cols(.,trend_pred)
+    } else { . }} %>%
+
+    {if (exists("iis_pred")) {
+      dplyr::bind_cols(.,iis_pred)
+    } else { . }} %>%
+
+    {if (exists("sis_pred")) {
+      dplyr::bind_cols(.,sis_pred)
+    } else { . }} %>%
+
+    {if (exists("tis_pred")) {
+      dplyr::bind_cols(.,tis_pred)
+    } else { . }}
 
   for (variable in x_vars_basename) {
     transformation <- recipe$forecast_transformations[[variable]]
@@ -206,6 +197,17 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
       )
     }
 
+    # {if (xlog) {
+    #   dplyr::mutate(.,
+    #                 #dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = list(ln = log), .names = "{.fn}.{.col}"),
+    #                 #dplyr::across(dplyr::starts_with("ln."), list(D = ~ c(NA, diff(., ))), .names = "{.fn}.{.col}"
+    #                 dplyr::across(.cols = dplyr::any_of(x_vars_basename), .fns = ~ if (any(. <= 0, na.rm = TRUE)) {asinh(.)} else {log(.)}, .names = "ln.{.col}")
+    #   )
+    # } else {.}}
+    #
+    # current_pred_raw_all <- current_pred_raw
+
+
     if (
       transformation %in% c("log", "asinh") &&
       variable %in% names(current_pred_raw)
@@ -217,22 +219,23 @@ forecast_extract_info <- function(model, i, n.ahead, exog_df_ready){
     }
   }
 
-  list(
-    y_names_vec = y_names_vec,
-    x_names_vec = x_names_vec,
-    x_names_vec_nolag = x_names_vec_nolag,
-    ar_vec = ar_vec,
-    ylog = ylog,
-    xlog = xlog,
-    mconst = mconst,
-    current_pred_raw = current_pred_raw,
-    current_pred_raw_all = current_pred_raw,
-    is_ardl = is_ardl,
-    isat_obj = isat_obj,
-    data_obj = data_obj,
-    exog_df_ready = exog_df_ready,
-    pred_ar_needed = pred_ar_needed,
-    pred_dl_needed = pred_dl_needed,
-    recipe = recipe
-  )
+  out <- list()
+  out$y_names_vec <- y_names_vec
+  out$x_names_vec <- x_names_vec
+  out$x_names_vec_nolag <- x_names_vec_nolag
+  out$ar_vec <- ar_vec
+  out$ylog <- ylog
+  out$xlog <- xlog
+  out$mconst <- mconst
+  out$current_pred_raw <- current_pred_raw
+  out$current_pred_raw_all <- current_pred_raw
+  out$is_ardl <- is_ardl
+  out$isat_obj <- isat_obj
+  out$data_obj <- data_obj
+  out$exog_df_ready <- exog_df_ready
+  out$pred_ar_needed <- pred_ar_needed
+  out$pred_dl_needed <- pred_dl_needed
+  out$recipe <- recipe
+
+  return(out)
 }

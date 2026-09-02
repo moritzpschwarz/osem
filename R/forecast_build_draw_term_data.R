@@ -75,3 +75,4 @@ forecast_build_draw_term_data <- function(state_data,
       dplyr::select(-"time")
   })
 }
+
