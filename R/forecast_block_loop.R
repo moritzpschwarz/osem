@@ -15,6 +15,8 @@
 #' @param nowcasted The nowcasted data for the model
 #' @param ci.levels The confidence interval levels for the prediction
 #'
+#' @inheritParams forecast_model
+#'
 #' @returns A tibble containing the updated prediction_list object with forecasts for the current module
 #'
 forecast_block_loop <- function(
