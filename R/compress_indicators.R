@@ -214,7 +214,7 @@ extract_indicator_table <- function(model_object) {
     return(dplyr::tibble())
   }
 
-  out <- tibble::tibble(
+  out <- dplyr::tibble(
     term = names(coefs),
     coefficient = as.numeric(coefs)
   ) %>%
@@ -248,7 +248,7 @@ create_iis_to_sis_candidates <- function(indicator_table,
     return(empty_candidate_tbl())
   }
 
-  date_pos <- tibble::tibble(
+  date_pos <- dplyr::tibble(
     date = as.Date(y_index),
     position = seq_along(y_index)
   )
@@ -338,7 +338,7 @@ create_sis_to_iis_candidates <- function(indicator_table,
     return(empty_candidate_tbl())
   }
 
-  date_pos <- tibble::tibble(
+  date_pos <- dplyr::tibble(
     date = as.Date(y_index),
     position = seq_along(y_index)
   )
@@ -366,7 +366,7 @@ create_sis_to_iis_candidates <- function(indicator_table,
     if (isTRUE(adjacent) &&
         isTRUE(opposite_sign) &&
         isTRUE(similar_magnitude)) {
-      out[[i]] <- tibble::tibble(
+      out[[i]] <- dplyr::tibble(
         candidate_id = paste0("SIS_to_IIS_", i),
         type = "SIS_to_IIS",
         start_date = sis$date[i],
@@ -674,7 +674,7 @@ candidate_diagnostics_ok <- function(candidate_model,
 #'
 #' @keywords internal
 empty_candidate_tbl <- function() {
-  tibble::tibble(
+  dplyr::tibble(
     candidate_id = character(),
     type = character(),
     start_date = as.Date(character()),
