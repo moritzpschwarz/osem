@@ -143,7 +143,7 @@ diagnostics_unit_root <- function(model) {
   # definition modules do not need to be tested
   # LHS and RHS variables of endogenous modules need to be tested
   spec <- model$args$specification %>%
-    dplyr::filter(type == "n")
+    dplyr::filter(.data$type == "n")
 
   # extract variables
   dep <- spec$dependent
@@ -214,7 +214,7 @@ diagnostics_unit_root <- function(model) {
   ## extract variables from specification
   ## only interested in endogenous equations
   endogenous_modules <- model$module_order %>%
-    dplyr::filter(type == "n")
+    dplyr::filter(.data$type == "n")
   ## dependent variables
   depvars_list <- lapply(X = strsplit(endogenous_modules$dependent, ","), FUN = trimws)
   ## independent variables (list of vectors, each list item corresponds to a module)
