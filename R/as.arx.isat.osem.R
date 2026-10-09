@@ -7,7 +7,7 @@
 
 as.arx.isat.osem <- function(object, ...){
   ## check class
-  if (!is(object, "isat")) {
+  if (!isa(object, "isat")) {
     objectName <- deparse(substitute(object))
     stop(paste0("'", objectName, "' not of class 'isat'"))
   }

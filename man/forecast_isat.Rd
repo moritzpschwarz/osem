@@ -24,6 +24,8 @@ forecast_isat(
 
 \item{exog_df_ready}{Outcome of forecast_exogenous_values() which is the set of forecasted exogenous values}
 
+\item{exog_df_ready_full}{The full exogenous data frame prepared for forecasting}
+
 \item{n.ahead}{Periods to forecast ahead}
 
 \item{current_spec}{The current specification for the module being forecasted}
@@ -33,6 +35,8 @@ forecast_isat(
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
 
 \item{ci.levels}{Numeric vector. Vector with confidence intervals to be calculated. Default: c(0.5,0.66,0.95)}
+
+\item{nowcasted}{The nowcasted data for the model}
 }
 \value{
 A list containing the central path, uncertainty paths, prediction
