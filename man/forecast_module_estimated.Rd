@@ -35,6 +35,11 @@ forecast_module_estimated(
 
 \item{uncertainty_sample}{The uncertainty sample for forecasts}
 
+\item{uncertainty_method}{Character. Method used to propagate residual uncertainty.
+\code{"recursive"} (default) introduces innovations within the dynamic recursion and is recommended.
+\code{"legacy"} reproduces the historical cumulative-residual treatment, including the
+additional current-period residual when upstream forecast uncertainty is present.}
+
 \item{nowcasted}{Nowcasted data for the forecast period}
 
 \item{ci.levels}{Confidence interval levels for the forecasts}

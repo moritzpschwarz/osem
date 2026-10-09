@@ -13,6 +13,8 @@
 #' @param nowcasted Nowcasted data for the forecast period
 #' @param ci.levels Confidence interval levels for the forecasts
 #'
+#' @inheritParams forecast_model
+#'
 #' @returns A tibble containing the updated prediction_list object with forecasts for the current module
 #'
 forecast_module_estimated <- function(model,
