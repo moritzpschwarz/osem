@@ -23,6 +23,7 @@ forecast_module_estimated <- function(model,
                                      current_spec,
                                      prediction_list,
                                      uncertainty_sample,
+                                     uncertainty_method,
                                      nowcasted,
                                      ci.levels) {
 
@@ -43,6 +44,7 @@ forecast_module_estimated <- function(model,
                   current_spec = current_spec,
                   prediction_list = prediction_list,
                   uncertainty_sample = uncertainty_sample,
+                  uncertainty_method = uncertainty_method,
                   nowcasted = nowcasted,
                   ci.levels = ci.levels)
 

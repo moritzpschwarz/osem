@@ -13,6 +13,7 @@ run_module(
   ardl_or_ecm = "ardl",
   max.ar = 4,
   max.dl = 2,
+  ar.selection,
   saturation = c("IIS", "SIS"),
   saturation.tpval = 0.01,
   max.block.size = 20,
@@ -56,6 +57,15 @@ Equilibrium Correction Model (ecm).}
 \item{max.ar}{Integer. The maximum number of lags to use for the AR terms. as well as for the independent variables.}
 
 \item{max.dl}{Integer. The maximum number of lags to use for the independent variables (the distributed lags).}
+
+\item{ar.selection}{Character. Controls how the autoregressive lag order is
+selected. Must be one of \code{"diagnostic"}, \code{"BIC"}, or \code{"none"}.
+\code{"diagnostic"} first checks the candidate models according to their residual
+AR and ARCH diagnostics and then selects the model with the lowest BIC among
+the candidates with the least-problematic diagnostics. \code{"BIC"} selects the model
+with the lowest BIC irrespective of the diagnostic results, reproducing the previous OSEM
+behaviour. \code{"none"} performs no comparison across AR orders and retains the
+model estimated with \code{max.ar} lags. Default is \code{"diagnostic"}.}
 
 \item{saturation}{Carry out Indicator Saturation using the 'isat' function
 in the 'gets' package. Needs a character vector or string. Default is

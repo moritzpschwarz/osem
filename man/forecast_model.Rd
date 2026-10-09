@@ -13,6 +13,7 @@ forecast_model(
   ar.fill.max = 4,
   plot = TRUE,
   uncertainty_sample = 100,
+  uncertainty_method = c("recursive", "legacy"),
   quiet = FALSE
 )
 }
@@ -32,6 +33,11 @@ forecast_model(
 \item{plot}{Logical. Should the result be plotted? Default is TRUE.}
 
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
+
+\item{uncertainty_method}{Character. Method used to propagate residual uncertainty.
+\code{"recursive"} (default) introduces innovations within the dynamic recursion and is recommended.
+\code{"legacy"} reproduces the historical cumulative-residual treatment, including the
+additional current-period residual when upstream forecast uncertainty is present.}
 
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 }

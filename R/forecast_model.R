@@ -8,6 +8,10 @@
 #' @param exog_fill_method Character, either 'AR', 'auto', or 'last'. When no exogenous values have been provided, these must be inferred. When option 'exog_fill_method = "AR"' then an autoregressive model is used to further forecast the exogenous values. With 'last', simply the last available value is used. 'auto' is an \code{\link[forecast]{auto.arima}} model.
 #' @param plot Logical. Should the result be plotted? Default is TRUE.
 #' @param uncertainty_sample Integer. Number of draws to be made for the error bars. Default is 100.
+#' @param uncertainty_method Character. Method used to propagate residual uncertainty.
+#' `"recursive"` (default) introduces innovations within the dynamic recursion and is recommended.
+#' `"legacy"` reproduces the historical cumulative-residual treatment, including the
+#' additional current-period residual when upstream forecast uncertainty is present.
 #' @param quiet Logical. Should messages about the forecast procedure be suppressed?
 #'
 #' @return A list of class 'osem.forecast' with the following elements:
@@ -76,7 +80,10 @@ forecast_model <- function(model,
                            ar.fill.max = 4,
                            plot = TRUE,
                            uncertainty_sample = 100,
+                           uncertainty_method = c("recursive", "legacy"),
                            quiet = FALSE) {
+  uncertainty_method <- match.arg(uncertainty_method)
+
   if (!isa(model, "osem")) {
     stop("Forecasting only possible with an osem object. Execute 'run_model' to get such an object.")
   }
@@ -172,6 +179,7 @@ forecast_model <- function(model,
           current_spec = current_spec,
           prediction_list = prediction_list,
           uncertainty_sample = uncertainty_sample,
+          uncertainty_method = uncertainty_method,
           nowcasted = nowcasted,
           ci.levels = ci.levels
         ) -> prediction_list
@@ -185,6 +193,7 @@ forecast_model <- function(model,
           current_spec = current_spec,
           prediction_list = prediction_list,
           uncertainty_sample = uncertainty_sample,
+          uncertainty_method = uncertainty_method,
           nowcasted = nowcasted,
           ci.levels = ci.levels
         ) -> prediction_list
@@ -231,7 +240,8 @@ forecast_model <- function(model,
     ci.levels = ci.levels,
     exog_fill_method = exog_fill_method,
     ar.fill.max = ar.fill.max,
-    uncertainty_sample = uncertainty_sample
+    uncertainty_sample = uncertainty_sample,
+    uncertainty_method = uncertainty_method
   )
 
   if(is.null(out$args$exog_fill_method) & !is.null(exog_predictions)){out$args$exog_fill_method <- "Exogenous Forecasts Provided"}

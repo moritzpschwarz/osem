@@ -40,6 +40,14 @@
 #' After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.
 #' @param inputdata_directory Deprecated. Use 'input' instead. Functionality of specifying a directory
 #' is retained for now but this argument will be removed in the future.
+#' @param ar.selection Character. Controls how the autoregressive lag order is
+#' selected. Must be one of `"diagnostic"`, `"BIC"`, or `"none"`.
+#' `"diagnostic"` first checks the candidate models according to their residual
+#' AR and ARCH diagnostics and then selects the model with the lowest BIC among
+#' the candidates with the least-problematic diagnostics. `"BIC"` selects the model
+#' with the lowest BIC irrespective of the diagnostic results, reproducing the previous OSEM
+#' behaviour. `"none"` performs no comparison across AR orders and retains the
+#' model estimated with `max.ar` lags. Default is `"diagnostic"`.
 #' @inheritParams clean_data
 #' @inheritParams estimate_module
 #' @inheritParams estimate_cvar
@@ -83,6 +91,7 @@ run_model <- function(specification,
                       ecm_pretest = "auto",
                       max.ar = 4,
                       max.dl = 4,
+                      ar.selection = c("diagnostic","BIC","none"),
                       saturation = c("IIS", "SIS"),
                       saturation.tpval = 0.01,
                       max.block.size = 20,
@@ -101,7 +110,9 @@ run_model <- function(specification,
                       coint_deterministic = "const",
                       coint_significance = "5pct",
                       indicator_compression = TRUE) {
+
   primary_source <- match.arg(primary_source)
+  ar.selection <- match.arg(ar.selection)
 
   if (!(is.data.frame(specification) | is.matrix(specification))) {
     stop("'specification' must be a data.frame, tibble, or matrix object. Check the documentation how a specification object must look like.")
@@ -321,6 +332,7 @@ run_model <- function(specification,
       ecm_pretest = ecm_pretest,
       max.ar = max.ar,
       max.dl = max.dl,
+      ar.selection = ar.selection,
       saturation = saturation,
       saturation.tpval = saturation.tpval,
       max.block.size = max.block.size,

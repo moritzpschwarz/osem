@@ -207,3 +207,53 @@ test_that("OSEM transformations round trip", {
     positive
   )
 })
+
+
+test_that("differenced innovations propagate through response lags before level integration", {
+  object <- list(
+    aux = list(
+      y = 0
+    )
+  )
+
+  recipe <- list(
+    response_scale = "difference",
+    selected_terms = dplyr::tibble(
+      term = "ar1",
+      role = "response_lag",
+      lag = 1L,
+      coefficient = 0.5
+    )
+  )
+
+  result <- osem:::forecast_recursive_isat(
+    isat_obj = object,
+    recipe = recipe,
+    central_terms = dplyr::tibble(.rows = 3),
+    level_history = 10,
+    residual_draws = matrix(
+      c(1, 0, 0),
+      ncol = 1
+    )
+  )
+
+  expect_equal(
+    result$central_response,
+    c(0, 0, 0)
+  )
+
+  expect_equal(
+    as.numeric(result$draw_response),
+    c(1, 0.5, 0.25)
+  )
+
+  expect_equal(
+    result$central_level,
+    c(10, 10, 10)
+  )
+
+  expect_equal(
+    as.numeric(result$draw_level),
+    c(11, 11.5, 11.75)
+  )
+})

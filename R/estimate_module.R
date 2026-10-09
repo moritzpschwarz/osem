@@ -68,6 +68,7 @@ estimate_module <- function(clean_data,
                             ecm_coint_alpha = 0.05,
                             max.ar = 4,
                             max.dl = 2,
+                            ar.selection,
                             saturation = c("IIS", "SIS"),
                             saturation.tpval = 0.01,
                             max.block.size = 20,
@@ -388,15 +389,28 @@ estimate_module <- function(clean_data,
                 "For debugging, a plot for this module has been produced - check if there are enough overlapping sample periods."))
   }
 
-  best_isat_model <- isat_list %>%
-    dplyr::mutate(diag_ranking = dplyr::case_when((.data$ar_pvalue > 0.05) & (.data$arch_pvalue > 0.05) ~ 1,
-                                                  (.data$ar_pvalue > 0.05) ~ 2,
-                                                  (.data$arch_pvalue > 0.05) ~ 3,
-                                                  TRUE ~ 4)) %>%
-    dplyr::filter(.data$diag_ranking == min(.data$diag_ranking, na.rm = TRUE)) %>%
-    dplyr::filter(BIC == min(dplyr::pick("BIC"), na.rm = TRUE)) %>%
-    dplyr::pull(dplyr::all_of("isat_object")) %>%
-    dplyr::first()
+
+  if(ar.selection == "diagnostic"){
+    best_isat_model <- isat_list %>%
+      dplyr::mutate(diag_ranking = dplyr::case_when((.data$ar_pvalue > 0.05) & (.data$arch_pvalue > 0.05) ~ 1,
+                                                    (.data$ar_pvalue > 0.05) ~ 2,
+                                                    (.data$arch_pvalue > 0.05) ~ 3,
+                                                    TRUE ~ 4)) %>%
+      dplyr::filter(.data$diag_ranking == min(.data$diag_ranking, na.rm = TRUE)) %>%
+      dplyr::filter(.data$BIC == min(dplyr::pick("BIC"), na.rm = TRUE)) %>%
+      dplyr::pull(dplyr::all_of("isat_object")) %>%
+      dplyr::first()
+  } else if(ar.selection == "BIC"){
+    best_isat_model <- isat_list %>%
+      dplyr::filter(.data$BIC == min(isat_list$BIC, na.rm = TRUE)) %>%
+      dplyr::pull(dplyr::all_of("isat_object")) %>%
+      dplyr::first()
+  } else if(ar.selection == "none"){
+    best_isat_model <- isat_list %>%
+      dplyr::filter(.data$ar == max.ar) %>%
+      dplyr::pull(dplyr::all_of("isat_object")) %>%
+      dplyr::first()
+  }
 
   # gets selection on the best model ----------------------------------------
   if(gets_selection){

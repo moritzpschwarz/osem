@@ -177,7 +177,7 @@ transform_osem_values <- function(x, transformation = "none") {
 #'
 #' @keywords internal
 inverse_transform_osem_values <- function(x, transformation = "none") {
-  if (is.na(transformation)) {
+  if (is.na(transformation) || is.null(transformation)) {
     transformation <- "none"
   }
 

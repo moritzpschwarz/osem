@@ -13,6 +13,7 @@ forecast_block_loop(
   current_spec,
   prediction_list,
   uncertainty_sample,
+  uncertainty_method,
   nowcasted,
   ci.levels
 )

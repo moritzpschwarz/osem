@@ -13,6 +13,7 @@ forecast_isat(
   current_spec,
   prediction_list,
   uncertainty_sample,
+  uncertainty_method,
   ci.levels,
   nowcasted
 )
@@ -34,6 +35,11 @@ forecast_isat(
 
 \item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
 
+\item{uncertainty_method}{Character. Method used to propagate residual uncertainty.
+\code{"recursive"} (default) introduces innovations within the dynamic recursion and is recommended.
+\code{"legacy"} reproduces the historical cumulative-residual treatment, including the
+additional current-period residual when upstream forecast uncertainty is present.}
+
 \item{ci.levels}{Numeric vector. Vector with confidence intervals to be calculated. Default: c(0.5,0.66,0.95)}
 
 \item{nowcasted}{The nowcasted data for the model}
@@ -45,9 +51,9 @@ object, and data used for the current module.
 \description{
 This internal function generates forecasts from an ISAT (Indicator Saturation)
 model within the OSEM framework (see \code{\link[gets]{isat}}).
-It forecasts an estimated single-equation module. ARDL and fully differenced
-equations use \code{\link[gets]{predict.isat}} for the complete
-forecast horizon. ECM equations are forecast recursively because the
-forecast for one period is needed to construct the lagged dependent level
-for the following period.
+It forecasts an estimated single-equation module.
+By default, ARDL, ECM, and fully differenced equations are forecast
+recursively so that innovations propagate through the estimated dynamic
+structure. For ARDL models, \code{uncertainty_method = "legacy"} reproduces the
+historical \code{predict.isat()} path and residual treatment.
 }
