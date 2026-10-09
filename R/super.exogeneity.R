@@ -78,7 +78,8 @@ super.exogeneity <- function(initial.model, saturation.tpval = 0.01, quiet = FAL
                plot = FALSE,
                print.searchinfo = FALSE,
                include.gum = FALSE,
-               t.pval = saturation.tpval) -> isat_test
+               t.pval = saturation.tpval,
+               additional.block.search = TRUE) -> isat_test
 
     # add isat_test to the list that is called "marginal.models" as a new element (append it to the back)
     marginal.models <- c(marginal.models, list(isat_test))

@@ -13,34 +13,47 @@ forecast_isat(
   current_spec,
   prediction_list,
   uncertainty_sample,
+  uncertainty_method,
   ci.levels,
   nowcasted
 )
 }
 \arguments{
-\item{model}{The overall 'osem' model as returned by \code{\link[osem]{run_model}}}
+\item{model}{A model object of class 'osem'.}
 
-\item{i}{The index of the current module within the model's module collection}
+\item{i}{Current module that is being cycled through}
 
-\item{exog_df_ready}{The exogenous data frame prepared for forecasting}
+\item{exog_df_ready}{Outcome of forecast_exogenous_values() which is the set of forecasted exogenous values}
 
 \item{exog_df_ready_full}{The full exogenous data frame prepared for forecasting}
 
-\item{n.ahead}{Number of steps ahead to forecast}
+\item{n.ahead}{Periods to forecast ahead}
 
 \item{current_spec}{The current specification for the module being forecasted}
 
-\item{prediction_list}{The collection of all predictions}
+\item{prediction_list}{The full list of all predictions. The results of the function will be saved in this list.}
 
-\item{uncertainty_sample}{The number of uncertainty samples to draw for the prediction}
+\item{uncertainty_sample}{Integer. Number of draws to be made for the error bars. Default is 100.}
 
-\item{ci.levels}{The confidence interval levels for the prediction}
+\item{uncertainty_method}{Character. Method used to propagate residual uncertainty.
+\code{"recursive"} (default) introduces innovations within the dynamic recursion and is recommended.
+\code{"legacy"} reproduces the historical cumulative-residual treatment, including the
+additional current-period residual when upstream forecast uncertainty is present.}
+
+\item{ci.levels}{Numeric vector. Vector with confidence intervals to be calculated. Default: c(0.5,0.66,0.95)}
 
 \item{nowcasted}{The nowcasted data for the model}
 }
 \value{
-A tibble containing the updated prediction_list object with forecasts for the current module
+A list containing the central path, uncertainty paths, prediction
+object, and data used for the current module.
 }
 \description{
-This internal function generates forecasts from an ISAT (Indicator Saturation) model within the OSEM framework (see \code{\link[gets]{isat}}).
+This internal function generates forecasts from an ISAT (Indicator Saturation)
+model within the OSEM framework (see \code{\link[gets]{isat}}).
+It forecasts an estimated single-equation module.
+By default, ARDL, ECM, and fully differenced equations are forecast
+recursively so that innovations propagate through the estimated dynamic
+structure. For ARDL models, \code{uncertainty_method = "legacy"} reproduces the
+historical \code{predict.isat()} path and residual treatment.
 }

@@ -33,6 +33,7 @@ run_module <- function(
     ardl_or_ecm = "ardl",
     max.ar = 4,
     max.dl = 2,
+    ar.selection,
     saturation = c("IIS", "SIS"),
     saturation.tpval = 0.01,
     max.block.size = 20,
@@ -48,7 +49,9 @@ run_module <- function(
     coint_significance = "5pct",
     ecm_pretest = "auto",
     ecm_unit_root_alpha = "5pct",
-    ecm_coint_alpha = 0.05) {
+    ecm_coint_alpha = 0.05,
+    indicator_compression = TRUE) {
+
   raw_data <- identify_module_data(module, classification, data)
 
   # if is identity/definition equation, run simple parse
@@ -96,6 +99,7 @@ run_module <- function(
       ecm_coint_alpha = ecm_coint_alpha,
       max.ar = max.ar,
       max.dl = max.dl,
+      ar.selection = ar.selection,
       saturation = saturation,
       saturation.tpval = saturation.tpval,
       max.block.size = max.block.size,
@@ -104,7 +108,9 @@ run_module <- function(
       keep = keep,
       pretest_steps = pretest_steps,
       quiet = quiet,
-      module = module
+      module = module,
+      transformation_map = clean_data_output$transformations,
+      indicator_compression = indicator_compression
     )
 
     # store ECM decision in opts_df ------------------------------------------

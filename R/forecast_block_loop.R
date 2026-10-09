@@ -15,6 +15,8 @@
 #' @param nowcasted The nowcasted data for the model
 #' @param ci.levels The confidence interval levels for the prediction
 #'
+#' @inheritParams forecast_model
+#'
 #' @returns A tibble containing the updated prediction_list object with forecasts for the current module
 #'
 forecast_block_loop <- function(
@@ -26,6 +28,7 @@ forecast_block_loop <- function(
     current_spec,
     prediction_list,
     uncertainty_sample,
+    uncertainty_method,
     nowcasted,
     ci.levels){
 
@@ -99,6 +102,7 @@ forecast_block_loop <- function(
         current_spec = current_spec,
         prediction_list = prediction_list_mod,
         uncertainty_sample = uncertainty_sample,
+        uncertainty_method = uncertainty_method,
         nowcasted = if(is.data.frame(nowcasted)) {nowcasted %>% dplyr::slice(1:k)} else {nowcasted},
         ci.levels = ci.levels
       ) -> prediction_list_mod
