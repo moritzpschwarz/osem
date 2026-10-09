@@ -393,7 +393,7 @@ estimate_module <- function(clean_data,
                                                   (.data$ar_pvalue > 0.05) ~ 2,
                                                   (.data$arch_pvalue > 0.05) ~ 3,
                                                   TRUE ~ 4)) %>%
-    dplyr::filter(diag_ranking == min(.data$diag_ranking, na.rm = TRUE)) %>%
+    dplyr::filter(.data$diag_ranking == min(.data$diag_ranking, na.rm = TRUE)) %>%
     dplyr::filter(BIC == min(dplyr::pick("BIC"), na.rm = TRUE)) %>%
     dplyr::pull(dplyr::all_of("isat_object")) %>%
     dplyr::first()
