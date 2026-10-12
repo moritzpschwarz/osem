@@ -31,6 +31,8 @@ this should be the dependent variable whose module equation should be shown.}
 \item{show_stars}{Logical. Add significance stars based on model p-values?}
 
 \item{width}{Optional integer. Approximate character width for line breaks.}
+
+\item{print}{Logical. Should the LaTeX equation be printed using \code{cat()}?}
 }
 \value{
 Invisibly returns the LaTeX equation as a character scalar and prints it.

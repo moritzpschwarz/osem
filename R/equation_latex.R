@@ -9,6 +9,7 @@
 #' @param show_seasonals Logical. Print seasonal dummies individually?
 #' @param show_stars Logical. Add significance stars based on model p-values?
 #' @param width Optional integer. Approximate character width for line breaks.
+#' @param print Logical. Should the LaTeX equation be printed using `cat()`?
 #'
 #' @return Invisibly returns the LaTeX equation as a character scalar and prints it.
 #'

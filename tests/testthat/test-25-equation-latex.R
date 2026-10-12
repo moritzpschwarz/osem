@@ -331,7 +331,7 @@ test_that("equation_latex() extracts the requested module from an osem object", 
 
   fake_osem <- structure(
     list(
-      module_collection = tibble::tibble(
+      module_collection = dplyr::tibble(
         dependent = c("y", "z"),
         model = list(fit_y, fit_z),
         type = "n"
@@ -366,7 +366,7 @@ test_that("equation_latex() errors cleanly if lhs_name is not in an osem object"
 
   fake_osem <- structure(
     list(
-      module_collection = tibble::tibble(
+      module_collection = dplyr::tibble(
         dependent = "y",
         type = "n",
         model = list(fit)
