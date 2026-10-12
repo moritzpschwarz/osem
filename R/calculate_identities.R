@@ -16,7 +16,7 @@
 calculate_identities <- function(specification, data, dictionary = NULL) {
   # identity must be given as a module (i.e. must be a dependent variable)
   identities <- specification %>%
-    dplyr::filter(.$type == "d")
+    dplyr::filter(.data$type == "d")
 
   # not sure whether can solve without dropping these vars
   # could add back later but not necessary?

@@ -156,8 +156,8 @@ test_that("decide_unit_roots() returns correct output object", {
   expect_identical(aa$args$selectlags, "Fixed")
   expect_identical(aa$args$max.ar, 4)
   expect_type(aa$decision, "list")
-  expect_length(aa$decision, 3)
-  expect_named(aa$decision, c("alpha_ur", "reject_ur", "when"))
+  expect_length(aa$decision, 5)
+  expect_named(aa$decision, c("alpha_ur", "reject_ur", "when", "deterministic", "stationarity_type"))
   expect_identical(aa$decision$alpha_ur, "5pct")
   expect_identical(aa[1:4], a) # aa only appends one list
 })

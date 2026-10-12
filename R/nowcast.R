@@ -198,37 +198,97 @@ nowcasting <- function(model, exog_df_ready, frequency){
           nowcasted_data = collected_nowcasts,
         )
 
-        final_i_data <- pred_setup_list$final_i_data
-        pred_df <- pred_setup_list$pred_df
+        recipe <- pred_setup_list$recipe
         isat_obj <- pred_setup_list$isat_obj
-        current_pred_raw <- pred_setup_list$current_pred_raw
 
         isat_obj$call$ar <- isat_obj$aux$args$ar
         isat_obj$call$mc <- isat_obj$aux$args$mc
+        isat_obj$call$tis <- isat_obj$aux$args$tis
 
-        pred_obj <- gets::predict.isat(isat_obj,
-                                       newmxreg = as.matrix(utils::tail(pred_df %>% dplyr::select(dplyr::any_of(isat_obj$aux$mXnames)), length(cur_target_dates))),
-                                       n.ahead = length(cur_target_dates), plot = FALSE,
-                                       quiet = TRUE,
-                                       ci.levels = NULL, n.sim = 1)
+        if (recipe$model_form == "ecm") {
 
-        model$opts_df %>%
-          dplyr::filter(.data$order == ord) %>%
-          dplyr::pull("log_opts") %>%
-          dplyr::first() %>%
-          dplyr::select(dplyr::all_of(dep_var)) %>%
-          dplyr::pull() -> log_opts
+          # ECM nowcasts must be produced recursively because the forecast level
+          # from one period enters the equation in the following period.
+          level_history <- pred_setup_list$state_data[[
+            recipe$transformed_level_name
+          ]]
 
-        # add the data to the full data and the processed input data
-        dplyr::tibble(time = as.Date(cur_target_dates),
-                      values =       if(log_opts == "log"){
-                        exp(as.numeric(pred_obj))
-                      } else if (log_opts == "asinh"){
-                        sinh(as.numeric(pred_obj))
-                      } else if (log_opts == "none"){
-                        as.numeric(pred_obj)
-                      }) %>%
-          dplyr::mutate(na_item = dep_var,.after = "time") -> data_to_add
+          recursive_prediction <- forecast_recursive_isat(
+            isat_obj = isat_obj,
+            recipe = recipe,
+            central_terms = utils::tail(
+              pred_setup_list$pred_df,
+              length(cur_target_dates)
+            ),
+            level_history = level_history,
+            residual_draws = matrix(
+              0,
+              nrow = length(cur_target_dates),
+              ncol = 1
+            )
+          )
+
+          central_level <- recursive_prediction$central_level
+
+        } else {
+
+          pred_obj <- gets::predict.isat(
+            isat_obj,
+            newmxreg = as.matrix(
+              utils::tail(
+                pred_setup_list$pred_df %>%
+                  dplyr::select(
+                    dplyr::any_of(isat_obj$aux$mXnames)
+                  ),
+                length(cur_target_dates)
+              )
+            ),
+            n.ahead = length(cur_target_dates),
+            plot = FALSE,
+            quiet = TRUE,
+            ci.levels = NULL,
+            n.sim = 1
+          )
+
+          central_response <- as.numeric(pred_obj)
+
+          if (recipe$model_form == "diff") {
+
+            level_history <- pred_setup_list$state_data[[
+              recipe$transformed_level_name
+            ]]
+            initial_level <- utils::tail(
+              level_history[!is.na(level_history)],
+              1
+            )
+
+            if (length(initial_level) == 0) {
+              stop(
+                "No observed dependent-variable level is available ",
+                "to initialise the nowcast."
+              )
+            }
+
+            central_level <- initial_level + cumsum(central_response)
+
+          } else {
+
+            # For an ARDL, predict.isat() already returns the transformed level.
+            central_level <- central_response
+          }
+        }
+
+        dplyr::tibble(
+          time = as.Date(cur_target_dates),
+          values = inverse_transform_osem_values(
+            central_level,
+            recipe$dependent_transformation
+          )
+        ) %>%
+          dplyr::mutate(
+            na_item = dep_var,
+            .after = "time"
+          ) -> data_to_add
 
         collected_nowcasts %>%
           dplyr::bind_rows(data_to_add) %>%

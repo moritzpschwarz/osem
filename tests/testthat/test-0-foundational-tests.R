@@ -374,7 +374,7 @@ test_that("clean_data() works with CVAR", {
     raw_data = df, max.ar = 1, max.dl = 1, trend = TRUE,
     opts_df = mdl, module = mdl, use_logs = "both"
   )
-  expect_named(a, c("df", "opts_df"))
+  expect_named(a, c("df", "opts_df", "transformations"))
   expect_identical(mdl[, 1:7], a$opts_df[, 1:7])
   expect_named(a$opts_df, c("order", "type", "dependent", "independent", "lag", "cvar", "block_order", "sub_order", "index", "log_opts"))
   expect_type(a$opts_df$log_opts, "list")
@@ -530,7 +530,7 @@ test_that("run_module() works with CVAR", {
   expect_identical(a$opts_df[, 1:9], mdl)
   expect_type(a$opts_df %>% dplyr::pull(log_opts), "list")
   expect_s3_class(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), c("data.frame", "tibble"))
-  expect_identical(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), dplyr::tibble(Y = NA, Z = NA, U = NA))
+  expect_identical(a$opts_df %>% dplyr::pull(log_opts) %>% dplyr::first(), dplyr::tibble(Y = NA_character_, Z = NA_character_, U = NA_character_))
 
   #### test CVAR with log transformations
   a <- run_module(

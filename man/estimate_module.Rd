@@ -16,6 +16,7 @@ estimate_module(
   ecm_coint_alpha = 0.05,
   max.ar = 4,
   max.dl = 2,
+  ar.selection,
   saturation = c("IIS", "SIS"),
   saturation.tpval = 0.01,
   max.block.size = 20,
@@ -23,8 +24,10 @@ estimate_module(
   selection.tpval = 0.01,
   keep,
   pretest_steps,
+  indicator_compression = TRUE,
   quiet = FALSE,
-  module
+  module,
+  transformation_map
 )
 }
 \arguments{
@@ -66,6 +69,15 @@ as well as for the independent variables.}
 \item{max.dl}{Integer. The maximum number of lags to use for the independent
 variables (the distributed lags).}
 
+\item{ar.selection}{Character. Controls how the autoregressive lag order is
+selected. Must be one of \code{"diagnostic"}, \code{"BIC"}, or \code{"none"}.
+\code{"diagnostic"} first checks the candidate models according to their residual
+AR and ARCH diagnostics and then selects the model with the lowest BIC among
+the candidates with the least-problematic diagnostics. \code{"BIC"} selects the model
+with the lowest BIC irrespective of the diagnostic results, reproducing the previous OSEM
+behaviour. \code{"none"} performs no comparison across AR orders and retains the
+model estimated with \code{max.ar} lags. Default is \code{"diagnostic"}.}
+
 \item{saturation}{Carry out Indicator Saturation using the 'isat' function
 in the 'gets' package. Needs a character vector or string. Default is
 'c("IIS","SIS")' to carry out Impulse Indicator Saturation and Step Indicator
@@ -99,9 +111,18 @@ then \code{\link[gets]{isat}} is first carried out just for SIS (if activated us
 then the SIS breaks are pre-entered to another \code{\link[gets]{isat}} estimation but not selected over.
 After both isat runs, a union model selection is done using  \code{\link[gets]{gets}}.}
 
+\item{indicator_compression}{Logical. Whether to compress the indicators selected by the
+'isat' function from the 'gets' package into a smaller number of indicators that still
+capture the same outlier and structural break dynamics. Default is TRUE. Indicator compression
+is only applied to the best model selected based on BIC and diagnostic tests,
+not to all estimated models.}
+
 \item{quiet}{Logical. Should messages about the forecast procedure be suppressed?}
 
 \item{module}{A row of the specification table.}
+
+\item{transformation_map}{A named character vector containing the
+transformation applied to each model variable during data preparation.}
 }
 \value{
 A list containing all estimated models, with the model with the smallest BIC under 'best_model'.

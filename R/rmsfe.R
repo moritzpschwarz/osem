@@ -6,7 +6,7 @@
 #' @returns A tibble containing the root mean squared forecast error estimates.
 #'
 #' @examples
-#'
+#'\donttest{
 #'specification <- dplyr::tibble(
 #'  type = c(
 #'    "n"
@@ -44,6 +44,7 @@
 #'
 #'insample_output <- forecast_insample(model, sample_share = 0.97)
 #'insample_output$rmsfe
+#'}
 rmsfe <- function(forecast, data){
 
   if(!isa(forecast, "osem.forecast")){

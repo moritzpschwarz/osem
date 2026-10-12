@@ -13,6 +13,8 @@
 #' @param nowcasted Nowcasted data for the forecast period
 #' @param ci.levels Confidence interval levels for the forecasts
 #'
+#' @inheritParams forecast_model
+#'
 #' @returns A tibble containing the updated prediction_list object with forecasts for the current module
 #'
 forecast_module_estimated <- function(model,
@@ -23,6 +25,7 @@ forecast_module_estimated <- function(model,
                                      current_spec,
                                      prediction_list,
                                      uncertainty_sample,
+                                     uncertainty_method,
                                      nowcasted,
                                      ci.levels) {
 
@@ -43,6 +46,7 @@ forecast_module_estimated <- function(model,
                   current_spec = current_spec,
                   prediction_list = prediction_list,
                   uncertainty_sample = uncertainty_sample,
+                  uncertainty_method = uncertainty_method,
                   nowcasted = nowcasted,
                   ci.levels = ci.levels)
 
@@ -52,7 +56,7 @@ forecast_module_estimated <- function(model,
     prediction_list[prediction_list$order == i, "data"] <- isat_fcst$final_i_data
     prediction_list[prediction_list$order == i, "central.estimate"] <- dplyr::tibble(central_estimate = list(isat_fcst$central_estimate))
     prediction_list[prediction_list$order == i, "all.estimates"] <- dplyr::tibble(all_estimates = list(isat_fcst$pred_draw_matrix))
-
+    prediction_list[prediction_list$order == i, "forecast.metadata"] <- dplyr::tibble(forecast.metadata = list(isat_fcst$forecast.metadata))
 
   }
 

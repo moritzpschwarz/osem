@@ -18,7 +18,7 @@ A tibble containing the root mean squared forecast error estimates.
 Root Mean Squared Forecast Error
 }
 \examples{
-
+\donttest{
 specification <- dplyr::tibble(
  type = c(
    "n"
@@ -56,4 +56,5 @@ model <- run_model(specification = specification,
 
 insample_output <- forecast_insample(model, sample_share = 0.97)
 insample_output$rmsfe
+}
 }

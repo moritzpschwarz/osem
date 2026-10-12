@@ -153,11 +153,14 @@ test_that("run_model() works with an estimated module before  a cvar model",{
     trend = FALSE,
     save_to_disk = NULL,
     present = FALSE,
-    quiet = TRUE
+    quiet = TRUE,
+
+    indicator_compression = FALSE,
+    ar.selection = "BIC"
   ))
 
   set.seed(9987)
-  expect_no_error(e_fcst <- forecast_model(e, quiet = TRUE, plot = FALSE))
+  expect_no_error(e_fcst <- forecast_model(e, quiet = TRUE, plot = FALSE, uncertainty_method = "legacy"))
 
   expect_equal(round(e_fcst$forecast$all.estimates[[1]]$run_1,5), c(0.45816, 1.12826, 1.05844, 1.54129, 1.22634, 2.05986, 2.15242,
                                                                    3.07302, 1.99151, 2.209))

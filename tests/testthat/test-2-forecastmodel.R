@@ -108,14 +108,45 @@ test_that("Test that forecasting works - with fixed data",{
       max.ar = 4,
       max.dl = 4,
       primary_source = "local",
-      quiet = TRUE
+      quiet = TRUE,
+
+      indicator_compression = FALSE,
+      ar.selection = "BIC"
+    ))
+
+  expect_silent(
+    b_new <- run_model(
+      specification = spec,
+      dictionary = NULL,
+      input = sample_input,
+      max.ar = 4,
+      max.dl = 4,
+      primary_source = "local",
+      quiet = TRUE,
+
+      indicator_compression = TRUE,
+      ar.selection = "diagnostic"
     ))
 
   set.seed(123)
-  expect_message(bb <- forecast_model(b, plot = FALSE), regexp = "No exogenous values")
+  expect_message(bb <- forecast_model(b, plot = FALSE, uncertainty_method = "legacy"), regexp = "No exogenous values")
+  expect_message(bb_new <- forecast_model(b_new, plot = FALSE), regexp = "No exogenous values")
+  # saveRDS(bb$full_forecast_data %>% dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~round(.,6))),
+  #         file = test_path("testdata", "saved", "full_forecastdata_legacy.rds"))
+  # saveRDS(bb_new$full_forecast_data %>% dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~round(.,6))),
+  #         file = test_path("testdata", "saved", "full_forecastdata.rds"))
+
+  data <- readRDS(test_path("testdata", "saved", "full_forecastdata_legacy.rds"))
+  expect_identical(bb$full_forecast_data %>% dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~round(.,6))), data)
+  data <- readRDS(test_path("testdata",  "saved","full_forecastdata.rds"))
+  expect_identical(bb_new$full_forecast_data %>% dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~round(.,6))), data)
 
   skip_on_ci()
-  expect_snapshot_plot("Forecast_plot",code = plot(bb))
+  expect_snapshot_plot("Forecast_plot_legacy",code = plot(bb))
+  expect_snapshot_plot("Forecast_plot",code = plot(bb_new))
+
+
+
 })
 
 #
@@ -168,7 +199,8 @@ test_that("Testing nowcasting and dealing with ragged edges works with fixed dat
   )
 
   set.seed(123)
-  expect_message(bb <- forecast_model(model, plot = FALSE), regexp = "No exogenous values")
+  expect_message(bb <- forecast_model(model, plot = FALSE, uncertainty_method = "legacy"), regexp = "No exogenous values")
+  expect_silent(bb_new <- forecast_model(model, plot = FALSE, quiet = TRUE))
 
   # check that a dataframe can be returned
   bb_df <- plot(bb, return.data = TRUE)
@@ -188,7 +220,8 @@ test_that("Testing nowcasting and dealing with ragged edges works with fixed dat
 
 
   skip_on_ci()
-  expect_snapshot_plot("Forecast_plot_ragged",code = plot(bb))
+  expect_snapshot_plot("Forecast_plot_ragged_legacy",code = plot(bb))
+  expect_snapshot_plot("Forecast_plot_ragged",code = plot(bb_new))
 })
 
 
@@ -461,11 +494,14 @@ test_that("Forecasting example",{
                     constrain.to.minimum.sample = FALSE,
                     plot = FALSE)
 
-  test_fc <- forecast_model(test, plot = FALSE)
-  plot(test_fc, exclude.exogenous = TRUE)
+  set.seed(456)
+  test_fc <- forecast_model(test, plot = FALSE, uncertainty_method = "legacy")
+  # plot(test_fc, exclude.exogenous = TRUE)
 
+  expect_snapshot_plot("Forecast_plot2_legacy",code = plot(test_fc, exclude.exogenous = TRUE))
 
-  expect_snapshot_plot("Forecast_plot2",code = plot(test_fc, exclude.exogenous = TRUE))
+  test_fc_new <- forecast_model(test, plot = FALSE, uncertainty_method = "recursive")
+  expect_snapshot_plot("Forecast_plot2",code = plot(test_fc_new, exclude.exogenous = TRUE))
 
 
 
