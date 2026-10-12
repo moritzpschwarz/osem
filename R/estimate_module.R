@@ -338,7 +338,7 @@ estimate_module <- function(clean_data,
         NULL
       }
 
-      intermed.model <- gets::arx(
+      try(suppressWarnings(intermed.model <- gets::arx(
         y = zoo::zoo(yvar, order.by = clean_data$time),
         mxreg = xvar_opts,
         ar = if (i != 0) {
@@ -347,11 +347,13 @@ estimate_module <- function(clean_data,
           NULL
         },
         plot = FALSE
-      )
+      )), silent = TRUE)
 
-      colnames(intermed.model$aux$mX) <- intermed.model$aux$mXnames
-      intermed.model$aux$args <- if(i != 0){list(ar = 1:i)} else {list(ar = NULL)}
-      intermed.model$aux$y.name <- y.name
+      if(exists("intermed.model")){
+        colnames(intermed.model$aux$mX) <- intermed.model$aux$mXnames
+        intermed.model$aux$args <- if(i != 0){list(ar = 1:i)} else {list(ar = NULL)}
+        intermed.model$aux$y.name <- y.name
+      }
     }
     if(exists("intermed.model")){
       diagnostics <- intermed.model$diagnostics %>%
