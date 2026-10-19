@@ -174,10 +174,21 @@ build_module_design <- function(clean_data,
       dplyr::pull()
 
     if (!identical(x_vars_basename, character(0))) {
-      xvars_names <- grep(
-        "L[0-9]\\.D.",
-        grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
-        value = TRUE
+      xvars_names <- unlist(
+        lapply(x_vars_basename, function(variable) {
+          prefix <- paste0(
+            "D.",
+            if (log_opts %in% c("both", "x")) "ln." else "",
+            variable
+          )
+
+          candidates <- paste0(
+            "L", seq_len(dl_order), ".", prefix
+          )
+
+          candidates[candidates %in% names(clean_data)]
+        }),
+        use.names = FALSE
       )
     } else {
       xvars_names <- NULL
@@ -280,10 +291,20 @@ build_module_design <- function(clean_data,
       dplyr::pull()
 
     if (!identical(x_vars_basename, character(0))) {
-      xvars_names <- grep(
-        "L[0-9]\\.D.",
-        grep(paste0(x_vars_basename, collapse = "|"), names(clean_data), value = TRUE),
-        value = TRUE
+      xvars_names <- unlist(
+        lapply(x_vars_basename, function(variable) {
+          prefix <- paste0(
+            "D.",
+            if (log_opts %in% c("both", "x")) "ln." else "",
+            variable
+          )
+          candidates <- paste0(
+            "L", seq_len(dl_order), ".", prefix
+          )
+
+          candidates[candidates %in% names(clean_data)]
+        }),
+        use.names = FALSE
       )
     } else {
       xvars_names <- NULL
