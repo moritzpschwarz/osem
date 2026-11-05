@@ -1,37 +1,37 @@
+# --- small synthetic dataset (fast) ---
+specification <- dplyr::tibble(
+  type = c("n", "n"),
+  dependent = c("FinConsExpHH", "FinConsExpGov"),
+  independent = c("FinConsExpGov + HICP_Gas", "")
+)
+
+set.seed(123)
+testdata <- dplyr::tibble(
+  time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2012-10-01"), by = "quarter"),
+  FinConsExpGov = rnorm(length(time), mean = 5, sd = 1) * 0.01 * 1:length(time), # increasing trend
+  HICP_Gas      = arima.sim(length(time), mean = 200, sd = 1, model = list(ar = c(0.5))),
+  FinConsExpHH  = 0.5 + 0.2 * FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time), mean = 0, sd = 0.2)
+)
+
+# add a few missing values to exercise drop_na paths
+testdata$HICP_Gas[length(testdata$HICP_Gas)] <- NA_real_
+testdata$FinConsExpGov[c(1,2)] <- NA_real_
+
+testdata_long <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
+
+mod <- run_model(
+  specification = specification,
+  dictionary = dict,
+  input = testdata_long,
+  primary_source = "local",
+  present = FALSE,
+  quiet = TRUE,
+  saturation = "IIS"
+)
+
 test_that("dm_test: basic structure, options, and input validation", {
 
   skip_on_cran()
-
-  # --- small synthetic dataset (fast) ---
-  specification <- dplyr::tibble(
-    type = c("n", "n"),
-    dependent = c("FinConsExpHH", "FinConsExpGov"),
-    independent = c("FinConsExpGov + HICP_Gas", "")
-  )
-
-  set.seed(123)
-  testdata <- dplyr::tibble(
-    time = seq.Date(from = as.Date("2005-01-01"), to = as.Date("2012-10-01"), by = "quarter"),
-    FinConsExpGov = rnorm(length(time), mean = 5, sd = 1) * 0.01 * 1:length(time), # increasing trend
-    HICP_Gas      = arima.sim(length(time), mean = 200, sd = 1, model = list(ar = c(0.5))),
-    FinConsExpHH  = 0.5 + 0.2 * FinConsExpGov + 0.3 * HICP_Gas + rnorm(length(time), mean = 0, sd = 0.2)
-  )
-
-  # add a few missing values to exercise drop_na paths
-  testdata$HICP_Gas[length(testdata$HICP_Gas)] <- NA_real_
-  testdata$FinConsExpGov[c(1,2)] <- NA_real_
-
-  testdata_long <- tidyr::pivot_longer(testdata, -time, names_to = "na_item", values_to = "values")
-
-  mod <- run_model(
-    specification = specification,
-    dictionary = dict,
-    input = testdata_long,
-    primary_source = "local",
-    present = FALSE,
-    quiet = TRUE,
-    saturation = "IIS"
-  )
 
   # --- 1) smoke test: runs and returns expected structure (no VAR/BVAR in tests) ---
   res <- dm_test(

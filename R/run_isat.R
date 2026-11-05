@@ -65,7 +65,8 @@ run_isat <- function(yvar,
       tis = FALSE,
       t.pval = saturation.tpval,
       max.block.size = maxblocksize,
-      include.gum = FALSE
+      include.gum = FALSE,
+      additional.block.search = TRUE
     )
 
     if("IIS" %in% saturation | "TIS" %in% saturation){
@@ -95,7 +96,8 @@ run_isat <- function(yvar,
                               print.searchinfo = FALSE,
                               t.pval = saturation.tpval,
                               include.gum = FALSE,
-                              max.block.size = maxblocksize)
+                              max.block.size = maxblocksize,
+                              additional.block.search = TRUE)
 
       # union gets
       keep_num <- which(row.names(super_sat$mean.results) %in% c("mconst",paste0("ar",ar), names(xvar_opts)))
@@ -151,6 +153,7 @@ run_isat <- function(yvar,
       t.pval = saturation.tpval,
       max.block.size = maxblocksize,
       include.gum = FALSE,
+      additional.block.search = TRUE
     ), silent = TRUE)
   }
 

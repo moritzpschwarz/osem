@@ -13,6 +13,7 @@ forecast_block_loop(
   current_spec,
   prediction_list,
   uncertainty_sample,
+  uncertainty_method,
   nowcasted,
   ci.levels
 )
@@ -33,6 +34,11 @@ forecast_block_loop(
 \item{prediction_list}{The collection of all predictions}
 
 \item{uncertainty_sample}{The number of uncertainty samples to draw for the prediction}
+
+\item{uncertainty_method}{Character. Method used to propagate residual uncertainty.
+\code{"recursive"} (default) introduces innovations within the dynamic recursion and is recommended.
+\code{"legacy"} reproduces the historical cumulative-residual treatment, including the
+additional current-period residual when upstream forecast uncertainty is present.}
 
 \item{nowcasted}{The nowcasted data for the model}
 

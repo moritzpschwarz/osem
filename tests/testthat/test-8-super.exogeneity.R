@@ -45,8 +45,17 @@ test_that("Super Exogeneity Tests", {
 
   expect_true(!is.null(mod$module_collection$diagnostics[[1]]$super.exogeneity))
   expect_s3_class(mod$module_collection$diagnostics[[1]]$super.exogeneity, "htest")
-  expect_equal(mod$module_collection$diagnostics[[1]]$super.exogeneity$statistic, c("F-Stat" = 16.569103))
-  expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.008857416)
+
+  # UPDATED on 30.08.2026
+  # Reason for this is that the estimation logic changed
+  # this is due to estimation_module now actually choosing the best ISAT model on diagnostics as well
+  # before this was just on BIC - now it's also on AR, ARCH etc.
+  # Old:
+  # expect_equal(mod$module_collection$diagnostics[[1]]$super.exogeneity$statistic, c("F-Stat" = 16.569103))
+  # expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.008857416)
+  # now new:
+  expect_equal(mod$module_collection$diagnostics[[1]]$super.exogeneity$statistic, c("F-Stat" = 21.6040463758453))
+  expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.002131233)
 
 
   # run it with a tighter significance to ensure at least one variable is not testable
@@ -88,17 +97,26 @@ test_that("Super Exogeneity Tests", {
 
   expect_true(!is.null(mod$module_collection$diagnostics[[1]]$super.exogeneity))
   expect_s3_class(mod$module_collection$diagnostics[[1]]$super.exogeneity, "htest")
-  expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.043121409)
 
-  # TODO disabling currently due to issue within isat() related to zoo
+  # UPDATED on 30.08.2026
+  # Reason for this is that the estimation logic changed
+  # this is due to estimation_module now actually choosing the best ISAT model on diagnostics as well
+  # before this was just on BIC - now it's also on AR, ARCH etc.
+  # Old:
+  # expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.043121409)
+  # now new:
+  expect_equal(round(as.numeric(mod$module_collection$diagnostics[[1]]$super.exogeneity$p.value),9), 0.007573952)
+
+  # UPDATE 30.08.2026 works again, enabled again!
+  # [OLD:] disabling currently due to issue within isat() related to zoo
   # # run a super exogeneity test without the current value
-  # set.seed(123)
-  # is_mod <- gets::isat(y = testdata_2$FinConsExpHH, mxreg = testdata_2[, c("FinConsExpGov", "L1.HICP_Gas", "L2.HICP_Gas")], t.pval = 0.001,
-  #                      print.searchinfo = FALSE)
-  #
-  # is_mod_test <- super.exogeneity(is_mod, quiet = TRUE, saturation.tpval = 0.001)
-  #
-  # expect_s3_class(is_mod_test, "htest")
+  set.seed(123)
+  is_mod <- gets::isat(y = testdata_2$FinConsExpHH, mxreg = testdata_2[, c("FinConsExpGov", "L1.HICP_Gas", "L2.HICP_Gas")], t.pval = 0.001,
+                       print.searchinfo = FALSE)
+
+  is_mod_test <- super.exogeneity(is_mod, quiet = TRUE, saturation.tpval = 0.001)
+
+  expect_s3_class(is_mod_test, "htest")
 
 
 })

@@ -78,13 +78,14 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
       # Make sure workers have required packages
       parallel::clusterEvalQ(cl, {
+        library(osem)
         library(dplyr)
       })
 
       # Export objects/functions used in the worker expression
       parallel::clusterExport(
         cl,
-        varlist = c("model", "time_to_use", "quiet", "run_model"),
+        varlist = c("model", "time_to_use", "quiet"),
         envir = environment()
       )
 
@@ -94,7 +95,7 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
 
         res <- suppressWarnings(
           try(
-            run_model(
+            osem::run_model(
               specification = model$args$specification,
               dictionary = model$args$dictionary,
               trend = model$args$trend,
@@ -178,6 +179,10 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
   # remove any NULL models from the list
   all_models <- all_models[!vapply(all_models, is.null, logical(1))]
 
+  # remove any models that run for the exact same sample
+  estimated_samples <- lapply(all_models, function(x){paste0(min(x$full_data$time), " - ",max(x$full_data$time))})
+  all_models <- all_models[!duplicated(estimated_samples)]
+
   model$processed_input_data %>%
     dplyr::distinct(dplyr::across("na_item")) %>%
     dplyr::pull("na_item") -> all_data_vars
@@ -259,19 +264,21 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
       if(is.null(forecasted_unknownexogvalues[[i]])){next}
 
       # get log information
-      opts_df <- forecasted_unknownexogvalues[[i]][[forecast_method]]$orig_model$opts_df
-      if(!is.null(opts_df[["log_opts"]])){
-        opts_df %>%
-          dplyr::mutate(log_opts_dependent = purrr::map2(.data$log_opts, .data$dependent, function(opts,dep){
-            opts[,dep, drop = TRUE]
-          })) %>%
-          tidyr::unnest("log_opts_dependent", keep_empty = TRUE) %>%
-          tidyr::replace_na(list(log_opts_dependent = "none")) %>%
-          dplyr::select(c("dep_var" = "dependent","log_opt" = "log_opts_dependent")) -> log_opts_processed
-      } else {
-        log_opts_processed <- dplyr::tibble(dep_var = forecasted_unknownexogvalues[[i]][[forecast_method]]$orig_model$opts_df$dependent, log_opt = "none")
-      }
+      forecasted_unknownexogvalues[[i]][[forecast_method]]$orig_model$module_collection %>%
+        dplyr::transmute(
+          dep_var = .data$dependent,
+          log_opt = purrr::map_chr(.data$model.args, function(module_args) {
+            recipe <- module_args$forecast_recipe
 
+            if (is.null(recipe) ||
+                is.null(recipe$dependent_transformation)) {
+              return("none")
+            }
+
+            return(recipe$dependent_transformation)
+          })
+        ) %>%
+        dplyr::distinct(.data$dep_var, .keep_all = TRUE) -> log_opts_processed
 
       forecasted_unknownexogvalues[[i]][[forecast_method]]$forecast %>%
         dplyr::select("dep_var","central.estimate") %>%
@@ -316,8 +323,20 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
                                                    .data$log_opt == "none" ~ .data$value))} else {.}} %>%
         dplyr::select(-"log_opt") -> alls
 
-      dplyr::bind_rows(overall_to_plot_central, centrals %>% dplyr::mutate(method = forecast_method)) -> overall_to_plot_central
-      dplyr::bind_rows(overall_to_plot_alls, alls%>% dplyr::mutate(method = forecast_method)) -> overall_to_plot_alls
+      # dplyr::bind_rows(overall_to_plot_central, centrals %>% dplyr::mutate(method = forecast_method)) -> overall_to_plot_central
+      # dplyr::bind_rows(overall_to_plot_alls, alls%>% dplyr::mutate(method = forecast_method)) -> overall_to_plot_alls
+
+      dplyr::bind_rows(
+        overall_to_plot_central,
+        centrals %>% dplyr::mutate(method = forecast_method, forecast_run = i)
+      ) -> overall_to_plot_central
+
+      dplyr::bind_rows(
+        overall_to_plot_alls,
+        alls %>% dplyr::mutate(method = forecast_method, forecast_run = i)
+      ) -> overall_to_plot_alls
+
+
     }
   }
 

@@ -18,7 +18,7 @@ A tibble representing information about the success and failures of forecasting.
 Determine the number of Forecast Failures in Insample Forecasting
 }
 \examples{
-
+\donttest{
 specification <- dplyr::tibble(
  type = c(
    "n"
@@ -56,4 +56,5 @@ model <- run_model(specification = specification,
 
 insample_output <- forecast_insample(model, sample_share = 0.97)
 insample_output$forecast_failures
+}
 }

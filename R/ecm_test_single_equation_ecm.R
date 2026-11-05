@@ -5,7 +5,8 @@ test_single_equation_ecm <- function(clean_data,
                                      use_logs = "both",
                                      trend = TRUE,
                                      module,
-                                     alpha = 0.05) {
+                                     alpha = 0.05,
+                                     transformation_map) {
   # Set-up ------------------------------------------------------------------
   x_vars_basename <- x_vars_basename[!is.na(x_vars_basename)]
   x_vars_basename <- x_vars_basename[x_vars_basename != ""]
@@ -44,7 +45,8 @@ test_single_equation_ecm <- function(clean_data,
     trend = trend,
     model_form = "ecm",
     dl_order = 0,
-    module = module
+    module = module,
+    transformation_map = transformation_map
   )
 
   dep_level_term <- paste0(
@@ -62,7 +64,7 @@ test_single_equation_ecm <- function(clean_data,
   # Construct complete-case estimation sample -------------------------------
   df <- dplyr::bind_cols(
     dplyr::tibble(
-      .time = if ("time" %in% names(clean_data)) clean_data$time else seq_len(NROW(clean_data)),
+      time = if ("time" %in% names(clean_data)) {clean_data$time} else {seq_len(NROW(clean_data))},
       y = design$yvar
     ),
     as.data.frame(design$xvars)
@@ -70,15 +72,15 @@ test_single_equation_ecm <- function(clean_data,
 
   nobs_total <- NROW(df)
 
-  complete_vars <- setdiff(names(df), ".time")
+  complete_vars <- setdiff(names(df), "time")
   df <- df[stats::complete.cases(df[, complete_vars, drop = FALSE]), , drop = FALSE]
 
   nobs_complete <- NROW(df)
-  first_complete_time <- if (nobs_complete > 0) df$.time[1] else NA
-  last_complete_time <- if (nobs_complete > 0) df$.time[nobs_complete] else NA
+  first_complete_time <- if (nobs_complete > 0) df$time[1] else NA
+  last_complete_time <- if (nobs_complete > 0) df$time[nobs_complete] else NA
 
   df <- df %>%
-    dplyr::select(-.data$.time)
+    dplyr::select(-"time")
 
   if (NROW(df) <= length(level_terms) + 5) {
     return(list(

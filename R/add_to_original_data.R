@@ -81,6 +81,15 @@ add_to_original_data <- function(clean_data,
       fitted_diff <- intermed_init$fitted
       actual_transformed <- intermed_init[[transformed_dep_var]]
 
+      # Use a one-step for the fitted values
+      fitted_onestep <- rep(NA_real_, length(fitted_diff))
+      for (j in seq_along(fitted_diff)) {
+        if (j > 1 && !is.na(actual_transformed[j - 1]) && !is.na(fitted_diff[j])) {
+          fitted_onestep[j] <- actual_transformed[j - 1] + fitted_diff[j]
+        }
+      }
+
+      # Also provide a dynamic reconstruction
       fitted_cumsum <- rep(NA_real_, length(fitted_diff))
       first_fit_pos <- which(!is.na(fitted_diff))[1]
 
@@ -117,8 +126,16 @@ add_to_original_data <- function(clean_data,
         }
       }
 
+
+      # DECISION June 2026 by Moritz
+      # for in-sample values we do not use the dynamic reconstruction but the one-step reconstruction,
+      # because the latter is more accurate for in-sample fitted values.
+      # The dynamic reconstruction is more relevant for out-of-sample forecasts,
+      # so we'll get back to it in the forecast function.
+      # intermed_init %>%
+      #   dplyr::mutate(fitted.cumsum = fitted_cumsum) -> intermed_ecm
       intermed_init %>%
-        dplyr::mutate(fitted.cumsum = fitted_cumsum) -> intermed_ecm
+        dplyr::mutate(fitted.cumsum = fitted_onestep) -> intermed_ecm
 
       fitted_vals <- if(is.na(dependent_log_opts)) {
         intermed_ecm$fitted.cumsum

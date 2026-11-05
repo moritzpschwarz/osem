@@ -11,7 +11,6 @@
 #' @export
 
 diagnostics_model <- function(model) {
-
   models <- model$module_collection$model
   # list of length = number of modules; NULL if is identity
 
@@ -73,6 +72,34 @@ diagnostics_model <- function(model) {
 
       # record share of indicators retained
       diag[i, "Share of Indicators"] <- (diag[i, "IIS"] + diag[i, "SIS"]) / diag[i, "n"]
+
+      # record other test objects (currently super.exogeneity, in the future cointegration)
+      super.ex_obj <- other.test.objects[[names(models[i])]][["super.exogeneity"]]
+
+      if(is.list(super.ex_obj)){
+        diag[i, "Super Exogeneity"] <- super.ex_obj$p.value
+      } else {
+        diag[i, "Super Exogeneity"] <- NA
+      }
+
+    }
+
+    if(inherits(module, "arx")){
+      # record diagnostics
+      d <- module$diagnostics
+      # usually, first entry is AR and second is ARCH but could be different (e.g. when add other tests or not OLS)
+      # so be a bit more careful how to select the columns
+      ar_where <- grepl(pattern = "^Ljung-Box AR\\(", x = rownames(d))
+      arch_where <- grepl(pattern = "^Ljung-Box ARCH\\(", x = rownames(d))
+      # sanity check that were uniquely identified
+      stopifnot(sum(ar_where) == 1)
+      stopifnot(sum(arch_where) == 1)
+      # populate with p-values
+      diag[i, "AR"] <- d[ar_where, "p-value"]
+      diag[i, "ARCH"] <- d[arch_where, "p-value"]
+
+      # record number of observations
+      diag[i, "n"] <- module$n
 
       # record other test objects (currently super.exogeneity, in the future cointegration)
       super.ex_obj <- other.test.objects[[names(models[i])]][["super.exogeneity"]]

@@ -6,7 +6,7 @@
 #' @returns A tibble representing information about the success and failures of forecasting.
 #'
 #' @examples
-#'
+#'\donttest{
 #'specification <- dplyr::tibble(
 #'  type = c(
 #'    "n"
@@ -44,6 +44,7 @@
 #'
 #'insample_output <- forecast_insample(model, sample_share = 0.97)
 #'insample_output$forecast_failures
+#'}
 
 forecast_failure <- function(forecast, data){
 

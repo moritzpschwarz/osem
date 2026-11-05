@@ -37,6 +37,13 @@ forecast_setup_estimated_relationships(
 }
 \value{
 A list containing, among other elements, the data required to carry out the forecast for this estimated module.
+The elements contain:
+\itemize{
+\item current_pred_raw: central future source data, before all required differences/lags are constructed.
+\item current_pred_raw_all: the same source data, with upstream uncertainty stored in list-columns.
+\item pred_df: complete prediction-ready regressor data for the central forecast.
+\item pred_df.all: a list of complete prediction-ready regressor data frames, one per uncertainty run.
+}
 }
 \description{
 Internal function to set-up the forecasting of estimated relationships

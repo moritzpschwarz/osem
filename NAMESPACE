@@ -9,6 +9,7 @@ S3method(print,osem.forecast.insample)
 export(diagnostics_model)
 export(diagnostics_unit_root)
 export(dm_test)
+export(equation_latex)
 export(forecast_insample)
 export(forecast_model)
 export(forecast_sensitivity)
@@ -18,9 +19,13 @@ export(present_model)
 export(run_model)
 export(super.exogeneity)
 importFrom(magrittr,"%>%")
-importFrom(rlang,":=")
-importFrom(rlang,.data)
-importFrom(stats,BIC)
-importFrom(stats,coef)
-importFrom(stats,fitted)
-importFrom(stats,setNames)
+importFrom(rlang,
+  ":=",
+  .data
+)
+importFrom(stats,
+  BIC,
+  coef,
+  fitted,
+  setNames
+)
