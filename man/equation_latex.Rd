@@ -10,7 +10,7 @@ equation_latex(
   lhs_name = NULL,
   show_indicators = TRUE,
   show_seasonals = TRUE,
-  show_stars = FALSE,
+  show_stars = TRUE,
   width = 70,
   print = TRUE
 )
